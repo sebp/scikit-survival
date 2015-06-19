@@ -1,0 +1,6 @@
+include include MANIFEST.in
+recursive-include survival *.c *.h *.pyx *.pxd
+prune doc/build
+prune doc/source/generated
+prune */__pycache__
+global-exclude *.pyc *~ *.bak *.swp *.pyo
