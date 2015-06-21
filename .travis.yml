@@ -3,6 +3,7 @@ sudo: false
 addons:
   apt:
     packages:
+      - gfortran
       - libatlas-base-dev
       - libatlas-dev
 python:
