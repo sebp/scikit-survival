@@ -6,6 +6,9 @@ addons:
       - gfortran
       - libatlas-base-dev
       - libatlas-dev
+cache:
+  - pip
+  - apt
 python:
   - "3.3"
   - "3.4"
