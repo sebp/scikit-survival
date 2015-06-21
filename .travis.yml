@@ -12,6 +12,8 @@ python:
   - "3.4"
   - "nightly"
 # command to install dependencies
-install: "pip install -r requirements.txt"
+install:
+  - "pip install -r requirements.txt"
+  - "python setup.py build_ext --inplace"
 # command to run tests
-script: nosetests -w tests
+script: PYTHONPATH="." nosetests -w tests
