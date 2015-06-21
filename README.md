@@ -12,7 +12,7 @@ Vector Machines* as proposed in
 
 ## Requirements
 
-- Python 3.2 or later
+- Python 3.3 or later
 - numexpr
 - numpy 1.9 or later
 - pandas 0.15.2 or later
