@@ -3,7 +3,7 @@ sudo: false
 addons:
   apt:
     packages:
-      - libatlas3gf-base
+      - libatlas-base-dev
       - libatlas-dev
 python:
   - "3.2"
