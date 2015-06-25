@@ -352,7 +352,6 @@ class LargeScaleOptimizer(RankSVMOptimizer):
         xs = numpy.dot(x, w)
         val = 0.5 * squared_norm(w)
         if self._has_time:
-            y = self._counter.time
             val += 0.5 * self._regr_penalty * squared_norm(self.y_compressed
                                                            - xs.compress(self.regr_mask, axis=0))
 
@@ -610,6 +609,8 @@ class FastSurvivalSVM(BaseEstimator):
         else:
             X_transform = self.transform_.transform(X)
 
-        val = -numpy.dot(X_transform, self.coef_)
+        val = numpy.dot(X_transform, self.coef_)
+        if hasattr(self, "intercept_"):
+             val += self.intercept_
 
-        return val
+        return -val

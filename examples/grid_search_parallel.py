@@ -113,16 +113,8 @@ def train_test_model(data):
         c = concordance_index_censored(test_y['event'], test_y['time'], p)
 
         ret['c-index'] = c[0]
-        # work-around for pipelines
-        has_intercept = False
-        for key, val in est.get_params().items():
-            if key.endswith('fit_intercept'):
-                has_intercept = val
-                break
-        if has_intercept:
-            p_regression = p[test_y['event']] + est.intercept_
-        else:
-            p_regression = p[test_y['event']]
+        # for c-index, the sign of the predictions is flipped, flip it again for regression
+        p_regression = -p[test_y['event']]
 
         # convert from log-scale back to original scale and compute RMSE
         ret['error'] = numpy.sqrt(mean_squared_error(numpy.exp(test_y['time'][test_y['event']]),
