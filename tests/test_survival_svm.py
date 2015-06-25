@@ -286,9 +286,9 @@ class SurvivalModeCases(object):
         self.y['time'] = numpy.log(self.y['time'])
         ssvm.fit(self.x.values, self.y)
 
-        pred = ssvm.predict(self.x.values)
+        pred = -ssvm.predict(self.x.values)
         rmse = numpy.sqrt(mean_squared_error(self.y['time'], pred))
-        self.assertEqual(5, int(rmse))
+        self.assertEqual(1, int(rmse))
 
     def test_fit_timeit(self):
         rnd = numpy.random.RandomState(0)

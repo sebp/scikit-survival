@@ -30,13 +30,21 @@ from ..util import check_arrays_survival
 
 class Counter(six.with_metaclass(ABCMeta, object)):
     @abstractmethod
-    def __init__(self, x, y):
+    def __init__(self, x, y, status, time=None):
         self.x, self.y = check_X_y(x, y)
 
         if not numpy.issubdtype(y.dtype, numpy.integer):
             raise TypeError("y vector must have integer type, but was {0}".format(y.dtype))
         if y.min() != 0:
             raise ValueError("minimum element of y vector must be 0")
+
+        if time is None:
+            self.status = check_array(status, dtype=bool, ensure_2d=False)
+            check_consistent_length(self.x, self.status)
+        else:
+            self.status = check_array(status, dtype=bool, ensure_2d=False)
+            self.time = check_array(time, ensure_2d=False)
+            check_consistent_length(self.x, self.status, self.time)
 
         self.eps = numpy.finfo(self.x.dtype).eps
 
@@ -46,6 +54,9 @@ class Counter(six.with_metaclass(ABCMeta, object)):
         self.xw = self.xw[order]
         self.x = self.x[order]
         self.y = self.y[order]
+        self.status = self.status[order]
+        if hasattr(self, 'time'):
+            self.time = self.time[order]
         return order
 
     @abstractmethod
@@ -74,21 +85,8 @@ class OrderStatisticTreeSurvivalCounter(Counter):
         Survival times.
     """
     def __init__(self, x, y, status, tree_class, time=None):
-        super().__init__(x, y)
-        if time is None:
-            self.status = check_array(status, dtype=bool, ensure_2d=False)
-            check_consistent_length(self.x, self.status)
-        else:
-            self.status = check_array(status, dtype=bool, ensure_2d=False)
-            self.time = check_array(time, ensure_2d=False)
-            check_consistent_length(self.x, self.status, self.time)
+        super().__init__(x, y, status, time)
         self._tree_class = tree_class
-
-    def update_sort_order(self, w):
-        sort_order = super().update_sort_order(w)
-        self.status = self.status[sort_order]
-        if hasattr(self, 'time'):
-            self.time = self.time[sort_order]
 
     def calculate(self, v):
         # self.x is already sorted by call to self.update_sort_order,
@@ -131,10 +129,8 @@ class OrderStatisticTreeSurvivalCounter(Counter):
 
 class SurvivalCounter(Counter):
 
-    def __init__(self, x, y, status, n_relevance_levels):
-        super().__init__(x, y)
-        self.status = check_array(status, dtype=bool, ensure_2d=False)
-        check_consistent_length(self.x, self.status)
+    def __init__(self, x, y, status, n_relevance_levels, time=None):
+        super().__init__(x, y, status, time)
         self.n_relevance_levels = n_relevance_levels
 
     def _count_values(self):
@@ -142,10 +138,6 @@ class SurvivalCounter(Counter):
         indices = {yi: [i] for i, yi in enumerate(self.y) if self.status[i]}
 
         return indices
-
-    def update_sort_order(self, w):
-        sort_order = super().update_sort_order(w)
-        self.status = self.status[sort_order]
 
     def calculate(self, v):
         n_samples = self.x.shape[0]
@@ -506,7 +498,7 @@ class FastSurvivalSVM(BaseEstimator):
             optimizer = PRSVMOptimizer(X, status, self.alpha, self.rank_ratio, timeit=self.timeit)
         elif self.optimizer == 'direct-count':
             optimizer = LargeScaleOptimizer(self.alpha, self.rank_ratio,
-                                            SurvivalCounter(X, ranks, status, len(ranks)), timeit=self.timeit)
+                                            SurvivalCounter(X, ranks, status, len(ranks), times), timeit=self.timeit)
         elif self.optimizer == 'rbtree':
             optimizer = LargeScaleOptimizer(self.alpha, self.rank_ratio,
                                             OrderStatisticTreeSurvivalCounter(X, ranks, status, RBTree, times),
