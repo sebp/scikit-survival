@@ -14,7 +14,7 @@ import numpy
 from sklearn.utils import check_consistent_length, check_array, safe_indexing
 
 
-__all__ = ['check_arrays_survival', 'safe_split_survival']
+__all__ = ['check_arrays_survival']
 
 
 def check_arrays_survival(X, y, force_all_finite=True):

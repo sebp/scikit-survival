@@ -17,7 +17,7 @@ import pandas
 
 from pandas.core.common import is_categorical_dtype
 
-__all__ = ['encode_categorical', 'categorical_to_numeric']
+__all__ = ['categorical_to_numeric', 'encode_categorical', 'standardize']
 
 
 def _apply_along_column(array, func1d, **kwargs):
