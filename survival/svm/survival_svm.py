@@ -392,12 +392,38 @@ class LargeScaleOptimizer(RankSVMOptimizer):
 
 
 class FastSurvivalSVM(BaseEstimator):
-    """Rank Support Vector Machine
+    """Efficient Training of Survival Support Vector Machine
 
-    The objective function minimizes the squared hinge loss:
-    :math:`\\frac{1}{2} w^T w + \\frac{\\alpha}{2} \\sum_{(i, j) \\in \\mathcal{P}} \\max(0, 1 -(w^T x_j - w^T x_i))^2`,
-    where :math:`\\mathcal{P} = \{(i, j) | \\mathrm{rel}(i) < \\mathrm{rel}(j)\}_{i,j=1,\ldots,n}`
-    contains the pairs of samples.
+    Training data consists of *n* triplets :math:`(\mathbf{x}_i, y_i, \delta_i)`,
+    where :math:`\mathbf{x}_i` is a *d*-dimensional feature vector, :math:`y_i > 0`
+    the survival time or time of censoring, and :math:`\delta_i \in \{0,1\}`
+    the binary event indicator. Using the training data, the objective is to
+    minimize the following function:
+
+    .. math::
+
+         \\arg \min_{\mathbf{w}, b} \\frac{1}{2} \mathbf{w}^T \mathbf{w}
+         + \\frac{\\alpha}{2} \left[ r \sum_{i,j \in \mathcal{P}}
+         \max(0, 1 - (\mathbf{w}^T \mathbf{x}_i - \mathbf{w}^T \mathbf{x}_j))^2
+         + (1 - r) \sum_{i=0}^n \left( \zeta_{\mathbf{w}, b} (y_i, x_i, \delta_i)
+         \\right)^2 \\right]
+
+        \zeta_{\mathbf{w},b} (y_i, \mathbf{x}_i, \delta_i) =
+        \\begin{cases}
+        \max(0, y_i - \mathbf{w}^T \mathbf{x}_i - b) & \\text{if $\delta_i = 0$,} \\
+        y_i - \mathbf{w}^T \mathbf{x}_i - b & \\text{if $\delta_i = 1$,} \\
+        \end{cases}
+
+        \mathcal{P} = \{ (i, j)~|~y_i > y_j \land \delta_j = 1 \}_{i,j=1,\dots,n}
+
+    The hyper-parameter :math:`\\alpha > 0` determines the amount of regularization
+    to apply: a smaller value increases the amount of regularization and a
+    higher value reduces the amount of regularization. The hyper-parameter
+    :math:`r \in [0; 1]` determines the trade-off between the ranking objective
+    and the regresson objective. If :math:`r = 1` it reduces to the ranking
+    objective, and if :math:`r = 0` to the regression objective. If the regression
+    objective is used, it is advised to log-transform the survival/censoring
+    time first.
 
     Parameters
     ----------
@@ -410,19 +436,19 @@ class FastSurvivalSVM(BaseEstimator):
         is performed. A non-zero value is only allowed if optimizer is one of 'avltree', 'PRSVM',
         or 'rbtree'.
 
-    kernel: "linear" | "poly" | "rbf" | "sigmoid" | "cosine" | "precomputed"
+    kernel : "linear" | "poly" | "rbf" | "sigmoid" | "cosine" | "precomputed"
         Kernel.
         Default: "linear"
 
     fit_intercept : boolean, optional (default=False)
-        Whether to calculate an intercept for the regression model. If set to False, no intercept
+        Whether to calculate an intercept for the regression model. If set to ``False``, no intercept
         will be calculated. Has no effect if ``rank_ratio = 1``, i.e., only ranking is performed.
 
     degree : int, default=3
         Degree for poly kernels. Ignored by other kernels.
 
     gamma : float, optional
-        Kernel coefficient for rbf and poly kernels. Default: 1/n_features.
+        Kernel coefficient for rbf and poly kernels. Default: ``1/n_features``.
         Ignored by other kernels.
 
     coef0 : float, optional
@@ -442,11 +468,11 @@ class FastSurvivalSVM(BaseEstimator):
         Tolerance for termination. For detailed control, use solver-specific
         options.
 
-    optimizer : string, ['avltree', 'direct-count', 'PRSVM', 'rbtree', 'simple'], optional
+    optimizer : "avltree" | "direct-count" | "PRSVM" | "rbtree" | "simple", optional
         Which optimizer to use. default: avltree
 
-    random_state : int or numpy.random.RandomState instance, optional
-        Random number generator (used to resolve ties of mode is survival).
+    random_state : int or :class:`numpy.random.RandomState` instance, optional
+        Random number generator (used to resolve ties in survival times).
 
     timeit : False or int
         If non-zero value is provided the time it takes for optimization is measured.
@@ -460,6 +486,15 @@ class FastSurvivalSVM(BaseEstimator):
 
     `optimizer_result_`:
         Stats returned by the optimizer. See :class:`scipy.optimize.optimize.OptimizeResult`.
+
+    References
+    ----------
+
+    .. [1] Pölsterl, S., Navab, N., and Katouzian, A.,
+           "Fast Training of Support Vector Machines for Survival Analysis",
+           In Proceedings of the European Conference on Machine Learning and
+           Principles and Practice of Knowledge Discovery in Databases (ECML PKDD),
+           2015.
     """
     def __init__(self, alpha=1, rank_ratio=1.0, kernel="linear", fit_intercept=False,
                  gamma=None, degree=3, coef0=1, kernel_params=None, max_iter=20, verbose=False, tol=None,
@@ -513,16 +548,21 @@ class FastSurvivalSVM(BaseEstimator):
         return optimizer
 
     def fit(self, X, y):
-        """
+        """Build a survival support vector machine model from training data.
+
         Parameters
         ----------
         X : array-like, shape = [n_samples, n_features]
-            Data matrix
+            Data matrix.
 
-        y : array-like, shape = [n_samples] or list of two arrays of same length if ``mode = 'survival'``.
-            Relevance vector with higher values indicating higher relevance.
-            If doing survival analysis, this is a list or tuple with two elements, the first element being
-            a boolean array of event indicators and the second element the observed survival/censoring times.
+        y : structered array, shape = [n_samples]
+            A structured array containing the binary event indicator
+            as first field, and time of event or time of censoring as
+            second field.
+
+        Returns
+        -------
+        self
         """
         if self.alpha <= 0:
             raise ValueError("alpha must be positive")

@@ -22,8 +22,9 @@ from ..util import check_arrays_survival
 
 
 class NaiveSurvivalSVM(LinearSVC):
-    """Naive version of RankSVM, which uses regular linear support vector classifier.
+    """Naive version of Survival Support Vector Machine.
 
+    Uses regular linear support vector classifier.
     A new set of samples is created by building the difference between any two feature
     vectors in the original data, thus this version requires `O(n_samples^2)` space.
 
@@ -60,6 +61,18 @@ class NaiveSurvivalSVM(LinearSVC):
 
     max_iter : int, (default=1000)
         The maximum number of iterations to be run.
+
+    References
+    ----------
+
+    .. [1] Evers, L., Messow, C.M.,
+           "Sparse kernel methods for high-dimensional survival data",
+           Bioinformatics 24(14), 1632-8, 2008.
+
+    .. [2] Van Belle, V., Pelckmans, K., Suykens, J.A., Van Huffel, S.,
+           "Survival SVM: a practical scalable algorithm",
+           In: Proc. of 16th European Symposium on Artificial Neural Networks,
+           89-94, 2008.
     """
     def __init__(self, penalty='l2', loss='squared_hinge', dual=False, tol=1e-4,
                  alpha=1.0, verbose=0, random_state=None, max_iter=1000):
@@ -102,16 +115,21 @@ class NaiveSurvivalSVM(LinearSVC):
         return x_pairs, y_pairs
 
     def fit(self, X, y):
-        """
+        """Build a survival support vector machine model from training data.
+
         Parameters
         ----------
         X : array-like, shape = [n_samples, n_features]
-            Data matrix
+            Data matrix.
 
-        y : array-like, shape = [n_samples] or list of two arrays of same length if ``mode = 'survival'``.
-            Relevance vector with higher values indicating higher relevance.
-            If doing survival analysis, this is a list or tuple with two elements, the first element being
-            a boolean array of event indicators and the second element the observed survival/censoring times.
+        y : structered array, shape = [n_samples]
+            A structured array containing the binary event indicator
+            as first field, and time of event or time of censoring as
+            second field.
+
+        Returns
+        -------
+        self
         """
         random_state = check_random_state(self.random_state)
 
@@ -121,4 +139,18 @@ class NaiveSurvivalSVM(LinearSVC):
         return super().fit(x_pairs, y_pairs)
 
     def predict(self, X):
+        """Rank samples according to survival times
+
+        Lower ranks indicate shorter survival, higher ranks longer survival.
+
+        Parameters
+        ----------
+        X : array-like of shape = [n_samples, n_features]
+            The input samples.
+
+        Returns
+        -------
+        y : array of shape = [n_samples]
+            Predicted ranks.
+        """
         return -self.decision_function(X)

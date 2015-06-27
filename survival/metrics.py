@@ -65,8 +65,10 @@ def concordance_index_censored(event_indicator, event_time, estimate):
 
     References
     ----------
-    Harrell et al. (1996). Multivariable prognostic models: issues in developing models, evaluating
-    assumptions and adequacy, and measuring and reducing errors. Statistics in Medicine, 15(4), 361–87.
+    .. [1] Harrell, F.E., Califf, R.M., Pryor, D.B., Lee, K.L., Rosati, R.A,
+           "Multivariable prognostic models: issues in developing models,
+           evaluating assumptions and adequacy, and measuring and reducing errors",
+           Statistics in Medicine, 15(4), 361-87, 1996.
     """
     check_consistent_length(event_indicator, event_time, estimate)
     event_indicator = check_array(event_indicator, ensure_2d=False)

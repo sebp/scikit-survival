@@ -42,7 +42,7 @@ def standardize_column(series_or_array, with_std=True):
 
 def standardize(table, with_std=True):
     """
-    Perform Z-Normalization on each numeric column of the given table
+    Perform Z-Normalization on each numeric column of the given table.
 
     Parameters
     ----------
@@ -50,7 +50,13 @@ def standardize(table, with_std=True):
         Data to standardize.
 
     with_std : bool, default=True
-        If ``False`` data is only centered and not converted to unit variance..
+        If ``False`` data is only centered and not converted to unit variance.
+
+    Returns
+    -------
+    normalized : pandas.DataFrame
+        Table with numeric columns normalized.
+        Categorical columns in the input table remain unchanged.
     """
     if isinstance(table, pandas.DataFrame):
         cat_columns = table.select_dtypes(include=['category']).columns
@@ -86,9 +92,24 @@ def _encode_categorical_series(series, allow_drop=True):
 
 def encode_categorical(table, **kwargs):
     """
-    Encode categorical columns with M categories into M-1 column according tot he one-hot scheme
-    """
+    Encode categorical columns with `M` categories into `M-1` columns according
+    to the one-hot scheme.
 
+    Parameters
+    ----------
+    table : pandas.DataFrame
+        Table with categorical columns to encode.
+
+    allow_drop : boolean, optional, default=True
+        Whether to allow dropping categorical columns that only consistent
+        of a single category.
+
+    Returns
+    -------
+    encoded : pandas.DataFrame
+        Table with categorical columns encoded as numeric.
+        Numeric columns in the input table remain unchanged.
+    """
     if isinstance(table, pandas.Series):
         return _encode_categorical_series(table, **kwargs)
     else:
@@ -131,7 +152,20 @@ def _get_dummies_1d(data, allow_drop=True):
 
 
 def categorical_to_numeric(table):
+    """Encode categorical columns to numeric by converting each category to
+    an integer value.
 
+    Parameters
+    ----------
+    table : pandas.DataFrame
+        Table with categorical columns to encode.
+
+    Returns
+    -------
+    encoded : pandas.DataFrame
+        Table with categorical columns encoded as numeric.
+        Numeric columns in the input table remain unchanged.
+    """
     def transform(column):
         if is_categorical_dtype(column.dtype):
             return column.cat.codes
