@@ -30,7 +30,6 @@ def configuration(parent_package='', top_path=None):
                        quiet=True)
 
     config.add_subpackage('survival')
-    config.add_data_dir('tests')
 
     return config
 

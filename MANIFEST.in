@@ -1,6 +1,9 @@
-include include MANIFEST.in
+include README.md COPYING MANIFEST.in requirements.txt
+recursive-include data *.arff
 recursive-include survival *.c *.h *.pyx *.pxd
-prune doc/build
-prune doc/source/generated
+recursive-include examples *.py *.ipynb
+recursive-include doc *.py *.rst Makefile
+prune doc/_build
+prune doc/generated
 prune */__pycache__
 global-exclude *.pyc *~ *.bak *.swp *.pyo
