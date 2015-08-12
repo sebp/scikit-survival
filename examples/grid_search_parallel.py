@@ -151,7 +151,7 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--dataset',
                         choices=list(DATASETS.keys()),
                         required=True, help="Name of dataset to load")
-    parser.add_argument('--base-dir', default=".", help="Path to directory containing datasets")
+    parser.add_argument('--base-dir', default="data", help="Path to directory containing datasets")
     parser.add_argument('-p', '--profile', default='default', help="Name of IPython profile to use")
 
     args = parser.parse_args()
