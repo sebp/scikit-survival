@@ -1,6 +1,7 @@
 # Fast Training of Support Vector Machines for Survival Analysis
 
 [![Build Status](https://travis-ci.org/tum-camp/survival-support-vector-machine.svg)](https://travis-ci.org/tum-camp/survival-support-vector-machine)
+[![DOI](https://zenodo.org/badge/16868/tum-camp/survival-support-vector-machine.svg)](https://zenodo.org/badge/latestdoi/16868/tum-camp/survival-support-vector-machine)
 
 This repository contains an efficient implementation of *Survival Support
 Vector Machines* as proposed in
