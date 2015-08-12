@@ -144,7 +144,7 @@ if __name__ == '__main__':
     import argparse
     import sys
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="Perform grid search on specified dataset using specified method.")
     parser.add_argument('-m', '--method',
                         choices=['l1', 'l2_ranking', 'l2_regression', 'l2_ranking_regression'],
                         required=True, help="Name of method to evaluate")
