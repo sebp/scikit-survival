@@ -7,9 +7,10 @@ This repository contains an efficient implementation of *Survival Support
 Vector Machines* as proposed in
 
 > Pölsterl, S., Navab, N., and Katouzian, A.,
-> *Fast Training of Support Vector Machines for Survival Analysis*,
+> *[Fast Training of Support Vector Machines for Survival Analysis](http://link.springer.com/chapter/10.1007/978-3-319-23525-7_15)*,
 > In Proceedings of the European Conference on Machine Learning and
-> Principles and Practice of Knowledge Discovery in Databases (ECML PKDD), 2015
+> Principles and Practice of Knowledge Discovery in Databases (ECML PKDD),
+> Lecture Notes in Computer Science, vol. 9285, pp. 243-259 (2015)
 
 ## Requirements
 
