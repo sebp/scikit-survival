@@ -8,6 +8,7 @@ Linear Models
 .. autosummary::
     :toctree: generated/
 
+    CoxnetSurvivalAnalysis
     CoxPHSurvivalAnalysis
     IPCRidge
 
