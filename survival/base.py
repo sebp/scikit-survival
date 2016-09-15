@@ -10,25 +10,13 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import numpy
 
 
-def configuration(parent_package='', top_path=None):
-    from numpy.distutils.misc_util import Configuration
+class SurvivalAnalysisMixin(object):
 
-    config = Configuration('svm', parent_package, top_path)
+    def score(self, X, y):
+        from .metrics import concordance_index_censored
+        name_event, name_time = y.dtype.names
 
-    config.add_extension('_prsvm',
-                         sources=['_prsvm.c'],
-                         include_dirs=[numpy.get_include()])
-
-    config.add_extension('_minlip',
-                         sources=['_minlip.c'],
-                         include_dirs=[numpy.get_include()])
-
-    return config
-
-
-if __name__ == '__main__':
-    from numpy.distutils.core import setup
-    setup(**configuration(top_path='').todict())
+        result = concordance_index_censored(y[name_event], y[name_time], self.predict(X))
+        return result[0]
