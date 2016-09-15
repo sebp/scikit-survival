@@ -16,12 +16,12 @@ import numpy
 from scipy.misc import comb
 from sklearn.svm import LinearSVC
 from sklearn.utils import check_random_state
-from sklearn.utils.validation import check_X_y
 
+from ..base import SurvivalAnalysisMixin
 from ..util import check_arrays_survival
 
 
-class NaiveSurvivalSVM(LinearSVC):
+class NaiveSurvivalSVM(LinearSVC, SurvivalAnalysisMixin):
     """Naive version of Survival Support Vector Machine.
 
     Uses regular linear support vector classifier.
@@ -122,7 +122,7 @@ class NaiveSurvivalSVM(LinearSVC):
         X : array-like, shape = [n_samples, n_features]
             Data matrix.
 
-        y : structered array, shape = [n_samples]
+        y : structured array, shape = [n_samples]
             A structured array containing the binary event indicator
             as first field, and time of event or time of censoring as
             second field.
