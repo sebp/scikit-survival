@@ -15,6 +15,7 @@ def configuration(parent_package='', top_path=None):
 
     config = Configuration('survival', parent_package, top_path)
     config.add_subpackage('bintrees')
+    config.add_subpackage('kernels')
     config.add_subpackage('svm')
 
     return config
