@@ -12,31 +12,30 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from abc import ABCMeta, abstractmethod, abstractproperty
 from sklearn.base import BaseEstimator
-from sklearn.decomposition import KernelPCA
+from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.utils import check_X_y, check_array, check_consistent_length, check_random_state
 from sklearn.utils.extmath import safe_sparse_dot, squared_norm, fast_dot
 
 from scipy.optimize import minimize
-import six
 
 import numpy
 import numexpr
 import warnings
 
 from ._prsvm import survival_constraints_simple, survival_constraints_with_support_vectors
+from ..base import SurvivalAnalysisMixin
 from ..bintrees import AVLTree, RBTree
 from ..util import check_arrays_survival
 
 
-class Counter(six.with_metaclass(ABCMeta, object)):
+class Counter(object, metaclass=ABCMeta):
     @abstractmethod
     def __init__(self, x, y, status, time=None):
         self.x, self.y = check_X_y(x, y)
 
-        if not numpy.issubdtype(y.dtype, numpy.integer):
-            raise TypeError("y vector must have integer type, but was {0}".format(y.dtype))
-        if y.min() != 0:
-            raise ValueError("minimum element of y vector must be 0")
+        assert numpy.issubdtype(y.dtype, numpy.integer), \
+            "y vector must have integer type, but was {0}".format(y.dtype)
+        assert y.min() == 0, "minimum element of y vector must be 0"
 
         if time is None:
             self.status = check_array(status, dtype=bool, ensure_2d=False)
@@ -49,15 +48,11 @@ class Counter(six.with_metaclass(ABCMeta, object)):
         self.eps = numpy.finfo(self.x.dtype).eps
 
     def update_sort_order(self, w):
-        self.xw = numpy.dot(self.x, w)
-        order = self.xw.argsort(kind='mergesort')
-        self.xw = self.xw[order]
-        self.x = self.x[order]
-        self.y = self.y[order]
-        self.status = self.status[order]
-        if hasattr(self, 'time'):
-            self.time = self.time[order]
-        return order
+        xw = numpy.dot(self.x, w)
+        order = xw.argsort(kind='mergesort')
+        self.xw = xw[order]
+        self.order = order
+        return xw
 
     @abstractmethod
     def calculate(self, v):
@@ -89,11 +84,13 @@ class OrderStatisticTreeSurvivalCounter(Counter):
         self._tree_class = tree_class
 
     def calculate(self, v):
-        # self.x is already sorted by call to self.update_sort_order,
-        # therefore x * v is as well
+        # only self.xw is sorted, for everything else use self.order
+        # the order of return values is with respect to original order of samples, NOT self.order
         xv = numpy.dot(self.x, v)
 
-        n_samples = len(self.xw)
+        od = self.order
+
+        n_samples = self.x.shape[0]
         l_plus = numpy.zeros(n_samples, dtype=int)
         l_minus = numpy.zeros(n_samples, dtype=int)
         xv_plus = numpy.zeros(n_samples, dtype=float)
@@ -103,26 +100,26 @@ class OrderStatisticTreeSurvivalCounter(Counter):
         tree = self._tree_class(n_samples)
         for i in range(n_samples):
             while j < n_samples and 1 - self.xw[j] + self.xw[i] > 0:
-                tree.insert(self.y[j], xv[j])
+                tree.insert(self.y[od[j]], xv[od[j]])
                 j += 1
 
-            # larger (root of t, y[i])
-            count, vec_sum = tree.count_larger_with_event(self.y[i], self.status[i])
-            l_plus[i] = count
-            xv_plus[i] = vec_sum
+            # larger (root of t, y[od[i]])
+            count, vec_sum = tree.count_larger_with_event(self.y[od[i]], self.status[od[i]])
+            l_plus[od[i]] = count
+            xv_plus[od[i]] = vec_sum
 
         tree = self._tree_class(n_samples)
         j = n_samples - 1
         for i in range(j, -1, -1):
             while j >= 0 and 1 - self.xw[i] + self.xw[j] > 0:
-                if self.status[j]:
-                    tree.insert(self.y[j], xv[j])
+                if self.status[od[j]]:
+                    tree.insert(self.y[od[j]], xv[od[j]])
                 j -= 1
 
-            # smaller (root of T, y[i])
-            count, vec_sum = tree.count_smaller(self.y[i])
-            l_minus[i] = count
-            xv_minus[i] = vec_sum
+            # smaller (root of T, y[od[i]])
+            count, vec_sum = tree.count_smaller(self.y[od[i]])
+            l_minus[od[i]] = count
+            xv_minus[od[i]] = vec_sum
 
         return l_plus, xv_plus, l_minus, xv_minus
 
@@ -147,6 +144,8 @@ class SurvivalCounter(Counter):
         xv_minus = numpy.zeros(n_samples, dtype=float)
         indices = self._count_values()
 
+        od = self.order
+
         for relevance in range(self.n_relevance_levels):
             j = 0
             count_plus = 0
@@ -156,69 +155,100 @@ class SurvivalCounter(Counter):
             xv_count_minus = numpy.dot(self.x.take(indices.get(relevance, []), axis=0), v).sum()
 
             for i in range(n_samples):
-                if self.y[i] != relevance or not self.status[i]:
+                if self.y[od[i]] != relevance or not self.status[od[i]]:
                     continue
 
                 while j < n_samples and 1 - self.xw[j] + self.xw[i] > 0:
-                    if self.y[j] > relevance:
+                    if self.y[od[j]] > relevance:
                         count_plus += 1
-                        xv_count_plus += numpy.dot(self.x[j, :], v)
-                        l_minus[j] += count_minus
-                        xv_minus[j] += xv_count_minus
+                        xv_count_plus += numpy.dot(self.x[od[j], :], v)
+                        l_minus[od[j]] += count_minus
+                        xv_minus[od[j]] += xv_count_minus
 
                     j += 1
 
-                l_plus[i] = count_plus
-                xv_plus[i] += xv_count_plus
+                l_plus[od[i]] = count_plus
+                xv_plus[od[i]] += xv_count_plus
                 count_minus -= 1
-                xv_count_minus -= numpy.dot(self.x.take(i, axis=0), v)
+                xv_count_minus -= numpy.dot(self.x.take(od[i], axis=0), v)
 
         return l_plus, xv_plus, l_minus, xv_minus
 
 
-class RankSVMOptimizer(six.with_metaclass(ABCMeta, object)):
+class RankSVMOptimizer(object, metaclass=ABCMeta):
     """Abstract base class for all optimizers"""
     def __init__(self, alpha, rank_ratio, timeit=False):
         self.alpha = alpha
         self.rank_ratio = rank_ratio
         self.timeit = timeit
 
+        self._last_w = None
+        # cache gradient computations
+        self._last_gradient_w = None
+        self._last_gradient = None
+
     @abstractmethod
     def _objective_func(self, w):
-        pass
+        """Evaluate objective function at w"""
 
     @abstractmethod
     def _update_constraints(self, w):
-        pass
+        """Update constraints"""
 
     @abstractmethod
     def _gradient_func(self, w):
-        pass
+        """Evaluate gradient at w"""
 
     @abstractmethod
     def _hessian_func(self, w, s):
-        pass
+        """Evaluate Hessian at w"""
 
     @abstractproperty
-    def n_features(self):
-        pass
+    def n_coefficients(self):
+        """Return number of coefficients (includes intercept)"""
+
+    def _update_constraints_if_necessary(self, w):
+        needs_update = (w != self._last_w).any()
+        if needs_update:
+            self._update_constraints(w)
+            self._last_w = w.copy()
+        return needs_update
+
+    def _do_objective_func(self, w):
+        self._update_constraints_if_necessary(w)
+        return self._objective_func(w)
+
+    def _do_gradient_func(self, w):
+        if self._last_gradient_w is not None and (w == self._last_gradient_w).all():
+            return self._last_gradient
+
+        self._update_constraints_if_necessary(w)
+        self._last_gradient_w = w.copy()
+        self._last_gradient = self._gradient_func(w)
+        return self._last_gradient
+
+    def _init_coefficients(self):
+        w = numpy.zeros(self.n_coefficients)
+        self._update_constraints(w)
+        self._last_w = w.copy()
+        return w
 
     def run(self, **kwargs):
-        w = numpy.zeros(self.n_features)
+        w = self._init_coefficients()
 
         timings = None
         if self.timeit:
             import timeit
 
             def _inner():
-                return minimize(self._objective_func, w, method='newton-cg', callback=self._update_constraints,
-                                jac=self._gradient_func, hessp=self._hessian_func, **kwargs)
+                return minimize(self._do_objective_func, w, method='newton-cg',
+                                jac=self._do_gradient_func, hessp=self._hessian_func, **kwargs)
 
             timer = timeit.Timer(_inner)
             timings = timer.repeat(self.timeit, number=1)
 
-        opt_result = minimize(self._objective_func, w, method='newton-cg', callback=self._update_constraints,
-                              jac=self._gradient_func, hessp=self._hessian_func, **kwargs)
+        opt_result = minimize(self._do_objective_func, w, method='newton-cg',
+                              jac=self._do_gradient_func, hessp=self._hessian_func, **kwargs)
         opt_result['timings'] = timings
 
         return opt_result
@@ -234,11 +264,10 @@ class SimpleOptimizer(RankSVMOptimizer):
         self.L = numpy.ones(self.constraints.shape[0])
 
     @property
-    def n_features(self):
+    def n_coefficients(self):
         return self.data_x.shape[1]
 
     def _objective_func(self, w):
-        self._update_constraints(w)
         val = 0.5 * squared_norm(w) + 0.5 * self.alpha * squared_norm(self.L)
         return val
 
@@ -272,12 +301,10 @@ class PRSVMOptimizer(RankSVMOptimizer):
         self._constraints = lambda w: survival_constraints_with_support_vectors(self.data_y, w)
 
     @property
-    def n_features(self):
+    def n_coefficients(self):
         return self.data_x.shape[1]
 
     def _objective_func(self, w):
-        self._update_constraints(w)
-
         z = self.Aw.shape[0] + squared_norm(self.AXw) - 2. * self.AXw.sum()
         val = 0.5 * squared_norm(w) + 0.5 * self.alpha * z
         return val
@@ -312,6 +339,10 @@ class LargeScaleOptimizer(RankSVMOptimizer):
     rank_ratio : float
         Trade-off between regression and ranking objectives.
 
+    fit_intercept : bool
+        Whether to fit an intercept. Only used if regression objective
+        is optimized (rank_ratio < 1.0).
+
     counter : object
         Instance of :class:`Counter` subclass.
 
@@ -320,79 +351,366 @@ class LargeScaleOptimizer(RankSVMOptimizer):
     Lee, C.-P., & Lin, C.-J. (2014). Supplement Materials for "Large-scale linear RankSVM". Neural Computation, 26(4),
         781–817. doi:10.1162/NECO_a_00571
     """
-    def __init__(self, alpha, rank_ratio, counter, timeit=False):
+    def __init__(self, alpha, rank_ratio, fit_intercept, counter, timeit=False):
         super().__init__(alpha, rank_ratio, timeit)
 
         self._counter = counter
         self._regr_penalty = (1.0 - rank_ratio) * alpha
         self._rank_penalty = rank_ratio * alpha
         self._has_time = hasattr(self._counter, 'time') and self._regr_penalty > 0
-
-        self._last_w = None
-        self._last_gradient = None
+        self._fit_intercept = fit_intercept if self._has_time else False
 
     @property
-    def n_features(self):
-        return self._counter.x.shape[1]
+    def n_coefficients(self):
+        n = self._counter.x.shape[1]
+        if self._fit_intercept:
+            n += 1
+        return n
+
+    def _init_coefficients(self):
+        w = super()._init_coefficients()
+        if self._fit_intercept:
+            w[0] = self._counter.time.mean()
+        return w
+
+    def _split_coefficents(self, w):
+        """Split into intercept/bias and feature-specific coefficients"""
+        if self._fit_intercept:
+            bias = w[0]
+            wf = w[1:]
+        else:
+            bias = 0.0
+            wf = w
+        return bias, wf
 
     def _objective_func(self, w):
-        self._update_constraints(w)
+        bias, wf = self._split_coefficents(w)
 
-        l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(w)
-        x = self._counter.x
+        l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(wf)
 
-        xs = numpy.dot(x, w)
-        val = 0.5 * squared_norm(w)
+        xw = self._xw
+        val = 0.5 * squared_norm(wf)
         if self._has_time:
-            val += 0.5 * self._regr_penalty * squared_norm(self.y_compressed
-                                                           - xs.compress(self.regr_mask, axis=0))
+            val += 0.5 * self._regr_penalty * squared_norm(self.y_compressed - bias
+                                                           - xw.compress(self.regr_mask, axis=0))
 
         val += 0.5 * self._rank_penalty * numexpr.evaluate(
-            'sum(xs * ((l_plus + l_minus) * xs - xv_plus - xv_minus - 2 * (l_minus - l_plus)) + l_minus)')
+            'sum(xw * ((l_plus + l_minus) * xw - xv_plus - xv_minus - 2 * (l_minus - l_plus)) + l_minus)')
 
         return val
 
     def _update_constraints(self, w):
-        self._counter.update_sort_order(w)
+        bias, wf = self._split_coefficents(w)
+
+        self._xw = self._counter.update_sort_order(wf)
 
         if self._has_time:
-            pred_time = self._counter.time - self._counter.xw
+            pred_time = self._counter.time - self._xw - bias
             self.regr_mask = (pred_time > 0) | self._counter.status
             self.y_compressed = self._counter.time.compress(self.regr_mask, axis=0)
 
     def _gradient_func(self, w):
-        if self._last_w is not None and (w == self._last_w).all():
-            return self._last_gradient
+        bias, wf = self._split_coefficents(w)
 
-        l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(w)
+        l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(wf)
         x = self._counter.x
 
-        xs = numpy.dot(x, w)
-        z = numexpr.evaluate('(l_plus + l_minus) * xs - xv_plus - xv_minus - l_minus + l_plus')
+        xw = self._xw
+        z = numexpr.evaluate('(l_plus + l_minus) * xw - xv_plus - xv_minus - l_minus + l_plus')
 
+        grad = wf + self._rank_penalty * fast_dot(x.T, z)
         if self._has_time:
-            w = w + self._regr_penalty * (fast_dot(x.T, xs)
-                                          - fast_dot(x.compress(self.regr_mask, axis=0).T, self.y_compressed))
+            xc = x.compress(self.regr_mask, axis=0)
+            xcs = numpy.dot(xc, wf)
+            grad += self._regr_penalty * (fast_dot(xc.T, xcs) + xc.sum(axis=0) * bias - fast_dot(xc.T, self.y_compressed))
 
-        self._last_gradient = w + self._rank_penalty * fast_dot(x.T, z)
-        self._last_w = w
-        return self._last_gradient
+            # intercept
+            if self._fit_intercept:
+                grad_intercept = self._regr_penalty * (xcs.sum() + xc.shape[0] * bias - self.y_compressed.sum())
+                grad = numpy.concatenate(([grad_intercept], grad))
+
+        return grad
 
     def _hessian_func(self, w, s):
-        l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(s)
+        s_bias, s_feat = self._split_coefficents(s)
+
+        l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(s_feat)
         x = self._counter.x
 
-        xs = numpy.dot(x, s)
+        xs = numpy.dot(x, s_feat)
         xs = numexpr.evaluate('(l_plus + l_minus) * xs - xv_plus - xv_minus')
 
+        hessp = s_feat + self._rank_penalty * fast_dot(x.T, xs)
         if self._has_time:
-            s = s + self._regr_penalty * fast_dot(x.T, numpy.dot(x, s))
+            xc = x.compress(self.regr_mask, axis=0)
+            hessp += self._regr_penalty * fast_dot(xc.T, numpy.dot(xc, s_feat))
 
-        return s + self._rank_penalty * fast_dot(x.T, xs)
+            # intercept
+            if self._fit_intercept:
+                xsum = xc.sum(axis=0)
+                hessp += self._regr_penalty * xsum * s_bias
+                hessp_intercept = self._regr_penalty * xc.shape[0] * s_bias + self._regr_penalty * numpy.dot(xsum, s_feat)
+                hessp = numpy.concatenate(([hessp_intercept], hessp))
+
+        return hessp
 
 
-class FastSurvivalSVM(BaseEstimator):
-    """Efficient Training of Survival Support Vector Machine
+class NonlinearLargeScaleOptimizer(RankSVMOptimizer):
+    """Optimizer that does not explicitly create matrix of constraints
+
+    Parameters
+    ----------
+    alpha : float
+        Regularization parameter.
+
+    rank_ratio : float
+        Trade-off between regression and ranking objectives.
+
+    counter : object
+        Instance of :class:`Counter` subclass.
+
+    References
+    ----------
+    Lee, C.-P., & Lin, C.-J. (2014). Supplement Materials for "Large-scale linear RankSVM". Neural Computation, 26(4),
+        781–817. doi:10.1162/NECO_a_00571
+    """
+    def __init__(self, alpha, rank_ratio, fit_intercept, counter, timeit=False):
+        super().__init__(alpha, rank_ratio, timeit)
+
+        self._counter = counter
+        self._fit_intercept = fit_intercept
+        self._rank_penalty = rank_ratio * alpha
+        self._regr_penalty = (1.0 - rank_ratio) * alpha
+        self._has_time = hasattr(self._counter, 'time') and self._regr_penalty > 0
+        self._fit_intercept = fit_intercept if self._has_time else False
+
+    @property
+    def n_coefficients(self):
+        n = self._counter.x.shape[0]
+        if self._fit_intercept:
+            n += 1
+        return n
+
+    def _init_coefficients(self):
+        w = super()._init_coefficients()
+        if self._fit_intercept:
+            w[0] = self._counter.time.mean()
+        return w
+
+    def _split_coefficents(self, w):
+        """Split into intercept/bias and feature-specific coefficients"""
+        if self._fit_intercept:
+            bias = w[0]
+            wf = w[1:]
+        else:
+            bias = 0.0
+            wf = w
+        return bias, wf
+
+    def _update_constraints(self, beta_bias):
+        bias, beta = self._split_coefficents(beta_bias)
+
+        self._Kw = self._counter.update_sort_order(beta)
+
+        if self._has_time:
+            pred_time = self._counter.time - self._Kw - bias
+            self.regr_mask = (pred_time > 0) | self._counter.status
+            self.y_compressed = self._counter.time.compress(self.regr_mask, axis=0)
+
+    def _objective_func(self, beta_bias):
+        bias, beta = self._split_coefficents(beta_bias)
+
+        Kw = self._Kw
+
+        val = 0.5 * numpy.dot(beta, Kw)
+        if self._has_time:
+            val += 0.5 * self._regr_penalty * squared_norm(self.y_compressed - bias
+                                                           - Kw.compress(self.regr_mask, axis=0))
+
+        l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(beta)
+        val += 0.5 * self._rank_penalty * numexpr.evaluate(
+            'sum(Kw * ((l_plus + l_minus) * Kw - xv_plus - xv_minus - 2 * (l_minus - l_plus)) + l_minus)')
+
+        return val
+
+    def _gradient_func(self, beta_bias):
+        bias, beta = self._split_coefficents(beta_bias)
+
+        K = self._counter.x
+        Kw = self._Kw
+
+        l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(beta)
+        z = numexpr.evaluate('(l_plus + l_minus) * Kw - xv_plus - xv_minus - l_minus + l_plus')
+
+        gradient = Kw + self._rank_penalty * fast_dot(K, z)
+        if self._has_time:
+            K_comp = K.compress(self.regr_mask, axis=0)
+            K_comp_beta = numpy.dot(K_comp, beta)
+            gradient += self._regr_penalty * (fast_dot(K_comp.T, K_comp_beta)
+                                              + K_comp.sum(axis=0) * bias - fast_dot(K_comp.T, self.y_compressed))
+
+            # intercept
+            if self._fit_intercept:
+                grad_intercept = self._regr_penalty * (K_comp_beta.sum() + K_comp.shape[0] * bias - self.y_compressed.sum())
+                gradient = numpy.concatenate(([grad_intercept], gradient))
+
+        return gradient
+
+    def _hessian_func(self, beta, s):
+        s_bias, s_feat = self._split_coefficents(s)
+
+        K = self._counter.x
+        Ks = numpy.dot(K, s_feat)
+
+        l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(s_feat)
+        xs = numexpr.evaluate('(l_plus + l_minus) * Ks - xv_plus - xv_minus')
+
+        hessian = Ks + self._rank_penalty * fast_dot(K, xs)
+        if self._has_time:
+            K_comp = K.compress(self.regr_mask, axis=0)
+            hessian += self._regr_penalty * fast_dot(K_comp.T, numpy.dot(K_comp, s_feat))
+
+            # intercept
+            if self._fit_intercept:
+                xsum = K_comp.sum(axis=0)
+                hessian += self._regr_penalty * xsum * s_bias
+                hessian_intercept = self._regr_penalty * K_comp.shape[0] * s_bias \
+                                    + self._regr_penalty * numpy.dot(xsum, s_feat)
+                hessian = numpy.concatenate(([hessian_intercept], hessian))
+
+        return hessian
+
+
+class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
+    @abstractmethod
+    def __init__(self, alpha=1, rank_ratio=1.0, fit_intercept=False,
+                 max_iter=20, verbose=False, tol=None,
+                 optimizer=None, random_state=None, timeit=False):
+        self.alpha = alpha
+        self.rank_ratio = rank_ratio
+        self.fit_intercept = fit_intercept
+        self.max_iter = max_iter
+        self.verbose = verbose
+        self.tol = tol
+        self.optimizer = optimizer
+        self.random_state = random_state
+        self.timeit = timeit
+
+        self.coef_ = None
+        self.optimizer_result_ = None
+
+    def _create_optimizer(self, X, y, status):
+        """Samples are ordered by relevance"""
+        if self.optimizer is None:
+            self.optimizer = 'avltree'
+
+        times, ranks = y
+
+        if self.optimizer == 'simple':
+            optimizer = SimpleOptimizer(X, status, self.alpha, self.rank_ratio, timeit=self.timeit)
+        elif self.optimizer == 'PRSVM':
+            optimizer = PRSVMOptimizer(X, status, self.alpha, self.rank_ratio, timeit=self.timeit)
+        elif self.optimizer == 'direct-count':
+            optimizer = LargeScaleOptimizer(self.alpha, self.rank_ratio, self.fit_intercept,
+                                            SurvivalCounter(X, ranks, status, len(ranks), times), timeit=self.timeit)
+        elif self.optimizer == 'rbtree':
+            optimizer = LargeScaleOptimizer(self.alpha, self.rank_ratio, self.fit_intercept,
+                                            OrderStatisticTreeSurvivalCounter(X, ranks, status, RBTree, times),
+                                            timeit=self.timeit)
+        elif self.optimizer == 'avltree':
+            optimizer = LargeScaleOptimizer(self.alpha, self.rank_ratio, self.fit_intercept,
+                                            OrderStatisticTreeSurvivalCounter(X, ranks, status, AVLTree, times),
+                                            timeit=self.timeit)
+        else:
+            raise ValueError('unknown optimizer: {0}'.format(self.optimizer))
+
+        return optimizer
+
+    @abstractmethod
+    def _fit(self, X, time, event, samples_order):
+        """Create and run optimizer"""
+
+    @abstractmethod
+    def predict(self, X):
+        """Predict risk score"""
+
+    def fit(self, X, y):
+        """Build a survival support vector machine model from training data.
+
+        Parameters
+        ----------
+        X : array-like, shape = [n_samples, n_features]
+            Data matrix.
+
+        y : structured array, shape = [n_samples]
+            A structured array containing the binary event indicator
+            as first field, and time of event or time of censoring as
+            second field.
+
+        Returns
+        -------
+        self
+        """
+        X, event, time = check_arrays_survival(X, y)
+
+        if self.alpha <= 0:
+            raise ValueError("alpha must be positive")
+
+        if not (0 <= self.rank_ratio <= 1):
+            raise ValueError("rank_ratio must be in [0; 1]")
+
+        if self.fit_intercept and self.rank_ratio == 1.0:
+            raise ValueError("fit_intercept=True is only meaningful if rank_ratio < 1.0")
+
+        if self.rank_ratio < 1.0:
+            if self.optimizer in {'simple', 'PRSVM'}:
+                raise ValueError("optimizer '%s' does not implement regression objective" % self.optimizer)
+
+            if (time <= 0).any():
+                raise ValueError("observed time contains values smaller or equal to zero")
+
+            # log-transform time
+            time = numpy.log(time)
+            assert numpy.isfinite(time).all()
+
+        random_state = check_random_state(self.random_state)
+        samples_order = BaseSurvivalSVM._argsort_and_resolve_ties(time, random_state)
+
+        opt_result = self._fit(X, time, event, samples_order)
+        coef = opt_result.x
+        if self.fit_intercept:
+            self.coef_ = coef[1:]
+            self.intercept_ = coef[0]
+        else:
+            self.coef_ = coef
+
+        if not opt_result.success:
+            warnings.warn(('Optimization did not converge: ' + opt_result.message), stacklevel=2)
+        self.optimizer_result_ = opt_result
+
+        return self
+
+    @staticmethod
+    def _argsort_and_resolve_ties(time, random_state):
+        """Like numpy.argsort, but resolves ties uniformly at random"""
+        n_samples = len(time)
+        order = numpy.argsort(time, kind="mergesort")
+
+        i = 0
+        while i < n_samples - 1:
+            inext = i + 1
+            while inext < n_samples and time[order[i]] == time[order[inext]]:
+                inext += 1
+
+            if i + 1 != inext:
+                # resolve ties randomly
+                random_state.shuffle(order[i:inext])
+            i = inext
+        return order
+
+
+class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
+    """Efficient Training of linear Survival Support Vector Machine
 
     Training data consists of *n* triplets :math:`(\mathbf{x}_i, y_i, \delta_i)`,
     where :math:`\mathbf{x}_i` is a *d*-dimensional feature vector, :math:`y_i > 0`
@@ -422,8 +740,8 @@ class FastSurvivalSVM(BaseEstimator):
     :math:`r \in [0; 1]` determines the trade-off between the ranking objective
     and the regresson objective. If :math:`r = 1` it reduces to the ranking
     objective, and if :math:`r = 0` to the regression objective. If the regression
-    objective is used, it is advised to log-transform the survival/censoring
-    time first.
+    objective is used, survival/censoring times are log-transform and thus cannot be
+    zero or negative.
 
     Parameters
     ----------
@@ -435,28 +753,6 @@ class FastSurvivalSVM(BaseEstimator):
         If ``rank_ratio = 1``, only ranking is performed, if ``rank_ratio = 0``, only regression
         is performed. A non-zero value is only allowed if optimizer is one of 'avltree', 'PRSVM',
         or 'rbtree'.
-
-    kernel : "linear" | "poly" | "rbf" | "sigmoid" | "cosine" | "precomputed"
-        Kernel.
-        Default: "linear"
-
-    fit_intercept : boolean, optional (default=False)
-        Whether to calculate an intercept for the regression model. If set to ``False``, no intercept
-        will be calculated. Has no effect if ``rank_ratio = 1``, i.e., only ranking is performed.
-
-    degree : int, default=3
-        Degree for poly kernels. Ignored by other kernels.
-
-    gamma : float, optional
-        Kernel coefficient for rbf and poly kernels. Default: ``1/n_features``.
-        Ignored by other kernels.
-
-    coef0 : float, optional
-        Independent term in poly and sigmoid kernels.
-        Ignored by other kernels.
-
-    kernel_params : mapping of string to any, optional
-        Parameters (keyword arguments) and values for kernel passed as call
 
     max_iter : int, optional
         Maximum number of iterations to perform in Newton optimization (default: 20)
@@ -496,130 +792,21 @@ class FastSurvivalSVM(BaseEstimator):
            Principles and Practice of Knowledge Discovery in Databases (ECML PKDD),
            2015.
     """
-    def __init__(self, alpha=1, rank_ratio=1.0, kernel="linear", fit_intercept=False,
-                 gamma=None, degree=3, coef0=1, kernel_params=None, max_iter=20, verbose=False, tol=None,
+    def __init__(self, alpha=1, rank_ratio=1.0, fit_intercept=False,
+                 max_iter=20, verbose=False, tol=None,
                  optimizer=None, random_state=None, timeit=False):
-        self.alpha = alpha
-        self.rank_ratio = rank_ratio
-        self.kernel = kernel
-        self.fit_intercept = fit_intercept
-        self.gamma = gamma
-        self.degree = degree
-        self.coef0 = coef0
-        self.kernel_params = kernel_params
-        self.max_iter = max_iter
-        self.verbose = verbose
-        self.tol = tol
-        self.optimizer = optimizer
-        self.random_state = random_state
-        self.timeit = timeit
+        super().__init__(alpha=alpha, rank_ratio=rank_ratio, fit_intercept=fit_intercept,
+                         max_iter=max_iter, verbose=verbose, tol=tol,
+                         optimizer=optimizer, random_state=random_state,
+                         timeit=timeit)
 
-        self.coef_ = None
-        self.optimizer_result_ = None
-
-    def _create_optimizer(self, X, y, status):
-        """Samples are ordered by relevance"""
-        if self.optimizer is None:
-            self.optimizer = 'avltree'
-
-        if self.fit_intercept:
-            X = numpy.column_stack((numpy.ones(X.shape[0]), X))
-
-        times, ranks = y
-
-        if self.optimizer == 'simple':
-            optimizer = SimpleOptimizer(X, status, self.alpha, self.rank_ratio, timeit=self.timeit)
-        elif self.optimizer == 'PRSVM':
-            optimizer = PRSVMOptimizer(X, status, self.alpha, self.rank_ratio, timeit=self.timeit)
-        elif self.optimizer == 'direct-count':
-            optimizer = LargeScaleOptimizer(self.alpha, self.rank_ratio,
-                                            SurvivalCounter(X, ranks, status, len(ranks), times), timeit=self.timeit)
-        elif self.optimizer == 'rbtree':
-            optimizer = LargeScaleOptimizer(self.alpha, self.rank_ratio,
-                                            OrderStatisticTreeSurvivalCounter(X, ranks, status, RBTree, times),
-                                            timeit=self.timeit)
-        elif self.optimizer == 'avltree':
-            optimizer = LargeScaleOptimizer(self.alpha, self.rank_ratio,
-                                            OrderStatisticTreeSurvivalCounter(X, ranks, status, AVLTree, times),
-                                            timeit=self.timeit)
-        else:
-            raise ValueError('unknown optimizer: {0}'.format(self.optimizer))
-
-        return optimizer
-
-    def fit(self, X, y):
-        """Build a survival support vector machine model from training data.
-
-        Parameters
-        ----------
-        X : array-like, shape = [n_samples, n_features]
-            Data matrix.
-
-        y : structered array, shape = [n_samples]
-            A structured array containing the binary event indicator
-            as first field, and time of event or time of censoring as
-            second field.
-
-        Returns
-        -------
-        self
-        """
-        if self.alpha <= 0:
-            raise ValueError("alpha must be positive")
-
-        if not (0 <= self.rank_ratio <= 1):
-            raise ValueError("rank_ratio must be in [0; 1]")
-
-        if self.rank_ratio < 1.0 and self.optimizer in {'simple', 'PRSVM'}:
-            raise ValueError("optimizer '%s' does not implement regression objective" % self.optimizer)
-
-        X, event, time = check_arrays_survival(X, y)
-
-        if self.kernel == 'linear':
-            X_transform = X
-            self.transform_ = None
-        else:
-            self.transform_ = KernelPCA(kernel=self.kernel, gamma=self.gamma, degree=self.degree, coef0=self.coef0,
-                                        kernel_params=self.kernel_params)
-            X_transform = self.transform_.fit_transform(X)
-
-        random_state = check_random_state(self.random_state)
-        samples_order = FastSurvivalSVM._argsort_and_resolve_ties(time, random_state)
+    def _fit(self, X, time, event, samples_order):
         data_y = (time[samples_order], numpy.arange(len(samples_order)))
         status = event[samples_order]
 
-        optimizer = self._create_optimizer(X_transform[samples_order, :], data_y, status)
+        optimizer = self._create_optimizer(X[samples_order], data_y, status)
         opt_result = optimizer.run(tol=self.tol, options={'maxiter': self.max_iter, 'disp': self.verbose})
-        coef = opt_result.x
-        if self.fit_intercept:
-            self.coef_ = coef[1:]
-            self.intercept_ = coef[0]
-        else:
-            self.coef_ = coef
-
-        if not opt_result.success:
-            warnings.warn(('Optimization did not converge: ' + opt_result.message), stacklevel=2)
-        self.optimizer_result_ = opt_result
-
-        return self
-
-    @staticmethod
-    def _argsort_and_resolve_ties(time, random_state):
-        """Like numpy.argsort, but resolves ties uniformly at random"""
-        n_samples = len(time)
-        order = numpy.argsort(time, kind="mergesort")
-
-        i = 0
-        while i < n_samples - 1:
-            inext = i + 1
-            while inext < n_samples and time[order[i]] == time[order[inext]]:
-                inext += 1
-
-            if i + 1 != inext:
-                # resolve ties randomly
-                random_state.shuffle(order[i:inext])
-            i = inext
-        return order
+        return opt_result
 
     def predict(self, X):
         """Rank samples according to survival times
@@ -636,13 +823,140 @@ class FastSurvivalSVM(BaseEstimator):
         y : array of shape = [n_samples]
             Predicted ranks.
         """
-        if self.transform_ is None:
-            X_transform = X
-        else:
-            X_transform = self.transform_.transform(X)
-
-        val = numpy.dot(X_transform, self.coef_)
+        val = numpy.dot(X, self.coef_)
         if hasattr(self, "intercept_"):
-             val += self.intercept_
+            val += self.intercept_
 
-        return -val
+        # Order by increasing survival time if objective is pure ranking
+        if self.rank_ratio == 1:
+            val *= -1
+        else:
+            # model was fitted on log(time), transform to original scale
+            val = numpy.exp(val)
+
+        return val
+
+
+class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
+    """Efficient Training of non-linear Survival Support Vector Machine using Kernels
+
+    Parameters
+    ----------
+    kernel : "linear" | "poly" | "rbf" | "sigmoid" | "cosine" | "precomputed"
+        Kernel.
+        Default: "linear"
+
+    fit_intercept : boolean, optional (default=False)
+        Whether to calculate an intercept for the regression model. If set to ``False``, no intercept
+        will be calculated. Has no effect if ``rank_ratio = 1``, i.e., only ranking is performed.
+
+    degree : int, default=3
+        Degree for poly kernels. Ignored by other kernels.
+
+    gamma : float, optional
+        Kernel coefficient for rbf and poly kernels. Default: ``1/n_features``.
+        Ignored by other kernels.
+
+    coef0 : float, optional
+        Independent term in poly and sigmoid kernels.
+        Ignored by other kernels.
+
+    kernel_params : mapping of string to any, optional
+        Parameters (keyword arguments) and values for kernel passed as call
+
+    Attributes
+    ----------
+    `coef_`:
+        Coefficients of the features in the decision function.
+
+    `fit_X_`:
+        Training data.
+
+    `optimizer_result_`:
+        Stats returned by the optimizer. See :class:`scipy.optimize.optimize.OptimizeResult`.
+
+    """
+    def __init__(self, alpha=1, rank_ratio=1.0, fit_intercept=False, kernel="rbf",
+                 gamma=None, degree=3, coef0=1, kernel_params=None, max_iter=20, verbose=False, tol=None,
+                 optimizer=None, random_state=None, timeit=False):
+        super().__init__(alpha=alpha, rank_ratio=rank_ratio, fit_intercept=fit_intercept,
+                         max_iter=max_iter, verbose=verbose, tol=tol,
+                         optimizer=optimizer, random_state=random_state,
+                         timeit=timeit)
+        self.kernel = kernel
+        self.gamma = gamma
+        self.degree = degree
+        self.coef0 = coef0
+        self.kernel_params = kernel_params
+
+    @property
+    def _pairwise(self):
+        # tell sklearn.cross_validation._safe_split function that we expect kernel matrix
+        return self.kernel == "precomputed"
+
+    def _get_kernel(self, X, Y=None):
+        if callable(self.kernel):
+            params = self.kernel_params or {}
+        else:
+            params = {"gamma": self.gamma,
+                      "degree": self.degree,
+                      "coef0": self.coef0}
+        return pairwise_kernels(X, Y, metric=self.kernel,
+                                filter_params=True, **params)
+
+    def _create_optimizer(self, kernel_mat, y, status):
+        if self.optimizer is None:
+            self.optimizer = 'rbtree'
+
+        times, ranks = y
+
+        if self.optimizer == 'rbtree':
+            optimizer = NonlinearLargeScaleOptimizer(self.alpha, self.rank_ratio, self.fit_intercept,
+                                                     OrderStatisticTreeSurvivalCounter(kernel_mat, ranks, status, RBTree, times),
+                                                     timeit=self.timeit)
+        elif self.optimizer == 'avltree':
+            optimizer = NonlinearLargeScaleOptimizer(self.alpha, self.rank_ratio, self.fit_intercept,
+                                                     OrderStatisticTreeSurvivalCounter(kernel_mat, ranks, status, AVLTree, times),
+                                                     timeit=self.timeit)
+        else:
+            raise ValueError('unknown optimizer: {0}'.format(self.optimizer))
+
+        return optimizer
+
+    def _fit(self, X, time, event, samples_order):
+        # don't reorder X here, because it might be a precomputed kernel matrix
+        kernel_mat = self._get_kernel(X)
+        if (numpy.abs(kernel_mat.T - kernel_mat) > 1e-12).any():
+            raise ValueError('kernel matrix is not symmetric')
+
+        data_y = (time[samples_order], numpy.arange(len(samples_order)))
+        status = event[samples_order]
+
+        optimizer = self._create_optimizer(kernel_mat[numpy.ix_(samples_order, samples_order)], data_y, status)
+        opt_result = optimizer.run(tol=self.tol, options={'maxiter': self.max_iter, 'disp': self.verbose})
+
+        # reorder coefficients according to order in original training data,
+        # i.e., reverse ordering according to samples_order
+        self.fit_X_ = X
+        if self.fit_intercept:
+            opt_result.x[samples_order + 1] = opt_result.x[1:].copy()
+        else:
+            opt_result.x[samples_order] = opt_result.x.copy()
+
+        return opt_result
+
+    def predict(self, X):
+        kernel_mat = self._get_kernel(X, self.fit_X_)
+
+        val = numpy.dot(kernel_mat, self.coef_)
+        if hasattr(self, "intercept_"):
+            val += self.intercept_
+
+        # Order by increasing survival time if objective is pure ranking
+        if self.rank_ratio == 1:
+            val *= -1
+        else:
+            # model was fitted on log(time), transform to original scale
+            val = numpy.exp(val)
+
+        return val
