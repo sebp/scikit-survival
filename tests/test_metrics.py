@@ -9,6 +9,31 @@ WHAS500_DATA_FILE = os.path.join(os.path.dirname(__file__), 'data', 'whas500_pre
 
 
 class TestConcordanceIndex(TestCase):
+    def test_concordance_index_no_censoring_all_correct(self):
+        time = [1, 5, 6, 11, 34, 45, 46, 50]
+        event = numpy.repeat(True, len(time))
+        estimate = numpy.arange(len(time))[::-1]
+
+        c, con, dis, tie_r, tie_t = concordance_index_censored(event, time, estimate)
+        self.assertEqual(28, con)
+        self.assertEqual(0, dis)
+        self.assertEqual(0, tie_r)
+        self.assertEqual(0, tie_t)
+        self.assertEqual(1.0, c)
+
+    def test_concordance_index_no_censoring_all_wrong(self):
+        time = [1, 5, 6, 11, 34, 45, 46, 50]
+        event = numpy.repeat(True, len(time))
+        # order is exactly reversed
+        estimate = numpy.arange(len(time))
+
+        c, con, dis, tie_r, tie_t = concordance_index_censored(event, time, estimate)
+        self.assertEqual(0, con)
+        self.assertEqual(28, dis)
+        self.assertEqual(0, tie_r)
+        self.assertEqual(0, tie_t)
+        self.assertEqual(0.0, c)
+
     def test_concordance_index_no_ties(self):
         event = [False, True, True, False, False, True, False, False]
         time = [1, 5, 6, 11, 34, 45, 46, 50]
