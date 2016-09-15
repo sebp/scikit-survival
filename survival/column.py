@@ -84,7 +84,7 @@ def _encode_categorical_series(series, allow_drop=True):
 
     names = []
     for key in range(1, enc.shape[1]):
-        names.append(series.name + "=" + levels[key])
+        names.append("{}={}".format(series.name, levels[key]))
     series = pandas.DataFrame(enc[:, 1:], columns=names, index=series.index)
 
     return series
@@ -111,6 +111,8 @@ def encode_categorical(table, **kwargs):
         Numeric columns in the input table remain unchanged.
     """
     if isinstance(table, pandas.Series):
+        if not is_categorical_dtype(table.dtype) and not table.dtype.char == "O":
+            raise TypeError("series must be of categorical dtype, but was {}".format(table.dtype))
         return _encode_categorical_series(table, **kwargs)
     else:
         new_table = pandas.DataFrame(index=table.index)

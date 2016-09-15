@@ -88,6 +88,25 @@ class TestColumn(TestCase):
 
 
 class TestEncodeCategorical(TestCase):
+    def test_series_categorical(self):
+        input_series = pandas.Series(pandas.Categorical.from_codes([1, 1, 0, 2, 0, 1, 2, 1, 2, 0, 0, 1, 2, 2],
+                                                                   ["small", "medium", "large"], ordered=False),
+                                     name="a_series")
+        expected_df = pandas.DataFrame.from_items(
+            [("a_series=medium", numpy.array([1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0], dtype=float)),
+             ("a_series=large", numpy.array([0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1], dtype=float))
+            ])
+
+        actual_df = column.encode_categorical(input_series)
+
+        tm.assert_frame_equal(actual_df, expected_df, check_exact=True)
+
+    def test_series_numeric(self):
+        input_series = pandas.Series([0.5, 0.1, 10, 25, 3.8, 11, 2256, -1, -0.2, 3.14], name="a_series")
+
+        self.assertRaisesRegex(TypeError, "series must be of categorical dtype, but was float",
+                               column.encode_categorical, input_series)
+
     def test_case1(self):
         a = numpy.concatenate((
             numpy.repeat(["large"], 10),
@@ -125,6 +144,29 @@ class TestEncodeCategorical(TestCase):
                                         "a_category=medium": a_medium,
                                         "a_category=small": a_small,
                                         "a_category=tiny": a_tiny})
+
+        self.assertTupleEqual(actual_df.shape, expected_df.shape)
+        tm.assert_frame_equal(actual_df, expected_df, check_exact=True)
+
+    def test_case_numeric(self):
+        a = numpy.array([0, 1, 1, 0, 1, 0, 0, 1, 0, 1], dtype=object)
+        b = numpy.array([1, 2, 1, 3, 2, 1, 3, 2, 3, 1], dtype=object)
+        c = numpy.array([1./128, 1./32, 1., 1./8, 1./32, 1., 1./128, 1./8, 1., 1./32], dtype=object)
+
+        df = pandas.DataFrame({"a_binary_int": a.copy(),
+                               "a_three_int": b.copy(),
+                               "a_four_float": c.copy()})
+
+        actual_df = column.encode_categorical(df)
+
+        expected_df = pandas.DataFrame({
+            "a_binary_int=1": a.astype(float),
+            "a_three_int=2": (b == 2).astype(float),
+            "a_three_int=3": (b == 3).astype(float),
+            "a_four_float={}".format(1. / 32): (c == 1. / 32).astype(float),
+            "a_four_float={}".format(1. / 8): (c == 1. / 8).astype(float),
+            "a_four_float={}".format(1.): (c == 1.).astype(float),
+        })
 
         self.assertTupleEqual(actual_df.shape, expected_df.shape)
         tm.assert_frame_equal(actual_df, expected_df, check_exact=True)
@@ -212,6 +254,16 @@ class TestCategoricalToNumeric(TestCase):
                                index=["Alpha", "Beta", "Gamma", "Delta", "Eta", "Mu"])
         expected = pandas.Series([0, 0, 1, 1, 1, 2], name="Thr33",
                                  index=["Alpha", "Beta", "Gamma", "Delta", "Eta", "Mu"])
+
+        actual = column.categorical_to_numeric(input_series)
+
+        tm.assert_series_equal(actual, expected, check_exact=True)
+
+    def test_bool_series(self):
+        input_series = pandas.Series([True, True, False, False, True, False, True], name="human",
+                                     index=["Alpha", "Beta", "Gamma", "Delta", "Eta", "Mu", "Zeta"])
+        expected = pandas.Series([1, 1, 0, 0, 1, 0, 1], name="human",
+                                 index=["Alpha", "Beta", "Gamma", "Delta", "Eta", "Mu", "Zeta"])
 
         actual = column.categorical_to_numeric(input_series)
 
