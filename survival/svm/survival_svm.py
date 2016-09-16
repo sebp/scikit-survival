@@ -788,9 +788,9 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
 
     .. [1] Pölsterl, S., Navab, N., and Katouzian, A.,
            "Fast Training of Support Vector Machines for Survival Analysis",
-           In Proceedings of the European Conference on Machine Learning and
-           Principles and Practice of Knowledge Discovery in Databases (ECML PKDD),
-           2015.
+           Machine Learning and Knowledge Discovery in Databases: European Conference,
+           ECML PKDD 2015, Porto, Portugal,
+           Lecture Notes in Computer Science, vol. 9285, pp. 243-259 (2015)
     """
     def __init__(self, alpha=1, rank_ratio=1.0, fit_intercept=False,
                  max_iter=20, verbose=False, tol=None,
@@ -875,6 +875,13 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     `optimizer_result_`:
         Stats returned by the optimizer. See :class:`scipy.optimize.optimize.OptimizeResult`.
 
+    References
+    ----------
+
+    .. [1] Pölsterl, S., Navab, N., and Katouzian, A.,
+           *An Efficient Training Algorithm for Kernel Survival Support Vector Machines*
+           4th Workshop on Machine Learning in Life Sciences,
+           23 September 2016, Riva del Garda, Italy
     """
     def __init__(self, alpha=1, rank_ratio=1.0, fit_intercept=False, kernel="rbf",
                  gamma=None, degree=3, coef0=1, kernel_params=None, max_iter=20, verbose=False, tol=None,
