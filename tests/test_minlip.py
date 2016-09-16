@@ -343,9 +343,11 @@ class TestMinlip(TestCase):
         p = m.predict(self.x.values)
         v = concordance_index_censored(self.y['cens'], self.y['time'], p)
 
-        expected = numpy.array([0.6286484, 83655, 49416, 1, 32])
-
-        assert_array_almost_equal(expected, v, 6)
+        self.assertAlmostEqual(0.6286334, v[0], 3)
+        self.assertEqual(83653, v[1])
+        self.assertEqual(49418, v[2])
+        self.assertEqual(1, v[3])
+        self.assertEqual(32, v[4])
 
     def test_unknown_solver(self):
         m = MinlipSurvivalAnalysis(solver=None)
