@@ -18,10 +18,11 @@ before_install:
 
 # command to install dependencies
 install:
-  - "conda create -n ssvm -c sebp python=$TRAVIS_PYTHON_VERSION --file requirements.txt"
-  - "source activate ssvm"
+  - conda create -n ssvm -c sebp python=$TRAVIS_PYTHON_VERSION --file requirements.txt
+  - source activate ssvm
   - conda install nose coverage
-  - "python setup.py build_ext --inplace"
+  - python setup.py install
+  - rm -fr survival
 
 # command to run tests
-script: PYTHONPATH="." nosetests -w tests
+script: nosetests -w tests
