@@ -4,13 +4,14 @@ Getting Started
 Requirements
 ------------
 
-- Python 3.3 or later
+- Python 3.4 or later
+- cvxpy
+- cvxopt
 - numexpr
 - numpy 1.9 or later
-- pandas 0.15.2 or later
-- scikit-learn 0.16
-- scipy 0.15 or later
-- six
+- pandas 0.17.0 or later
+- scikit-learn 0.17
+- scipy 0.16 or later
 - C/C++ compiler
 
 

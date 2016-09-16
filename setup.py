@@ -9,9 +9,7 @@ MAINTAINER = 'Sebastian Pölsterl'
 MAINTAINER_EMAIL = 'sebastian.poelsterl@tum.de'
 URL = 'https://github.com/tum-camp/survival-support-vector-machine'
 
-import survival
-
-VERSION = "1.0"
+VERSION = "2.0"
 
 
 def configuration(parent_package='', top_path=None):
@@ -49,18 +47,10 @@ def setup_package():
                                  'Topic :: Scientific/Engineering',
                                  'Operating System :: POSIX',
                                  'Operating System :: Unix',
-                                 'Programming Language :: Python :: 3.3',
                                  'Programming Language :: Python :: 3.4',
+                                 'Programming Language :: Python :: 3.5',
                     ],
                     scripts = [],
-                    install_requires = [
-                        'numpy>=1.9.0',
-                        'numexpr>=2.4',
-                        'pandas>=0.15.0',
-                        'scikit-learn>=0.16.0',
-                        'scipy',
-                        'six'
-                    ],
     )
 
     if (len(sys.argv) >= 2
@@ -84,7 +74,7 @@ def setup_package():
 
 if __name__ == "__main__":
     py_version = sys.version_info[:2]
-    if py_version < (3, 3):
-        raise RuntimeError('Python 3.3 or later is required')
+    if py_version < (3, 4):
+        raise RuntimeError('Python 3.4 or later is required')
 
     setup_package()

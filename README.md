@@ -8,19 +8,26 @@ Vector Machines* as proposed in
 
 > Pölsterl, S., Navab, N., and Katouzian, A.,
 > *[Fast Training of Support Vector Machines for Survival Analysis](http://link.springer.com/chapter/10.1007/978-3-319-23525-7_15)*,
-> In Proceedings of the European Conference on Machine Learning and
-> Principles and Practice of Knowledge Discovery in Databases (ECML PKDD),
+> Machine Learning and Knowledge Discovery in Databases: European Conference,
+> ECML PKDD 2015, Porto, Portugal,
 > Lecture Notes in Computer Science, vol. 9285, pp. 243-259 (2015)
+
+> Pölsterl, S., Navab, N., and Katouzian, A.,
+> *An Efficient Training Algorithm for Kernel Survival Support Vector Machines*
+> 4th Workshop on Machine Learning in Life Sciences,
+> 23 September 2016, Riva del Garda, Italy
+
 
 ## Requirements
 
-- Python 3.3 or later
+- Python 3.4 or later
+- cvxpy
+- cvxopt
 - numexpr
 - numpy 1.9 or later
-- pandas 0.15.2 or later
-- scikit-learn 0.16
-- scipy 0.15 or later
-- six
+- pandas 0.17.0 or later
+- scikit-learn 0.17
+- scipy 0.16 or later
 - C/C++ compiler
 - ipython (optional)
 - seaborn (optional)
@@ -126,8 +133,7 @@ be used to reproduce the results in the paper.
 ## Documentation
 
 The source code is thoroughly documented and a HTML version of the API documentation
-can be generated using [Sphinx](http://sphinx-doc.org/) 1.2.x
-(**Note**: Sphinx 1.3 does not generate the documentation correctly).
+can be generated using [Sphinx](http://sphinx-doc.org/) 1.4 or later.
 
 ```bash
 cd doc
