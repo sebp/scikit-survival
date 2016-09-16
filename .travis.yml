@@ -16,15 +16,15 @@ before_install:
   - conda config --set always_yes yes --set changeps1 no
   - conda update conda
   - conda install anaconda-client
+  - conda create -n ssvm python=$TRAVIS_PYTHON_VERSION nose coverage
   # The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda
   - sudo rm -rf /dev/shm
   - sudo ln -s /run/shm /dev/shm
 
 # command to install dependencies
 install:
-  - conda create -n ssvm -c sebp python=$TRAVIS_PYTHON_VERSION --file requirements.txt
+  - conda install -n ssvm -c sebp --file requirements.txt
   - source activate ssvm
-  - conda install nose coverage
   - python setup.py install
   - rm -fr survival
 
