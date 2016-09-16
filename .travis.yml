@@ -10,13 +10,14 @@ before_install:
   - ./miniconda.sh -b
   - export PATH=/home/travis/miniconda3/bin:$PATH
   - conda update --yes conda
+  - conda install --yes anaconda-client
   # The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda
   - sudo rm -rf /dev/shm
   - sudo ln -s /run/shm /dev/shm
 
 # command to install dependencies
 install:
-  - "conda install --yes python=$TRAVIS_PYTHON_VERSION --file requirements.txt"
+  - "conda install --yes -c sebp python=$TRAVIS_PYTHON_VERSION --file requirements.txt"
   - "python setup.py build_ext --inplace"
 
 # command to run tests
