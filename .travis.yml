@@ -25,4 +25,4 @@ install:
   - rm -fr survival
 
 # command to run tests
-script: nosetests -w tests
+script: nosetests -w tests --with-coverage --cover-package=survival --cover-tests
