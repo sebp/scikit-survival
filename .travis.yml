@@ -7,19 +7,9 @@ cache:
   directories:
     - $HOME/miniconda3 # miniconda cache
 
-# Setup anaconda
+# Setup miniconda
 before_install:
-  - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-  - chmod +x miniconda.sh
-  - ./miniconda.sh -b -f -p "$HOME/miniconda3"
-  - export PATH=$HOME/miniconda3/bin:$PATH
-  - conda config --set always_yes yes --set changeps1 no
-  - conda update conda
-  - conda install anaconda-client
-  - conda create -n ssvm python=$TRAVIS_PYTHON_VERSION nose coverage
-  # The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda
-  - sudo rm -rf /dev/shm
-  - sudo ln -s /run/shm /dev/shm
+  - ci/before_install_travis.sh
 
 # command to install dependencies
 install:
