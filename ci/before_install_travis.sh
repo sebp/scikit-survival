@@ -3,8 +3,6 @@ set -xe
 
 MINICONDA_DIR="$HOME/miniconda3"
 
-export PATH=$MINICONDA_DIR/bin:$PATH
-
 if [ -d "$MINICONDA_DIR" ] && [ -e "$MINICONDA_DIR/bin/conda" ]
 then
   echo "Miniconda install already present from cache: $MINICONDA_DIR"

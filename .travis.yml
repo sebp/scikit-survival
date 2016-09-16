@@ -10,6 +10,7 @@ cache:
 
 # Setup miniconda
 before_install:
+  - export PATH=$HOME/miniconda3/bin:$PATH
   - ci/before_install_travis.sh
 
 # command to install dependencies
