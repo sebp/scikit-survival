@@ -11,7 +11,7 @@ cache:
 before_install:
   - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
-  - ./miniconda.sh -b
+  - ./miniconda.sh -b -f -p "$HOME/miniconda3"
   - export PATH=$HOME/miniconda3/bin:$PATH
   - conda config --set always_yes yes --set changeps1 no
   - conda update conda
