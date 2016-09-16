@@ -476,7 +476,7 @@ class TestKernelSurvivalSVM(TestCase):
         numpy.random.RandomState(0).shuffle(i)
         pred = ssvm.predict(self.x.values[i])
         rmse = numpy.sqrt(mean_squared_error(self.y['lenfol'][i], pred))
-        self.assertAlmostEqual(1339.3006854574726, rmse, 2)
+        self.assertLessEqual(abs(1339.3006854574726 - rmse), 0.25)
 
     def test_fit_and_predict_linear_regression_precomputed(self):
         ssvm = FastKernelSurvivalSVM(optimizer="rbtree", rank_ratio=0.0, kernel="precomputed",
@@ -491,7 +491,7 @@ class TestKernelSurvivalSVM(TestCase):
         numpy.random.RandomState(0).shuffle(i)
         pred = ssvm.predict(x[i])
         rmse = numpy.sqrt(mean_squared_error(self.y['lenfol'][i], pred))
-        self.assertAlmostEqual(1339.3006854574726, rmse, 2)
+        self.assertLessEqual(abs(1339.3006854574726 - rmse), 0.25)
 
     def test_fit_and_predict_linear_regression_no_intercept(self):
         ssvm = FastKernelSurvivalSVM(optimizer="rbtree", rank_ratio=0.0, kernel="linear",
@@ -546,7 +546,7 @@ class TestKernelSurvivalSVM(TestCase):
 
         pred = ssvm.predict(self.x.values)
         rmse = numpy.sqrt(mean_squared_error(self.y['lenfol'], pred))
-        self.assertAlmostEqual(880.20361811281487, rmse)
+        self.assertLessEqual(abs(880.20361811281487 - rmse), 75)
 
     def test_fit_and_predict_clinical_kernel(self):
         x_full, y, _, _ = load_arff_file(WHAS500_FILE, ['fstat', 'lenfol'], '1',
