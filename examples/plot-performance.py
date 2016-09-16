@@ -39,7 +39,7 @@ DATASETS = {'actg320_aids': 'AIDS study',
 
 
 def format_data(data):
-    params = data.columns - ['c-index', 'error', 'fold', 'n_events']
+    params = data.columns.difference(['c-index', 'error', 'fold', 'n_events'])
 
     if 'rank_ratio' in params:
         mask = (data.loc[:, 'rank_ratio'] > 0) & (data.loc[:, 'rank_ratio'] < 1)
@@ -77,13 +77,6 @@ def format_data(data):
     return df, cindex_dist, rmse_dist
 
 
-def _boxplot(methods, *args, **kwargs):
-    # Methods are columns and performances are rows
-    x = pandas.concat(args, axis=1).T
-    x.columns = methods
-    return seaborn.boxplot(x, **kwargs)
-
-
 def add_legend(g, methods):
     legend_data = []
     ax1 = g.axes.flat[-1]
@@ -105,10 +98,11 @@ def add_legend(g, methods):
 
 
 def plot_cindex():
-    if dfa["Data"].nunique() > 1:
-        g = seaborn.FacetGrid(dfa, col='Data', ylim=(0, 1), col_wrap=4, aspect=.9, legend_out=True)
+    data = pandas.melt(dfa, id_vars=["Method", "Data"], var_name="fold")
+    if data["Data"].nunique() > 1:
+        g = seaborn.FacetGrid(data, col='Data', ylim=(0, 1), col_wrap=4, aspect=.9, legend_out=True)
 
-        g.map(_boxplot, 'Method', *data_cols, color='Spectral')
+        g.map_dataframe(seaborn.boxplot, x="Method", y="value", palette='Spectral')
 
         g.set_ylabels('concordance index')
         g.set_xlabels('')
@@ -123,8 +117,7 @@ def plot_cindex():
 
         add_legend(g, dfa['Method'].unique())
     else:
-        x = pandas.DataFrame(dfa.drop(["Data", "Method"], axis=1).values.T, columns=dfa["Method"])
-        g = seaborn.boxplot(x, color='Spectral')
+        g = seaborn.boxplot(x="Method", y="value", data=data, palette='Spectral')
         g.set_title(dfa.loc[0, "Data"])
         g.set_ylabel('concordance index')
 
@@ -132,10 +125,12 @@ def plot_cindex():
 
 
 def plot_rmse():
-    if dfa["Data"].nunique() > 1:
-        g = seaborn.FacetGrid(dfa, col='Data', sharey=False, col_wrap=4, aspect=.9, legend_out=True)
+    data = pandas.melt(dfa, id_vars=["Method", "Data"], var_name="fold")
+    if data["Data"].nunique() > 1:
+        g = seaborn.FacetGrid(data, col='Data', sharey=False, col_wrap=4, aspect=.9, legend_out=True)
 
-        g.map(_boxplot, 'Method', *data_cols, color=['#c0dbab', '#61a0a0'])
+        g.map_dataframe(seaborn.boxplot, x='Method', y="value",
+                        palette=['#c0dbab', '#61a0a0'])
         g.set_ylabels('root mean squared error')
         g.set_xlabels('')
 
@@ -145,8 +140,7 @@ def plot_rmse():
 
         add_legend(g, dfa['Method'].unique())
     else:
-        x = pandas.DataFrame(dfa.drop(["Data", "Method"], axis=1).values.T, columns=dfa["Method"])
-        g = seaborn.boxplot(x, color=['#c0dbab', '#61a0a0'])
+        g = seaborn.boxplot(x="Method", y="value", data=data, palette=['#c0dbab', '#61a0a0'])
         g.set_title(dfa.loc[0, "Data"])
         g.set_ylabel('root mean squared error')
 
