@@ -11,8 +11,14 @@ This is the documentation accompanying the efficient implementation of
 
   Pölsterl, S., Navab, N., and Katouzian, A.,
   *Fast Training of Support Vector Machines for Survival Analysis*,
-  In Proceedings of the European Conference on Machine Learning and
-  Principles and Practice of Knowledge Discovery in Databases (ECML PKDD), 2015
+  Machine Learning and Knowledge Discovery in Databases: European Conference,
+  ECML PKDD 2015, Porto, Portugal,
+  Lecture Notes in Computer Science, vol. 9285, pp. 243-259 (2015)
+
+  Pölsterl, S., Navab, N., and Katouzian, A.,
+  *An Efficient Training Algorithm for Kernel Survival Support Vector Machines*
+  4th Workshop on Machine Learning in Life Sciences,
+  23 September 2016, Riva del Garda, Italy
 
 
 Documentation

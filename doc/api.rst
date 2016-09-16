@@ -8,8 +8,21 @@ Survival Support Vector Machine
 .. autosummary::
     :toctree: generated/
 
+    FastKernelSurvivalSVM
     FastSurvivalSVM
+    MinlipSurvivalAnalysis
     NaiveSurvivalSVM
+
+
+Kernels
+-------
+.. currentmodule:: survival.kernels
+
+.. autosummary::
+    :toctree: generated/
+
+    clinical_kernel
+    ClinicalKernelTransform
 
 
 Metrics
@@ -34,7 +47,6 @@ Pre-Processing
     standardize
 
 
-
 I/O Utilities
 -------------
 .. currentmodule:: survival.io
@@ -43,3 +55,4 @@ I/O Utilities
     :toctree: generated/
 
     loadarff
+    writearff
