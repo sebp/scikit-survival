@@ -3,12 +3,16 @@ python:
   - "3.4"
   - "3.5"
 
+cache:
+  directories:
+    - $HOME/miniconda3 # miniconda cache
+
 # Setup anaconda
 before_install:
   - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
   - ./miniconda.sh -b
-  - export PATH=/home/travis/miniconda3/bin:$PATH
+  - export PATH=$HOME/miniconda3/bin:$PATH
   - conda config --set always_yes yes --set changeps1 no
   - conda update conda
   - conda install anaconda-client
