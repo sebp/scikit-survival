@@ -140,7 +140,7 @@ def params_cv(param_grid, train_test_iter):
 
 
 if __name__ == '__main__':
-    from IPython import parallel
+    from ipyparallel import Client
     import argparse
     import sys
 
@@ -156,12 +156,12 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    rc = parallel.Client(profile=args.profile)
+    rc = Client(profile=args.profile)
     dview = rc[:]
     lview = rc.load_balanced_view()
 
     with dview.sync_imports():
-        from IPython.config import Application
+        from traitlets.config import Application
         from survival.metrics import concordance_index_censored
         from sklearn.base import clone
         from sklearn.metrics import mean_squared_error
