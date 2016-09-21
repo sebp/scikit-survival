@@ -140,7 +140,7 @@ def _get_dummies_1d(data, allow_drop=True):
     # if all NaN or only one level
     if allow_drop and number_of_cols < 2:
         logging.getLogger(__package__).warning(
-            "dropped categorical variable '{0}', because it has only {1} values".format(data.name, number_of_cols))
+            "dropped categorical variable '%s', because it has only %d values", data.name, number_of_cols)
         return
     elif number_of_cols == 0:
         return None, levels
