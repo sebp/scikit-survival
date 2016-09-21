@@ -30,6 +30,18 @@ class NaiveSurvivalSVM(LinearSVC, SurvivalAnalysisMixin):
 
     See :class:`survival.svm.HingeLossSurvivalSVM` for the kernel naive survival SVM.
 
+    .. math::
+
+          \\min_{\\mathbf{w}}\\quad
+          \\frac{1}{2} \\lVert \\mathbf{w} \\rVert_2^2
+          + \\gamma \\sum_{i = 1}^n \\xi_i \\\\
+          \\text{subject to}\\quad
+          \\mathbf{w}^\\top \\mathbf{x}_i - \\mathbf{w}^\\top \\mathbf{x}_j \\geq 1 - \\xi_{ij},\\quad
+          \\forall (i, j) \\in \\mathcal{P}, \\\\
+          \\xi_i \geq 0,\\quad \\forall (i, j) \\in \\mathcal{P}.
+
+          \\mathcal{P} = \\{ (i, j) \\mid y_i > y_j \\land \\delta_j = 1 \\}_{i,j=1,\\dots,n}.
+
     Parameters
     ----------
     alpha : float, positive, default=1.0
@@ -66,15 +78,14 @@ class NaiveSurvivalSVM(LinearSVC, SurvivalAnalysisMixin):
 
     References
     ----------
+    .. [1] Van Belle, V., Pelckmans, K., Suykens, J. A., & Van Huffel, S.
+           Support Vector Machines for Survival Analysis. In Proc. of the 3rd Int. Conf.
+           on Computational Intelligence in Medicine and Healthcare (CIMED). 1-8. 2007
 
-    .. [1] Evers, L., Messow, C.M.,
+    .. [2] Evers, L., Messow, C.M.,
            "Sparse kernel methods for high-dimensional survival data",
            Bioinformatics 24(14), 1632-8, 2008.
 
-    .. [2] Van Belle, V., Pelckmans, K., Suykens, J.A., Van Huffel, S.,
-           "Survival SVM: a practical scalable algorithm",
-           In: Proc. of 16th European Symposium on Artificial Neural Networks,
-           89-94, 2008.
     """
     def __init__(self, penalty='l2', loss='squared_hinge', dual=False, tol=1e-4,
                  alpha=1.0, verbose=0, random_state=None, max_iter=1000):

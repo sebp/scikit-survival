@@ -14,6 +14,19 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     """Survival model related to survival SVM, using a minimal Lipschitz smoothness strategy
     instead of a maximal margin strategy.
 
+    .. math::
+
+          \\min_{\\mathbf{w}}\\quad
+          \\frac{1}{2} \\lVert \\mathbf{w} \\rVert_2^2
+          + \\gamma \\sum_{i = 1}^n \\xi_i \\\\
+          \\text{subject to}\\quad
+          \\mathbf{w}^\\top \\mathbf{x}_i - \\mathbf{w}^\\top \\mathbf{x}_j \\geq y_i - y_j - \\xi_i,\\quad
+          \\forall (i, j) \\in \\mathcal{P}_\\text{1-NN}, \\\\
+          \\xi_i \geq 0,\\quad \\forall i = 1,\\dots,n.
+
+          \\mathcal{P}_\\text{1-NN} = \\{ (i, j) \\mid y_i > y_j \\land \\delta_j = 1
+          \\land \\nexists k : y_i > y_k > y_j \\land \\delta_k = 1 \\}_{i,j=1}^n.
+
     Parameters
     ----------
     solver : "cvxpy" | "cvxopt", optional (default: cvxpy)
@@ -222,6 +235,18 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
 
     See :class:`survival.svm.NaiveSurvivalSVM` for the linear naive survival SVM based on liblinear.
 
+    .. math::
+
+          \\min_{\\mathbf{w}}\\quad
+          \\frac{1}{2} \\lVert \\mathbf{w} \\rVert_2^2
+          + \\gamma \\sum_{i = 1}^n \\xi_i \\\\
+          \\text{subject to}\\quad
+          \\mathbf{w}^\\top \\phi(\\mathbf{x})_i - \\mathbf{w}^\\top \\phi(\\mathbf{x})_j \\geq 1 - \\xi_{ij},\\quad
+          \\forall (i, j) \\in \\mathcal{P}, \\\\
+          \\xi_i \geq 0,\\quad \\forall (i, j) \\in \\mathcal{P}.
+
+          \\mathcal{P} = \\{ (i, j) \\mid y_i > y_j \\land \\delta_j = 1 \\}_{i,j=1,\\dots,n}.
+
     Parameters
     ----------
     solver : "cvxpy" | "cvxopt", optional (default: cvxpy)
@@ -276,6 +301,15 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
     .. [1] Van Belle, V., Pelckmans, K., Suykens, J. A., & Van Huffel, S.
            Support Vector Machines for Survival Analysis. In Proc. of the 3rd Int. Conf.
            on Computational Intelligence in Medicine and Healthcare (CIMED). 1-8. 2007
+
+    .. [2] Evers, L., Messow, C.M.,
+           "Sparse kernel methods for high-dimensional survival data",
+           Bioinformatics 24(14), 1632-8, 2008.
+
+    .. [3] Van Belle, V., Pelckmans, K., Suykens, J.A., Van Huffel, S.,
+           "Survival SVM: a practical scalable algorithm",
+           In: Proc. of 16th European Symposium on Artificial Neural Networks,
+           89-94, 2008.
     """
 
     def __init__(self, solver="cvxpy",
