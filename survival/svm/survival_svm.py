@@ -651,22 +651,6 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
         -------
         self
         """
-        """Build a survival support vector machine model from training data.
-
-        Parameters
-        ----------
-        X : array-like, shape = [n_samples, n_features]
-            Data matrix.
-
-        y : structured array, shape = [n_samples]
-            A structured array containing the binary event indicator
-            as first field, and time of event or time of censoring as
-            second field.
-
-        Returns
-        -------
-        self
-        """
         X, event, time = check_arrays_survival(X, y)
 
         if self.alpha <= 0:
