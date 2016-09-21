@@ -134,7 +134,7 @@ def _write_data(data, fp):
             return str(x)
 
     data = data.applymap(to_str)
-    n_rows, n_cols = data.shape
+    n_rows = data.shape[0]
     for i in range(n_rows):
         str_values = list(data.iloc[i, :].apply(_check_str_array))
         line = ",".join(str_values)

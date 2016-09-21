@@ -20,11 +20,11 @@ __all__ = ["loadarff"]
 def _to_pandas(data, meta):
     data_dict = {}
     attrnames = meta.names()
-    for i, name in enumerate(attrnames):
+    for name in attrnames:
         tp, attr_format = meta[name]
         if tp == "nominal":
             raw = []
-            for j, b in enumerate(data[name]):
+            for b in data[name]:
                 # replace missing values with NaN
                 if b == b'?':
                     raw.append(numpy.nan)
