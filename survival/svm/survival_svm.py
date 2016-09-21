@@ -728,32 +728,32 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
 class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     """Efficient Training of linear Survival Support Vector Machine
 
-    Training data consists of *n* triplets :math:`(\mathbf{x}_i, y_i, \delta_i)`,
+    Training data consists of *n* triplets :math:`(\\mathbf{x}_i, y_i, \\delta_i)`,
     where :math:`\mathbf{x}_i` is a *d*-dimensional feature vector, :math:`y_i > 0`
-    the survival time or time of censoring, and :math:`\delta_i \in \{0,1\}`
+    the survival time or time of censoring, and :math:`\\delta_i \\in \{0,1\}`
     the binary event indicator. Using the training data, the objective is to
     minimize the following function:
 
     .. math::
 
-         \\arg \min_{\mathbf{w}, b} \\frac{1}{2} \mathbf{w}^\\top \mathbf{w}
-         + \\frac{\\alpha}{2} \left[ r \sum_{i,j \in \mathcal{P}}
-         \max(0, 1 - (\mathbf{w}^\\top \mathbf{x}_i - \mathbf{w}^\\top \mathbf{x}_j))^2
-         + (1 - r) \sum_{i=0}^n \left( \zeta_{\mathbf{w}, b} (y_i, x_i, \delta_i)
+         \\arg \\min_{\\mathbf{w}, b} \\frac{1}{2} \\mathbf{w}^\\top \\mathbf{w}
+         + \\frac{\\alpha}{2} \\left[ r \\sum_{i,j \\in \\mathcal{P}}
+         \\max(0, 1 - (\\mathbf{w}^\\top \\mathbf{x}_i - \\mathbf{w}^\\top \\mathbf{x}_j))^2
+         + (1 - r) \\sum_{i=0}^n \\left( \\zeta_{\\mathbf{w}, b} (y_i, x_i, \\delta_i)
          \\right)^2 \\right]
 
-        \zeta_{\mathbf{w},b} (y_i, \mathbf{x}_i, \delta_i) =
+        \\zeta_{\\mathbf{w},b} (y_i, \\mathbf{x}_i, \\delta_i) =
         \\begin{cases}
-        \max(0, y_i - \mathbf{w}^\\top \mathbf{x}_i - b) & \\text{if $\delta_i = 0$,} \\\\
-        y_i - \mathbf{w}^\\top \mathbf{x}_i - b & \\text{if $\delta_i = 1$,} \\\\
-        \end{cases}
+        \\max(0, y_i - \\mathbf{w}^\\top \\mathbf{x}_i - b) \\quad \\text{if $\\delta_i = 0$,} \\\\
+        y_i - \\mathbf{w}^\\top \\mathbf{x}_i - b \\quad \\text{if $\\delta_i = 1$,} \\\\
+        \\end{cases}
 
-        \mathcal{P} = \{ (i, j) \mid y_i > y_j \land \delta_j = 1 \}_{i,j=1,\dots,n}
+        \\mathcal{P} = \\{ (i, j) \\mid y_i > y_j \\land \\delta_j = 1 \\}_{i,j=1,\dots,n}
 
     The hyper-parameter :math:`\\alpha > 0` determines the amount of regularization
     to apply: a smaller value increases the amount of regularization and a
     higher value reduces the amount of regularization. The hyper-parameter
-    :math:`r \in [0; 1]` determines the trade-off between the ranking objective
+    :math:`r \\in [0; 1]` determines the trade-off between the ranking objective
     and the regresson objective. If :math:`r = 1` it reduces to the ranking
     objective, and if :math:`r = 0` to the regression objective. If the regression
     objective is used, survival/censoring times are log-transform and thus cannot be

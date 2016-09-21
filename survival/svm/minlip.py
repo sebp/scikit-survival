@@ -22,7 +22,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
           \\text{subject to}\\quad
           \\mathbf{w}^\\top \\mathbf{x}_i - \\mathbf{w}^\\top \\mathbf{x}_j \\geq y_i - y_j - \\xi_i,\\quad
           \\forall (i, j) \\in \\mathcal{P}_\\text{1-NN}, \\\\
-          \\xi_i \geq 0,\\quad \\forall i = 1,\\dots,n.
+          \\xi_i \\geq 0,\\quad \\forall i = 1,\\dots,n.
 
           \\mathcal{P}_\\text{1-NN} = \\{ (i, j) \\mid y_i > y_j \\land \\delta_j = 1
           \\land \\nexists k : y_i > y_k > y_j \\land \\delta_k = 1 \\}_{i,j=1}^n.
@@ -243,7 +243,7 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
           \\text{subject to}\\quad
           \\mathbf{w}^\\top \\phi(\\mathbf{x})_i - \\mathbf{w}^\\top \\phi(\\mathbf{x})_j \\geq 1 - \\xi_{ij},\\quad
           \\forall (i, j) \\in \\mathcal{P}, \\\\
-          \\xi_i \geq 0,\\quad \\forall (i, j) \\in \\mathcal{P}.
+          \\xi_i \\geq 0,\\quad \\forall (i, j) \\in \\mathcal{P}.
 
           \\mathcal{P} = \\{ (i, j) \\mid y_i > y_j \\land \\delta_j = 1 \\}_{i,j=1,\\dots,n}.
 

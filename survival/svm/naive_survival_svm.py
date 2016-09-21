@@ -38,7 +38,7 @@ class NaiveSurvivalSVM(LinearSVC, SurvivalAnalysisMixin):
           \\text{subject to}\\quad
           \\mathbf{w}^\\top \\mathbf{x}_i - \\mathbf{w}^\\top \\mathbf{x}_j \\geq 1 - \\xi_{ij},\\quad
           \\forall (i, j) \\in \\mathcal{P}, \\\\
-          \\xi_i \geq 0,\\quad \\forall (i, j) \\in \\mathcal{P}.
+          \\xi_i \\geq 0,\\quad \\forall (i, j) \\in \\mathcal{P}.
 
           \\mathcal{P} = \\{ (i, j) \\mid y_i > y_j \\land \\delta_j = 1 \\}_{i,j=1,\\dots,n}.
 
