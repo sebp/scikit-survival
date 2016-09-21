@@ -15,7 +15,7 @@ import numpy
 import os.path
 import re
 
-_ILLEGAL_CHARACTER_PAT = re.compile("[^-_=\w\d\(\)<>\.]")
+_ILLEGAL_CHARACTER_PAT = re.compile(r"[^-_=\w\d\(\)<>\.]")
 
 
 def writearff(data, filename, relation_name=None, index=True):
