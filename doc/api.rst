@@ -11,6 +11,7 @@ Survival Support Vector Machine
     FastKernelSurvivalSVM
     FastSurvivalSVM
     MinlipSurvivalAnalysis
+    HingeLossSurvivalSVM
     NaiveSurvivalSVM
 
 

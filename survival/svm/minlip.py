@@ -16,11 +16,11 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
     Parameters
     ----------
-    solver : "cvxpy" | "cvxopt", optional
-        Which quadratic program solver to use. default: cvxpy
+    solver : "cvxpy" | "cvxopt", optional (default: cvxpy)
+        Which quadratic program solver to use.
 
-    alpha : float, positive
-        Weight of penalizing the hinge loss in the objective function (default: 1)
+    alpha : float, positive  (default: 1)
+        Weight of penalizing the hinge loss in the objective function.
 
     kernel : "linear" | "poly" | "rbf" | "sigmoid" | "cosine" | "precomputed"
         Kernel.
@@ -30,7 +30,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         Kernel coefficient for rbf and poly kernels. Default: ``1/n_features``.
         Ignored by other kernels.
 
-    degree : int, default=3
+    degree : int (default=3)
         Degree for poly kernels. Ignored by other kernels.
 
     coef0 : float, optional
@@ -40,15 +40,29 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     kernel_params : mapping of string to any, optional
         Parameters (keyword arguments) and values for kernel passed as call
 
-    pairs : "all" | "nearest" | "next", optional
-        Which constraints to use in the optimization problem. default: "nearest"
+    pairs : "all" | "nearest" | "next", optional (default: "nearest")
+        Which constraints to use in the optimization problem.
 
-        - all: Use all comparable pairs. Scales quadratic in number of samples.
+        - all: Use all comparable pairs. Scales quadratic in number of samples
+          (cf. :class:`survival.svm.HingeLossSurvivalSVM`).
         - nearest: Only considers comparable pairs :math:`(i, j)` where :math:`j` is the
           uncensored sample with highest survival time smaller than :math:`y_i`.
           Scales linear in number of samples.
         - next: Only compare against direct nearest neighbor according to observed time,
           disregarding its censoring status. Scales linear in number of samples.
+
+    timeit : False or int
+        If non-zero value is provided the time it takes for optimization is measured.
+        The given number of repetitions are performed. Results can be accessed from the
+        ``timings_`` attribute.
+
+    Attributes
+    ----------
+    `X_fit_` :
+        Training data.
+
+    `coef_` :
+        Coefficients of the features in the decision function.
 
     References
     ----------
@@ -157,6 +171,22 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         return numpy.array(sol['x']).T, None
 
     def fit(self, X, y):
+        """Build a MINLIP survival model from training data.
+
+        Parameters
+        ----------
+        X : array-like, shape = [n_samples, n_features]
+            Data matrix.
+
+        y : structured array, shape = [n_samples]
+            A structured array containing the binary event indicator
+            as first field, and time of event or time of censoring as
+            second field.
+
+        Returns
+        -------
+        self
+        """
         X, event, time = check_arrays_survival(X, y)
         self._fit(X, event, time)
 
@@ -184,7 +214,63 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
 
 class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
-    """
+    """Naive implementation of kernel survival support vector machine.
+
+    A new set of samples is created by building the difference between any two feature
+    vectors in the original data, thus this version requires :math:`O(\\text{n_samples}^4)` space and
+    :math:`O(\\text{n_samples}^6 \\cdot \\text{n_features})`.
+
+    See :class:`survival.svm.NaiveSurvivalSVM` for the linear naive survival SVM based on liblinear.
+
+    Parameters
+    ----------
+    solver : "cvxpy" | "cvxopt", optional (default: cvxpy)
+        Which quadratic program solver to use.
+
+    alpha : float, positive
+        Weight of penalizing the hinge loss in the objective function (default: 1)
+
+    kernel : "linear" | "poly" | "rbf" | "sigmoid" | "cosine" | "precomputed"
+        Kernel.
+        Default: "linear"
+
+    gamma : float, optional
+        Kernel coefficient for rbf and poly kernels. Default: ``1/n_features``.
+        Ignored by other kernels.
+
+    degree : int (default=3)
+        Degree for poly kernels. Ignored by other kernels.
+
+    coef0 : float, optional
+        Independent term in poly and sigmoid kernels.
+        Ignored by other kernels.
+
+    kernel_params : mapping of string to any, optional
+        Parameters (keyword arguments) and values for kernel passed as call
+
+    pairs : "all" | "nearest" | "next", optional (default: "all")
+        Which constraints to use in the optimization problem.
+
+        - all: Use all comparable pairs. Scales quadratic in number of samples.
+        - nearest: Only considers comparable pairs :math:`(i, j)` where :math:`j` is the
+          uncensored sample with highest survival time smaller than :math:`y_i`.
+          Scales linear in number of samples (cf. :class:`survival.svm.MinlipSurvivalSVM`).
+        - next: Only compare against direct nearest neighbor according to observed time,
+          disregarding its censoring status. Scales linear in number of samples.
+
+    timeit : False or int
+        If non-zero value is provided the time it takes for optimization is measured.
+        The given number of repetitions are performed. Results can be accessed from the
+        ``timings_`` attribute.
+
+    Attributes
+    ----------
+    `X_fit_` :
+        Training data.
+
+    `coef_` :
+        Coefficients of the features in the decision function.
+
     References
     ----------
     .. [1] Van Belle, V., Pelckmans, K., Suykens, J. A., & Van Huffel, S.

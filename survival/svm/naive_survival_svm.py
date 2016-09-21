@@ -22,11 +22,13 @@ from ..util import check_arrays_survival
 
 
 class NaiveSurvivalSVM(LinearSVC, SurvivalAnalysisMixin):
-    """Naive version of Survival Support Vector Machine.
+    """Naive version of linear Survival Support Vector Machine.
 
-    Uses regular linear support vector classifier.
+    Uses regular linear support vector classifier (liblinear).
     A new set of samples is created by building the difference between any two feature
     vectors in the original data, thus this version requires `O(n_samples^2)` space.
+
+    See :class:`survival.svm.HingeLossSurvivalSVM` for the kernel naive survival SVM.
 
     Parameters
     ----------

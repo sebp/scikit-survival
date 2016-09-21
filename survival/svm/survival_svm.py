@@ -651,6 +651,22 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
         -------
         self
         """
+        """Build a survival support vector machine model from training data.
+
+        Parameters
+        ----------
+        X : array-like, shape = [n_samples, n_features]
+            Data matrix.
+
+        y : structured array, shape = [n_samples]
+            A structured array containing the binary event indicator
+            as first field, and time of event or time of censoring as
+            second field.
+
+        Returns
+        -------
+        self
+        """
         X, event, time = check_arrays_survival(X, y)
 
         if self.alpha <= 0:
@@ -745,8 +761,8 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
 
     Parameters
     ----------
-    alpha : float, positive
-        Weight of penalizing the squared hinge loss in the objective function (default: 1)
+    alpha : float, positive (default: 1)
+        Weight of penalizing the squared hinge loss in the objective function
 
     rank_ratio : float, optional (default=1.0)
         Mixing parameter between regression and ranking objective with ``0 <= rank_ratio <= 1``.
@@ -754,18 +770,18 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         is performed. A non-zero value is only allowed if optimizer is one of 'avltree', 'PRSVM',
         or 'rbtree'.
 
-    max_iter : int, optional
-        Maximum number of iterations to perform in Newton optimization (default: 20)
+    max_iter : int, optional (default: 20)
+        Maximum number of iterations to perform in Newton optimization
 
-    verbose : bool, optional
-        Whether to print messages during optimization (default: False)
+    verbose : bool, optional (default: False)
+        Whether to print messages during optimization
 
     tol : float, optional
         Tolerance for termination. For detailed control, use solver-specific
         options.
 
-    optimizer : "avltree" | "direct-count" | "PRSVM" | "rbtree" | "simple", optional
-        Which optimizer to use. default: avltree
+    optimizer : "avltree" | "direct-count" | "PRSVM" | "rbtree" | "simple", optional (default: avltree)
+        Which optimizer to use.
 
     random_state : int or :class:`numpy.random.RandomState` instance, optional
         Random number generator (used to resolve ties in survival times).
@@ -842,15 +858,24 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
 
     Parameters
     ----------
-    kernel : "linear" | "poly" | "rbf" | "sigmoid" | "cosine" | "precomputed"
-        Kernel.
-        Default: "linear"
+    alpha : float, positive (default: 1)
+        Weight of penalizing the squared hinge loss in the objective function
+
+    rank_ratio : float, optional (default=1.0)
+        Mixing parameter between regression and ranking objective with ``0 <= rank_ratio <= 1``.
+        If ``rank_ratio = 1``, only ranking is performed, if ``rank_ratio = 0``, only regression
+        is performed. A non-zero value is only allowed if optimizer is one of 'avltree', 'PRSVM',
+        or 'rbtree'.
 
     fit_intercept : boolean, optional (default=False)
         Whether to calculate an intercept for the regression model. If set to ``False``, no intercept
         will be calculated. Has no effect if ``rank_ratio = 1``, i.e., only ranking is performed.
 
-    degree : int, default=3
+    kernel : "linear" | "poly" | "rbf" | "sigmoid" | "cosine" | "precomputed"
+        Kernel.
+        Default: "linear"
+
+    degree : int (default=3)
         Degree for poly kernels. Ignored by other kernels.
 
     gamma : float, optional
@@ -863,6 +888,27 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
 
     kernel_params : mapping of string to any, optional
         Parameters (keyword arguments) and values for kernel passed as call
+
+    max_iter : int, optional (default: 20)
+        Maximum number of iterations to perform in Newton optimization
+
+    verbose : bool, optional (default: False)
+        Whether to print messages during optimization
+
+    tol : float, optional
+        Tolerance for termination. For detailed control, use solver-specific
+        options.
+
+    optimizer : "avltree" | "rbtree", optional (default: "rbtree")
+        Which optimizer to use.
+
+    random_state : int or :class:`numpy.random.RandomState` instance, optional
+        Random number generator (used to resolve ties in survival times).
+
+    timeit : False or int
+        If non-zero value is provided the time it takes for optimization is measured.
+        The given number of repetitions are performed. Results can be accessed from the
+        ``optimizer_result_`` attribute.
 
     Attributes
     ----------
