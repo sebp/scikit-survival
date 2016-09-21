@@ -117,9 +117,9 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         D = create_difference_matrix(event.astype(numpy.uint8), time, kind=self.pairs)
         K = self._get_kernel(x)
 
-        if "cvxpy" == self.solver:
+        if self.solver == "cvxpy":
             fit_func = self._fit_cvxpy
-        elif "cvxopt" == self.solver:
+        elif self.solver == "cvxopt":
             fit_func = self._fit_cvxopt
         else:
             raise ValueError("unknown solver: {}".format(self.solver))
@@ -154,7 +154,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         assert obj.is_dcp()
 
         alpha = cvxpy.Parameter(sign="positive", value=self.alpha)
-        constraints = [0. <= a, -alpha <= D.T * a, D.T * a <= alpha]
+        constraints = [a >= 0., -alpha <= D.T * a, D.T * a <= alpha]
 
         prob = cvxpy.Problem(obj, constraints)
         prob.solve(verbose=self.verbose)
@@ -328,7 +328,7 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
         P = D.dot(D.dot(K).T).T
 
         obj = cvxpy.Minimize(0.5 * cvxpy.quad_form(a, P) - cvxpy.sum_entries(a))
-        constraints = [0. <= a, a <= alpha]
+        constraints = [a >= 0., a <= alpha]
 
         prob = cvxpy.Problem(obj, constraints)
         prob.solve(verbose=self.verbose)
