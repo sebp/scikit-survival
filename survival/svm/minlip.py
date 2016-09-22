@@ -64,6 +64,9 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         - next: Only compare against direct nearest neighbor according to observed time,
           disregarding its censoring status. Scales linear in number of samples.
 
+    verbose : bool (default: False)
+        Enable verbose output of solver
+
     timeit : False or int
         If non-zero value is provided the time it takes for optimization is measured.
         The given number of repetitions are performed. Results can be accessed from the
@@ -282,6 +285,9 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
           Scales linear in number of samples (cf. :class:`survival.svm.MinlipSurvivalSVM`).
         - next: Only compare against direct nearest neighbor according to observed time,
           disregarding its censoring status. Scales linear in number of samples.
+
+    verbose : bool (default: False)
+        Enable verbose output of solver.
 
     timeit : False or int
         If non-zero value is provided the time it takes for optimization is measured.

@@ -44,7 +44,7 @@ class NaiveSurvivalSVM(LinearSVC, SurvivalAnalysisMixin):
 
     Parameters
     ----------
-    alpha : float, positive, default=1.0
+    alpha : float, positive (default=1.0)
         Weight of penalizing the squared hinge loss in the objective function (default: 1)
 
     loss : string, 'hinge' or 'squared_hinge' (default='squared_hinge')
@@ -64,7 +64,7 @@ class NaiveSurvivalSVM(LinearSVC, SurvivalAnalysisMixin):
     tol : float, optional (default=1e-4)
         Tolerance for stopping criteria.
 
-    verbose : int, (default=0)
+    verbose : int (default=0)
         Enable verbose output. Note that this setting takes advantage of a
         per-process runtime setting in liblinear that, if enabled, may not work
         properly in a multithreaded context.
@@ -73,7 +73,7 @@ class NaiveSurvivalSVM(LinearSVC, SurvivalAnalysisMixin):
         The seed of the pseudo random number generator to use when
         shuffling the data.
 
-    max_iter : int, (default=1000)
+    max_iter : int (default=1000)
         The maximum number of iterations to be run.
 
     References

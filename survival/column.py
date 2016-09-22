@@ -101,7 +101,7 @@ def encode_categorical(table, **kwargs):
         Table with categorical columns to encode.
 
     allow_drop : boolean, optional, default=True
-        Whether to allow dropping categorical columns that only consistent
+        Whether to allow dropping categorical columns that only consist
         of a single category.
 
     Returns

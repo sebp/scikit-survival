@@ -134,6 +134,16 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         self._nominal_columns = _nominal_columns
 
     def prepare(self, X):
+        """Determine transformation parameters from data in X.
+
+        Use if `fit_once` is `True`, in which case `fit()` does
+        not set the parameters of the clinical kernel.
+
+        Parameters
+        ----------
+        X: pandas.DataFrame, shape = [n_samples, n_features]
+            Data to estimate parameters from.
+        """
         if not self.fit_once:
             raise ValueError('prepare can only be used if fit_once parameter is set to True')
 
@@ -174,6 +184,24 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         self.X_fit_ = fit_data
 
     def fit(self, X, y=None, **kwargs):
+        """Determine transformation parameters from data in X.
+
+        Subsequent calls to `transform(Y)` compute the pairwise
+        distance to `X`.
+        Parameters of the clinical kernel are only updated
+        if `fit_once` is `False`, otherwise you have to
+        explicitly call `prepare()` once.
+
+        Parameters
+        ----------
+        X: pandas.DataFrame, shape = [n_samples, n_features]
+            Data to estimate parameters from.
+
+        Returns
+        -------
+        self : object
+            Returns the instance itself.
+        """
         if X.ndim != 2:
             raise ValueError("expected 2d array, but got %d" % X.ndim)
 

@@ -754,8 +754,12 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     rank_ratio : float, optional (default=1.0)
         Mixing parameter between regression and ranking objective with ``0 <= rank_ratio <= 1``.
         If ``rank_ratio = 1``, only ranking is performed, if ``rank_ratio = 0``, only regression
-        is performed. A non-zero value is only allowed if optimizer is one of 'avltree', 'PRSVM',
-        or 'rbtree'.
+        is performed. A non-zero value is only allowed if optimizer is one of 'avltree', 'rbtree',
+        or 'direct-count'.
+
+    fit_intercept : boolean, optional (default=False)
+        Whether to calculate an intercept for the regression model. If set to ``False``, no intercept
+        will be calculated. Has no effect if ``rank_ratio = 1``, i.e., only ranking is performed.
 
     max_iter : int, optional (default: 20)
         Maximum number of iterations to perform in Newton optimization
