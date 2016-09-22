@@ -22,3 +22,6 @@ install:
 
 # command to run tests
 script: nosetests -w tests --with-coverage --cover-package=survival --cover-tests
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
