@@ -1,6 +1,8 @@
 # Fast Training of Support Vector Machines for Survival Analysis
 
+![License](https://img.shields.io/badge/license-GPLv3-blue.svg)
 [![Build Status](https://travis-ci.org/tum-camp/survival-support-vector-machine.svg)](https://travis-ci.org/tum-camp/survival-support-vector-machine)
+[![codecov](https://codecov.io/gh/tum-camp/survival-support-vector-machine/branch/master/graph/badge.svg)](https://codecov.io/gh/tum-camp/survival-support-vector-machine)
 [![DOI](https://zenodo.org/badge/16868/tum-camp/survival-support-vector-machine.svg)](https://zenodo.org/badge/latestdoi/16868/tum-camp/survival-support-vector-machine)
 
 This repository contains an efficient implementation of *Survival Support
