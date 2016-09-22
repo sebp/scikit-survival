@@ -135,7 +135,9 @@ be used to reproduce the results in the paper.
 ## Documentation
 
 The source code is thoroughly documented and a HTML version of the API documentation
-can be generated using [Sphinx](http://sphinx-doc.org/) 1.4 or later.
+is available at https://tum-camp.github.io/survival-support-vector-machine/
+
+You can generate the documentation yourself using [Sphinx](http://sphinx-doc.org/) 1.4 or later.
 
 ```bash
 cd doc
