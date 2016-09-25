@@ -3,6 +3,8 @@ language: python
 python:
   - "3.4"
   - "3.5"
+env:
+  - NUMPY_VERSION=1.10
 
 cache:
   directories:

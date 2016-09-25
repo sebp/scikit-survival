@@ -17,7 +17,7 @@ else
   conda config --set always_yes yes --set changeps1 no
   conda update -q conda
   conda install anaconda-client gcc
-  conda create -n ssvm python=$TRAVIS_PYTHON_VERSION nose coverage
+  conda create -n ssvm python=$TRAVIS_PYTHON_VERSION numpy=$NUMPY_VERSION nose coverage
 fi
 
 # The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda
