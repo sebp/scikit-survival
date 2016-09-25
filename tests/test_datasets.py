@@ -158,7 +158,7 @@ def _make_and_write_data(fp, n_samples, n_features, with_index, with_labels, see
         arr = x
 
     if with_index:
-        index = numpy.arange(n_samples)
+        index = numpy.arange(n_samples, dtype=numpy.float_)
         numpy.random.RandomState(0).shuffle(index)
     else:
         index = None
@@ -173,8 +173,8 @@ def _make_and_write_data(fp, n_samples, n_features, with_index, with_labels, see
 class TestLoadArffFile(TestCase):
 
     def assert_x_equal(self, x_true, x_train):
-        tm.assert_index_equal(x_true.columns, x_train.columns)
-        tm.assert_index_equal(x_true.index, x_train.index)
+        tm.assert_index_equal(x_true.columns, x_train.columns, exact=True)
+        tm.assert_index_equal(x_true.index, x_train.index, exact=True)
 
         tm.assert_frame_equal(x_true, x_train,
                               check_index_type=False,
