@@ -1,0 +1,65 @@
+{% set name = "survival-svm" %}
+{% set version = "2.0" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  path: ..
+#  git_rev: v2.0
+#  git_url: https://github.com/tum-camp/survival-support-vector-machine.git
+
+build:
+  # If this is a new build for the same version, increment the build
+  # number. If you do not include this key, it defaults to 0.
+  number: 0
+  script: python setup.py install
+
+requirements:
+  build:
+    - python
+    - setuptools
+    - gcc
+    - numpy x.x
+    - scipy >=0.16
+
+  run:
+    - python
+    - cvxopt
+    - cvxpy
+    - numexpr
+    - numpy x.x
+    - pandas >=0.18.0,<0.19
+    - scikit-learn >=0.17.0,<0.18
+    - seaborn >=0.6.0
+    - scipy >=0.16
+    - ipyparallel >=4.1
+
+test:
+  # Python imports
+  imports:
+    - survival
+    - survival.base
+    - survival.bintrees
+    - survival.column
+    - survival.datasets
+    - survival.io
+    - survival.io.arffread
+    - survival.io.arffwrite
+    - survival.kernels
+    - survival.kernels.clinical
+    - survival.metrics
+    - survival.svm
+    - survival.svm.minlip
+    - survival.svm.naive_survival_svm
+    - survival.svm.survival_svm
+    - survival.util
+
+about:
+  home: https://github.com/tum-camp/survival-support-vector-machine
+  license: GPLv3
+  license_file: COPYING
+  summary: 'Implementation of Survival Support Vector Machine'
+  doc_url: https://tum-camp.github.io/survival-support-vector-machine/
+  dev_url: https://github.com/tum-camp/survival-support-vector-machine
