@@ -16,7 +16,7 @@ else
 
   conda config --set always_yes yes --set changeps1 no
   conda update -q conda
-  conda install anaconda-client
+  conda install anaconda-client gcc
   conda create -n ssvm python=$TRAVIS_PYTHON_VERSION nose coverage
 fi
 
