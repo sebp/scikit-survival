@@ -163,7 +163,7 @@ def load_arff_file(path_training, attr_labels, pos_label=None, path_testing=None
                 attr_labels = None
         x_test, y_test = get_x_y(test_dataset, attr_labels, pos_label, survival)
 
-        if len(x_train.columns.sym_diff(x_test.columns)) > 0:
+        if len(x_train.columns.symmetric_difference(x_test.columns)) > 0:
             warnings.warn("Restricting columns to intersection between training and testing data",
                           stacklevel=2)
 
