@@ -31,13 +31,21 @@ Vector Machines* as proposed in
 - scikit-learn 0.17
 - scipy 0.16 or later
 - C/C++ compiler
-- ipython (optional)
+- ipyparallel (optional)
 - seaborn (optional)
 
-## Getting Started
+## Installation
 
 The easiest way to get started is to install [Anaconda](https://store.continuum.io/cshop/anaconda/)
-and setup an environment. To create a new environment, named `ssvm`, run:
+and setup an environment.
+
+```
+conda install -c sebp survival-svm
+```
+
+## Installation from source
+
+First, create a new environment, named `ssvm`:
 
 ```
 conda create -n ssvm python=3 --file requirements.txt
