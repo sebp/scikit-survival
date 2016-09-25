@@ -27,7 +27,7 @@ Vector Machines* as proposed in
 - cvxopt
 - numexpr
 - numpy 1.9 or later
-- pandas 0.17.0 or later
+- pandas 0.18
 - scikit-learn 0.17
 - scipy 0.16 or later
 - C/C++ compiler
