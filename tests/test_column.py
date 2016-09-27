@@ -148,6 +148,36 @@ class TestEncodeCategorical(TestCase):
         self.assertTupleEqual(actual_df.shape, expected_df.shape)
         tm.assert_frame_equal(actual_df, expected_df, check_exact=True)
 
+    def test_duplicate_index(self):
+        a = numpy.concatenate((
+            numpy.repeat(["large"], 10),
+            numpy.repeat(["small"], 6),
+            numpy.repeat(["tiny"], 13),
+            numpy.repeat(["medium"], 3)))
+        rnd = numpy.random.RandomState(0)
+        c = rnd.randn(len(a))
+
+        index = numpy.ceil(numpy.arange(0, len(a) // 2, 0.5))
+        df = pandas.DataFrame.from_items([("a_category", pandas.Series(a, index=index)),
+                                          ("a_number", pandas.Series(c, index=index, copy=True))])
+
+        actual_df = column.encode_categorical(df)
+
+        expected_df = pandas.DataFrame(numpy.zeros((32, 3), dtype=numpy.float_),
+                                       index=index,
+                                       columns=["a_category=medium", "a_category=small", "a_category=tiny"])
+        # tiny
+        expected_df.iloc[16:29, 2] = 1
+        # small
+        expected_df.iloc[10:16, 1] = 1
+        # medium
+        expected_df.iloc[-3:, 0] = 1
+
+        expected_df["a_number"] = c
+
+        self.assertTupleEqual(actual_df.shape, expected_df.shape)
+        tm.assert_frame_equal(actual_df, expected_df, check_exact=True)
+
     def test_case_numeric(self):
         a = numpy.array([0, 1, 1, 0, 1, 0, 0, 1, 0, 1], dtype=object)
         b = numpy.array([1, 2, 1, 3, 2, 1, 3, 2, 3, 1], dtype=object)

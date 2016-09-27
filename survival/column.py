@@ -126,8 +126,8 @@ def encode_categorical(table, **kwargs):
                 if series is None:
                     continue
 
-            # join tables on index
-            new_table = new_table.join(series)
+            # concat columns of tables
+            new_table = pandas.concat((new_table, series), axis=1, copy=False)
         return new_table
 
 
