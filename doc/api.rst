@@ -1,6 +1,28 @@
 API reference
 =============
 
+Linear Models
+-------------
+.. currentmodule:: survival.linear_model
+
+.. autosummary::
+    :toctree: generated/
+
+    CoxPHSurvivalAnalysis
+    IPCRidge
+
+
+Ensemble Models
+---------------
+.. currentmodule:: survival.ensemble
+
+.. autosummary::
+    :toctree: generated/
+
+    ComponentwiseGradientBoostingSurvivalAnalysis
+    GradientBoostingSurvivalAnalysis
+
+
 Survival Support Vector Machine
 -------------------------------
 .. currentmodule:: survival.svm
@@ -24,6 +46,18 @@ Kernels
 
     clinical_kernel
     ClinicalKernelTransform
+
+
+Meta Models
+-----------
+.. currentmodule:: survival.meta
+
+.. autosummary::
+    :toctree: generated/
+
+    EnsembleSelection
+    EnsembleSelectionRegressor
+    Stacking
 
 
 Metrics

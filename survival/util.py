@@ -15,18 +15,23 @@ import pandas
 from sklearn.utils import check_consistent_length, check_array
 
 
-__all__ = ['check_arrays_survival', 'safe_concat']
+__all__ = ['check_arrays_survival', 'check_y_survival', 'safe_concat']
 
 
-def check_y_survival(y):
+def check_y_survival(y_or_event, *args):
     """Check that array correctly represents an outcome for survival analysis.
 
     Parameters
     ----------
-    y : structured array with two fields
-        A structured array containing the binary event indicator
+    y_or_event : structured array with two fields, or boolean array
+        If a structured array, it must contain the binary event indicator
         as first field, and time of event or time of censoring as
-        second field.
+        second field. Otherwise, it is assumed that a boolean array
+        representing the event indicator is passed.
+
+    *args : list of array-likes
+        Any number of array-like objects representing time information.
+        Elements that are `None` are passed along in the return value.
 
     Returns
     -------
@@ -36,13 +41,20 @@ def check_y_survival(y):
     time : array, shape=[n_samples,], dtype=float
         Time of event or censoring.
     """
-    if not isinstance(y, numpy.ndarray) or y.dtype.fields is None or len(y.dtype.fields) != 2:
-        raise ValueError('y must be a structured array with the first field'
-                         ' being a binary class event indicator and the second field'
-                         ' the time of the event/censoring')
+    if len(args) == 0:
+        y = y_or_event
 
-    event_field, time_field = y.dtype.names
-    y_event = y[event_field]
+        if not isinstance(y, numpy.ndarray) or y.dtype.fields is None or len(y.dtype.fields) != 2:
+            raise ValueError('y must be a structured array with the first field'
+                             ' being a binary class event indicator and the second field'
+                             ' the time of the event/censoring')
+
+        event_field, time_field = y.dtype.names
+        y_event = y[event_field]
+        time_args = (y[time_field],)
+    else:
+        y_event = numpy.asanyarray(y_or_event)
+        time_args = args
 
     event = check_array(y_event, ensure_2d=False)
     if not numpy.issubdtype(event.dtype, numpy.bool_):
@@ -51,11 +63,19 @@ def check_y_survival(y):
     if not numpy.any(event):
         raise ValueError('all samples are censored')
 
-    yt = check_array(y[time_field], ensure_2d=False)
-    if not numpy.issubdtype(yt.dtype, numpy.number):
-        raise ValueError('time must be numeric, but found {}'.format(yt.dtype))
+    return_val = [event]
+    for i, yt in enumerate(time_args):
+        if yt is None:
+            return_val.append(yt)
+            continue
 
-    return event, yt
+        yt = check_array(yt, ensure_2d=False)
+        if not numpy.issubdtype(yt.dtype, numpy.number):
+            raise ValueError('time must be numeric, but found {} for argument {}'.format(yt.dtype, i + 2))
+
+        return_val.append(yt)
+
+    return tuple(return_val)
 
 
 def check_arrays_survival(X, y, force_all_finite=True):

@@ -43,6 +43,7 @@ def setup_package():
                     maintainer=MAINTAINER,
                     maintainer_email=MAINTAINER_EMAIL,
                     description=DESCRIPTION,
+                    license="GNU General Public License version 3",
                     url=URL,
                     version=VERSION,
                     classifiers=['Intended Audience :: Science/Research',

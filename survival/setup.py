@@ -15,8 +15,11 @@ def configuration(parent_package='', top_path=None):
 
     config = Configuration('survival', parent_package, top_path)
     config.add_subpackage('bintrees')
+    config.add_subpackage('ensemble')
     config.add_subpackage('io')
     config.add_subpackage('kernels')
+    config.add_subpackage('linear_model')
+    config.add_subpackage('meta')
     config.add_subpackage('svm')
 
     return config
