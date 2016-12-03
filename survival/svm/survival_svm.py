@@ -713,8 +713,8 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     """Efficient Training of linear Survival Support Vector Machine
 
     Training data consists of *n* triplets :math:`(\\mathbf{x}_i, y_i, \\delta_i)`,
-    where :math:`\mathbf{x}_i` is a *d*-dimensional feature vector, :math:`y_i > 0`
-    the survival time or time of censoring, and :math:`\\delta_i \\in \{0,1\}`
+    where :math:`\\mathbf{x}_i` is a *d*-dimensional feature vector, :math:`y_i > 0`
+    the survival time or time of censoring, and :math:`\\delta_i \\in \\{0,1\\}`
     the binary event indicator. Using the training data, the objective is to
     minimize the following function:
 
@@ -732,7 +732,7 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         y_i - \\mathbf{w}^\\top \\mathbf{x}_i - b \\quad \\text{if $\\delta_i = 1$,} \\\\
         \\end{cases}
 
-        \\mathcal{P} = \\{ (i, j) \\mid y_i > y_j \\land \\delta_j = 1 \\}_{i,j=1,\dots,n}
+        \\mathcal{P} = \\{ (i, j) \\mid y_i > y_j \\land \\delta_j = 1 \\}_{i,j=1,\\dots,n}
 
     The hyper-parameter :math:`\\alpha > 0` determines the amount of regularization
     to apply: a smaller value increases the amount of regularization and a
