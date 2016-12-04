@@ -82,7 +82,7 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
         C : array, shape = (n_samples,)
             Returns predicted values on original scale (NOT log scale).
         """
-        return -numpy.exp(super().predict(X))
+        return numpy.exp(super().predict(X))
 
     def score(self, X, y, sample_weight=None):
         return SurvivalAnalysisMixin.score(self, X, y)

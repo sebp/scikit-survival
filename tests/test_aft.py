@@ -32,7 +32,7 @@ class TestIPCRidge(TestCase):
         x_test = self.x[400:]
         y_test = self.y[400:]
         p = model.predict(x_test)
-        ci = concordance_index_censored(y_test['fstat'], y_test['lenfol'], p)
+        ci = concordance_index_censored(y_test['fstat'], y_test['lenfol'], -p)
 
         self.assertAlmostEqual(ci[0], 0.66925817946226107)
         self.assertEqual(ci[1], 2066)
@@ -40,7 +40,7 @@ class TestIPCRidge(TestCase):
         self.assertEqual(ci[3], 0)
         self.assertEqual(ci[4], 6)
 
-        self.assertEqual(model.score(x_test, y_test), ci[0])
+        self.assertEqual(model.score(x_test, y_test), 1.0 - ci[0])
 
 
 if __name__ == '__main__':
