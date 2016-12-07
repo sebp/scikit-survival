@@ -453,9 +453,10 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         loss of the first stage over the ``init`` estimator.
     """
     def __init__(self, loss="coxph", learning_rate=0.1, n_estimators=100,
+                 criterion='friedman_mse',
                  min_samples_split=2,
                  min_samples_leaf=1, min_weight_fraction_leaf=0.,
-                 max_depth=3, random_state=None,
+                 max_depth=3, min_impurity_split=1e-7, random_state=None,
                  max_features=None, max_leaf_nodes=None,
                  subsample=1.0, dropout_rate=0.0,
                  verbose=0):
@@ -463,10 +464,12 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                          learning_rate=learning_rate,
                          n_estimators=n_estimators,
                          subsample=subsample,
+                         criterion=criterion,
                          min_samples_split=min_samples_split,
                          min_samples_leaf=min_samples_leaf,
                          min_weight_fraction_leaf=min_weight_fraction_leaf,
                          max_depth=max_depth,
+                         min_impurity_split=min_impurity_split,
                          init=ZeroSurvivalEstimator(),
                          random_state=random_state,
                          max_features=max_features,
@@ -549,6 +552,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                 min_samples_split=self.min_samples_split,
                 min_samples_leaf=self.min_samples_leaf,
                 min_weight_fraction_leaf=self.min_weight_fraction_leaf,
+                min_impurity_split=self.min_impurity_split,
                 max_features=self.max_features,
                 max_leaf_nodes=self.max_leaf_nodes,
                 random_state=random_state)
