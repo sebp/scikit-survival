@@ -15,7 +15,7 @@ import numbers
 import numpy
 from scipy.stats import rankdata, kendalltau, spearmanr
 from sklearn.base import clone, BaseEstimator
-from sklearn.cross_validation import check_cv
+from sklearn.model_selection import check_cv
 from sklearn.externals.joblib import Parallel, delayed
 
 from .base import _fit_and_score
@@ -247,6 +247,8 @@ class BaseEnsembleSelection(Stacking):
         """Create a cross-validated model by training a model for each fold with the same model parameters"""
         fit_params_steps = self._split_fit_params(fit_params)
 
+        folds = list(cv.split(X, y))
+
         # Take care of custom kernel functions
         base_estimators, kernel_cache = self._get_base_estimators(X)
 
@@ -261,12 +263,12 @@ class BaseEnsembleSelection(Stacking):
                                          fit_params_steps[name],
                                          i, fold)
             for i, (name, estimator) in enumerate(base_estimators)
-            for fold, (train_index, test_index) in enumerate(cv))
+            for fold, (train_index, test_index) in enumerate(folds))
 
         if len(kernel_cache) > 0:
-            out = self._restore_base_estimators(kernel_cache, out, X, cv)
+            out = self._restore_base_estimators(kernel_cache, out, X, folds)
 
-        return self._create_base_ensemble(out, len(base_estimators), len(cv))
+        return self._create_base_ensemble(out, len(base_estimators), len(folds))
 
     def _add_diversity_score(self, scores, predictions):
         n_models = predictions.shape[1]
@@ -303,7 +305,7 @@ class BaseEnsembleSelection(Stacking):
         """
         self._check_params()
 
-        cv = check_cv(self.cv, X, y)
+        cv = check_cv(self.cv, X)
         self._fit(X, y, cv, **fit_params)
 
         return self

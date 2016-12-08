@@ -2,9 +2,8 @@ from os.path import join, dirname
 
 import numpy
 from numpy.testing import TestCase, run_module_suite, assert_array_almost_equal
-from sklearn.cross_validation import KFold
+from sklearn.model_selection import KFold, ParameterGrid
 from sklearn.dummy import DummyRegressor
-from sklearn.grid_search import ParameterGrid
 from sklearn.metrics import mean_squared_error
 
 from survival.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis
@@ -44,7 +43,7 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
             model = FastSurvivalSVM(max_iter=100, random_state=0, **params)
             base_estimators.append(("svm_%d" % i, model))
 
-        cv = KFold(self.x.shape[0], n_folds=5, shuffle=True, random_state=0)
+        cv = KFold(n_splits=5, shuffle=True, random_state=0)
         meta = EnsembleSelection(base_estimators, n_estimators=0.4, scorer=score_cindex, cv=cv, n_jobs=4)
         self.assertEqual(len(meta), 0)
 
@@ -71,7 +70,7 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
             model = FastSurvivalSVM(max_iter=100, random_state=0, **params)
             base_estimators.append(("svm_%d" % i, model))
 
-        cv = KFold(self.x.shape[0], n_folds=5, shuffle=True, random_state=0)
+        cv = KFold(n_splits=5, shuffle=True, random_state=0)
         meta = EnsembleSelection(base_estimators, n_estimators=0.4, scorer=score_cindex,
                                  correlation="spearman", cv=cv, n_jobs=4)
         self.assertEqual(len(meta), 0)
@@ -97,7 +96,7 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
             model = FastSurvivalSVM(max_iter=100, random_state=0, **params)
             base_estimators.append(("svm_%d" % i, model))
 
-        cv = KFold(self.x.shape[0], n_folds=5, shuffle=True, random_state=0)
+        cv = KFold(n_splits=5, shuffle=True, random_state=0)
         meta = EnsembleSelection(base_estimators, n_estimators=0.4, scorer=score_cindex,
                                  correlation="kendall", cv=cv, n_jobs=4)
         self.assertEqual(len(meta), 0)
@@ -125,7 +124,7 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
             model = FastKernelSurvivalSVM(kernel=transform.pairwise_kernel, max_iter=100, random_state=0, **params)
             base_estimators.append(("svm_kernel_%d" % i, model))
 
-        cv = KFold(self.x.shape[0], n_folds=5, shuffle=True, random_state=0)
+        cv = KFold(n_splits=5, shuffle=True, random_state=0)
         meta = EnsembleSelection(base_estimators, n_estimators=0.4, scorer=score_cindex, cv=cv, n_jobs=4)
 
         meta.fit(self.x.values, self.y)
@@ -240,7 +239,7 @@ class TestEnsembleSelectionRegressor(TestCase):
             model = FastSurvivalSVM(rank_ratio=0, fit_intercept=True, max_iter=1000, **params)
             base_estimators.append(("svm_%d" % i, model))
 
-        cv = KFold(n, n_folds=5, shuffle=True, random_state=0)
+        cv = KFold(n_splits=5, shuffle=True, random_state=0)
         meta = EnsembleSelectionRegressor(base_estimators, n_estimators=0.4,
                                           scorer=_score_rmse,
                                           cv=cv, n_jobs=1)

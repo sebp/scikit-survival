@@ -395,7 +395,7 @@ class TestMinlip(TestCase):
 
     def test_kernel_precomputed(self):
         from sklearn.metrics.pairwise import pairwise_kernels
-        from sklearn.cross_validation import _safe_split
+        from sklearn.utils.metaestimators import _safe_split
 
         m = MinlipSurvivalAnalysis(kernel="precomputed", solver="cvxpy")
         K = pairwise_kernels(self.x, metric="rbf")
