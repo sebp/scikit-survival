@@ -5,6 +5,7 @@ python:
   - "3.5"
 env:
   - NUMPY_VERSION=1.10
+  - NUMPY_VERSION=1.11
 
 cache:
   directories:
