@@ -117,22 +117,22 @@ class TestConcordanceIndex(TestCase):
         time = numpy.array([1, 5, 10, 12, 7, 65])
         estimate = numpy.array([12, 8, 1, 89, 56, 13])
 
-        self.assertRaisesRegex(ValueError, "Found arrays with inconsistent numbers of samples: .+",
+        self.assertRaisesRegex(ValueError, "Found input variables with inconsistent numbers of samples: .+",
                                concordance_index_censored, event, time[:3], estimate)
 
-        self.assertRaisesRegex(ValueError, "Found arrays with inconsistent numbers of samples: .+",
+        self.assertRaisesRegex(ValueError, "Found input variables with inconsistent numbers of samples: .+",
                                concordance_index_censored, event, time, estimate[:3])
 
-        self.assertRaisesRegex(ValueError, "Found arrays with inconsistent numbers of samples: .+",
+        self.assertRaisesRegex(ValueError, "Found input variables with inconsistent numbers of samples: .+",
                                concordance_index_censored, event[:3], time, estimate, )
 
-        self.assertRaisesRegex(ValueError, "Found arrays with inconsistent numbers of samples: .+",
+        self.assertRaisesRegex(ValueError, "Found input variables with inconsistent numbers of samples: .+",
                                concordance_index_censored, event, time[:3], estimate[:3])
 
-        self.assertRaisesRegex(ValueError, "Found arrays with inconsistent numbers of samples: .+",
+        self.assertRaisesRegex(ValueError, "Found input variables with inconsistent numbers of samples: .+",
                                concordance_index_censored, event[:3], time, estimate[:3])
 
-        self.assertRaisesRegex(ValueError, "Found arrays with inconsistent numbers of samples: .+",
+        self.assertRaisesRegex(ValueError, "Found input variables with inconsistent numbers of samples: .+",
                                concordance_index_censored, event[:3], time[:3], estimate)
 
     def test_boolean_event(self):

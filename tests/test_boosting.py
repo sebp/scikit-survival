@@ -38,9 +38,8 @@ class TestGradientBoosting(TestCase):
 
         self.assertTupleEqual((100,), model.train_score_.shape)
 
-        self.assertRaisesRegex(ValueError, "Number of features of the model must "
-                                           " match the input. Model n_features is 14 and "
-                                           " input n_features is 2 ",
+        self.assertRaisesRegex(ValueError, "Number of features of the model must match the input. "
+                                           "Model n_features is 14 and input n_features is 2 ",
                                model.predict, self.x[:, :2])
 
     def test_fit_subsample(self):
@@ -60,9 +59,8 @@ class TestGradientBoosting(TestCase):
         self.assertTupleEqual((100,), model.train_score_.shape)
         self.assertTupleEqual((100,), model.oob_improvement_.shape)
 
-        self.assertRaisesRegex(ValueError, "Number of features of the model must "
-                                           " match the input. Model n_features is 14 and "
-                                           " input n_features is 2 ",
+        self.assertRaisesRegex(ValueError, "Number of features of the model must match the input. "
+                                           "Model n_features is 14 and input n_features is 2 ",
                                model.predict, self.x[:, :2])
 
     def test_fit_dropout(self):
@@ -365,11 +363,11 @@ class ExceptionCases:
         y['time'] = [12, 14, 6, 9, 1]
         y['event'] = [False, False, True, True, False]
 
-        self.assertRaisesRegex(ValueError, "Found arrays with inconsistent numbers of samples: \[3 5\]",
+        self.assertRaisesRegex(ValueError, "Found input variables with inconsistent numbers of samples: \[5, 3\]",
                                model.fit, x, y, [2, 3, 4])
 
         model.set_params(dropout_rate=1.2)
-        self.assertRaisesRegex(ValueError, "Found arrays with inconsistent numbers of samples: \[5 8\]",
+        self.assertRaisesRegex(ValueError, "Found input variables with inconsistent numbers of samples: \[5, 8\]",
                                model.fit, x, y, [2, 4, 5, 6, 7, 1, 2, 7])
 
 
