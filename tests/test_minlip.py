@@ -190,11 +190,35 @@ class TestMinlipToyExample(TestCase):
 
         assert_array_equal(expected, mat.toarray())
 
-    def test_toy_minlip_fit(self):
-        m = MinlipSurvivalAnalysis(alpha=1, pairs="next")
+    def test_toy_minlip_fit_cvxopt(self):
+        m = MinlipSurvivalAnalysis(solver="cvxopt", alpha=1, pairs="next")
         m.fit(self.x, self.y)
 
         self.assertTupleEqual((1, self.x.shape[0]), m.coef_.shape)
+        self.assertEqual(1, m.coef0)
+        expected_coef = numpy.array([[-7.18695994e-02, 7.18695994e-02, -7.51880574e-13,
+                                      -2.14618562e-01, 2.14618562e-01, 0]])
+        assert_array_almost_equal(m.coef_, expected_coef)
+
+    def test_toy_minlip_fit_cvxpy(self):
+        m = MinlipSurvivalAnalysis(solver="cvxpy", alpha=2, pairs="next")
+        m.fit(self.x, self.y)
+
+        self.assertTupleEqual((1, self.x.shape[0]), m.coef_.shape)
+        self.assertEqual(1, m.coef0)
+        expected_coef = numpy.array([[-7.18695994e-02, 7.18695994e-02, -7.51880574e-13,
+                                      -2.14618562e-01, 2.14618562e-01, 0]])
+        assert_array_almost_equal(m.coef_, expected_coef)
+
+    def test_toy_minlip_timeit(self):
+        m = MinlipSurvivalAnalysis(alpha=1, pairs="next", timeit=7)
+        m.fit(self.x, self.y)
+
+        self.assertEqual(7, len(m.timings_))
+
+    def test_toy_minlip_predict_1_cvxopt(self):
+        m = MinlipSurvivalAnalysis(solver="cvxopt", alpha=1, pairs="next")
+        m.fit(self.x, self.y)
 
         p = m.predict(self.x)
         v = concordance_index_censored(self.y['status'], self.y['time'], p)
@@ -205,13 +229,20 @@ class TestMinlipToyExample(TestCase):
         self.assertEqual(0, v[3])
         self.assertEqual(0, v[4])
 
-    def test_toy_minlip_timeit(self):
-        m = MinlipSurvivalAnalysis(alpha=1, pairs="next", timeit=7)
+    def test_toy_minlip_predict_1_cvxpy(self):
+        m = MinlipSurvivalAnalysis(solver="cvxpy", alpha=1, pairs="next")
         m.fit(self.x, self.y)
 
-        self.assertEqual(7, len(m.timings_))
+        p = m.predict(self.x)
+        v = concordance_index_censored(self.y['status'], self.y['time'], p)
 
-    def test_toy_minlip_predict_cvxopt(self):
+        self.assertEqual(1.0, v[0])
+        self.assertEqual(11, v[1])
+        self.assertEqual(0, v[2])
+        self.assertEqual(0, v[3])
+        self.assertEqual(0, v[4])
+
+    def test_toy_minlip_predict_2_cvxopt(self):
         m = MinlipSurvivalAnalysis(solver="cvxopt", alpha=1, pairs="next")
         y = self.y.copy()
         y["time"] = numpy.arange(1, 7)
@@ -220,14 +251,14 @@ class TestMinlipToyExample(TestCase):
         p = m.predict(numpy.array([[3, 4], [41, 29]]))
         assert_array_almost_equal(numpy.array([-0.34162365, -5.37435297]), p)
 
-    def test_toy_minlip_predict_cvxpy(self):
+    def test_toy_minlip_predict_2_cvxpy(self):
         m = MinlipSurvivalAnalysis(solver="cvxpy", alpha=1, pairs="next")
         y = self.y.copy()
         y["time"] = numpy.arange(1, 7)
         m.fit(self.x, y)
 
         p = m.predict(numpy.array([[3, 4], [41, 29]]))
-        assert_array_almost_equal(numpy.array([-0.341626, -5.37439364]), p)
+        assert_array_almost_equal(numpy.array([-0.341626, -5.374394]), p)
 
     def test_toy_hinge_fit(self):
         m = HingeLossSurvivalSVM(alpha=1)
@@ -344,8 +375,8 @@ class TestMinlip(TestCase):
         v = concordance_index_censored(self.y['cens'], self.y['time'], p)
 
         self.assertAlmostEqual(0.6286334, v[0], 3)
-        self.assertEqual(83653, v[1])
-        self.assertEqual(49418, v[2])
+        self.assertEqual(83655, v[1])
+        self.assertEqual(49416, v[2])
         self.assertEqual(1, v[3])
         self.assertEqual(32, v[4])
 

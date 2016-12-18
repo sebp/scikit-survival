@@ -81,6 +81,26 @@ def create_difference_matrix(cnp.npy_uint8[:] event,
 @cython.wraparound(False)
 @cython.cdivision(True)
 @cython.boundscheck(False)
+cdef inline void set_entries(cnp.npy_intp[:] columns,
+                             cnp.npy_int8[:] values,
+                             cnp.npy_intp k,
+                             cnp.npy_intp i, cnp.npy_intp j) nogil:
+    """Create sparse matrix with sorted indices"""
+    if i < j:
+        columns[k] = i
+        values[k] = 1
+        columns[k + 1] = j
+        values[k + 1] = -1
+    else:
+        columns[k] = j
+        values[k] = -1
+        columns[k + 1] = i
+        values[k + 1] = 1
+
+
+@cython.wraparound(False)
+@cython.cdivision(True)
+@cython.boundscheck(False)
 cdef cnp.npy_intp create_difference_matrix_direct_neighbor(cnp.npy_uint8[:] event,
                                               cnp.npy_intp[:] o,
                                               cnp.npy_int8[:] values,
@@ -90,14 +110,13 @@ cdef cnp.npy_intp create_difference_matrix_direct_neighbor(cnp.npy_uint8[:] even
     cdef cnp.npy_intp i
     cdef cnp.npy_intp j = 0
     cdef cnp.npy_intp k = 0
+    cdef cnp.npy_intp k1
+    cdef cnp.npy_intp k2
 
     for i in range(1, n_samples):
         while j < i:
             if event[o[j]]:
-                columns[k] = o[i]
-                values[k] = 1
-                columns[k + 1] = o[j]
-                values[k + 1] = -1
+                set_entries(columns, values, k, o[i], o[j])
                 k += 2
             j += 1
 
@@ -121,10 +140,7 @@ cdef cnp.npy_intp create_difference_matrix_nearest_neighbor(cnp.npy_uint8[:] eve
         j = i - 1
         while j >= 0:
             if event[o[j]]:
-                columns[k] = o[i]
-                values[k] = 1
-                columns[k + 1] = o[j]
-                values[k + 1] = -1
+                set_entries(columns, values, k, o[i], o[j])
                 k += 2
                 break
             j -= 1
@@ -147,10 +163,7 @@ cdef cnp.npy_intp create_difference_matrix_full(cnp.npy_uint8[:] event,
     for i in range(1, n_samples):
         for j in range(i):
             if event[o[j]]:
-                columns[k] = o[i]
-                values[k] = 1
-                columns[k + 1] = o[j]
-                values[k + 1] = -1
+                set_entries(columns, values, k, o[i], o[j])
                 k += 2
 
     return k
