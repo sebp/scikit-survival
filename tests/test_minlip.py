@@ -375,8 +375,8 @@ class TestMinlip(TestCase):
         v = concordance_index_censored(self.y['cens'], self.y['time'], p)
 
         self.assertAlmostEqual(0.6286334, v[0], 3)
-        self.assertEqual(83655, v[1])
-        self.assertEqual(49416, v[2])
+        self.assertEqual(83653, v[1])
+        self.assertEqual(49418, v[2])
         self.assertEqual(1, v[3])
         self.assertEqual(32, v[4])
 
