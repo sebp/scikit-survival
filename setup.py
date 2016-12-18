@@ -2,6 +2,12 @@ import os
 import os.path
 import sys
 
+# NumPy 1.11.2 contains a bug which prevents submodules from working correctly
+# on Python 3.4 unless importlib.machinery has been imported at some time.
+try:
+    import importlib.machinery
+except:
+    pass
 
 DISTNAME = 'survival-support-vector-machine'
 DESCRIPTION = 'Implementation of Survival Support Vector Machine'
