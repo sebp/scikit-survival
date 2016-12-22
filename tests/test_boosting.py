@@ -3,6 +3,7 @@ from os.path import join, dirname
 import numpy
 from numpy.testing import TestCase, run_module_suite, assert_array_equal, assert_array_almost_equal
 import pandas
+from scipy.sparse import coo_matrix
 from sklearn.metrics import mean_squared_error
 
 from survival.datasets import load_arff_file
@@ -235,6 +236,59 @@ class TestGradientBoosting(TestCase):
         self.assertEqual(est.estimators_.shape[0], 10)
         self.assertEqual(est.train_score_.shape[0], 10)
         self.assertEqual(est.oob_improvement_.shape[0], 10)
+
+
+class TestSparseGradientBoosting(TestCase):
+
+    def setUp(self):
+        x, self.y, _, _ = load_arff_file(WHAS500_FILE, ['fstat', 'lenfol'], '1',
+                                         standardize_numeric=False, to_numeric=False)
+        self.x_dense = column.categorical_to_numeric(x.select_dtypes(exclude=[numpy.float_]))
+
+        data = []
+        index_i = []
+        index_j = []
+        for j, (_, col) in enumerate(self.x_dense.iteritems()):
+            idx = numpy.flatnonzero(col.values)
+            data.extend([1] * len(idx))
+            index_i.extend(idx)
+            index_j.extend([j] * len(idx))
+
+        self.x_sparse = coo_matrix((data, (index_i, index_j)))
+        assert_array_equal(self.x_dense.values, self.x_sparse.toarray())
+
+    def test_fit(self):
+        for loss in ('coxph', 'squared', 'ipcwls'):
+            model = GradientBoostingSurvivalAnalysis(loss=loss, n_estimators=100, max_depth=1, min_samples_split=10,
+                                                     subsample=0.5, random_state=0)
+            model.fit(self.x_sparse, self.y)
+
+            self.assertEqual(model.estimators_.shape[0], 100)
+            self.assertTupleEqual(model.train_score_.shape, (100,))
+            self.assertTupleEqual(model.oob_improvement_.shape, (100,))
+
+            sparse_predict = model.predict(self.x_dense)
+
+            model.fit(self.x_dense, self.y)
+            dense_predict = model.predict(self.x_dense)
+
+            assert_array_almost_equal(sparse_predict, dense_predict)
+
+    def test_dropout(self):
+        for loss in ('coxph', 'squared', 'ipcwls'):
+            model = GradientBoostingSurvivalAnalysis(loss=loss, n_estimators=100, max_depth=1, min_samples_split=10,
+                                                     dropout_rate=0.03, random_state=0)
+            model.fit(self.x_sparse, self.y)
+
+            self.assertEqual(model.estimators_.shape[0], 100)
+            self.assertTupleEqual(model.train_score_.shape, (100,))
+
+            sparse_predict = model.predict(self.x_dense)
+
+            model.fit(self.x_dense, self.y)
+            dense_predict = model.predict(self.x_dense)
+
+            assert_array_almost_equal(sparse_predict, dense_predict)
 
 
 class TestComponentwiseGradientBoosting(TestCase):

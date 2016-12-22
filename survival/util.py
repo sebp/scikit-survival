@@ -78,7 +78,7 @@ def check_y_survival(y_or_event, *args):
     return tuple(return_val)
 
 
-def check_arrays_survival(X, y, force_all_finite=True):
+def check_arrays_survival(X, y, **kwargs):
     """Check that all arrays have consistent first dimensions.
 
     Parameters
@@ -91,8 +91,8 @@ def check_arrays_survival(X, y, force_all_finite=True):
         as first field, and time of event or time of censoring as
         second field.
 
-    force_all_finite : boolean (default=True)
-        Whether to raise an error on np.inf and np.nan in X.
+    kwargs : dict
+        Additional arguments passed to :func:`sklearn.utils.check_array`.
 
     Returns
     -------
@@ -106,7 +106,8 @@ def check_arrays_survival(X, y, force_all_finite=True):
         Time of event or censoring.
     """
     event, time = check_y_survival(y)
-    X = check_array(X, dtype=float, ensure_min_samples=2, force_all_finite=force_all_finite)
+    kwargs.setdefault("dtype", numpy.float64)
+    X = check_array(X, ensure_min_samples=2, **kwargs)
     check_consistent_length(X, event, time)
     return X, event, time
 

@@ -24,6 +24,8 @@ from sklearn.utils import check_consistent_length, check_random_state, column_or
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.extmath import squared_norm
 
+from scipy.sparse import csc_matrix, csr_matrix, issparse
+
 from ..base import SurvivalAnalysisMixin
 from ..util import check_arrays_survival
 from .survival_loss import CoxPH, CensoredSquaredLoss, IPCWLeastSquaresError, ZeroSurvivalEstimator
@@ -344,8 +346,17 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         for k, estimator in enumerate(self.estimators_):
             imp[estimator.component].append(k + 1)
 
-        ret = numpy.array(list(map(lambda x: numpy.min(x) if len(x) > 0 else numpy.nan, imp)))
+        def _importance(x):
+            if len(x) > 0:
+                return numpy.min(x)
+            return numpy.nan
+
+        ret = numpy.array([_importance(x) for x in imp])
         return ret
+
+    def _make_estimator(self, append=True, random_state=None):
+        # we don't need _make_estimator
+        raise NotImplementedError()
 
 
 class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMixin):
@@ -531,7 +542,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
             raise ValueError("Loss '{0:s}' not supported. ".format(self.loss))
 
     def _fit_stage(self, i, X, y, y_pred, sample_weight, sample_mask,
-                   random_state, scale):
+                   random_state, scale, X_idx_sorted, X_csc=None, X_csr=None):
         """Fit another stage of ``n_classes_`` trees to the boosting model. """
 
         assert sample_mask.dtype == numpy.bool
@@ -561,8 +572,12 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                 # no inplace multiplication!
                 sample_weight = sample_weight * sample_mask.astype(numpy.float64)
 
-            tree.fit(X, residual, sample_weight=sample_weight,
-                     check_input=False)
+            if X_csc is not None:
+                tree.fit(X_csc, residual, sample_weight=sample_weight,
+                         check_input=False, X_idx_sorted=X_idx_sorted)
+            else:
+                tree.fit(X, residual, sample_weight=sample_weight,
+                         check_input=False, X_idx_sorted=X_idx_sorted)
 
             # add tree to ensemble
             self.estimators_[i, k] = tree
@@ -584,14 +599,20 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                         # pseudoresponse of next iteration (without contribution of dropped trees)
                         y_pred[:, k] += self.learning_rate * scale[m] * self.estimators_[m, k].predict(X).ravel()
             else:
-                loss.update_terminal_regions(tree.tree_, X, y, residual, y_pred,
-                                             sample_weight, sample_mask,
-                                             self.learning_rate, k=k)
+                # update tree leaves
+                if X_csr is not None:
+                    loss.update_terminal_regions(tree.tree_, X_csr, y, residual, y_pred,
+                                                 sample_weight, sample_mask,
+                                                 self.learning_rate, k=k)
+                else:
+                    loss.update_terminal_regions(tree.tree_, X, y, residual, y_pred,
+                                                 sample_weight, sample_mask,
+                                                 self.learning_rate, k=k)
 
         return y_pred
 
     def _fit_stages(self, X, y, y_pred, sample_weight, random_state,
-                    begin_at_stage=0, monitor=None):
+                    begin_at_stage=0, monitor=None, X_idx_sorted=None):
         """Iteratively fits the stages.
 
         For each stage it computes the progress (OOB, train score)
@@ -608,6 +629,9 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         if self.verbose:
             verbose_reporter = VerboseReporter(self.verbose)
             verbose_reporter.init(self, begin_at_stage)
+
+        X_csc = csc_matrix(X) if issparse(X) else None
+        X_csr = csr_matrix(X) if issparse(X) else None
 
         if self.dropout_rate > 0.:
             scale = numpy.ones(self.n_estimators, dtype=float)
@@ -630,7 +654,8 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
             # fit next stage of trees
             y_pred = self._fit_stage(i, X, y, y_pred, sample_weight,
-                                     sample_mask, random_state, scale)
+                                     sample_mask, random_state, scale, X_idx_sorted,
+                                     X_csc, X_csr)
 
             # track deviance (= loss)
             if do_oob:
@@ -688,7 +713,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         """
         random_state = check_random_state(self.random_state)
 
-        X, event, time = check_arrays_survival(X, y)
+        X, event, time = check_arrays_survival(X, y, accept_sparse=['csr', 'csc', 'coo'], dtype=DTYPE)
         n_samples, self.n_features = X.shape
 
         X = X.astype(DTYPE)
