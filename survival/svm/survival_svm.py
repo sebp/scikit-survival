@@ -656,7 +656,7 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
         if self.alpha <= 0:
             raise ValueError("alpha must be positive")
 
-        if not (0 <= self.rank_ratio <= 1):
+        if not 0 <= self.rank_ratio <= 1:
             raise ValueError("rank_ratio must be in [0; 1]")
 
         if self.fit_intercept and self.rank_ratio == 1.0:
