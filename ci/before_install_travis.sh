@@ -17,7 +17,7 @@ else
   conda config --set always_yes yes --set changeps1 no
   conda update -q conda
   conda install anaconda-client gcc
-  conda create -n ssvm python=$TRAVIS_PYTHON_VERSION numpy=$NUMPY_VERSION nose coverage
+  conda create -n sksurv-test python=$TRAVIS_PYTHON_VERSION numpy=$NUMPY_VERSION nose coverage
   echo "numpy $NUMPY_VERSION.*" > "$MINICONDA_DIR/envs/ssvm/conda-meta/pinned"
 fi
 
