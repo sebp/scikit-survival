@@ -18,13 +18,13 @@ before_install:
 
 # command to install dependencies
 install:
-  - conda install -n ssvm -c sebp --file requirements.txt
-  - source activate ssvm
+  - conda install -n sksurv-test -c sebp --file requirements.txt
+  - source activate sksurv-test
   - python setup.py install
-  - rm -fr survival
+  - rm -fr sksurv
 
 # command to run tests
-script: nosetests -w tests --with-coverage --cover-package=survival --cover-tests
+script: nosetests -w tests --with-coverage --cover-package=sksurv --cover-tests
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
