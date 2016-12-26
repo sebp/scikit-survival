@@ -1,7 +1,7 @@
 from os.path import join, dirname
 
 import numpy
-from numpy.testing import TestCase, run_module_suite, assert_array_almost_equal
+from numpy.testing import TestCase, run_module_suite, assert_array_equal, assert_array_almost_equal
 import pandas
 from sklearn.metrics import mean_squared_error
 
@@ -11,6 +11,14 @@ from survival import column
 from survival.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis, GradientBoostingSurvivalAnalysis
 
 WHAS500_FILE = join(dirname(__file__), '..', 'data', 'whas500.arff')
+
+
+def early_stopping_monitor(i, est, locals):
+    """Returns True on the 10th iteration. """
+    if i == 9:
+        return True
+    else:
+        return False
 
 
 class TestGradientBoosting(TestCase):
@@ -166,6 +174,17 @@ class TestGradientBoosting(TestCase):
 
         rmse_uncensored = numpy.sqrt(mean_squared_error(time_true[event_true], time_predicted[event_true]))
         self.assertAlmostEqual(rmse_uncensored, 383.10639243317951)
+
+    def test_monitor_early_stopping(self):
+        est = GradientBoostingSurvivalAnalysis(loss="ipcwls", n_estimators=50, max_depth=1,
+                                               subsample=0.5,
+                                               random_state=0)
+        est.fit(self.x, self.y, monitor=early_stopping_monitor)
+
+        self.assertEqual(est.n_estimators, 50)  # this is not altered
+        self.assertEqual(est.estimators_.shape[0], 10)
+        self.assertEqual(est.train_score_.shape[0], 10)
+        self.assertEqual(est.oob_improvement_.shape[0], 10)
 
 
 class TestComponentwiseGradientBoosting(TestCase):
