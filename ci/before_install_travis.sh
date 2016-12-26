@@ -18,7 +18,7 @@ else
   conda update -q conda
   conda install anaconda-client gcc
   conda create -n sksurv-test python=$TRAVIS_PYTHON_VERSION numpy=$NUMPY_VERSION nose coverage
-  echo "numpy $NUMPY_VERSION.*" > "$MINICONDA_DIR/envs/ssvm/conda-meta/pinned"
+  echo "numpy $NUMPY_VERSION.*" > "$MINICONDA_DIR/envs/sksurv-test/conda-meta/pinned"
 fi
 
 # The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda
