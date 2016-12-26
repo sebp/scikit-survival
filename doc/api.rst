@@ -3,7 +3,7 @@ API reference
 
 Linear Models
 -------------
-.. currentmodule:: survival.linear_model
+.. currentmodule:: sksurv.linear_model
 
 .. autosummary::
     :toctree: generated/
@@ -14,7 +14,7 @@ Linear Models
 
 Ensemble Models
 ---------------
-.. currentmodule:: survival.ensemble
+.. currentmodule:: sksurv.ensemble
 
 .. autosummary::
     :toctree: generated/
@@ -25,7 +25,7 @@ Ensemble Models
 
 Survival Support Vector Machine
 -------------------------------
-.. currentmodule:: survival.svm
+.. currentmodule:: sksurv.svm
 
 .. autosummary::
     :toctree: generated/
@@ -39,7 +39,7 @@ Survival Support Vector Machine
 
 Kernels
 -------
-.. currentmodule:: survival.kernels
+.. currentmodule:: sksurv.kernels
 
 .. autosummary::
     :toctree: generated/
@@ -50,7 +50,7 @@ Kernels
 
 Meta Models
 -----------
-.. currentmodule:: survival.meta
+.. currentmodule:: sksurv.meta
 
 .. autosummary::
     :toctree: generated/
@@ -62,7 +62,7 @@ Meta Models
 
 Metrics
 -------
-.. currentmodule:: survival.metrics
+.. currentmodule:: sksurv.metrics
 
 .. autosummary::
     :toctree: generated/
@@ -72,7 +72,7 @@ Metrics
 
 Pre-Processing
 --------------
-.. currentmodule:: survival.column
+.. currentmodule:: sksurv.column
 
 .. autosummary::
     :toctree: generated/
@@ -84,7 +84,7 @@ Pre-Processing
 
 I/O Utilities
 -------------
-.. currentmodule:: survival.io
+.. currentmodule:: sksurv.io
 
 .. autosummary::
     :toctree: generated/
