@@ -7,14 +7,14 @@ from numpy.testing import TestCase, run_module_suite, assert_array_almost_equal,
 from sklearn.decomposition import KernelPCA
 from sklearn.metrics import mean_squared_error
 
-from survival.bintrees import AVLTree, RBTree
-from survival.column import encode_categorical, standardize
-from survival.datasets import load_arff_file
-from survival.kernels import ClinicalKernelTransform
-from survival.metrics import concordance_index_censored
-from survival.svm._prsvm import survival_constraints_simple
-from survival.svm.naive_survival_svm import NaiveSurvivalSVM
-from survival.svm.survival_svm import FastSurvivalSVM, FastKernelSurvivalSVM, SurvivalCounter, \
+from sksurv.bintrees import AVLTree, RBTree
+from sksurv.column import encode_categorical, standardize
+from sksurv.datasets import load_arff_file
+from sksurv.kernels import ClinicalKernelTransform
+from sksurv.metrics import concordance_index_censored
+from sksurv.svm._prsvm import survival_constraints_simple
+from sksurv.svm.naive_survival_svm import NaiveSurvivalSVM
+from sksurv.svm.survival_svm import FastSurvivalSVM, FastKernelSurvivalSVM, SurvivalCounter, \
     OrderStatisticTreeSurvivalCounter
 
 WHAS500_FILE = join(dirname(__file__), '..', 'data', 'whas500.arff')

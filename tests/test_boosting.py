@@ -6,10 +6,10 @@ import pandas
 from scipy.sparse import coo_matrix
 from sklearn.metrics import mean_squared_error
 
-from survival.datasets import load_arff_file
-from survival.metrics import concordance_index_censored
-from survival import column
-from survival.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis, GradientBoostingSurvivalAnalysis
+from sksurv.datasets import load_arff_file
+from sksurv.metrics import concordance_index_censored
+from sksurv import column
+from sksurv.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis, GradientBoostingSurvivalAnalysis
 
 WHAS500_FILE = join(dirname(__file__), '..', 'data', 'whas500.arff')
 

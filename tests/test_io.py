@@ -7,7 +7,7 @@ import numpy
 import pandas
 import pandas.util.testing as tm
 
-from survival.io import loadarff, writearff
+from sksurv.io import loadarff, writearff
 
 
 EXPECTED_1 = ["@relation test_nominal\n",

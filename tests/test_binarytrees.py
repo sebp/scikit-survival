@@ -1,6 +1,6 @@
 from numpy.testing import TestCase, run_module_suite
 
-from survival.bintrees import RBTree, AVLTree
+from sksurv.bintrees import RBTree, AVLTree
 
 
 class BinaryTreesCases(object):

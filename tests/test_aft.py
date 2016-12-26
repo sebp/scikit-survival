@@ -3,9 +3,9 @@ from os.path import join, dirname
 import numpy
 from numpy.testing import TestCase, run_module_suite, assert_array_almost_equal
 
-from survival.linear_model import IPCRidge
-from survival.datasets import load_arff_file
-from survival.metrics import concordance_index_censored
+from sksurv.linear_model import IPCRidge
+from sksurv.datasets import load_arff_file
+from sksurv.metrics import concordance_index_censored
 
 WHAS500_FILE = join(dirname(__file__), '..', 'data', 'whas500.arff')
 

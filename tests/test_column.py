@@ -3,7 +3,7 @@ import pandas.util.testing as tm
 import pandas
 import numpy
 
-from survival import column
+from sksurv import column
 
 NUMERIC_DATA_FRAME = pandas.DataFrame(numpy.arange(50).reshape(10, 5))
 

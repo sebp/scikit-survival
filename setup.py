@@ -9,13 +9,13 @@ try:
 except:
     pass
 
-DISTNAME = 'survival-support-vector-machine'
-DESCRIPTION = 'Implementation of Survival Support Vector Machine'
+DISTNAME = 'scikit-survival'
+DESCRIPTION = 'Survival analysis built on top of scikit-learn'
 MAINTAINER = 'Sebastian Pölsterl'
-MAINTAINER_EMAIL = 'sebastian.poelsterl@tum.de'
-URL = 'https://github.com/tum-camp/survival-support-vector-machine'
+MAINTAINER_EMAIL = 'sebp@k-d-w.org'
+URL = 'https://github.com/sebp/scikit-survival'
 
-VERSION = "2.0"
+VERSION = "0.1"
 
 
 def configuration(parent_package='', top_path=None):
@@ -33,7 +33,7 @@ def configuration(parent_package='', top_path=None):
                        delegate_options_to_subpackages=True,
                        quiet=True)
 
-    config.add_subpackage('survival')
+    config.add_subpackage('sksurv')
 
     return config
 

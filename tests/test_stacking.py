@@ -9,11 +9,11 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score, roc_auc_score
 from sklearn.svm import SVC
 
-from survival.datasets import load_arff_file
-from survival.meta import Stacking, MeanEstimator
-from survival.metrics import concordance_index_censored
-from survival.svm import FastSurvivalSVM
-from survival.linear_model import CoxPHSurvivalAnalysis
+from sksurv.datasets import load_arff_file
+from sksurv.meta import Stacking, MeanEstimator
+from sksurv.metrics import concordance_index_censored
+from sksurv.svm import FastSurvivalSVM
+from sksurv.linear_model import CoxPHSurvivalAnalysis
 
 
 WHAS500_FILE = join(dirname(__file__), '..', 'data', 'whas500.arff')

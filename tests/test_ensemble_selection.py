@@ -6,14 +6,14 @@ from sklearn.model_selection import KFold, ParameterGrid
 from sklearn.dummy import DummyRegressor
 from sklearn.metrics import mean_squared_error
 
-from survival.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis
-from survival.datasets import load_arff_file
-from survival.kernels import ClinicalKernelTransform
-from survival.linear_model import IPCRidge
-from survival.meta import EnsembleSelection, EnsembleSelectionRegressor
-from survival.metrics import concordance_index_censored
-from survival.svm import FastSurvivalSVM, FastKernelSurvivalSVM
-from survival.util import check_arrays_survival
+from sksurv.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis
+from sksurv.datasets import load_arff_file
+from sksurv.kernels import ClinicalKernelTransform
+from sksurv.linear_model import IPCRidge
+from sksurv.meta import EnsembleSelection, EnsembleSelectionRegressor
+from sksurv.metrics import concordance_index_censored
+from sksurv.svm import FastSurvivalSVM, FastKernelSurvivalSVM
+from sksurv.util import check_arrays_survival
 
 WHAS500_FILE = join(dirname(__file__), '..', 'data', 'whas500.arff')
 

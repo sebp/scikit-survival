@@ -5,7 +5,7 @@ import pandas
 from sklearn.base import clone
 from sklearn.metrics.pairwise import pairwise_kernels
 
-from survival.kernels import clinical_kernel, ClinicalKernelTransform
+from sksurv.kernels import clinical_kernel, ClinicalKernelTransform
 
 
 def _get_expected_matrix(with_ordinal=True, with_nominal=True, with_continuous=True):

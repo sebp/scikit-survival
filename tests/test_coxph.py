@@ -5,9 +5,9 @@ import numpy
 from numpy.testing import TestCase, assert_array_almost_equal, run_module_suite
 import pandas
 
-from survival.column import standardize
+from sksurv.column import standardize
 
-from survival.linear_model.coxph import CoxPHSurvivalAnalysis, CoxPHOptimizer
+from sksurv.linear_model.coxph import CoxPHSurvivalAnalysis, CoxPHOptimizer
 
 ROSSI_FILE = join(dirname(__file__), 'data', 'rossi.csv')
 

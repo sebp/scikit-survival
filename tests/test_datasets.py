@@ -8,8 +8,8 @@ import pandas
 import pandas.util.testing as tm
 from numpy.testing import TestCase, assert_array_equal, assert_array_almost_equal, run_module_suite
 
-from survival.datasets import get_x_y, load_arff_file
-from survival.io import writearff
+from sksurv.datasets import get_x_y, load_arff_file
+from sksurv.io import writearff
 
 ARFF_CATEGORICAL_INDEX_1 = """@relation arff_categorical_index
 @attribute index {SampleOne,SampleTwo,SampleThree,SampleFour}

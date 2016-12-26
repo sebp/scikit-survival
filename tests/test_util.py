@@ -3,7 +3,7 @@ import pandas.util.testing as tm
 import pandas
 import numpy
 
-from survival.util import safe_concat
+from sksurv.util import safe_concat
 
 
 class TestUtil(TestCase):

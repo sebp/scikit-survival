@@ -4,8 +4,8 @@ import numpy
 from numpy.testing import TestCase, run_module_suite, assert_array_equal, assert_array_almost_equal
 import pandas
 
-from survival.io import loadarff
-from survival.nonparametric import kaplan_meier_estimator, nelson_aalen_estimator
+from sksurv.io import loadarff
+from sksurv.nonparametric import kaplan_meier_estimator, nelson_aalen_estimator
 
 WHAS500_FILE = join(dirname(__file__), '..', 'data', 'whas500.arff')
 CHANNING_FILE = join(dirname(__file__), 'data', 'channing.csv')

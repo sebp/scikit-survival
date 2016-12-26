@@ -1,5 +1,5 @@
-{% set name = "survival-svm" %}
-{% set version = "2.0" %}
+{% set name = "scikit-survival" %}
+{% set version = "0.1" %}
 
 package:
   name: {{ name|lower }}
@@ -7,8 +7,8 @@ package:
 
 source:
   path: ..
-#  git_rev: v2.0
-#  git_url: https://github.com/tum-camp/survival-support-vector-machine.git
+#  git_rev: v0.1
+#  git_url: https://github.com/sebp/scikit-survival
 
 build:
   # If this is a new build for the same version, increment the build
@@ -31,35 +31,42 @@ requirements:
     - numexpr
     - numpy x.x
     - pandas >=0.18.0,<0.19
-    - scikit-learn >=0.17.0,<0.18
-    - seaborn >=0.6.0
+    - scikit-learn >=0.18.0,<0.19
     - scipy >=0.16
-    - ipyparallel >=4.1
 
 test:
   # Python imports
   imports:
-    - survival
-    - survival.base
-    - survival.bintrees
-    - survival.column
-    - survival.datasets
-    - survival.io
-    - survival.io.arffread
-    - survival.io.arffwrite
-    - survival.kernels
-    - survival.kernels.clinical
-    - survival.metrics
-    - survival.svm
-    - survival.svm.minlip
-    - survival.svm.naive_survival_svm
-    - survival.svm.survival_svm
-    - survival.util
+    - sksurv
+    - sksurv.base
+    - sksurv.bintrees
+    - sksurv.column
+    - sksurv.datasets
+    - sksurv.ensmeble
+    - sksurv.ensmeble.boosting
+    - sksurv.ensmeble.survival_loss
+    - sksurv.io
+    - sksurv.io.arffread
+    - sksurv.io.arffwrite
+    - sksurv.kernels
+    - sksurv.kernels.clinical
+    - sksurv.linear_model
+    - sksurv.linear_model.aft
+    - sksurv.linear_model.coxph
+    - sksurv.metrics
+    - sksurv.meta
+    - sksurv.meta.base
+    - sksurv.meta.ensemble_selection
+    - sksurv.meta.stacking
+    - sksurv.svm
+    - sksurv.svm.minlip
+    - sksurv.svm.naive_survival_svm
+    - sksurv.svm.survival_svm
+    - sksurv.util
 
 about:
-  home: https://github.com/tum-camp/survival-support-vector-machine
+  home: https://github.com/sebp/scikit-survival
   license: GPLv3
   license_file: COPYING
-  summary: 'Implementation of Survival Support Vector Machine'
-  doc_url: https://tum-camp.github.io/survival-support-vector-machine/
-  dev_url: https://github.com/tum-camp/survival-support-vector-machine
+  summary: 'Survival analysis built on top of scikit-learn'
+  dev_url: https://github.com/sebp/scikit-survival

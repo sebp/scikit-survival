@@ -3,7 +3,7 @@ import os.path
 import numpy
 from numpy.testing import TestCase, run_module_suite
 
-from survival.metrics import concordance_index_censored
+from sksurv.metrics import concordance_index_censored
 
 WHAS500_DATA_FILE = os.path.join(os.path.dirname(__file__), 'data', 'whas500_predictions.csv')
 

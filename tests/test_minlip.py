@@ -3,11 +3,11 @@ from os.path import join, dirname
 import numpy
 from numpy.testing import TestCase, run_module_suite, assert_array_almost_equal, assert_array_equal
 
-from survival.svm.minlip import MinlipSurvivalAnalysis, HingeLossSurvivalSVM
-from survival.datasets import load_arff_file
-from survival.metrics import concordance_index_censored
-from survival.column import encode_categorical
-from survival.svm._minlip import create_difference_matrix
+from sksurv.svm.minlip import MinlipSurvivalAnalysis, HingeLossSurvivalSVM
+from sksurv.datasets import load_arff_file
+from sksurv.metrics import concordance_index_censored
+from sksurv.column import encode_categorical
+from sksurv.svm._minlip import create_difference_matrix
 
 GBSG2_FILE = join(dirname(__file__), '..', 'data', 'GBSG2.arff')
 
