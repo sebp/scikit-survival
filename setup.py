@@ -9,6 +9,8 @@ try:
 except:
     pass
 
+from setuptools import find_packages
+
 DISTNAME = 'scikit-survival'
 DESCRIPTION = 'Survival analysis built on top of scikit-learn'
 MAINTAINER = 'Sebastian Pölsterl'
@@ -57,7 +59,22 @@ def setup_package():
                                  'Programming Language :: Python :: 3.4',
                                  'Programming Language :: Python :: 3.5',
                     ],
-                    scripts = [],
+                    packages=find_packages(),
+                    install_requires=[
+                        'cvxopt',
+                        'cvxpy',
+                        'numexpr',
+                        'numpy',
+                        'pandas >=0.18.0, <0.19',
+                        'scipy',
+                        'scikit-learn >=0.18.0, <0.19'],
+                    extras_require={
+                        'tests': [
+                            'nose',
+                            'coverage'],
+                        'docs': [
+                            'sphinx >= 1.4',
+                            'numpydoc']}
     )
 
     if (len(sys.argv) >= 2
