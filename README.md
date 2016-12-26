@@ -1,9 +1,8 @@
 # scikit-survival
 
 ![License](https://img.shields.io/badge/license-GPLv3-blue.svg)
-[![Build Status](https://travis-ci.org/tum-camp/survival-support-vector-machine.svg)](https://travis-ci.org/tum-camp/survival-support-vector-machine)
-[![codecov](https://codecov.io/gh/tum-camp/survival-support-vector-machine/branch/master/graph/badge.svg)](https://codecov.io/gh/tum-camp/survival-support-vector-machine)
-[![DOI](https://zenodo.org/badge/37088896.svg)](https://zenodo.org/badge/latestdoi/37088896)
+[![Build Status](https://travis-ci.org/sebp/scikit-survival.svg)](https://travis-ci.org/sebp/scikit-survival)
+[![codecov](https://codecov.io/gh/sebp/scikit-survival/branch/master/graph/badge.svg)](https://codecov.io/gh/sebp/scikit-survival)
 
 scikit-survival is a Python module for [survival analysis][survival_analysis]
 built on top of [scikit-learn](http://scikit-learn.org/). It allows doing survival analysis
