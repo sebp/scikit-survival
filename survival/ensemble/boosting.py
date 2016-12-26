@@ -722,21 +722,44 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         return self
 
-    def _decision_function(self, X):
-        # if dropout wasn't used during training, proceed as usual,
-        # otherwise consider scaling factor of individual trees
-        if not hasattr(self, "scale_"):
-            return super()._decision_function(X)
+    def _dropout_predict_stage(self, X, i, K, score):
+        for k in range(K):
+            tree = self.estimators_[i, k].tree_
+            score += self.learning_rate * self.scale_[i] * tree.predict(X).reshape((X.shape[0], 1))
+        return score
 
+    def _dropout_decision_function(self, X):
         score = self._init_decision_function(X)
 
         n_estimators, K = self.estimators_.shape
         for i in range(n_estimators):
-            for k in range(K):
-                tree = self.estimators_[i, k].tree_
-                score += self.learning_rate * self.scale_[i] * tree.predict(X).reshape((X.shape[0], 1))
+            self._dropout_predict_stage(X, i, K, score)
 
         return score
+
+    def _dropout_staged_decision_function(self, X):
+        X = check_array(X, dtype=DTYPE, order="C")
+        score = self._init_decision_function(X)
+
+        n_estimators, K = self.estimators_.shape
+        for i in range(n_estimators):
+            self._dropout_predict_stage(X, i, K, score)
+            yield score.copy()
+
+    def _scale_prediction(self, score):
+        if isinstance(self.loss_, (CensoredSquaredLoss, IPCWLeastSquaresError)):
+            numpy.exp(score, out=score)
+        return score
+
+    def _decision_function(self, X):
+        # if dropout wasn't used during training, proceed as usual,
+        # otherwise consider scaling factor of individual trees
+        if not hasattr(self, "scale_"):
+            score = super()._decision_function(X)
+        else:
+            score = self._dropout_decision_function(X)
+
+        return self._scale_prediction(score)
 
     def predict(self, X):
         """Predict hazard for X.
@@ -758,9 +781,6 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         if score.shape[1] == 1:
             score = score.ravel()
 
-        if isinstance(self.loss_, (CensoredSquaredLoss, IPCWLeastSquaresError)):
-            numpy.exp(score, out=score)
-
         return score
 
     def staged_predict(self, X):
@@ -779,5 +799,13 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         y : generator of array of shape = [n_samples]
             The predicted value of the input samples.
         """
-        for y in self.staged_decision_function(X):
-            yield y.ravel()
+        check_is_fitted(self, 'estimators_')
+
+        # if dropout wasn't used during training, proceed as usual,
+        # otherwise consider scaling factor of individual trees
+        if not hasattr(self, "scale_"):
+            for y in self._staged_decision_function(X):
+                yield self._scale_prediction(y.ravel())
+        else:
+            for y in self._dropout_staged_decision_function(X):
+                yield self._scale_prediction(y.ravel())

@@ -175,6 +175,56 @@ class TestGradientBoosting(TestCase):
         rmse_uncensored = numpy.sqrt(mean_squared_error(time_true[event_true], time_predicted[event_true]))
         self.assertAlmostEqual(rmse_uncensored, 383.10639243317951)
 
+    def test_ipcw_loss_staged_predict(self):
+        # Test whether staged decision function eventually gives
+        # the same prediction.
+        model = GradientBoostingSurvivalAnalysis(loss="ipcwls", n_estimators=100, max_depth=3, random_state=0)
+        model.fit(self.x, self.y)
+
+        y_pred = model.predict(self.x)
+
+        # test if prediction for last stage equals ``predict``
+        for y in model.staged_predict(self.x):
+            self.assertTupleEqual(y.shape, y_pred.shape)
+
+        assert_array_equal(y_pred, y)
+
+        model.set_params(dropout_rate=0.03)
+        model.fit(self.x, self.y)
+
+        y_pred = model.predict(self.x)
+
+        # test if prediction for last stage equals ``predict``
+        for y in model.staged_predict(self.x):
+            self.assertTupleEqual(y.shape, y_pred.shape)
+
+        assert_array_equal(y_pred, y)
+
+    def test_squared_loss_staged_predict(self):
+        # Test whether staged decision function eventually gives
+        # the same prediction.
+        model = GradientBoostingSurvivalAnalysis(loss="squared", n_estimators=100, max_depth=3, random_state=0)
+        model.fit(self.x, self.y)
+
+        y_pred = model.predict(self.x)
+
+        # test if prediction for last stage equals ``predict``
+        for y in model.staged_predict(self.x):
+            self.assertTupleEqual(y.shape, y_pred.shape)
+
+        assert_array_equal(y_pred, y)
+
+        model.set_params(dropout_rate=0.03)
+        model.fit(self.x, self.y)
+
+        y_pred = model.predict(self.x)
+
+        # test if prediction for last stage equals ``predict``
+        for y in model.staged_predict(self.x):
+            self.assertTupleEqual(y.shape, y_pred.shape)
+
+        assert_array_equal(y_pred, y)
+
     def test_monitor_early_stopping(self):
         est = GradientBoostingSurvivalAnalysis(loss="ipcwls", n_estimators=50, max_depth=1,
                                                subsample=0.5,
