@@ -30,9 +30,9 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
         self.x, self.y, _, _ = load_arff_file(WHAS500_FILE, ['fstat', 'lenfol'], '1',
                                               standardize_numeric=False)
 
-    def test_fit(self):
-        boosting_grid = ParameterGrid({"n_estimators": [100, 250, 500], "subsample": [1.0, 0.75, 0.5]})
-        svm_grid = ParameterGrid({"alpha": 2. ** numpy.arange(-9, 9, 2)})
+    def _create_ensemble(self, **kwargs):
+        boosting_grid = ParameterGrid({"n_estimators": [100, 250], "subsample": [1.0, 0.75, 0.5]})
+        svm_grid = ParameterGrid({"alpha": 2. ** numpy.arange(-9, 5, 2)})
 
         base_estimators = []
         for i, params in enumerate(boosting_grid):
@@ -43,36 +43,26 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
             model = FastSurvivalSVM(max_iter=100, random_state=0, **params)
             base_estimators.append(("svm_%d" % i, model))
 
-        cv = KFold(n_splits=5, shuffle=True, random_state=0)
-        meta = EnsembleSelection(base_estimators, n_estimators=0.4, scorer=score_cindex, cv=cv, n_jobs=4)
+        cv = KFold(n_splits=4, shuffle=True, random_state=0)
+        meta = EnsembleSelection(base_estimators, n_estimators=0.4, scorer=score_cindex, cv=cv, **kwargs)
+        return meta
+
+    def test_fit(self):
+        meta = self._create_ensemble()
         self.assertEqual(len(meta), 0)
 
         meta.fit(self.x.values, self.y)
-        self.assertEqual(len(meta), 18)
-        self.assertTupleEqual(meta.scores_.shape, (18,))
+        self.assertEqual(len(meta), 13)
+        self.assertTupleEqual(meta.scores_.shape, (13,))
 
         p = meta.predict(self.x.values)
 
         score = concordance_index_censored(self.y['fstat'], self.y['lenfol'], p)
-        expected_score = numpy.array([0.7860650, 59067, 16072, 10, 119])
+        expected_score = numpy.array([0.7858721, 59050, 16084, 15, 119])
         assert_array_almost_equal(score, expected_score)
 
     def test_fit_spearman_correlation(self):
-        boosting_grid = ParameterGrid({"n_estimators": [100, 250, 500], "subsample": [0.75, 0.5]})
-        svm_grid = ParameterGrid({"alpha": 2. ** numpy.arange(-7, 7, 2)})
-
-        base_estimators = []
-        for i, params in enumerate(boosting_grid):
-            model = ComponentwiseGradientBoostingSurvivalAnalysis(random_state=0, **params)
-            base_estimators.append(("gbm_%d" % i, model))
-
-        for i, params in enumerate(svm_grid):
-            model = FastSurvivalSVM(max_iter=100, random_state=0, **params)
-            base_estimators.append(("svm_%d" % i, model))
-
-        cv = KFold(n_splits=5, shuffle=True, random_state=0)
-        meta = EnsembleSelection(base_estimators, n_estimators=0.4, scorer=score_cindex,
-                                 correlation="spearman", cv=cv, n_jobs=4)
+        meta = self._create_ensemble(correlation="spearman")
         self.assertEqual(len(meta), 0)
 
         meta.fit(self.x.values, self.y)
@@ -80,25 +70,11 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
         p = meta.predict(self.x.values)
 
         score = concordance_index_censored(self.y['fstat'], self.y['lenfol'], p)
-        expected_score = numpy.array([0.7860517, 59067, 16074, 8, 119])
+        expected_score = numpy.array([0.7858721, 59050, 16084, 15, 119])
         assert_array_almost_equal(score, expected_score)
 
     def test_fit_kendall_correlation(self):
-        boosting_grid = ParameterGrid({"n_estimators": [100, 250, 500], "subsample": [0.75, 0.5]})
-        svm_grid = ParameterGrid({"alpha": 2. ** numpy.arange(-7, 7, 2)})
-
-        base_estimators = []
-        for i, params in enumerate(boosting_grid):
-            model = ComponentwiseGradientBoostingSurvivalAnalysis(random_state=0, **params)
-            base_estimators.append(("gbm_%d" % i, model))
-
-        for i, params in enumerate(svm_grid):
-            model = FastSurvivalSVM(max_iter=100, random_state=0, **params)
-            base_estimators.append(("svm_%d" % i, model))
-
-        cv = KFold(n_splits=5, shuffle=True, random_state=0)
-        meta = EnsembleSelection(base_estimators, n_estimators=0.4, scorer=score_cindex,
-                                 correlation="kendall", cv=cv, n_jobs=4)
+        meta = self._create_ensemble(correlation="kendall")
         self.assertEqual(len(meta), 0)
 
         meta.fit(self.x.values, self.y)
@@ -106,7 +82,7 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
         p = meta.predict(self.x.values)
 
         score = concordance_index_censored(self.y['fstat'], self.y['lenfol'], p)
-        expected_score = numpy.array([0.7741487, 58162, 16958, 29, 119])
+        expected_score = numpy.array([0.7587460, 57013, 18124, 12, 119])
         assert_array_almost_equal(score, expected_score)
 
     def test_fit_custom_kernel(self):
@@ -124,7 +100,7 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
             model = FastKernelSurvivalSVM(kernel=transform.pairwise_kernel, max_iter=100, random_state=0, **params)
             base_estimators.append(("svm_kernel_%d" % i, model))
 
-        cv = KFold(n_splits=5, shuffle=True, random_state=0)
+        cv = KFold(n_splits=4, shuffle=True, random_state=0)
         meta = EnsembleSelection(base_estimators, n_estimators=0.4, scorer=score_cindex, cv=cv, n_jobs=4)
 
         meta.fit(self.x.values, self.y)
@@ -134,7 +110,7 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
         p = meta.predict(self.x.values)
 
         score = concordance_index_censored(self.y['fstat'], self.y['lenfol'], p)
-        expected_score = numpy.array([0.7987066, 60007, 15112, 30, 119])
+        expected_score = numpy.array([0.7980346, 59958, 15164, 27, 119])
         assert_array_almost_equal(score, expected_score)
 
     def test_min_score(self):
@@ -227,8 +203,8 @@ class TestEnsembleSelectionRegressor(TestCase):
                                               standardize_numeric=False)
 
     def _create_ensemble(self):
-        aft_grid = ParameterGrid({"alpha": 2. ** numpy.arange(-9, 9, 2)})
-        svm_grid = ParameterGrid({"alpha": 2. ** numpy.arange(-9, 9, 2)})
+        aft_grid = ParameterGrid({"alpha": 2. ** numpy.arange(-9, 5, 2)})
+        svm_grid = ParameterGrid({"alpha": 2. ** numpy.arange(-9, 5, 2)})
 
         base_estimators = []
         for i, params in enumerate(aft_grid):
@@ -236,31 +212,27 @@ class TestEnsembleSelectionRegressor(TestCase):
             base_estimators.append(("aft_%d" % i, model))
 
         for i, params in enumerate(svm_grid):
-            model = FastSurvivalSVM(rank_ratio=0, fit_intercept=True, max_iter=1000,
+            model = FastSurvivalSVM(rank_ratio=0, fit_intercept=True, max_iter=100,
                                     random_state=1, **params)
             base_estimators.append(("svm_%d" % i, model))
 
-        cv = KFold(n_splits=5, shuffle=True, random_state=0)
+        cv = KFold(n_splits=4, shuffle=True, random_state=0)
         meta = EnsembleSelectionRegressor(base_estimators, n_estimators=0.4,
                                           scorer=_score_rmse,
                                           cv=cv, n_jobs=1)
         return meta
 
-    def test_fit(self):
+    def test_fit_and_predict(self):
         meta = self._create_ensemble()
         self.assertEqual(len(meta), 0)
 
-        meta.fit(self.x, self.y)
-        self.assertEqual(len(meta), 7)
+        meta.fit(self.x.iloc[:400].values, self.y[:400])
+        self.assertEqual(len(meta), 5)
         self.assertTupleEqual(meta.scores_.shape, (14,))
 
-    def test_predict(self):
-        meta = self._create_ensemble()
-        meta.fit(self.x.iloc[:400].values, self.y[:400])
         p = meta.predict(self.x.iloc[400:].values)
-
         score = numpy.sqrt(mean_squared_error(self.y[400:]['lenfol'], p))
-        self.assertLessEqual(abs(score - 1491.22120704), 0.1)
+        self.assertLessEqual(abs(score - 1500.01954367), 0.1)
 
     def test_fit_dummy(self):
         base_estimators = [
