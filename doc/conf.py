@@ -38,7 +38,7 @@ extensions = [
     'numpydoc',
 ]
 
-autosummary_generate = False
+autosummary_generate = True
 autodoc_default_flags = ['members', 'inherited-members']
 
 numpydoc_show_class_members = False
