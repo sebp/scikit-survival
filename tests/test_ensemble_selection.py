@@ -226,7 +226,7 @@ class TestEnsembleSelectionRegressor(TestCase):
         self.x, self.y, _, _ = load_arff_file(WHAS500_FILE, ['fstat', 'lenfol'], '1',
                                               standardize_numeric=False)
 
-    def _create_ensemble(self, n):
+    def _create_ensemble(self):
         aft_grid = ParameterGrid({"alpha": 2. ** numpy.arange(-9, 9, 2)})
         svm_grid = ParameterGrid({"alpha": 2. ** numpy.arange(-9, 9, 2)})
 
@@ -236,7 +236,8 @@ class TestEnsembleSelectionRegressor(TestCase):
             base_estimators.append(("aft_%d" % i, model))
 
         for i, params in enumerate(svm_grid):
-            model = FastSurvivalSVM(rank_ratio=0, fit_intercept=True, max_iter=1000, **params)
+            model = FastSurvivalSVM(rank_ratio=0, fit_intercept=True, max_iter=1000,
+                                    random_state=1, **params)
             base_estimators.append(("svm_%d" % i, model))
 
         cv = KFold(n_splits=5, shuffle=True, random_state=0)
@@ -246,7 +247,7 @@ class TestEnsembleSelectionRegressor(TestCase):
         return meta
 
     def test_fit(self):
-        meta = self._create_ensemble(self.x.shape[0])
+        meta = self._create_ensemble()
         self.assertEqual(len(meta), 0)
 
         meta.fit(self.x, self.y)
@@ -254,7 +255,7 @@ class TestEnsembleSelectionRegressor(TestCase):
         self.assertTupleEqual(meta.scores_.shape, (14,))
 
     def test_predict(self):
-        meta = self._create_ensemble(400)
+        meta = self._create_ensemble()
         meta.fit(self.x.iloc[:400].values, self.y[:400])
         p = meta.predict(self.x.iloc[400:].values)
 
