@@ -1,11 +1,11 @@
 include README.md COPYING MANIFEST.in requirements.txt
-recursive-include data *.arff
-recursive-include survival *.c *.h *.pyx *.pxd
-recursive-include examples *.py *.ipynb
+recursive-include data *.arff README.md
 recursive-include doc *.py *.rst Makefile
+recursive-include examples *.py *.ipynb
+recursive-include sksurv *.c *.h *.pyx *.pxd
 prune doc/_build
 prune doc/generated
 prune */__pycache__
+prune */.ipynb_checkpoints
 global-exclude *.pyc *~ *.bak *.swp *.pyo
-include versioneer.py
-include sksurv/_version.py
+include versioneer.py sksurv/_version.py
