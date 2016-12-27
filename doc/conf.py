@@ -40,6 +40,7 @@ extensions = [
 
 autosummary_generate = True
 autodoc_default_flags = ['members', 'inherited-members']
+autodoc_mock_imports = ['cvxopt', 'cvxpy', 'numexpr', 'numpy', 'pandas', 'scipy', 'scikit-learn']
 
 numpydoc_show_class_members = False
 
@@ -81,7 +82,7 @@ release = versioneer.render(pieces, "pep440")["version"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build', '**/README.*']
+exclude_patterns = ['_build', '**/README.*', 'Thumbs.db', '.DS_Store']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -270,18 +271,3 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
-
-# on_rtd is whether we are on readthedocs.org, this line of code grabbed from docs.readthedocs.org
-# https://docs.readthedocs.io/en/latest/faq.html?highlight=environ#how-do-i-change-behavior-for-read-the-docs
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-
-if on_rtd:
-    from unittest.mock import MagicMock
-
-    class Mock(MagicMock):
-        @classmethod
-        def __getattr__(cls, name):
-                return MagicMock()
-
-    MOCK_MODULES = ['cvxopt', 'cvxpy', 'numexpr', 'numpy', 'pandas', 'scipy', 'scikit-learn']
-    sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
