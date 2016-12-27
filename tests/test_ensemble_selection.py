@@ -260,7 +260,7 @@ class TestEnsembleSelectionRegressor(TestCase):
         p = meta.predict(self.x.iloc[400:].values)
 
         score = numpy.sqrt(mean_squared_error(self.y[400:]['lenfol'], p))
-        self.assertLessEqual(abs(score - 1496.0799422558771), 0.1)
+        self.assertLessEqual(abs(score - 1491.22120704), 0.1)
 
     def test_fit_dummy(self):
         base_estimators = [
