@@ -7,3 +7,5 @@ prune doc/_build
 prune doc/generated
 prune */__pycache__
 global-exclude *.pyc *~ *.bak *.swp *.pyo
+include versioneer.py
+include sksurv/_version.py

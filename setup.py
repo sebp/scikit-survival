@@ -1,6 +1,7 @@
 import os
 import os.path
 import sys
+import versioneer
 
 # NumPy 1.11.2 contains a bug which prevents submodules from working correctly
 # on Python 3.4 unless importlib.machinery has been imported at some time.
@@ -16,8 +17,6 @@ DESCRIPTION = 'Survival analysis built on top of scikit-learn'
 MAINTAINER = 'Sebastian Pölsterl'
 MAINTAINER_EMAIL = 'sebp@k-d-w.org'
 URL = 'https://github.com/sebp/scikit-survival'
-
-VERSION = "0.1"
 
 
 def configuration(parent_package='', top_path=None):
@@ -47,7 +46,8 @@ def setup_package():
                     description=DESCRIPTION,
                     license="GNU General Public License version 3",
                     url=URL,
-                    version=VERSION,
+                    version=versioneer.get_version(),
+                    cmdclass=versioneer.get_cmdclass(),
                     classifiers=['Intended Audience :: Science/Research',
                                  'Intended Audience :: Developers',
                                  'Programming Language :: C',
@@ -87,7 +87,7 @@ def setup_package():
         except ImportError:
             from distutils.core import setup
 
-        metadata['version'] = VERSION
+        metadata['version'] = versioneer.get_version()
     else:
         from numpy.distutils.core import setup
 
