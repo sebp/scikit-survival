@@ -39,8 +39,8 @@ class EnsembleAverage(BaseEstimator):
     def __init__(self, base_estimators, name=None):
         self.base_estimators = base_estimators
         self.name = name
-        if hasattr(self.base_estimators[0], "classes_"):
-            self.classes_ = self.base_estimators[0].classes_
+        assert not hasattr(self.base_estimators[0], "classes_"),\
+            "base estimator cannot be a classifier"
 
     def get_base_params(self):
         return self.base_estimators[0].get_params()
@@ -52,20 +52,6 @@ class EnsembleAverage(BaseEstimator):
         prediction = numpy.zeros(X.shape[0])
         for est in self.base_estimators:
             prediction += est.predict(X)
-
-        return prediction / len(self.base_estimators)
-
-    def predict_proba(self, X):
-        prediction = None
-        for est in self.base_estimators:
-            p = est.predict_proba(X)
-            if prediction is None:
-                prediction = p
-            else:
-                prediction += p
-
-            if numpy.any(est.classes_ != self.classes_):
-                raise ValueError("class labels are different")
 
         return prediction / len(self.base_estimators)
 
