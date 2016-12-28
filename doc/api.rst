@@ -103,6 +103,7 @@ Datasets
     get_x_y
     load_arff_files_standardized
     load_aids
+    load_breast_cancer
     load_gbsg2
     load_whas500
     load_veterans_lung_cancer
