@@ -45,7 +45,6 @@ extensions = [
 
 autosummary_generate = True
 autodoc_default_flags = ['members', 'inherited-members']
-autodoc_mock_imports = ['cvxopt', 'cvxpy', 'numexpr', 'numpy', 'pandas', 'scipy', 'sklearn']
 
 numpydoc_show_class_members = False
 
@@ -276,3 +275,63 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+if on_rtd:
+    MOCK_MODULES = [
+        # external dependencies
+        'cvxopt',
+        'cvxpy',
+        'numexpr',
+        'numpy',
+        'pandas',
+        'pandas.core.common',
+        'scipy',
+        'scipy.io.arff',
+        'scipy.linalg',
+        'scipy.misc',
+        'scipy.optimize',
+        'scipy.sparse',
+        'scipy.stats',
+        'sklearn',
+        'sklearn.base',
+        'sklearn.ensemble',
+        'sklearn.ensemble.base',
+        'sklearn.ensemble._gradient_boosting',
+        'sklearn.ensemble.gradient_boosting',
+        'sklearn.externals.joblib',
+        'sklearn.linear_model',
+        'sklearn.metrics',
+        'sklearn.metrics.pairwise',
+        'sklearn.model_selection',
+        'sklearn.svm',
+        'sklearn.tree',
+        'sklearn.tree._tree',
+        'sklearn.utils',
+        'sklearn.utils.extmath',
+        'sklearn.utils.metaestimators',
+        'sklearn.utils.validation',
+        # our C modules
+        'sksurv.bintrees._binarytrees',
+        'sksurv.ensemble._coxph_loss',
+        'sksurv.kernels._clinical_kernel',
+        'sksurv.svm._minlip',
+        'sksurv.svm._prsvm']
+
+    from unittest.mock import Mock
+
+    class MockModule(Mock):
+        """mock imports"""
+
+        @classmethod
+        def __getattr__(cls, name):
+            if name in ('__file__', '__path__'):
+                return '/dev/null'
+            elif name[0] == name[0].upper():
+                # Not very good, we assume Uppercase names are classes...
+                mocktype = type(name, (), {})
+                mocktype.__module__ = __name__
+                return mocktype
+            else:
+                return MockModule()
+
+    sys.modules.update((mod_name, MockModule()) for mod_name in MOCK_MODULES)
