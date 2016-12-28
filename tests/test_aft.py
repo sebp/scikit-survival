@@ -4,16 +4,15 @@ import numpy
 from numpy.testing import TestCase, run_module_suite, assert_array_almost_equal
 
 from sksurv.linear_model import IPCRidge
-from sksurv.datasets import load_arff_file
+from sksurv.column import standardize
+from sksurv.datasets import load_whas500
 from sksurv.metrics import concordance_index_censored
-
-WHAS500_FILE = join(dirname(__file__), '..', 'data', 'whas500.arff')
 
 
 class TestIPCRidge(TestCase):
     def setUp(self):
-        self.x, self.y, _, _ = load_arff_file(WHAS500_FILE, ['fstat', 'lenfol'], '1',
-                                              standardize_numeric=True)
+        x, self.y, =  load_whas500()
+        self.x = standardize(x)
 
     def test_fit(self):
         model = IPCRidge()

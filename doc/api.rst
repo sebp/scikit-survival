@@ -91,3 +91,18 @@ I/O Utilities
 
     loadarff
     writearff
+
+
+Datasets
+--------
+.. currentmodule:: sksurv.datasets
+
+.. autosummary::
+    :toctree: generated/
+
+    get_x_y
+    load_arff_files_standardized
+    load_aids
+    load_gbsg2
+    load_whas500
+    load_veterans_lung_cancer

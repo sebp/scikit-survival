@@ -7,7 +7,8 @@ from sklearn.dummy import DummyRegressor
 from sklearn.metrics import mean_squared_error
 
 from sksurv.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis
-from sksurv.datasets import load_arff_file
+from sksurv.datasets import load_whas500
+from sksurv.column import categorical_to_numeric
 from sksurv.kernels import ClinicalKernelTransform
 from sksurv.linear_model import IPCRidge
 from sksurv.meta import EnsembleSelection, EnsembleSelectionRegressor
@@ -15,7 +16,7 @@ from sksurv.metrics import concordance_index_censored
 from sksurv.svm import FastSurvivalSVM, FastKernelSurvivalSVM
 from sksurv.util import check_arrays_survival
 
-WHAS500_FILE = join(dirname(__file__), '..', 'data', 'whas500.arff')
+
 
 
 def score_cindex(est, X_test, y_test, **predict_params):
@@ -27,8 +28,8 @@ def score_cindex(est, X_test, y_test, **predict_params):
 
 class TestEnsembleSelectionSurvivalAnalysis(TestCase):
     def setUp(self):
-        self.x, self.y, _, _ = load_arff_file(WHAS500_FILE, ['fstat', 'lenfol'], '1',
-                                              standardize_numeric=False)
+        x, self.y = load_whas500()
+        self.x = categorical_to_numeric(x)
 
     def _create_ensemble(self, **kwargs):
         boosting_grid = ParameterGrid({"n_estimators": [100, 250], "subsample": [1.0, 0.75, 0.5]})
@@ -199,8 +200,8 @@ class DummySurvivalRegressor(DummyRegressor):
 
 class TestEnsembleSelectionRegressor(TestCase):
     def setUp(self):
-        self.x, self.y, _, _ = load_arff_file(WHAS500_FILE, ['fstat', 'lenfol'], '1',
-                                              standardize_numeric=False)
+        x, self.y = load_whas500()
+        self.x = categorical_to_numeric(x)
 
     def _create_ensemble(self):
         aft_grid = ParameterGrid({"alpha": 2. ** numpy.arange(-9, 5, 2)})

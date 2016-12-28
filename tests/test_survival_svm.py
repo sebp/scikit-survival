@@ -9,7 +9,8 @@ from sklearn.metrics import mean_squared_error
 
 from sksurv.bintrees import AVLTree, RBTree
 from sksurv.column import encode_categorical, standardize
-from sksurv.datasets import load_arff_file
+from sksurv.datasets import load_whas500, get_x_y
+from sksurv.io import loadarff
 from sksurv.kernels import ClinicalKernelTransform
 from sksurv.metrics import concordance_index_censored
 from sksurv.svm._prsvm import survival_constraints_simple
@@ -17,7 +18,6 @@ from sksurv.svm.naive_survival_svm import NaiveSurvivalSVM
 from sksurv.svm.survival_svm import FastSurvivalSVM, FastKernelSurvivalSVM, SurvivalCounter, \
     OrderStatisticTreeSurvivalCounter
 
-WHAS500_FILE = join(dirname(__file__), '..', 'data', 'whas500.arff')
 WHAS500_NOTIES_FILE = join(dirname(__file__), 'data', 'whas500-noties.arff')
 
 
@@ -290,8 +290,8 @@ class SurvivalModeCases(object):
     OPTIMIZER = None
 
     def setUp(self):
-        self.x, self.y, _, _ = load_arff_file(WHAS500_FILE, ['fstat', 'lenfol'], '1',
-                                              standardize_numeric=True)
+        x, self.y = load_whas500()
+        self.x = encode_categorical(standardize(x))
 
     def test_default_optimizer(self):
         self.assertEqual('avltree', FastSurvivalSVM().fit(self.x.values, self.y).optimizer)
@@ -421,8 +421,8 @@ class TestAVLTreeSurvivalMode(SurvivalModeCases, TestCase):
 class TestKernelSurvivalSVM(TestCase):
 
     def setUp(self):
-        self.x, self.y, _, _ = load_arff_file(WHAS500_FILE, ['fstat', 'lenfol'], '1',
-                                              standardize_numeric=True)
+        x, self.y = load_whas500()
+        self.x = encode_categorical(standardize(x))
 
     def test_default_optimizer(self):
         self.assertEqual('rbtree', FastKernelSurvivalSVM().fit(self.x.values, self.y).optimizer)
@@ -549,8 +549,7 @@ class TestKernelSurvivalSVM(TestCase):
         self.assertLessEqual(abs(880.20361811281487 - rmse), 75)
 
     def test_fit_and_predict_clinical_kernel(self):
-        x_full, y, _, _ = load_arff_file(WHAS500_FILE, ['fstat', 'lenfol'], '1',
-                                         standardize_numeric=False, to_numeric=False)
+        x_full, y = load_whas500()
 
         trans = ClinicalKernelTransform()
         trans.fit(x_full)
@@ -567,7 +566,8 @@ class TestKernelSurvivalSVM(TestCase):
         self.assertLessEqual(abs(0.83699051218246412 - c), 1e-3)
 
     def test_compare_rbf(self):
-        x, y, _, _ = load_arff_file(WHAS500_FILE, ['fstat', 'lenfol'], '1')
+        x, y = load_whas500()
+        x = encode_categorical(standardize(x))
 
         kpca = KernelPCA(kernel="rbf")
         xt = kpca.fit_transform(x)
@@ -591,8 +591,7 @@ class TestKernelSurvivalSVM(TestCase):
         self.assertTupleEqual(c1[1:], c2[1:])
 
     def test_compare_clinical_kernel(self):
-        x_full, y, _, _ = load_arff_file(WHAS500_FILE, ['fstat', 'lenfol'], '1',
-                                         standardize_numeric=False, to_numeric=False)
+        x_full, y = load_whas500()
 
         trans = ClinicalKernelTransform()
         trans.fit(x_full)
@@ -747,8 +746,9 @@ class TestNaiveSurvivalSVM(TestCase):
     def setUp(self):
         # naive survival SVM does resolve ties in survival time differently,
         # therefore use data without ties
-        self.x, self.y, _, _ = load_arff_file(WHAS500_NOTIES_FILE, ['fstat', 'lenfol'], '1',
-                                              standardize_numeric=False)
+        data = loadarff(WHAS500_NOTIES_FILE)
+        x, self.y = get_x_y(data, ['fstat', 'lenfol'], '1')
+        self.x = encode_categorical(x)
 
     def test_survival_squared_hinge_loss(self):
         nrsvm = NaiveSurvivalSVM(loss='squared_hinge', dual=False, tol=1e-8, max_iter=1000, random_state=0)

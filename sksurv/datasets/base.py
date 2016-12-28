@@ -1,25 +1,19 @@
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from pkg_resources import resource_filename
 import warnings
 
 import numpy
 import pandas
 
-from .io import loadarff
-from .column import standardize, categorical_to_numeric
-from .util import safe_concat
+from ..column import standardize, categorical_to_numeric
+from ..io import loadarff
+from ..util import safe_concat
 
-__all__ = ["get_x_y", "load_arff_file"]
+__all__ = ["get_x_y",
+           "load_arff_files_standardized",
+           "load_aids",
+           "load_gbsg2",
+           "load_whas500",
+           "load_veterans_lung_cancer"]
 
 
 def _get_x_y_survival(dataset, col_event, col_time, val_outcome):
@@ -93,8 +87,8 @@ def get_x_y(data_frame, attr_labels, pos_label=None, survival=True):
     return _get_x_y_other(data_frame, attr_labels)
 
 
-def load_arff_file(path_training, attr_labels, pos_label=None, path_testing=None, survival=True,
-                   standardize_numeric=True, to_numeric=True):
+def load_arff_files_standardized(path_training, attr_labels, pos_label=None, path_testing=None, survival=True,
+                                 standardize_numeric=True, to_numeric=True):
     """Load dataset in ARFF format.
 
     Parameters
@@ -122,11 +116,11 @@ def load_arff_file(path_training, attr_labels, pos_label=None, path_testing=None
 
     standardize_numeric : bool, optional, default=True
         Whether to standardize data to zero mean and unit variance.
-        See :func:`survival.column.standardize`.
+        See :func:`sksurv.column.standardize`.
 
     to_numeric : boo, optional, default=True
         Whether to convert categorical variables to numeric values.
-        See :func:`survival.column.categorical_to_numeric`.
+        See :func:`sksurv.column.categorical_to_numeric`.
 
     Returns
     -------
@@ -193,3 +187,165 @@ def load_arff_file(path_training, attr_labels, pos_label=None, path_testing=None
         y_test = None
 
     return x_train, y_train, x_test, y_test
+
+
+def load_whas500():
+    """Load and return the Worcester Heart Attack Study dataset
+
+    The dataset has 500 samples and 14 features.
+    The endpoint is death, which occurred for 215 patients (43.0%).
+
+    Returns
+    -------
+    x : pandas.DataFrame
+        The measurements for each patient.
+
+    y : structured array with 2 fields
+        *fstat*: boolean indicating whether the endpoint has been reached
+        or the event time is right censored.
+
+        *lenfol*: total length of follow-up (days from hospital admission date
+        to date of last follow-up)
+
+    References
+    ----------
+    .. [1] http://www.umass.edu/statdata/statdata/data/
+
+    .. [2] Hosmer, D., Lemeshow, S., May, S.:
+        "Applied Survival Analysis: Regression Modeling of Time to Event Data."
+        John Wiley & Sons, Inc. (2008)
+    """
+    fn = resource_filename(__name__, 'data/whas500.arff')
+    return get_x_y(loadarff(fn), attr_labels=['fstat', 'lenfol'], pos_label='1')
+
+
+def load_gbsg2():
+    """Load and return the German Breast Cancer Study Group 2 dataset
+
+    The dataset has 686 samples and 8 features.
+    The endpoint is recurrence free survival, which occurred for 299 patients (43.6%).
+
+    Returns
+    -------
+    x : pandas.DataFrame
+        The measurements for each patient.
+
+    y : structured array with 2 fields
+        *cens*: boolean indicating whether the endpoint has been reached
+        or the event time is right censored.
+
+        *time*: total length of follow-up
+
+    References
+    ----------
+    .. [1] http://ascopubs.org/doi/abs/10.1200/jco.1994.12.10.2086
+
+    .. [2] Schumacher, M., Basert, G., Bojar, H., et al.
+        "Randomized 2 × 2 trial evaluating hormonal treatment and the duration of chemotherapy
+        in node-positive breast cancer patients."
+        Journal of Clinical Oncology 12, 2086–2093. (1994)
+    """
+    fn = resource_filename(__name__, 'data/GBSG2.arff')
+    return get_x_y(loadarff(fn), attr_labels=['cens', 'time'], pos_label='1')
+
+
+def load_veterans_lung_cancer():
+    """Load and return the Worcester Heart Attack Study dataset
+
+    The dataset has 137 samples and 6 features.
+    The endpoint is death, which occurred for 128 patients (93.4%).
+
+    Returns
+    -------
+    x : pandas.DataFrame
+        The measurements for each patient.
+
+    y : structured array with 2 fields
+        *Status*: boolean indicating whether the endpoint has been reached
+        or the event time is right censored.
+
+        *Survival_in_days*: total length of follow-up
+
+    References
+    ----------
+    .. [1] Kalbfleisch, J.D., Prentice, R.L.:
+        "The Statistical Analysis of Failure Time Data." John Wiley & Sons, Inc. (2002)
+    """
+    fn = resource_filename(__name__, 'data/veteran.arff')
+    return get_x_y(loadarff(fn), attr_labels=["'Status'", "'Survival_in_days'"], pos_label="'dead'")
+
+
+def load_aids(endpoint="aids"):
+    """Load and return the AIDS Clinical Trial dataset
+
+    The dataset has 1,151 samples and 13 features.
+    The dataset has 2 endpoints:
+
+    1. AIDS defining event, which occurred for 96 patients (8.3%)
+    2. Death, which occurred for 26 patients (2.3%)
+
+    Parameters
+    ----------
+    endpoint : aids|death
+        The endpoint
+
+    Returns
+    -------
+    x : pandas.DataFrame
+        The measurements for each patient.
+
+    y : structured array with 2 fields
+        *censor*: boolean indicating whether the endpoint has been reached
+        or the event time is right censored.
+
+        *time*: total length of follow-up
+
+        If ``endpoint`` is death, the fields are named *censor_d* and *time_d*.
+
+    References
+    ----------
+    .. [1] http://www.umass.edu/statdata/statdata/data/
+
+    .. [2] Hosmer, D., Lemeshow, S., May, S.:
+        "Applied Survival Analysis: Regression Modeling of Time to Event Data."
+        John Wiley & Sons, Inc. (2008)
+    """
+    if endpoint == "aids":
+        attr_labels = ['censor', 'time']
+    elif endpoint == "death":
+        attr_labels = ['censor_d', 'time_d']
+    else:
+        raise ValueError("endpoint must be 'aids' or 'death'")
+
+    fn = resource_filename(__name__, 'data/actg320.arff')
+    return get_x_y(loadarff(fn), attr_labels=attr_labels, pos_label='1')
+
+
+def load_breast_cancer():
+    """Load and return the breast cancer dataset
+
+    The dataset has 198 samples and 80 features.
+    The endpoint is the presence of distance metastases, which occurred for 62 patients (31.3%).
+
+    Returns
+    -------
+    x : pandas.DataFrame
+        The measurements for each patient.
+
+    y : structured array with 2 fields
+        *e.tdm*: boolean indicating whether the endpoint has been reached
+        or the event time is right censored.
+
+        *t.tdm*: total length of follow-up
+
+    References
+    ----------
+    .. [1] https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE7390
+
+    .. [2] Desmedt, C., Piette, F., Loi et al.:
+        "Strong Time Dependence of the 76-Gene Prognostic Signature for Node-Negative Breast Cancer
+        Patients in the TRANSBIG Multicenter Independent Validation Series."
+        Clin. Cancer Res. 13(11), 3207–14 (2007)
+    """
+    fn = resource_filename(__name__, 'data/breast_cancer_GSE7390-metastasis.arff')
+    return get_x_y(loadarff(fn), attr_labels=['e.tdm', 't.tdm'], pos_label="'1'")

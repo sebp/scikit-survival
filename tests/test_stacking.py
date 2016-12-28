@@ -9,14 +9,12 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score, roc_auc_score
 from sklearn.svm import SVC
 
-from sksurv.datasets import load_arff_file
+from sksurv.column import categorical_to_numeric
+from sksurv.datasets import load_whas500
 from sksurv.meta import Stacking, MeanEstimator
 from sksurv.metrics import concordance_index_censored
 from sksurv.svm import FastSurvivalSVM
 from sksurv.linear_model import CoxPHSurvivalAnalysis
-
-
-WHAS500_FILE = join(dirname(__file__), '..', 'data', 'whas500.arff')
 
 
 class _NoFitEstimator(BaseEstimator):
@@ -160,8 +158,8 @@ class TestStackingClassifier(TestCase):
 
 class TestStackingSurvivalAnalysis(TestCase):
     def setUp(self):
-        self.x, self.y, _, _ = load_arff_file(WHAS500_FILE, ['fstat', 'lenfol'], '1',
-                                              standardize_numeric=False)
+        x, self.y = load_whas500()
+        self.x = categorical_to_numeric(x)
 
     def test_fit(self):
         meta = Stacking(MeanEstimator(),

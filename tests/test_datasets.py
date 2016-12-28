@@ -8,7 +8,7 @@ import pandas
 import pandas.util.testing as tm
 from numpy.testing import TestCase, assert_array_equal, assert_array_almost_equal, run_module_suite
 
-from sksurv.datasets import get_x_y, load_arff_file
+from sksurv.datasets import get_x_y, load_arff_files_standardized
 from sksurv.io import writearff
 
 ARFF_CATEGORICAL_INDEX_1 = """@relation arff_categorical_index
@@ -194,8 +194,9 @@ class TestLoadArffFile(TestCase):
         try:
             dataset = _make_and_write_data(tmp, 100, 10, True, True, 0)
 
-            x_train, y_train, x_test, y_test = load_arff_file(tmp.name, ["event", "time"], 1, survival=True,
-                                                              standardize_numeric=False, to_numeric=False)
+            x_train, y_train, x_test, y_test = load_arff_files_standardized(
+                tmp.name, ["event", "time"], 1, survival=True,
+                standardize_numeric=False, to_numeric=False)
 
             self.assertEqual(x_test, None)
             self.assertEqual(y_test, None)
@@ -210,8 +211,9 @@ class TestLoadArffFile(TestCase):
 
     def test_load_with_categorical_index_1(self):
         fp = StringIO(ARFF_CATEGORICAL_INDEX_1)
-        x_train, y_train, x_test, y_test = load_arff_file(fp, ["label"], pos_label="yes", survival=False,
-                                                          standardize_numeric=False, to_numeric=False)
+        x_train, y_train, x_test, y_test = load_arff_files_standardized(
+            fp, ["label"], pos_label="yes", survival=False,
+            standardize_numeric=False, to_numeric=False)
 
         self.assertEqual(x_test, None)
         self.assertEqual(y_test, None)
@@ -237,8 +239,9 @@ class TestLoadArffFile(TestCase):
 
     def test_load_with_categorical_index_2(self):
         fp = StringIO(ARFF_CATEGORICAL_INDEX_2)
-        x_train, y_train, x_test, y_test = load_arff_file(fp, ["label"], pos_label="yes", survival=False,
-                                                          standardize_numeric=False, to_numeric=False)
+        x_train, y_train, x_test, y_test = load_arff_files_standardized(
+            fp, ["label"], pos_label="yes", survival=False,
+            standardize_numeric=False, to_numeric=False)
 
         self.assertEqual(x_test, None)
         self.assertEqual(y_test, None)
@@ -269,10 +272,9 @@ class TestLoadArffFile(TestCase):
             train_dataset = _make_and_write_data(tmp_train, 100, 10, True, True, 0)
             test_dataset = _make_and_write_data(tmp_test, 20, 10, True, True, 0)
 
-            x_train, y_train, x_test, y_test = load_arff_file(tmp_train.name, ["event", "time"], 1,
-                                                              path_testing=tmp_test.name,
-                                                              survival=True,
-                                                              standardize_numeric=False, to_numeric=False)
+            x_train, y_train, x_test, y_test = load_arff_files_standardized(
+                tmp_train.name, ["event", "time"], 1, path_testing=tmp_test.name,
+                survival=True, standardize_numeric=False, to_numeric=False)
 
             cols = ["event", "time"]
 
@@ -290,9 +292,9 @@ class TestLoadArffFile(TestCase):
     def test_load_train_and_test_with_categorical_index(self):
         fp_1 = StringIO(ARFF_CATEGORICAL_INDEX_1)
         fp_2 = StringIO(ARFF_CATEGORICAL_INDEX_2)
-        x_train, y_train, x_test, y_test = load_arff_file(fp_1, ["label"], pos_label="yes",
-                                                          path_testing=fp_2, survival=False,
-                                                          standardize_numeric=False, to_numeric=False)
+        x_train, y_train, x_test, y_test = load_arff_files_standardized(
+            fp_1, ["label"], pos_label="yes", path_testing=fp_2, survival=False,
+            standardize_numeric=False, to_numeric=False)
 
         self.assertTupleEqual(x_train.shape, (4, 2))
         self.assertTupleEqual(x_test.shape, (5, 2))
@@ -342,10 +344,9 @@ class TestLoadArffFile(TestCase):
             train_dataset = _make_and_write_data(tmp_train, 100, 10, True, True, 0)
             test_dataset = _make_and_write_data(tmp_test, 20, 10, True, False, 0)
 
-            x_train, y_train, x_test, y_test = load_arff_file(tmp_train.name, ["event", "time"], 1,
-                                                              path_testing=tmp_test.name,
-                                                              survival=True,
-                                                              standardize_numeric=False, to_numeric=False)
+            x_train, y_train, x_test, y_test = load_arff_files_standardized(
+                tmp_train.name, ["event", "time"], 1, path_testing=tmp_test.name,
+                survival=True, standardize_numeric=False, to_numeric=False)
 
             cols = ["event", "time"]
 
@@ -369,10 +370,10 @@ class TestLoadArffFile(TestCase):
             with warnings.catch_warnings(record=True) as w:
                 warnings.simplefilter("always")
 
-                load_arff_file(tmp_train.name, ["event", "time"], 1,
-                               path_testing=tmp_test.name,
-                               survival=True,
-                               standardize_numeric=False, to_numeric=False)
+                load_arff_files_standardized(tmp_train.name, ["event", "time"], 1,
+                                             path_testing=tmp_test.name,
+                                             survival=True,
+                                             standardize_numeric=False, to_numeric=False)
 
                 self.assertEqual(1, len(w))
                 self.assertEqual("Restricting columns to intersection between training and testing data",
@@ -390,7 +391,7 @@ class TestLoadArffFile(TestCase):
             _make_and_write_data(tmp_test, 20, 11, True, True, 0, column_prefix="B")
 
             self.assertRaisesRegex(ValueError, "columns of training and test data do not intersect",
-                                   load_arff_file, tmp_train.name, ["event", "time"], 1,
+                                   load_arff_files_standardized, tmp_train.name, ["event", "time"], 1,
                                    path_testing=tmp_test.name,
                                    survival=True,
                                    standardize_numeric=False, to_numeric=False)

@@ -6,12 +6,10 @@ import pandas
 from scipy.sparse import coo_matrix
 from sklearn.metrics import mean_squared_error
 
-from sksurv.datasets import load_arff_file
+from sksurv.datasets import load_whas500
 from sksurv.metrics import concordance_index_censored
 from sksurv import column
 from sksurv.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis, GradientBoostingSurvivalAnalysis
-
-WHAS500_FILE = join(dirname(__file__), '..', 'data', 'whas500.arff')
 
 
 def early_stopping_monitor(i, est, locals):
@@ -24,8 +22,7 @@ def early_stopping_monitor(i, est, locals):
 
 class TestGradientBoosting(TestCase):
     def setUp(self):
-        x, self.y, _, _ = load_arff_file(WHAS500_FILE, ['fstat', 'lenfol'], '1',
-                                         standardize_numeric=False, to_numeric=False)
+        x, self.y = load_whas500()
 
         x = column.categorical_to_numeric(column.standardize(x, with_std=False))
         self.x = x.values
@@ -241,8 +238,7 @@ class TestGradientBoosting(TestCase):
 class TestSparseGradientBoosting(TestCase):
 
     def setUp(self):
-        x, self.y, _, _ = load_arff_file(WHAS500_FILE, ['fstat', 'lenfol'], '1',
-                                         standardize_numeric=False, to_numeric=False)
+        x, self.y = load_whas500()
         self.x_dense = column.categorical_to_numeric(x.select_dtypes(exclude=[numpy.float_]))
 
         data = []
@@ -293,8 +289,7 @@ class TestSparseGradientBoosting(TestCase):
 
 class TestComponentwiseGradientBoosting(TestCase):
     def setUp(self):
-        x, self.y, _, _ = load_arff_file(WHAS500_FILE, ['fstat', 'lenfol'], '1',
-                                         standardize_numeric=False, to_numeric=False)
+        x, self.y = load_whas500()
 
         x = column.categorical_to_numeric(column.standardize(x, with_std=False))
         self.x = x.values

@@ -5,9 +5,9 @@ from numpy.testing import TestCase, run_module_suite, assert_array_equal, assert
 import pandas
 
 from sksurv.io import loadarff
+from sksurv.datasets import load_whas500
 from sksurv.nonparametric import kaplan_meier_estimator, nelson_aalen_estimator
 
-WHAS500_FILE = join(dirname(__file__), '..', 'data', 'whas500.arff')
 CHANNING_FILE = join(dirname(__file__), 'data', 'channing.csv')
 AIDS_CHILDREN_FILE = join(dirname(__file__), 'data', 'Lagakos_AIDS_children.csv')
 AIDS_ADULTS_FILE = join(dirname(__file__), 'data', 'Lagakos_AIDS_adults.csv')
@@ -79,9 +79,9 @@ class TestKaplanMeier(TestCase):
                                kaplan_meier_estimator, event, time_exit, time_enter)
 
     def test_whas500(self):
-        data = loadarff(WHAS500_FILE)
-        time = data['lenfol'].values
-        event = (data['fstat'] == '1').values
+        _, y = load_whas500()
+        time = y['lenfol']
+        event = y['fstat']
 
         x, y = kaplan_meier_estimator(event, time)
 
@@ -468,9 +468,9 @@ class TestNelsonAllen(TestCase):
         assert_array_almost_equal(y, true_y)
 
     def test_whas500(self):
-        data = loadarff(WHAS500_FILE)
-        time = data['lenfol'].values
-        event = (data['fstat'] == '1').values
+        _, y = load_whas500()
+        time = y['lenfol']
+        event = y['fstat']
 
         x, y = nelson_aalen_estimator(event, time)
 

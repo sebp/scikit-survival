@@ -4,12 +4,12 @@ import numpy
 from numpy.testing import TestCase, run_module_suite, assert_array_almost_equal, assert_array_equal
 
 from sksurv.svm.minlip import MinlipSurvivalAnalysis, HingeLossSurvivalSVM
-from sksurv.datasets import load_arff_file
+from sksurv.datasets import load_gbsg2
 from sksurv.metrics import concordance_index_censored
 from sksurv.column import encode_categorical
 from sksurv.svm._minlip import create_difference_matrix
 
-GBSG2_FILE = join(dirname(__file__), '..', 'data', 'GBSG2.arff')
+
 
 
 class TestMinlipToyExample(TestCase):
@@ -322,8 +322,7 @@ class TestMinlipToyExample(TestCase):
 class TestMinlip(TestCase):
 
     def setUp(self):
-        x, y, _, _ = load_arff_file(GBSG2_FILE,
-                                    ["cens", "time"], "1", standardize_numeric=False, to_numeric=False)
+        x, y = load_gbsg2()
         self.x = encode_categorical(x)
         self.y = y
 

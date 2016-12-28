@@ -15,6 +15,7 @@ def configuration(parent_package='', top_path=None):
 
     config = Configuration('sksurv', parent_package, top_path)
     config.add_subpackage('bintrees')
+    config.add_subpackage('datasets')
     config.add_subpackage('ensemble')
     config.add_subpackage('io')
     config.add_subpackage('kernels')
