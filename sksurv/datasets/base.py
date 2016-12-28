@@ -11,6 +11,7 @@ from ..util import safe_concat
 __all__ = ["get_x_y",
            "load_arff_files_standardized",
            "load_aids",
+           "load_breast_cancer",
            "load_gbsg2",
            "load_whas500",
            "load_veterans_lung_cancer"]
@@ -272,7 +273,7 @@ def load_veterans_lung_cancer():
         "The Statistical Analysis of Failure Time Data." John Wiley & Sons, Inc. (2002)
     """
     fn = resource_filename(__name__, 'data/veteran.arff')
-    return get_x_y(loadarff(fn), attr_labels=["'Status'", "'Survival_in_days'"], pos_label="'dead'")
+    return get_x_y(loadarff(fn), attr_labels=['Status', 'Survival_in_days'], pos_label="'dead'")
 
 
 def load_aids(endpoint="aids"):
@@ -325,7 +326,7 @@ def load_breast_cancer():
     """Load and return the breast cancer dataset
 
     The dataset has 198 samples and 80 features.
-    The endpoint is the presence of distance metastases, which occurred for 62 patients (31.3%).
+    The endpoint is the presence of distance metastases, which occurred for 51 patients (25.8%).
 
     Returns
     -------
@@ -336,7 +337,7 @@ def load_breast_cancer():
         *e.tdm*: boolean indicating whether the endpoint has been reached
         or the event time is right censored.
 
-        *t.tdm*: total length of follow-up
+        *t.tdm*: time to distant metastasis (days)
 
     References
     ----------

@@ -8,7 +8,7 @@ import pandas
 import pandas.util.testing as tm
 from numpy.testing import TestCase, assert_array_equal, assert_array_almost_equal, run_module_suite
 
-from sksurv.datasets import get_x_y, load_arff_files_standardized
+from sksurv.datasets import *
 from sksurv.io import writearff
 
 ARFF_CATEGORICAL_INDEX_1 = """@relation arff_categorical_index
@@ -145,6 +145,53 @@ class TestGetXy(TestCase):
 
         self.assertEqual(y_test, None)
         assert_array_equal(x_test, x)
+
+
+class TestLoadDatasets(TestCase):
+
+    def assert_structured_array_dtype(self, arr, event, time, num_events):
+        self.assertTupleEqual(arr.dtype.names, (event, time))
+        self.assertTrue(numpy.issubdtype(arr.dtype.fields[event][0], numpy.bool_))
+        self.assertTrue(numpy.issubdtype(arr.dtype.fields[time][0], numpy.float_))
+        self.assertEqual(arr[event].sum(), num_events)
+
+    def test_load_whas500(self):
+        x, y = load_whas500()
+        self.assertTupleEqual(x.shape, (500, 14))
+        self.assertTupleEqual(y.shape, (500,))
+        self.assert_structured_array_dtype(y, 'fstat', 'lenfol', 215)
+
+    def test_load_gbsg2(self):
+        x, y = load_gbsg2()
+        self.assertTupleEqual(x.shape, (686, 8))
+        self.assertTupleEqual(y.shape, (686,))
+        self.assert_structured_array_dtype(y, 'cens', 'time', 299)
+
+    def test_load_veterans_lung_cancer(self):
+        x, y = load_veterans_lung_cancer()
+        self.assertTupleEqual(x.shape, (137, 6))
+        self.assertTupleEqual(y.shape, (137,))
+        self.assert_structured_array_dtype(y, 'Status', 'Survival_in_days', 128)
+
+    def test_load_aids(self):
+        x, y = load_aids(endpoint="aids")
+        self.assertTupleEqual(x.shape, (1151, 13))
+        self.assertTupleEqual(y.shape, (1151,))
+        self.assert_structured_array_dtype(y, 'censor', 'time', 96)
+
+        x, y = load_aids(endpoint="death")
+        self.assertTupleEqual(x.shape, (1151, 13))
+        self.assertTupleEqual(y.shape, (1151,))
+        self.assert_structured_array_dtype(y, 'censor_d', 'time_d', 26)
+
+        self.assertRaisesRegex(ValueError, "endpoint must be 'aids' or 'death'",
+                               load_aids, endpoint="foobar")
+
+    def test_load_breast_cancer(self):
+        x, y = load_breast_cancer()
+        self.assertTupleEqual(x.shape, (198, 80))
+        self.assertTupleEqual(y.shape, (198,))
+        self.assert_structured_array_dtype(y, 'e.tdm', 't.tdm', 51)
 
 
 def _make_and_write_data(fp, n_samples, n_features, with_index, with_labels, seed, column_prefix="V"):
