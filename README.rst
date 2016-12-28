@@ -3,6 +3,8 @@ scikit-survival
 ***************
 
 .. image:: https://img.shields.io/badge/license-GPLv3-blue.svg
+  :target: COPYING
+  :alt: License
 
 .. image:: https://travis-ci.org/sebp/scikit-survival.svg
   :target: https://travis-ci.org/sebp/scikit-survival
