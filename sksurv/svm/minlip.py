@@ -57,7 +57,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         Which constraints to use in the optimization problem.
 
         - all: Use all comparable pairs. Scales quadratic in number of samples
-          (cf. :class:`survival.svm.HingeLossSurvivalSVM`).
+          (cf. :class:`sksurv.svm.HingeLossSurvivalSVM`).
         - nearest: Only considers comparable pairs :math:`(i, j)` where :math:`j` is the
           uncensored sample with highest survival time smaller than :math:`y_i`.
           Scales linear in number of samples.
@@ -236,7 +236,7 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
     vectors in the original data, thus this version requires :math:`O(\\text{n_samples}^4)` space and
     :math:`O(\\text{n_samples}^6 \\cdot \\text{n_features})`.
 
-    See :class:`survival.svm.NaiveSurvivalSVM` for the linear naive survival SVM based on liblinear.
+    See :class:`sksurv.svm.NaiveSurvivalSVM` for the linear naive survival SVM based on liblinear.
 
     .. math::
 
@@ -282,7 +282,7 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
         - all: Use all comparable pairs. Scales quadratic in number of samples.
         - nearest: Only considers comparable pairs :math:`(i, j)` where :math:`j` is the
           uncensored sample with highest survival time smaller than :math:`y_i`.
-          Scales linear in number of samples (cf. :class:`survival.svm.MinlipSurvivalSVM`).
+          Scales linear in number of samples (cf. :class:`sksurv.svm.MinlipSurvivalSVM`).
         - next: Only compare against direct nearest neighbor according to observed time,
           disregarding its censoring status. Scales linear in number of samples.
 

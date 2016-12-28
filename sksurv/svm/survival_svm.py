@@ -743,7 +743,7 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     objective is used, survival/censoring times are log-transform and thus cannot be
     zero or negative.
 
-    See :class:`survival.svm.FastKernelSurvivalSVM` for an efficient implementation
+    See :class:`sksurv.svm.FastKernelSurvivalSVM` for an efficient implementation
     of kernel Survival Support Vector Machine.
 
     Parameters

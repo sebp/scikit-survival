@@ -28,7 +28,7 @@ class NaiveSurvivalSVM(LinearSVC, SurvivalAnalysisMixin):
     A new set of samples is created by building the difference between any two feature
     vectors in the original data, thus this version requires `O(n_samples^2)` space.
 
-    See :class:`survival.svm.HingeLossSurvivalSVM` for the kernel naive survival SVM.
+    See :class:`sksurv.svm.HingeLossSurvivalSVM` for the kernel naive survival SVM.
 
     .. math::
 
