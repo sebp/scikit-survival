@@ -3,6 +3,7 @@
 ![License](https://img.shields.io/badge/license-GPLv3-blue.svg)
 [![Build Status](https://travis-ci.org/sebp/scikit-survival.svg)](https://travis-ci.org/sebp/scikit-survival)
 [![codecov](https://codecov.io/gh/sebp/scikit-survival/branch/master/graph/badge.svg)](https://codecov.io/gh/sebp/scikit-survival)
+[![readthedocs.org](https://readthedocs.org/projects/scikit-survival/badge/?version=latest)](https://scikit-survival.readthedocs.io/en/latest/)
 
 scikit-survival is a Python module for [survival analysis][survival_analysis]
 built on top of [scikit-learn](http://scikit-learn.org/). It allows doing survival analysis
