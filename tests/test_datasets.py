@@ -175,14 +175,18 @@ class TestLoadDatasets(TestCase):
 
     def test_load_aids(self):
         x, y = load_aids(endpoint="aids")
-        self.assertTupleEqual(x.shape, (1151, 13))
+        self.assertTupleEqual(x.shape, (1151, 11))
         self.assertTupleEqual(y.shape, (1151,))
         self.assert_structured_array_dtype(y, 'censor', 'time', 96)
+        self.assertFalse("censor_d" in x.columns)
+        self.assertFalse("time_d" in x.columns)
 
         x, y = load_aids(endpoint="death")
-        self.assertTupleEqual(x.shape, (1151, 13))
+        self.assertTupleEqual(x.shape, (1151, 11))
         self.assertTupleEqual(y.shape, (1151,))
         self.assert_structured_array_dtype(y, 'censor_d', 'time_d', 26)
+        self.assertFalse("censor" in x.columns)
+        self.assertFalse("time" in x.columns)
 
         self.assertRaisesRegex(ValueError, "endpoint must be 'aids' or 'death'",
                                load_aids, endpoint="foobar")

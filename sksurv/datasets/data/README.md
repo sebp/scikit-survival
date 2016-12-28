@@ -5,7 +5,7 @@ for survival analysis.
 
 | Dataset | Description | Samples | Features | Events | Outcome |
 | ------- | ----------- | ------- | -------- | ------ | ------- |
-| actg320_aids or actg320_death | [AIDS study][Hosmer2008] | 1,151 | 13 | 96 (8.3%) | AIDS defining event or death |
+| actg320_aids or actg320_death | [AIDS study][Hosmer2008] | 1,151 | 11 | 96 (8.3%) | AIDS defining event or death |
 | breast-cancer | [Breast cancer][Desmedt2007] | 198 | 80 | 51 (25.8%) | Distant metastases |
 | GBSG2 | [German Breast Cancer Study Group 2][Schumacher1994] | 686 | 8 | 299 (43.6%) | Recurrence free survival |
 | veteran | [Veteran's Lung Cancer][Kalbfleisch2008] | 137 | 6 | 128 (93.4%) | Death |

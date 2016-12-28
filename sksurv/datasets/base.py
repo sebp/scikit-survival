@@ -279,7 +279,7 @@ def load_veterans_lung_cancer():
 def load_aids(endpoint="aids"):
     """Load and return the AIDS Clinical Trial dataset
 
-    The dataset has 1,151 samples and 13 features.
+    The dataset has 1,151 samples and 11 features.
     The dataset has 2 endpoints:
 
     1. AIDS defining event, which occurred for 96 patients (8.3%)
@@ -311,15 +311,21 @@ def load_aids(endpoint="aids"):
         "Applied Survival Analysis: Regression Modeling of Time to Event Data."
         John Wiley & Sons, Inc. (2008)
     """
+    labels_aids = ['censor', 'time']
+    labels_death = ['censor_d', 'time_d']
     if endpoint == "aids":
-        attr_labels = ['censor', 'time']
+        attr_labels = labels_aids
+        drop_columns = labels_death
     elif endpoint == "death":
-        attr_labels = ['censor_d', 'time_d']
+        attr_labels = labels_death
+        drop_columns = labels_aids
     else:
         raise ValueError("endpoint must be 'aids' or 'death'")
 
     fn = resource_filename(__name__, 'data/actg320.arff')
-    return get_x_y(loadarff(fn), attr_labels=attr_labels, pos_label='1')
+    x, y = get_x_y(loadarff(fn), attr_labels=attr_labels, pos_label='1')
+    x.drop(drop_columns, axis=1, inplace=True)
+    return x, y
 
 
 def load_breast_cancer():
