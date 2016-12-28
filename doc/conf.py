@@ -22,6 +22,11 @@ sys.path.insert(0, os.path.abspath(os.path.pardir))
 
 import versioneer
 
+
+# on_rtd is whether we are on readthedocs.org, this line of code grabbed from docs.readthedocs.org
+# https://docs.readthedocs.io/en/latest/faq.html?highlight=environ#how-do-i-change-behavior-for-read-the-docs
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -40,7 +45,7 @@ extensions = [
 
 autosummary_generate = True
 autodoc_default_flags = ['members', 'inherited-members']
-autodoc_mock_imports = ['cvxopt', 'cvxpy', 'numexpr', 'numpy', 'pandas', 'scipy', 'scikit-learn']
+autodoc_mock_imports = ['cvxopt', 'cvxpy', 'numexpr', 'numpy', 'pandas', 'scipy', 'sklearn']
 
 numpydoc_show_class_members = False
 
@@ -65,7 +70,7 @@ copyright = '2015-2017, Sebastian Pölsterl'
 # built documents.
 #
 # The short X.Y version.
-pieces = versioneer.git_pieces_from_vcs("v", os.path.realpath(".."), False)
+pieces = versioneer.git_pieces_from_vcs("v", os.path.realpath(os.path.pardir), False)
 version = pieces["closest-tag"]
 # The full version, including alpha/beta/rc tags.
 release = versioneer.render(pieces, "pep440")["version"]
@@ -113,7 +118,7 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'bizstyle'
+html_theme = 'default' if on_rtd else 'bizstyle'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
