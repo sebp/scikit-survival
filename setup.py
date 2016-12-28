@@ -12,11 +12,9 @@ except:
 
 from setuptools import find_packages
 
-DISTNAME = 'scikit-survival'
-DESCRIPTION = 'Survival analysis built on top of scikit-learn'
-MAINTAINER = 'Sebastian Pölsterl'
-MAINTAINER_EMAIL = 'sebp@k-d-w.org'
-URL = 'https://github.com/sebp/scikit-survival'
+
+with open('README.rst') as fp:
+    long_description = fp.read()
 
 
 def configuration(parent_package='', top_path=None):
@@ -40,14 +38,16 @@ def configuration(parent_package='', top_path=None):
 
 
 def setup_package():
-    metadata = dict(name=DISTNAME,
-                    author=MAINTAINER,
-                    author_email=MAINTAINER_EMAIL,
-                    description=DESCRIPTION,
+    metadata = dict(name='scikit-survival',
+                    url='https://github.com/sebp/scikit-survival',
+                    author='Sebastian Pölsterl',
+                    author_email='sebp@k-d-w.org',
+                    description='Survival analysis built on top of scikit-learn',
+                    long_description=long_description,
                     license="GPLv3+",
-                    url=URL,
                     version=versioneer.get_version(),
                     cmdclass=versioneer.get_cmdclass(),
+                    packages=find_packages(),
                     classifiers=['Development Status :: 4 - Beta',
                                  'Intended Audience :: Science/Research',
                                  'Intended Audience :: Developers',
@@ -61,7 +61,6 @@ def setup_package():
                                  'Topic :: Software Development',
                                  'Topic :: Scientific/Engineering',
                     ],
-                    packages=find_packages(),
                     install_requires=[
                         'cvxopt',
                         'cvxpy',

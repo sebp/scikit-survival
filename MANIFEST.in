@@ -1,4 +1,4 @@
-include README.md COPYING MANIFEST.in requirements.txt
+include README.rst COPYING MANIFEST.in requirements.txt
 recursive-include data *.arff README.md
 recursive-include doc *.py *.rst Makefile
 recursive-include examples *.py *.ipynb
