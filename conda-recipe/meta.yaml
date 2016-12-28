@@ -14,7 +14,7 @@ build:
   # If this is a new build for the same version, increment the build
   # number. If you do not include this key, it defaults to 0.
   number: 0
-  script: python setup.py install
+  script: python setup.py install --single-version-externally-managed --record record.txt
 
 requirements:
   build:
@@ -42,9 +42,9 @@ test:
     - sksurv.bintrees
     - sksurv.column
     - sksurv.datasets
-    - sksurv.ensmeble
-    - sksurv.ensmeble.boosting
-    - sksurv.ensmeble.survival_loss
+    - sksurv.ensemble
+    - sksurv.ensemble.boosting
+    - sksurv.ensemble.survival_loss
     - sksurv.io
     - sksurv.io.arffread
     - sksurv.io.arffwrite
