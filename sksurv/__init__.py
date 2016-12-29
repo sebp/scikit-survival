@@ -1,4 +1,7 @@
+from pkg_resources import get_distribution, DistributionNotFound
 
-from ._version import get_versions
-__version__ = get_versions()['version']
-del get_versions
+try:
+    __version__ = get_distribution('scikit-survival').version
+except DistributionNotFound:
+   # package is not installed
+   __version__ = 'unknown'

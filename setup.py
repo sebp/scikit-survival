@@ -1,7 +1,6 @@
 import os
 import os.path
 import sys
-import versioneer
 
 # NumPy 1.11.2 contains a bug which prevents submodules from working correctly
 # on Python 3.4 unless importlib.machinery has been imported at some time.
@@ -45,8 +44,6 @@ def setup_package():
                     description='Survival analysis built on top of scikit-learn',
                     long_description=long_description,
                     license="GPLv3+",
-                    version=versioneer.get_version(),
-                    cmdclass=versioneer.get_cmdclass(),
                     packages=find_packages(),
                     classifiers=['Development Status :: 4 - Beta',
                                  'Intended Audience :: Science/Research',
@@ -61,6 +58,8 @@ def setup_package():
                                  'Topic :: Software Development',
                                  'Topic :: Scientific/Engineering',
                     ],
+                    use_scm_version=True,
+                    setup_requires=['setuptools_scm'],
                     install_requires=[
                         'cvxopt',
                         'cvxpy',
@@ -83,12 +82,7 @@ def setup_package():
         in ('--help-commands', 'egg_info', '--version', 'clean'))):
 
         # For these actions, NumPy is not required.
-        try:
-            from setuptools import setup
-        except ImportError:
-            from distutils.core import setup
-
-        metadata['version'] = versioneer.get_version()
+        from setuptools import setup
     else:
         from numpy.distutils.core import setup
 
