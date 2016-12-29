@@ -15,6 +15,7 @@ Documentation
    :maxdepth: 1
 
    api
+   release_notes
 
 
 Indices and tables
