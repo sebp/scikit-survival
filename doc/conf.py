@@ -14,7 +14,7 @@
 
 import sys
 import os
-from pkg_resources import get_distribution
+from setuptools_scm import get_version
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -68,7 +68,7 @@ copyright = '2015-2017, Sebastian Pölsterl'
 # built documents.
 #
 # The full version, including alpha/beta/rc tags.
-release = get_distribution(project).version
+release = get_version(root='..', relative_to=__file__)
 # The short X.Y version.
 version = '.'.join(release.split('.')[:2])
 
