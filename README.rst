@@ -37,7 +37,7 @@ If a patient experiences an event, the exact time of the event can
 be recorded – the patient’s record is uncensored. In contrast, right censored records
 refer to patients that remained event-free during the study period and
 it is unknown whether an event has or has not occurred after the study ended.
-Consequently, survival models demand for models that take
+Consequently, survival analysis demands for models that take
 this unique characteristic of such a dataset into account.
 
 ============
