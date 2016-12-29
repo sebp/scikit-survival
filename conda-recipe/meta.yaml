@@ -6,9 +6,9 @@ package:
   version: {{ version }}
 
 source:
-  path: ..
-#  git_rev: v0.1
-#  git_url: https://github.com/sebp/scikit-survival
+#  path: ..
+  git_rev: v0.1
+  git_url: https://github.com/sebp/scikit-survival
 
 build:
   # If this is a new build for the same version, increment the build
@@ -20,6 +20,7 @@ requirements:
   build:
     - python
     - setuptools
+    - setuptools_scm
     - gcc
     - numpy x.x
     - scipy >=0.16
