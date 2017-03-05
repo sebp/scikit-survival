@@ -12,12 +12,9 @@ from sksurv import column
 from sksurv.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis, GradientBoostingSurvivalAnalysis
 
 
-def early_stopping_monitor(i, est, locals):
+def early_stopping_monitor(i, est, locals_):
     """Returns True on the 10th iteration. """
-    if i == 9:
-        return True
-    else:
-        return False
+    return i == 9
 
 
 class TestGradientBoosting(TestCase):
