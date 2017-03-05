@@ -352,7 +352,8 @@ class TestMinlip(TestCase):
         assert_array_almost_equal(expected, v)
 
     def test_breast_cancer_rbf_cvxopt(self):
-        m = MinlipSurvivalAnalysis(solver="cvxopt", alpha=1, kernel="rbf", pairs="next")
+        m = MinlipSurvivalAnalysis(solver="cvxopt", alpha=1, kernel="rbf",
+                                   gamma=32, pairs="next")
         m.fit(self.x.values, self.y)
 
         self.assertTupleEqual((1, self.x.shape[0]), m.coef_.shape)
@@ -360,12 +361,15 @@ class TestMinlip(TestCase):
         p = m.predict(self.x.values)
         v = concordance_index_censored(self.y['cens'], self.y['time'], p)
 
-        expected = numpy.array([0.63261242034387399, 84182, 48888, 2, 32])
-
-        assert_array_almost_equal(expected, v)
+        self.assertAlmostEqual(0.644357941565, v[0])
+        self.assertEqual(85601, v[1])
+        self.assertEqual(47181, v[2])
+        self.assertEqual(290, v[3])
+        self.assertEqual(32, v[4])
 
     def test_breast_cancer_rbf_cvxpy(self):
-        m = MinlipSurvivalAnalysis(solver="cvxpy", alpha=1, kernel="rbf", pairs="next")
+        m = MinlipSurvivalAnalysis(solver="cvxpy", alpha=1, kernel="rbf",
+                                   gamma=32, pairs="next")
         m.fit(self.x.values, self.y)
 
         self.assertTupleEqual((1, self.x.shape[0]), m.coef_.shape)
@@ -373,10 +377,10 @@ class TestMinlip(TestCase):
         p = m.predict(self.x.values)
         v = concordance_index_censored(self.y['cens'], self.y['time'], p)
 
-        self.assertAlmostEqual(0.6286334, v[0], 3)
-        self.assertEqual(83653, v[1])
-        self.assertEqual(49418, v[2])
-        self.assertEqual(1, v[3])
+        self.assertAlmostEqual(0.644887729951, v[0], 3)
+        self.assertEqual(85799, v[1])
+        self.assertEqual(47238, v[2])
+        self.assertEqual(35, v[3])
         self.assertEqual(32, v[4])
 
     def test_unknown_solver(self):
