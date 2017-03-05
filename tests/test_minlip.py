@@ -3,6 +3,8 @@ from os.path import join, dirname
 import numpy
 from numpy.testing import TestCase, run_module_suite, assert_array_almost_equal, assert_array_equal
 
+from sklearn.preprocessing import scale
+
 from sksurv.svm.minlip import MinlipSurvivalAnalysis, HingeLossSurvivalSVM
 from sksurv.datasets import load_gbsg2
 from sksurv.metrics import concordance_index_censored
@@ -352,35 +354,37 @@ class TestMinlip(TestCase):
         assert_array_almost_equal(expected, v)
 
     def test_breast_cancer_rbf_cvxopt(self):
+        x = scale(self.x.values)
         m = MinlipSurvivalAnalysis(solver="cvxopt", alpha=1, kernel="rbf",
                                    gamma=32, pairs="next")
-        m.fit(self.x.values, self.y)
+        m.fit(x, self.y)
 
         self.assertTupleEqual((1, self.x.shape[0]), m.coef_.shape)
 
-        p = m.predict(self.x.values)
+        p = m.predict(x)
         v = concordance_index_censored(self.y['cens'], self.y['time'], p)
 
-        self.assertAlmostEqual(0.644357941565, v[0])
-        self.assertEqual(85601, v[1])
-        self.assertEqual(47181, v[2])
-        self.assertEqual(290, v[3])
+        self.assertAlmostEqual(0.64607505711193935, v[0])
+        self.assertEqual(85974, v[1])
+        self.assertEqual(47097, v[2])
+        self.assertEqual(1, v[3])
         self.assertEqual(32, v[4])
 
     def test_breast_cancer_rbf_cvxpy(self):
+        x = scale(self.x.values)
         m = MinlipSurvivalAnalysis(solver="cvxpy", alpha=1, kernel="rbf",
                                    gamma=32, pairs="next")
-        m.fit(self.x.values, self.y)
+        m.fit(x, self.y)
 
         self.assertTupleEqual((1, self.x.shape[0]), m.coef_.shape)
 
-        p = m.predict(self.x.values)
+        p = m.predict(x)
         v = concordance_index_censored(self.y['cens'], self.y['time'], p)
 
-        self.assertAlmostEqual(0.644887729951, v[0], 3)
-        self.assertEqual(85799, v[1])
-        self.assertEqual(47238, v[2])
-        self.assertEqual(35, v[3])
+        self.assertAlmostEqual(0.6402849585186966, v[0], 3)
+        self.assertEqual(85204, v[1])
+        self.assertEqual(47868, v[2])
+        self.assertEqual(0, v[3])
         self.assertEqual(32, v[4])
 
     def test_unknown_solver(self):
