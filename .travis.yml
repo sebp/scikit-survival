@@ -23,7 +23,9 @@ install:
   - rm -fr sksurv
 
 # command to run tests
-script: nosetests -w tests --with-coverage --cover-package=sksurv --cover-tests
+script: nosetests -w tests --with-coverage --cover-xml --cover-package=sksurv --cover-tests
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
+  - pip install codacy-coverage
+  - python-codacy-coverage -r coverage.xml
