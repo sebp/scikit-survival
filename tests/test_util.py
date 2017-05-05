@@ -48,7 +48,7 @@ class TestUtil(TestCase):
         expected_series = pandas.DataFrame.from_items([
             ("col_A", pandas.Series(pandas.Categorical.from_codes(
                 numpy.concatenate((a.col_A.cat.codes.values, b.col_A.cat.codes.values)),
-                ["C1", "C2", "C3", "C4", "C5"]
+                ["C1", "C2", "C3"]
             ))),
             ("col_B", numpy.concatenate((a.col_B.values, b.col_B.values)))
         ])
