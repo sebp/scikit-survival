@@ -42,9 +42,13 @@ class ReadArffTest(TestCase):
 
         expected_df = pandas.DataFrame.from_items(
             [("attr_nominal",
-              pandas.Series(["water", "wine", "beer", None, "wine", "water"]).astype("category")),
+              pandas.Series(pandas.Categorical.from_codes(
+                  [1, 2, 0, -1, 2, 1],
+                  ["beer", "water", "wine"]))),
              ("attr_nominal_spaces",
-              pandas.Series(['"red wine"', '"hard liquor"', None, "mate", '"hard liquor"', "mate"]).astype("category"))
+              pandas.Series(pandas.Categorical.from_codes(
+                  [2, 0, -1, 1, 0, 1],
+                  ['"hard liquor"', 'mate', '"red wine"'])))
              ]
         )
 
