@@ -138,3 +138,8 @@ Lecture Notes in Computer Science, vol. 9285, pp. 243-259 (2015)
 F1000Research, vol. 5, no. 2676 (2016).
 
 .. _survival analysis: https://en.wikipedia.org/wiki/Survival_analysis
+
+
+.. image:: https://api.codacy.com/project/badge/Grade/17242004cdf6422c9a1052bf1ec63104
+   :alt: Codacy Badge
+   :target: https://www.codacy.com/app/sebp/scikit-survival?utm_source=github.com&utm_medium=referral&utm_content=sebp/scikit-survival&utm_campaign=badger
