@@ -14,6 +14,10 @@ scikit-survival
   :target: https://codecov.io/gh/sebp/scikit-survival
   :alt: codecov
 
+.. image:: https://api.codacy.com/project/badge/Grade/17242004cdf6422c9a1052bf1ec63104
+   :target: https://www.codacy.com/app/sebp/scikit-survival?utm_source=github.com&utm_medium=referral&utm_content=sebp/scikit-survival&utm_campaign=badger
+   :alt: Codacy Badge
+
 .. image:: https://readthedocs.org/projects/scikit-survival/badge/?version=latest
   :target: https://scikit-survival.readthedocs.io/en/latest/
   :alt: readthedocs.org
