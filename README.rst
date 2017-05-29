@@ -53,7 +53,7 @@ Requirements
 - cvxopt
 - numexpr
 - numpy 1.10 or later
-- pandas 0.18
+- pandas 0.18 or later
 - scikit-learn 0.18
 - scipy 0.17 or later
 - C/C++ compiler
@@ -110,7 +110,7 @@ Documentation
 The source code is thoroughly documented and a HTML version of the API documentation
 is available at https://scikit-survival.readthedocs.io/en/latest/.
 
-You can generate the documentation yourself using `Sphinx <http://sphinx-doc.org/>`_ 1.3 or later::
+You can generate the documentation yourself using `Sphinx <http://sphinx-doc.org/>`_ 1.4 or later::
 
   cd doc
   make html
