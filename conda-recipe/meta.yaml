@@ -1,5 +1,5 @@
 {% set name = "scikit-survival" %}
-{% set version = "0.1" %}
+{% set version = "0.2" %}
 
 package:
   name: {{ name|lower }}
@@ -7,7 +7,7 @@ package:
 
 source:
 #  path: ..
-  git_rev: v0.1
+  git_rev: v0.2
   git_url: https://github.com/sebp/scikit-survival
 
 build:
@@ -31,7 +31,7 @@ requirements:
     - cvxpy
     - numexpr
     - numpy x.x
-    - pandas >=0.18.0,<0.19
+    - pandas >=0.18.0,<0.21
     - scikit-learn >=0.18.0,<0.19
     - scipy >=0.16
 
