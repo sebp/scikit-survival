@@ -3,6 +3,13 @@
 Release Notes
 =============
 
+
+scikit-survival 0.2 (2017-05-29)
+--------------------------------
+
+This release adds support for Python 3.6, and pandas 0.19 and 0.20.
+
+
 scikit-survival 0.1 (2016-12-29)
 --------------------------------
 
