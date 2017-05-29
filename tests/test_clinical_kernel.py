@@ -233,7 +233,7 @@ class TestClinicalKernel(TestCase):
         data = pandas.DataFrame({"age": [12, 61, 18, 21, 57, 17],
                                  "date": numpy.array(
                                      ["2016-01-01", "1954-06-30", "1999-03-01", "2005-02-25", "2112-12-31",
-                                      "1431-09-16"], dtype='datetime64')})
+                                      "1731-09-16"], dtype='datetime64')})
 
         self.assertRaisesRegex(TypeError, 'unsupported dtype: dtype\(.+\)',
                                t.prepare, data)
