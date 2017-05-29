@@ -55,6 +55,7 @@ def setup_package():
                                  'Programming Language :: Python',
                                  'Programming Language :: Python :: 3.4',
                                  'Programming Language :: Python :: 3.5',
+                                 'Programming Language :: Python :: 3.6',
                                  'Topic :: Software Development',
                                  'Topic :: Scientific/Engineering',
                     ],
@@ -65,7 +66,7 @@ def setup_package():
                         'cvxpy',
                         'numexpr',
                         'numpy',
-                        'pandas >=0.18, <0.20',
+                        'pandas >=0.18, <0.21',
                         'scipy',
                         'scikit-learn >=0.18.0, <0.19'],
                     extras_require={

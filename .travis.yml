@@ -1,11 +1,23 @@
 sudo: required
 language: python
 python:
-  - "3.4"
-  - "3.5"
-  - "3.6"
+  - 3.4
+  - 3.5
+  - 3.6
 env:
-  - NUMPY_VERSION=1.11
+  global:
+    - NUMPY_VERSION=1.11
+  matrix:
+    - PANDAS_VERSION=0.18
+    - PANDAS_VERSION=0.19
+    - PANDAS_VERSION=0.20
+
+matrix:
+  exclude:
+    - python: 3.4
+      env: PANDAS_VERSION=0.20
+    - python: 3.6
+      env: PANDAS_VERSION=0.18
 
 cache:
   directories:
