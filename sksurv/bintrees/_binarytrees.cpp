@@ -441,8 +441,8 @@ static CYTHON_INLINE float __PYX_NAN() {
   #endif
 #endif
 
-#define __PYX_HAVE__survival__bintrees___binarytrees
-#define __PYX_HAVE_API__survival__bintrees___binarytrees
+#define __PYX_HAVE__sksurv__bintrees___binarytrees
+#define __PYX_HAVE_API__sksurv__bintrees___binarytrees
 #include "ios"
 #include "new"
 #include "stdexcept"
@@ -643,70 +643,70 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "survival/bintrees/_binarytrees.pyx",
+  "sksurv/bintrees/_binarytrees.pyx",
 };
 
 /*--- Type declarations ---*/
-struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree;
-struct __pyx_obj_8survival_8bintrees_12_binarytrees_RBTree;
-struct __pyx_obj_8survival_8bintrees_12_binarytrees_AVLTree;
-struct __pyx_obj_8survival_8bintrees_12_binarytrees_AATree;
+struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree;
+struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_RBTree;
+struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_AVLTree;
+struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_AATree;
 
-/* "survival/bintrees/_binarytrees.pyx":34
+/* "sksurv/bintrees/_binarytrees.pyx":34
  * 
  * 
  * ctypedef rbtree* rbtree_ptr             # <<<<<<<<<<<<<<
  * 
  * 
  */
-typedef rbtree *__pyx_t_8survival_8bintrees_12_binarytrees_rbtree_ptr;
+typedef rbtree *__pyx_t_6sksurv_8bintrees_12_binarytrees_rbtree_ptr;
 
-/* "survival/bintrees/_binarytrees.pyx":37
+/* "sksurv/bintrees/_binarytrees.pyx":37
  * 
  * 
  * cdef class BaseTree:             # <<<<<<<<<<<<<<
  *     cdef rbtree_ptr treeptr
  * 
  */
-struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree {
+struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree {
   PyObject_HEAD
-  __pyx_t_8survival_8bintrees_12_binarytrees_rbtree_ptr treeptr;
+  __pyx_t_6sksurv_8bintrees_12_binarytrees_rbtree_ptr treeptr;
 };
 
 
-/* "survival/bintrees/_binarytrees.pyx":79
+/* "sksurv/bintrees/_binarytrees.pyx":79
  * 
  * 
  * cdef class RBTree(BaseTree):             # <<<<<<<<<<<<<<
  *     def __cinit__(self, int size):
  *         if size <= 0:
  */
-struct __pyx_obj_8survival_8bintrees_12_binarytrees_RBTree {
-  struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree __pyx_base;
+struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_RBTree {
+  struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree __pyx_base;
 };
 
 
-/* "survival/bintrees/_binarytrees.pyx":85
+/* "sksurv/bintrees/_binarytrees.pyx":85
  *         self.treeptr = new rbtree(size)
  * 
  * cdef class AVLTree(BaseTree):             # <<<<<<<<<<<<<<
  *     def __cinit__(self, int size):
  *         if size <= 0:
  */
-struct __pyx_obj_8survival_8bintrees_12_binarytrees_AVLTree {
-  struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree __pyx_base;
+struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_AVLTree {
+  struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree __pyx_base;
 };
 
 
-/* "survival/bintrees/_binarytrees.pyx":91
+/* "sksurv/bintrees/_binarytrees.pyx":91
  *         self.treeptr = dynamic_cast[rbtree_ptr](new avl(size))
  * 
  * cdef class AATree(BaseTree):             # <<<<<<<<<<<<<<
  *     def __cinit__(self, int size):
  *         if size <= 0:
  */
-struct __pyx_obj_8survival_8bintrees_12_binarytrees_AATree {
-  struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree __pyx_base;
+struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_AATree {
+  struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree __pyx_base;
 };
 
 
@@ -949,15 +949,15 @@ static int __Pyx_InitStrings(__Pyx_StringTabEntry *t);
 
 /* Module declarations from 'libcpp.cast' */
 
-/* Module declarations from 'survival.bintrees._binarytrees' */
-static PyTypeObject *__pyx_ptype_8survival_8bintrees_12_binarytrees_BaseTree = 0;
-static PyTypeObject *__pyx_ptype_8survival_8bintrees_12_binarytrees_RBTree = 0;
-static PyTypeObject *__pyx_ptype_8survival_8bintrees_12_binarytrees_AVLTree = 0;
-static PyTypeObject *__pyx_ptype_8survival_8bintrees_12_binarytrees_AATree = 0;
-#define __Pyx_MODULE_NAME "survival.bintrees._binarytrees"
-int __pyx_module_is_main_survival__bintrees___binarytrees = 0;
+/* Module declarations from 'sksurv.bintrees._binarytrees' */
+static PyTypeObject *__pyx_ptype_6sksurv_8bintrees_12_binarytrees_BaseTree = 0;
+static PyTypeObject *__pyx_ptype_6sksurv_8bintrees_12_binarytrees_RBTree = 0;
+static PyTypeObject *__pyx_ptype_6sksurv_8bintrees_12_binarytrees_AVLTree = 0;
+static PyTypeObject *__pyx_ptype_6sksurv_8bintrees_12_binarytrees_AATree = 0;
+#define __Pyx_MODULE_NAME "sksurv.bintrees._binarytrees"
+int __pyx_module_is_main_sksurv__bintrees___binarytrees = 0;
 
-/* Implementation of 'survival.bintrees._binarytrees' */
+/* Implementation of 'sksurv.bintrees._binarytrees' */
 static PyObject *__pyx_builtin_ValueError;
 static const char __pyx_k_key[] = "key";
 static const char __pyx_k_main[] = "__main__";
@@ -977,21 +977,21 @@ static PyObject *__pyx_n_s_size;
 static PyObject *__pyx_kp_u_size_must_be_greater_zero;
 static PyObject *__pyx_n_s_test;
 static PyObject *__pyx_n_s_value;
-static void __pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree___dealloc__(struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree *__pyx_v_self); /* proto */
-static Py_ssize_t __pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_2__len__(struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_4insert(struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree *__pyx_v_self, double __pyx_v_key, double __pyx_v_value); /* proto */
-static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_6count_smaller(struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree *__pyx_v_self, double __pyx_v_key); /* proto */
-static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_8count_larger(struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree *__pyx_v_self, double __pyx_v_key); /* proto */
-static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_10vector_sum_smaller(struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree *__pyx_v_self, double __pyx_v_key); /* proto */
-static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_12vector_sum_larger(struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree *__pyx_v_self, double __pyx_v_key); /* proto */
-static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_14count_larger_with_event(struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree *__pyx_v_self, double __pyx_v_key, bool __pyx_v_has_event); /* proto */
-static int __pyx_pf_8survival_8bintrees_12_binarytrees_6RBTree___cinit__(struct __pyx_obj_8survival_8bintrees_12_binarytrees_RBTree *__pyx_v_self, int __pyx_v_size); /* proto */
-static int __pyx_pf_8survival_8bintrees_12_binarytrees_7AVLTree___cinit__(struct __pyx_obj_8survival_8bintrees_12_binarytrees_AVLTree *__pyx_v_self, int __pyx_v_size); /* proto */
-static int __pyx_pf_8survival_8bintrees_12_binarytrees_6AATree___cinit__(struct __pyx_obj_8survival_8bintrees_12_binarytrees_AATree *__pyx_v_self, int __pyx_v_size); /* proto */
-static PyObject *__pyx_tp_new_8survival_8bintrees_12_binarytrees_BaseTree(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
-static PyObject *__pyx_tp_new_8survival_8bintrees_12_binarytrees_RBTree(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
-static PyObject *__pyx_tp_new_8survival_8bintrees_12_binarytrees_AVLTree(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
-static PyObject *__pyx_tp_new_8survival_8bintrees_12_binarytrees_AATree(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static void __pyx_pf_6sksurv_8bintrees_12_binarytrees_8BaseTree___dealloc__(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree *__pyx_v_self); /* proto */
+static Py_ssize_t __pyx_pf_6sksurv_8bintrees_12_binarytrees_8BaseTree_2__len__(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_6sksurv_8bintrees_12_binarytrees_8BaseTree_4insert(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree *__pyx_v_self, double __pyx_v_key, double __pyx_v_value); /* proto */
+static PyObject *__pyx_pf_6sksurv_8bintrees_12_binarytrees_8BaseTree_6count_smaller(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree *__pyx_v_self, double __pyx_v_key); /* proto */
+static PyObject *__pyx_pf_6sksurv_8bintrees_12_binarytrees_8BaseTree_8count_larger(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree *__pyx_v_self, double __pyx_v_key); /* proto */
+static PyObject *__pyx_pf_6sksurv_8bintrees_12_binarytrees_8BaseTree_10vector_sum_smaller(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree *__pyx_v_self, double __pyx_v_key); /* proto */
+static PyObject *__pyx_pf_6sksurv_8bintrees_12_binarytrees_8BaseTree_12vector_sum_larger(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree *__pyx_v_self, double __pyx_v_key); /* proto */
+static PyObject *__pyx_pf_6sksurv_8bintrees_12_binarytrees_8BaseTree_14count_larger_with_event(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree *__pyx_v_self, double __pyx_v_key, bool __pyx_v_has_event); /* proto */
+static int __pyx_pf_6sksurv_8bintrees_12_binarytrees_6RBTree___cinit__(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_RBTree *__pyx_v_self, int __pyx_v_size); /* proto */
+static int __pyx_pf_6sksurv_8bintrees_12_binarytrees_7AVLTree___cinit__(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_AVLTree *__pyx_v_self, int __pyx_v_size); /* proto */
+static int __pyx_pf_6sksurv_8bintrees_12_binarytrees_6AATree___cinit__(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_AATree *__pyx_v_self, int __pyx_v_size); /* proto */
+static PyObject *__pyx_tp_new_6sksurv_8bintrees_12_binarytrees_BaseTree(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static PyObject *__pyx_tp_new_6sksurv_8bintrees_12_binarytrees_RBTree(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static PyObject *__pyx_tp_new_6sksurv_8bintrees_12_binarytrees_AVLTree(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static PyObject *__pyx_tp_new_6sksurv_8bintrees_12_binarytrees_AATree(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_float_0_0;
 static PyObject *__pyx_int_0;
 static PyObject *__pyx_tuple_;
@@ -999,7 +999,7 @@ static PyObject *__pyx_tuple__2;
 static PyObject *__pyx_tuple__3;
 static PyObject *__pyx_tuple__4;
 
-/* "survival/bintrees/_binarytrees.pyx":40
+/* "sksurv/bintrees/_binarytrees.pyx":40
  *     cdef rbtree_ptr treeptr
  * 
  *     def __dealloc__(self):             # <<<<<<<<<<<<<<
@@ -1008,22 +1008,22 @@ static PyObject *__pyx_tuple__4;
  */
 
 /* Python wrapper */
-static void __pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_1__dealloc__(PyObject *__pyx_v_self); /*proto*/
-static void __pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_1__dealloc__(PyObject *__pyx_v_self) {
+static void __pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_1__dealloc__(PyObject *__pyx_v_self); /*proto*/
+static void __pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_1__dealloc__(PyObject *__pyx_v_self) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__dealloc__ (wrapper)", 0);
-  __pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree___dealloc__(((struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree *)__pyx_v_self));
+  __pyx_pf_6sksurv_8bintrees_12_binarytrees_8BaseTree___dealloc__(((struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
 }
 
-static void __pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree___dealloc__(struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree *__pyx_v_self) {
+static void __pyx_pf_6sksurv_8bintrees_12_binarytrees_8BaseTree___dealloc__(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree *__pyx_v_self) {
   __Pyx_RefNannyDeclarations
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("__dealloc__", 0);
 
-  /* "survival/bintrees/_binarytrees.pyx":41
+  /* "sksurv/bintrees/_binarytrees.pyx":41
  * 
  *     def __dealloc__(self):
  *         if self.treeptr is not NULL:             # <<<<<<<<<<<<<<
@@ -1033,7 +1033,7 @@ static void __pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree___dealloc__(st
   __pyx_t_1 = ((__pyx_v_self->treeptr != NULL) != 0);
   if (__pyx_t_1) {
 
-    /* "survival/bintrees/_binarytrees.pyx":42
+    /* "sksurv/bintrees/_binarytrees.pyx":42
  *     def __dealloc__(self):
  *         if self.treeptr is not NULL:
  *             del self.treeptr             # <<<<<<<<<<<<<<
@@ -1042,7 +1042,7 @@ static void __pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree___dealloc__(st
  */
     delete __pyx_v_self->treeptr;
 
-    /* "survival/bintrees/_binarytrees.pyx":43
+    /* "sksurv/bintrees/_binarytrees.pyx":43
  *         if self.treeptr is not NULL:
  *             del self.treeptr
  *             self.treeptr = NULL             # <<<<<<<<<<<<<<
@@ -1051,7 +1051,7 @@ static void __pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree___dealloc__(st
  */
     __pyx_v_self->treeptr = NULL;
 
-    /* "survival/bintrees/_binarytrees.pyx":41
+    /* "sksurv/bintrees/_binarytrees.pyx":41
  * 
  *     def __dealloc__(self):
  *         if self.treeptr is not NULL:             # <<<<<<<<<<<<<<
@@ -1060,7 +1060,7 @@ static void __pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree___dealloc__(st
  */
   }
 
-  /* "survival/bintrees/_binarytrees.pyx":40
+  /* "sksurv/bintrees/_binarytrees.pyx":40
  *     cdef rbtree_ptr treeptr
  * 
  *     def __dealloc__(self):             # <<<<<<<<<<<<<<
@@ -1072,7 +1072,7 @@ static void __pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree___dealloc__(st
   __Pyx_RefNannyFinishContext();
 }
 
-/* "survival/bintrees/_binarytrees.pyx":45
+/* "sksurv/bintrees/_binarytrees.pyx":45
  *             self.treeptr = NULL
  * 
  *     def __len__(self):             # <<<<<<<<<<<<<<
@@ -1081,24 +1081,24 @@ static void __pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree___dealloc__(st
  */
 
 /* Python wrapper */
-static Py_ssize_t __pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_3__len__(PyObject *__pyx_v_self); /*proto*/
-static Py_ssize_t __pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_3__len__(PyObject *__pyx_v_self) {
+static Py_ssize_t __pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_3__len__(PyObject *__pyx_v_self); /*proto*/
+static Py_ssize_t __pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_3__len__(PyObject *__pyx_v_self) {
   Py_ssize_t __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__len__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_2__len__(((struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree *)__pyx_v_self));
+  __pyx_r = __pyx_pf_6sksurv_8bintrees_12_binarytrees_8BaseTree_2__len__(((struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static Py_ssize_t __pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_2__len__(struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree *__pyx_v_self) {
+static Py_ssize_t __pyx_pf_6sksurv_8bintrees_12_binarytrees_8BaseTree_2__len__(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree *__pyx_v_self) {
   Py_ssize_t __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__len__", 0);
 
-  /* "survival/bintrees/_binarytrees.pyx":46
+  /* "sksurv/bintrees/_binarytrees.pyx":46
  * 
  *     def __len__(self):
  *         return self.treeptr.get_size()             # <<<<<<<<<<<<<<
@@ -1108,7 +1108,7 @@ static Py_ssize_t __pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_2__len__
   __pyx_r = __pyx_v_self->treeptr->get_size();
   goto __pyx_L0;
 
-  /* "survival/bintrees/_binarytrees.pyx":45
+  /* "sksurv/bintrees/_binarytrees.pyx":45
  *             self.treeptr = NULL
  * 
  *     def __len__(self):             # <<<<<<<<<<<<<<
@@ -1122,7 +1122,7 @@ static Py_ssize_t __pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_2__len__
   return __pyx_r;
 }
 
-/* "survival/bintrees/_binarytrees.pyx":48
+/* "sksurv/bintrees/_binarytrees.pyx":48
  *         return self.treeptr.get_size()
  * 
  *     def insert(self, double key, double value):             # <<<<<<<<<<<<<<
@@ -1131,8 +1131,8 @@ static Py_ssize_t __pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_2__len__
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_5insert(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_5insert(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_5insert(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_5insert(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   double __pyx_v_key;
   double __pyx_v_value;
   PyObject *__pyx_r = 0;
@@ -1177,23 +1177,23 @@ static PyObject *__pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_5insert(P
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("insert", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 48, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("survival.bintrees._binarytrees.BaseTree.insert", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.bintrees._binarytrees.BaseTree.insert", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_4insert(((struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree *)__pyx_v_self), __pyx_v_key, __pyx_v_value);
+  __pyx_r = __pyx_pf_6sksurv_8bintrees_12_binarytrees_8BaseTree_4insert(((struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree *)__pyx_v_self), __pyx_v_key, __pyx_v_value);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_4insert(struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree *__pyx_v_self, double __pyx_v_key, double __pyx_v_value) {
+static PyObject *__pyx_pf_6sksurv_8bintrees_12_binarytrees_8BaseTree_4insert(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree *__pyx_v_self, double __pyx_v_key, double __pyx_v_value) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("insert", 0);
 
-  /* "survival/bintrees/_binarytrees.pyx":49
+  /* "sksurv/bintrees/_binarytrees.pyx":49
  * 
  *     def insert(self, double key, double value):
  *         self.treeptr.insert_node(key, value)             # <<<<<<<<<<<<<<
@@ -1202,7 +1202,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_4insert(s
  */
   __pyx_v_self->treeptr->insert_node(__pyx_v_key, __pyx_v_value);
 
-  /* "survival/bintrees/_binarytrees.pyx":48
+  /* "sksurv/bintrees/_binarytrees.pyx":48
  *         return self.treeptr.get_size()
  * 
  *     def insert(self, double key, double value):             # <<<<<<<<<<<<<<
@@ -1217,7 +1217,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_4insert(s
   return __pyx_r;
 }
 
-/* "survival/bintrees/_binarytrees.pyx":51
+/* "sksurv/bintrees/_binarytrees.pyx":51
  *         self.treeptr.insert_node(key, value)
  * 
  *     def count_smaller(self, double key):             # <<<<<<<<<<<<<<
@@ -1226,8 +1226,8 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_4insert(s
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_7count_smaller(PyObject *__pyx_v_self, PyObject *__pyx_arg_key); /*proto*/
-static PyObject *__pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_7count_smaller(PyObject *__pyx_v_self, PyObject *__pyx_arg_key) {
+static PyObject *__pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_7count_smaller(PyObject *__pyx_v_self, PyObject *__pyx_arg_key); /*proto*/
+static PyObject *__pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_7count_smaller(PyObject *__pyx_v_self, PyObject *__pyx_arg_key) {
   double __pyx_v_key;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
@@ -1237,18 +1237,18 @@ static PyObject *__pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_7count_sm
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
-  __Pyx_AddTraceback("survival.bintrees._binarytrees.BaseTree.count_smaller", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.bintrees._binarytrees.BaseTree.count_smaller", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_6count_smaller(((struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree *)__pyx_v_self), ((double)__pyx_v_key));
+  __pyx_r = __pyx_pf_6sksurv_8bintrees_12_binarytrees_8BaseTree_6count_smaller(((struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree *)__pyx_v_self), ((double)__pyx_v_key));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_6count_smaller(struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree *__pyx_v_self, double __pyx_v_key) {
+static PyObject *__pyx_pf_6sksurv_8bintrees_12_binarytrees_8BaseTree_6count_smaller(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree *__pyx_v_self, double __pyx_v_key) {
   int __pyx_v_count_ret;
   double __pyx_v_acc_value_ret;
   PyObject *__pyx_r = NULL;
@@ -1258,7 +1258,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_6count_sm
   PyObject *__pyx_t_3 = NULL;
   __Pyx_RefNannySetupContext("count_smaller", 0);
 
-  /* "survival/bintrees/_binarytrees.pyx":55
+  /* "sksurv/bintrees/_binarytrees.pyx":55
  *         cdef double acc_value_ret;
  * 
  *         self.treeptr.count_smaller(key, &count_ret, &acc_value_ret)             # <<<<<<<<<<<<<<
@@ -1267,7 +1267,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_6count_sm
  */
   __pyx_v_self->treeptr->count_smaller(__pyx_v_key, (&__pyx_v_count_ret), (&__pyx_v_acc_value_ret));
 
-  /* "survival/bintrees/_binarytrees.pyx":57
+  /* "sksurv/bintrees/_binarytrees.pyx":57
  *         self.treeptr.count_smaller(key, &count_ret, &acc_value_ret)
  * 
  *         return count_ret, acc_value_ret             # <<<<<<<<<<<<<<
@@ -1291,7 +1291,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_6count_sm
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "survival/bintrees/_binarytrees.pyx":51
+  /* "sksurv/bintrees/_binarytrees.pyx":51
  *         self.treeptr.insert_node(key, value)
  * 
  *     def count_smaller(self, double key):             # <<<<<<<<<<<<<<
@@ -1304,7 +1304,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_6count_sm
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("survival.bintrees._binarytrees.BaseTree.count_smaller", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.bintrees._binarytrees.BaseTree.count_smaller", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -1312,7 +1312,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_6count_sm
   return __pyx_r;
 }
 
-/* "survival/bintrees/_binarytrees.pyx":59
+/* "sksurv/bintrees/_binarytrees.pyx":59
  *         return count_ret, acc_value_ret
  * 
  *     def count_larger(self, double key):             # <<<<<<<<<<<<<<
@@ -1321,8 +1321,8 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_6count_sm
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_9count_larger(PyObject *__pyx_v_self, PyObject *__pyx_arg_key); /*proto*/
-static PyObject *__pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_9count_larger(PyObject *__pyx_v_self, PyObject *__pyx_arg_key) {
+static PyObject *__pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_9count_larger(PyObject *__pyx_v_self, PyObject *__pyx_arg_key); /*proto*/
+static PyObject *__pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_9count_larger(PyObject *__pyx_v_self, PyObject *__pyx_arg_key) {
   double __pyx_v_key;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
@@ -1332,18 +1332,18 @@ static PyObject *__pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_9count_la
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
-  __Pyx_AddTraceback("survival.bintrees._binarytrees.BaseTree.count_larger", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.bintrees._binarytrees.BaseTree.count_larger", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_8count_larger(((struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree *)__pyx_v_self), ((double)__pyx_v_key));
+  __pyx_r = __pyx_pf_6sksurv_8bintrees_12_binarytrees_8BaseTree_8count_larger(((struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree *)__pyx_v_self), ((double)__pyx_v_key));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_8count_larger(struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree *__pyx_v_self, double __pyx_v_key) {
+static PyObject *__pyx_pf_6sksurv_8bintrees_12_binarytrees_8BaseTree_8count_larger(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree *__pyx_v_self, double __pyx_v_key) {
   int __pyx_v_count_ret;
   double __pyx_v_acc_value_ret;
   PyObject *__pyx_r = NULL;
@@ -1353,7 +1353,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_8count_la
   PyObject *__pyx_t_3 = NULL;
   __Pyx_RefNannySetupContext("count_larger", 0);
 
-  /* "survival/bintrees/_binarytrees.pyx":63
+  /* "sksurv/bintrees/_binarytrees.pyx":63
  *         cdef double acc_value_ret
  * 
  *         self.treeptr.count_larger(key, &count_ret, &acc_value_ret)             # <<<<<<<<<<<<<<
@@ -1362,7 +1362,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_8count_la
  */
   __pyx_v_self->treeptr->count_larger(__pyx_v_key, (&__pyx_v_count_ret), (&__pyx_v_acc_value_ret));
 
-  /* "survival/bintrees/_binarytrees.pyx":65
+  /* "sksurv/bintrees/_binarytrees.pyx":65
  *         self.treeptr.count_larger(key, &count_ret, &acc_value_ret)
  * 
  *         return count_ret, acc_value_ret             # <<<<<<<<<<<<<<
@@ -1386,7 +1386,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_8count_la
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "survival/bintrees/_binarytrees.pyx":59
+  /* "sksurv/bintrees/_binarytrees.pyx":59
  *         return count_ret, acc_value_ret
  * 
  *     def count_larger(self, double key):             # <<<<<<<<<<<<<<
@@ -1399,7 +1399,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_8count_la
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_AddTraceback("survival.bintrees._binarytrees.BaseTree.count_larger", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.bintrees._binarytrees.BaseTree.count_larger", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -1407,7 +1407,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_8count_la
   return __pyx_r;
 }
 
-/* "survival/bintrees/_binarytrees.pyx":67
+/* "sksurv/bintrees/_binarytrees.pyx":67
  *         return count_ret, acc_value_ret
  * 
  *     def vector_sum_smaller(self, double key):             # <<<<<<<<<<<<<<
@@ -1416,8 +1416,8 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_8count_la
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_11vector_sum_smaller(PyObject *__pyx_v_self, PyObject *__pyx_arg_key); /*proto*/
-static PyObject *__pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_11vector_sum_smaller(PyObject *__pyx_v_self, PyObject *__pyx_arg_key) {
+static PyObject *__pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_11vector_sum_smaller(PyObject *__pyx_v_self, PyObject *__pyx_arg_key); /*proto*/
+static PyObject *__pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_11vector_sum_smaller(PyObject *__pyx_v_self, PyObject *__pyx_arg_key) {
   double __pyx_v_key;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
@@ -1427,24 +1427,24 @@ static PyObject *__pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_11vector_
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
-  __Pyx_AddTraceback("survival.bintrees._binarytrees.BaseTree.vector_sum_smaller", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.bintrees._binarytrees.BaseTree.vector_sum_smaller", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_10vector_sum_smaller(((struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree *)__pyx_v_self), ((double)__pyx_v_key));
+  __pyx_r = __pyx_pf_6sksurv_8bintrees_12_binarytrees_8BaseTree_10vector_sum_smaller(((struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree *)__pyx_v_self), ((double)__pyx_v_key));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_10vector_sum_smaller(struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree *__pyx_v_self, double __pyx_v_key) {
+static PyObject *__pyx_pf_6sksurv_8bintrees_12_binarytrees_8BaseTree_10vector_sum_smaller(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree *__pyx_v_self, double __pyx_v_key) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("vector_sum_smaller", 0);
 
-  /* "survival/bintrees/_binarytrees.pyx":68
+  /* "sksurv/bintrees/_binarytrees.pyx":68
  * 
  *     def vector_sum_smaller(self, double key):
  *         return self.treeptr.vector_sum_smaller(key)             # <<<<<<<<<<<<<<
@@ -1458,7 +1458,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_10vector_
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "survival/bintrees/_binarytrees.pyx":67
+  /* "sksurv/bintrees/_binarytrees.pyx":67
  *         return count_ret, acc_value_ret
  * 
  *     def vector_sum_smaller(self, double key):             # <<<<<<<<<<<<<<
@@ -1469,7 +1469,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_10vector_
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("survival.bintrees._binarytrees.BaseTree.vector_sum_smaller", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.bintrees._binarytrees.BaseTree.vector_sum_smaller", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -1477,7 +1477,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_10vector_
   return __pyx_r;
 }
 
-/* "survival/bintrees/_binarytrees.pyx":70
+/* "sksurv/bintrees/_binarytrees.pyx":70
  *         return self.treeptr.vector_sum_smaller(key)
  * 
  *     def vector_sum_larger(self, double key):             # <<<<<<<<<<<<<<
@@ -1486,8 +1486,8 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_10vector_
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_13vector_sum_larger(PyObject *__pyx_v_self, PyObject *__pyx_arg_key); /*proto*/
-static PyObject *__pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_13vector_sum_larger(PyObject *__pyx_v_self, PyObject *__pyx_arg_key) {
+static PyObject *__pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_13vector_sum_larger(PyObject *__pyx_v_self, PyObject *__pyx_arg_key); /*proto*/
+static PyObject *__pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_13vector_sum_larger(PyObject *__pyx_v_self, PyObject *__pyx_arg_key) {
   double __pyx_v_key;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
@@ -1497,24 +1497,24 @@ static PyObject *__pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_13vector_
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
-  __Pyx_AddTraceback("survival.bintrees._binarytrees.BaseTree.vector_sum_larger", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.bintrees._binarytrees.BaseTree.vector_sum_larger", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_12vector_sum_larger(((struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree *)__pyx_v_self), ((double)__pyx_v_key));
+  __pyx_r = __pyx_pf_6sksurv_8bintrees_12_binarytrees_8BaseTree_12vector_sum_larger(((struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree *)__pyx_v_self), ((double)__pyx_v_key));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_12vector_sum_larger(struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree *__pyx_v_self, double __pyx_v_key) {
+static PyObject *__pyx_pf_6sksurv_8bintrees_12_binarytrees_8BaseTree_12vector_sum_larger(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree *__pyx_v_self, double __pyx_v_key) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("vector_sum_larger", 0);
 
-  /* "survival/bintrees/_binarytrees.pyx":71
+  /* "sksurv/bintrees/_binarytrees.pyx":71
  * 
  *     def vector_sum_larger(self, double key):
  *         return self.treeptr.vector_sum_larger(key)             # <<<<<<<<<<<<<<
@@ -1528,7 +1528,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_12vector_
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "survival/bintrees/_binarytrees.pyx":70
+  /* "sksurv/bintrees/_binarytrees.pyx":70
  *         return self.treeptr.vector_sum_smaller(key)
  * 
  *     def vector_sum_larger(self, double key):             # <<<<<<<<<<<<<<
@@ -1539,7 +1539,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_12vector_
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("survival.bintrees._binarytrees.BaseTree.vector_sum_larger", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.bintrees._binarytrees.BaseTree.vector_sum_larger", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -1547,7 +1547,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_12vector_
   return __pyx_r;
 }
 
-/* "survival/bintrees/_binarytrees.pyx":73
+/* "sksurv/bintrees/_binarytrees.pyx":73
  *         return self.treeptr.vector_sum_larger(key)
  * 
  *     def count_larger_with_event(self, double key, bool has_event):             # <<<<<<<<<<<<<<
@@ -1556,8 +1556,8 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_12vector_
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_15count_larger_with_event(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_15count_larger_with_event(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_15count_larger_with_event(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_15count_larger_with_event(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   double __pyx_v_key;
   bool __pyx_v_has_event;
   PyObject *__pyx_r = 0;
@@ -1602,18 +1602,18 @@ static PyObject *__pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_15count_l
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("count_larger_with_event", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 73, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("survival.bintrees._binarytrees.BaseTree.count_larger_with_event", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.bintrees._binarytrees.BaseTree.count_larger_with_event", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_14count_larger_with_event(((struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree *)__pyx_v_self), __pyx_v_key, __pyx_v_has_event);
+  __pyx_r = __pyx_pf_6sksurv_8bintrees_12_binarytrees_8BaseTree_14count_larger_with_event(((struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree *)__pyx_v_self), __pyx_v_key, __pyx_v_has_event);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_14count_larger_with_event(struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree *__pyx_v_self, double __pyx_v_key, bool __pyx_v_has_event) {
+static PyObject *__pyx_pf_6sksurv_8bintrees_12_binarytrees_8BaseTree_14count_larger_with_event(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree *__pyx_v_self, double __pyx_v_key, bool __pyx_v_has_event) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   int __pyx_t_1;
@@ -1624,7 +1624,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_14count_l
   PyObject *__pyx_t_6 = NULL;
   __Pyx_RefNannySetupContext("count_larger_with_event", 0);
 
-  /* "survival/bintrees/_binarytrees.pyx":74
+  /* "sksurv/bintrees/_binarytrees.pyx":74
  * 
  *     def count_larger_with_event(self, double key, bool has_event):
  *         if not has_event:             # <<<<<<<<<<<<<<
@@ -1634,7 +1634,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_14count_l
   __pyx_t_1 = ((!(__pyx_v_has_event != 0)) != 0);
   if (__pyx_t_1) {
 
-    /* "survival/bintrees/_binarytrees.pyx":75
+    /* "sksurv/bintrees/_binarytrees.pyx":75
  *     def count_larger_with_event(self, double key, bool has_event):
  *         if not has_event:
  *             return 0, 0.0             # <<<<<<<<<<<<<<
@@ -1646,7 +1646,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_14count_l
     __pyx_r = __pyx_tuple_;
     goto __pyx_L0;
 
-    /* "survival/bintrees/_binarytrees.pyx":74
+    /* "sksurv/bintrees/_binarytrees.pyx":74
  * 
  *     def count_larger_with_event(self, double key, bool has_event):
  *         if not has_event:             # <<<<<<<<<<<<<<
@@ -1655,7 +1655,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_14count_l
  */
   }
 
-  /* "survival/bintrees/_binarytrees.pyx":76
+  /* "sksurv/bintrees/_binarytrees.pyx":76
  *         if not has_event:
  *             return 0, 0.0
  *         return self.count_larger(key)             # <<<<<<<<<<<<<<
@@ -1717,7 +1717,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_14count_l
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "survival/bintrees/_binarytrees.pyx":73
+  /* "sksurv/bintrees/_binarytrees.pyx":73
  *         return self.treeptr.vector_sum_larger(key)
  * 
  *     def count_larger_with_event(self, double key, bool has_event):             # <<<<<<<<<<<<<<
@@ -1732,7 +1732,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_14count_l
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
-  __Pyx_AddTraceback("survival.bintrees._binarytrees.BaseTree.count_larger_with_event", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.bintrees._binarytrees.BaseTree.count_larger_with_event", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -1740,7 +1740,7 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_14count_l
   return __pyx_r;
 }
 
-/* "survival/bintrees/_binarytrees.pyx":80
+/* "sksurv/bintrees/_binarytrees.pyx":80
  * 
  * cdef class RBTree(BaseTree):
  *     def __cinit__(self, int size):             # <<<<<<<<<<<<<<
@@ -1749,8 +1749,8 @@ static PyObject *__pyx_pf_8survival_8bintrees_12_binarytrees_8BaseTree_14count_l
  */
 
 /* Python wrapper */
-static int __pyx_pw_8survival_8bintrees_12_binarytrees_6RBTree_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static int __pyx_pw_8survival_8bintrees_12_binarytrees_6RBTree_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static int __pyx_pw_6sksurv_8bintrees_12_binarytrees_6RBTree_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_pw_6sksurv_8bintrees_12_binarytrees_6RBTree_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   int __pyx_v_size;
   int __pyx_r;
   __Pyx_RefNannyDeclarations
@@ -1786,25 +1786,25 @@ static int __pyx_pw_8survival_8bintrees_12_binarytrees_6RBTree_1__cinit__(PyObje
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 1, 1, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 80, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("survival.bintrees._binarytrees.RBTree.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.bintrees._binarytrees.RBTree.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8survival_8bintrees_12_binarytrees_6RBTree___cinit__(((struct __pyx_obj_8survival_8bintrees_12_binarytrees_RBTree *)__pyx_v_self), __pyx_v_size);
+  __pyx_r = __pyx_pf_6sksurv_8bintrees_12_binarytrees_6RBTree___cinit__(((struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_RBTree *)__pyx_v_self), __pyx_v_size);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static int __pyx_pf_8survival_8bintrees_12_binarytrees_6RBTree___cinit__(struct __pyx_obj_8survival_8bintrees_12_binarytrees_RBTree *__pyx_v_self, int __pyx_v_size) {
+static int __pyx_pf_6sksurv_8bintrees_12_binarytrees_6RBTree___cinit__(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_RBTree *__pyx_v_self, int __pyx_v_size) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   int __pyx_t_1;
   PyObject *__pyx_t_2 = NULL;
   __Pyx_RefNannySetupContext("__cinit__", 0);
 
-  /* "survival/bintrees/_binarytrees.pyx":81
+  /* "sksurv/bintrees/_binarytrees.pyx":81
  * cdef class RBTree(BaseTree):
  *     def __cinit__(self, int size):
  *         if size <= 0:             # <<<<<<<<<<<<<<
@@ -1814,7 +1814,7 @@ static int __pyx_pf_8survival_8bintrees_12_binarytrees_6RBTree___cinit__(struct 
   __pyx_t_1 = ((__pyx_v_size <= 0) != 0);
   if (__pyx_t_1) {
 
-    /* "survival/bintrees/_binarytrees.pyx":82
+    /* "sksurv/bintrees/_binarytrees.pyx":82
  *     def __cinit__(self, int size):
  *         if size <= 0:
  *             raise ValueError('size must be greater zero')             # <<<<<<<<<<<<<<
@@ -1827,7 +1827,7 @@ static int __pyx_pf_8survival_8bintrees_12_binarytrees_6RBTree___cinit__(struct 
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __PYX_ERR(0, 82, __pyx_L1_error)
 
-    /* "survival/bintrees/_binarytrees.pyx":81
+    /* "sksurv/bintrees/_binarytrees.pyx":81
  * cdef class RBTree(BaseTree):
  *     def __cinit__(self, int size):
  *         if size <= 0:             # <<<<<<<<<<<<<<
@@ -1836,7 +1836,7 @@ static int __pyx_pf_8survival_8bintrees_12_binarytrees_6RBTree___cinit__(struct 
  */
   }
 
-  /* "survival/bintrees/_binarytrees.pyx":83
+  /* "sksurv/bintrees/_binarytrees.pyx":83
  *         if size <= 0:
  *             raise ValueError('size must be greater zero')
  *         self.treeptr = new rbtree(size)             # <<<<<<<<<<<<<<
@@ -1845,7 +1845,7 @@ static int __pyx_pf_8survival_8bintrees_12_binarytrees_6RBTree___cinit__(struct 
  */
   __pyx_v_self->__pyx_base.treeptr = new rbtree(__pyx_v_size);
 
-  /* "survival/bintrees/_binarytrees.pyx":80
+  /* "sksurv/bintrees/_binarytrees.pyx":80
  * 
  * cdef class RBTree(BaseTree):
  *     def __cinit__(self, int size):             # <<<<<<<<<<<<<<
@@ -1858,14 +1858,14 @@ static int __pyx_pf_8survival_8bintrees_12_binarytrees_6RBTree___cinit__(struct 
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_AddTraceback("survival.bintrees._binarytrees.RBTree.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.bintrees._binarytrees.RBTree.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = -1;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "survival/bintrees/_binarytrees.pyx":86
+/* "sksurv/bintrees/_binarytrees.pyx":86
  * 
  * cdef class AVLTree(BaseTree):
  *     def __cinit__(self, int size):             # <<<<<<<<<<<<<<
@@ -1874,8 +1874,8 @@ static int __pyx_pf_8survival_8bintrees_12_binarytrees_6RBTree___cinit__(struct 
  */
 
 /* Python wrapper */
-static int __pyx_pw_8survival_8bintrees_12_binarytrees_7AVLTree_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static int __pyx_pw_8survival_8bintrees_12_binarytrees_7AVLTree_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static int __pyx_pw_6sksurv_8bintrees_12_binarytrees_7AVLTree_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_pw_6sksurv_8bintrees_12_binarytrees_7AVLTree_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   int __pyx_v_size;
   int __pyx_r;
   __Pyx_RefNannyDeclarations
@@ -1911,26 +1911,26 @@ static int __pyx_pw_8survival_8bintrees_12_binarytrees_7AVLTree_1__cinit__(PyObj
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 1, 1, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 86, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("survival.bintrees._binarytrees.AVLTree.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.bintrees._binarytrees.AVLTree.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8survival_8bintrees_12_binarytrees_7AVLTree___cinit__(((struct __pyx_obj_8survival_8bintrees_12_binarytrees_AVLTree *)__pyx_v_self), __pyx_v_size);
+  __pyx_r = __pyx_pf_6sksurv_8bintrees_12_binarytrees_7AVLTree___cinit__(((struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_AVLTree *)__pyx_v_self), __pyx_v_size);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static int __pyx_pf_8survival_8bintrees_12_binarytrees_7AVLTree___cinit__(struct __pyx_obj_8survival_8bintrees_12_binarytrees_AVLTree *__pyx_v_self, int __pyx_v_size) {
+static int __pyx_pf_6sksurv_8bintrees_12_binarytrees_7AVLTree___cinit__(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_AVLTree *__pyx_v_self, int __pyx_v_size) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   int __pyx_t_1;
   PyObject *__pyx_t_2 = NULL;
-  __pyx_t_8survival_8bintrees_12_binarytrees_rbtree_ptr __pyx_t_3;
+  __pyx_t_6sksurv_8bintrees_12_binarytrees_rbtree_ptr __pyx_t_3;
   __Pyx_RefNannySetupContext("__cinit__", 0);
 
-  /* "survival/bintrees/_binarytrees.pyx":87
+  /* "sksurv/bintrees/_binarytrees.pyx":87
  * cdef class AVLTree(BaseTree):
  *     def __cinit__(self, int size):
  *         if size <= 0:             # <<<<<<<<<<<<<<
@@ -1940,7 +1940,7 @@ static int __pyx_pf_8survival_8bintrees_12_binarytrees_7AVLTree___cinit__(struct
   __pyx_t_1 = ((__pyx_v_size <= 0) != 0);
   if (__pyx_t_1) {
 
-    /* "survival/bintrees/_binarytrees.pyx":88
+    /* "sksurv/bintrees/_binarytrees.pyx":88
  *     def __cinit__(self, int size):
  *         if size <= 0:
  *             raise ValueError('size must be greater zero')             # <<<<<<<<<<<<<<
@@ -1953,7 +1953,7 @@ static int __pyx_pf_8survival_8bintrees_12_binarytrees_7AVLTree___cinit__(struct
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __PYX_ERR(0, 88, __pyx_L1_error)
 
-    /* "survival/bintrees/_binarytrees.pyx":87
+    /* "sksurv/bintrees/_binarytrees.pyx":87
  * cdef class AVLTree(BaseTree):
  *     def __cinit__(self, int size):
  *         if size <= 0:             # <<<<<<<<<<<<<<
@@ -1962,7 +1962,7 @@ static int __pyx_pf_8survival_8bintrees_12_binarytrees_7AVLTree___cinit__(struct
  */
   }
 
-  /* "survival/bintrees/_binarytrees.pyx":89
+  /* "sksurv/bintrees/_binarytrees.pyx":89
  *         if size <= 0:
  *             raise ValueError('size must be greater zero')
  *         self.treeptr = dynamic_cast[rbtree_ptr](new avl(size))             # <<<<<<<<<<<<<<
@@ -1970,14 +1970,14 @@ static int __pyx_pf_8survival_8bintrees_12_binarytrees_7AVLTree___cinit__(struct
  * cdef class AATree(BaseTree):
  */
   try {
-    __pyx_t_3 = dynamic_cast<__pyx_t_8survival_8bintrees_12_binarytrees_rbtree_ptr>(new avl(__pyx_v_size));
+    __pyx_t_3 = dynamic_cast<__pyx_t_6sksurv_8bintrees_12_binarytrees_rbtree_ptr>(new avl(__pyx_v_size));
   } catch(...) {
     __Pyx_CppExn2PyErr();
     __PYX_ERR(0, 89, __pyx_L1_error)
   }
   __pyx_v_self->__pyx_base.treeptr = __pyx_t_3;
 
-  /* "survival/bintrees/_binarytrees.pyx":86
+  /* "sksurv/bintrees/_binarytrees.pyx":86
  * 
  * cdef class AVLTree(BaseTree):
  *     def __cinit__(self, int size):             # <<<<<<<<<<<<<<
@@ -1990,14 +1990,14 @@ static int __pyx_pf_8survival_8bintrees_12_binarytrees_7AVLTree___cinit__(struct
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_AddTraceback("survival.bintrees._binarytrees.AVLTree.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.bintrees._binarytrees.AVLTree.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = -1;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "survival/bintrees/_binarytrees.pyx":92
+/* "sksurv/bintrees/_binarytrees.pyx":92
  * 
  * cdef class AATree(BaseTree):
  *     def __cinit__(self, int size):             # <<<<<<<<<<<<<<
@@ -2006,8 +2006,8 @@ static int __pyx_pf_8survival_8bintrees_12_binarytrees_7AVLTree___cinit__(struct
  */
 
 /* Python wrapper */
-static int __pyx_pw_8survival_8bintrees_12_binarytrees_6AATree_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static int __pyx_pw_8survival_8bintrees_12_binarytrees_6AATree_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static int __pyx_pw_6sksurv_8bintrees_12_binarytrees_6AATree_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_pw_6sksurv_8bintrees_12_binarytrees_6AATree_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   int __pyx_v_size;
   int __pyx_r;
   __Pyx_RefNannyDeclarations
@@ -2043,26 +2043,26 @@ static int __pyx_pw_8survival_8bintrees_12_binarytrees_6AATree_1__cinit__(PyObje
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 1, 1, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 92, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("survival.bintrees._binarytrees.AATree.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.bintrees._binarytrees.AATree.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8survival_8bintrees_12_binarytrees_6AATree___cinit__(((struct __pyx_obj_8survival_8bintrees_12_binarytrees_AATree *)__pyx_v_self), __pyx_v_size);
+  __pyx_r = __pyx_pf_6sksurv_8bintrees_12_binarytrees_6AATree___cinit__(((struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_AATree *)__pyx_v_self), __pyx_v_size);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static int __pyx_pf_8survival_8bintrees_12_binarytrees_6AATree___cinit__(struct __pyx_obj_8survival_8bintrees_12_binarytrees_AATree *__pyx_v_self, int __pyx_v_size) {
+static int __pyx_pf_6sksurv_8bintrees_12_binarytrees_6AATree___cinit__(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_AATree *__pyx_v_self, int __pyx_v_size) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   int __pyx_t_1;
   PyObject *__pyx_t_2 = NULL;
-  __pyx_t_8survival_8bintrees_12_binarytrees_rbtree_ptr __pyx_t_3;
+  __pyx_t_6sksurv_8bintrees_12_binarytrees_rbtree_ptr __pyx_t_3;
   __Pyx_RefNannySetupContext("__cinit__", 0);
 
-  /* "survival/bintrees/_binarytrees.pyx":93
+  /* "sksurv/bintrees/_binarytrees.pyx":93
  * cdef class AATree(BaseTree):
  *     def __cinit__(self, int size):
  *         if size <= 0:             # <<<<<<<<<<<<<<
@@ -2072,7 +2072,7 @@ static int __pyx_pf_8survival_8bintrees_12_binarytrees_6AATree___cinit__(struct 
   __pyx_t_1 = ((__pyx_v_size <= 0) != 0);
   if (__pyx_t_1) {
 
-    /* "survival/bintrees/_binarytrees.pyx":94
+    /* "sksurv/bintrees/_binarytrees.pyx":94
  *     def __cinit__(self, int size):
  *         if size <= 0:
  *             raise ValueError('size must be greater zero')             # <<<<<<<<<<<<<<
@@ -2084,7 +2084,7 @@ static int __pyx_pf_8survival_8bintrees_12_binarytrees_6AATree___cinit__(struct 
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __PYX_ERR(0, 94, __pyx_L1_error)
 
-    /* "survival/bintrees/_binarytrees.pyx":93
+    /* "sksurv/bintrees/_binarytrees.pyx":93
  * cdef class AATree(BaseTree):
  *     def __cinit__(self, int size):
  *         if size <= 0:             # <<<<<<<<<<<<<<
@@ -2093,20 +2093,20 @@ static int __pyx_pf_8survival_8bintrees_12_binarytrees_6AATree___cinit__(struct 
  */
   }
 
-  /* "survival/bintrees/_binarytrees.pyx":95
+  /* "sksurv/bintrees/_binarytrees.pyx":95
  *         if size <= 0:
  *             raise ValueError('size must be greater zero')
  *         self.treeptr = dynamic_cast[rbtree_ptr](new aatree(size))             # <<<<<<<<<<<<<<
  */
   try {
-    __pyx_t_3 = dynamic_cast<__pyx_t_8survival_8bintrees_12_binarytrees_rbtree_ptr>(new aatree(__pyx_v_size));
+    __pyx_t_3 = dynamic_cast<__pyx_t_6sksurv_8bintrees_12_binarytrees_rbtree_ptr>(new aatree(__pyx_v_size));
   } catch(...) {
     __Pyx_CppExn2PyErr();
     __PYX_ERR(0, 95, __pyx_L1_error)
   }
   __pyx_v_self->__pyx_base.treeptr = __pyx_t_3;
 
-  /* "survival/bintrees/_binarytrees.pyx":92
+  /* "sksurv/bintrees/_binarytrees.pyx":92
  * 
  * cdef class AATree(BaseTree):
  *     def __cinit__(self, int size):             # <<<<<<<<<<<<<<
@@ -2119,14 +2119,14 @@ static int __pyx_pf_8survival_8bintrees_12_binarytrees_6AATree___cinit__(struct 
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_AddTraceback("survival.bintrees._binarytrees.AATree.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.bintrees._binarytrees.AATree.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = -1;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_tp_new_8survival_8bintrees_12_binarytrees_BaseTree(PyTypeObject *t, CYTHON_UNUSED PyObject *a, CYTHON_UNUSED PyObject *k) {
+static PyObject *__pyx_tp_new_6sksurv_8bintrees_12_binarytrees_BaseTree(PyTypeObject *t, CYTHON_UNUSED PyObject *a, CYTHON_UNUSED PyObject *k) {
   PyObject *o;
   if (likely((t->tp_flags & Py_TPFLAGS_IS_ABSTRACT) == 0)) {
     o = (*t->tp_alloc)(t, 0);
@@ -2137,7 +2137,7 @@ static PyObject *__pyx_tp_new_8survival_8bintrees_12_binarytrees_BaseTree(PyType
   return o;
 }
 
-static void __pyx_tp_dealloc_8survival_8bintrees_12_binarytrees_BaseTree(PyObject *o) {
+static void __pyx_tp_dealloc_6sksurv_8bintrees_12_binarytrees_BaseTree(PyObject *o) {
   #if PY_VERSION_HEX >= 0x030400a1
   if (unlikely(Py_TYPE(o)->tp_finalize) && (!PyType_IS_GC(Py_TYPE(o)) || !_PyGC_FINALIZED(o))) {
     if (PyObject_CallFinalizerFromDealloc(o)) return;
@@ -2147,25 +2147,25 @@ static void __pyx_tp_dealloc_8survival_8bintrees_12_binarytrees_BaseTree(PyObjec
     PyObject *etype, *eval, *etb;
     PyErr_Fetch(&etype, &eval, &etb);
     ++Py_REFCNT(o);
-    __pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_1__dealloc__(o);
+    __pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_1__dealloc__(o);
     --Py_REFCNT(o);
     PyErr_Restore(etype, eval, etb);
   }
   (*Py_TYPE(o)->tp_free)(o);
 }
 
-static PyMethodDef __pyx_methods_8survival_8bintrees_12_binarytrees_BaseTree[] = {
-  {"insert", (PyCFunction)__pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_5insert, METH_VARARGS|METH_KEYWORDS, 0},
-  {"count_smaller", (PyCFunction)__pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_7count_smaller, METH_O, 0},
-  {"count_larger", (PyCFunction)__pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_9count_larger, METH_O, 0},
-  {"vector_sum_smaller", (PyCFunction)__pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_11vector_sum_smaller, METH_O, 0},
-  {"vector_sum_larger", (PyCFunction)__pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_13vector_sum_larger, METH_O, 0},
-  {"count_larger_with_event", (PyCFunction)__pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_15count_larger_with_event, METH_VARARGS|METH_KEYWORDS, 0},
+static PyMethodDef __pyx_methods_6sksurv_8bintrees_12_binarytrees_BaseTree[] = {
+  {"insert", (PyCFunction)__pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_5insert, METH_VARARGS|METH_KEYWORDS, 0},
+  {"count_smaller", (PyCFunction)__pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_7count_smaller, METH_O, 0},
+  {"count_larger", (PyCFunction)__pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_9count_larger, METH_O, 0},
+  {"vector_sum_smaller", (PyCFunction)__pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_11vector_sum_smaller, METH_O, 0},
+  {"vector_sum_larger", (PyCFunction)__pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_13vector_sum_larger, METH_O, 0},
+  {"count_larger_with_event", (PyCFunction)__pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_15count_larger_with_event, METH_VARARGS|METH_KEYWORDS, 0},
   {0, 0, 0, 0}
 };
 
 static PySequenceMethods __pyx_tp_as_sequence_BaseTree = {
-  __pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_3__len__, /*sq_length*/
+  __pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_3__len__, /*sq_length*/
   0, /*sq_concat*/
   0, /*sq_repeat*/
   0, /*sq_item*/
@@ -2178,17 +2178,17 @@ static PySequenceMethods __pyx_tp_as_sequence_BaseTree = {
 };
 
 static PyMappingMethods __pyx_tp_as_mapping_BaseTree = {
-  __pyx_pw_8survival_8bintrees_12_binarytrees_8BaseTree_3__len__, /*mp_length*/
+  __pyx_pw_6sksurv_8bintrees_12_binarytrees_8BaseTree_3__len__, /*mp_length*/
   0, /*mp_subscript*/
   0, /*mp_ass_subscript*/
 };
 
-static PyTypeObject __pyx_type_8survival_8bintrees_12_binarytrees_BaseTree = {
+static PyTypeObject __pyx_type_6sksurv_8bintrees_12_binarytrees_BaseTree = {
   PyVarObject_HEAD_INIT(0, 0)
-  "survival.bintrees._binarytrees.BaseTree", /*tp_name*/
-  sizeof(struct __pyx_obj_8survival_8bintrees_12_binarytrees_BaseTree), /*tp_basicsize*/
+  "sksurv.bintrees._binarytrees.BaseTree", /*tp_name*/
+  sizeof(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_BaseTree), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_8survival_8bintrees_12_binarytrees_BaseTree, /*tp_dealloc*/
+  __pyx_tp_dealloc_6sksurv_8bintrees_12_binarytrees_BaseTree, /*tp_dealloc*/
   0, /*tp_print*/
   0, /*tp_getattr*/
   0, /*tp_setattr*/
@@ -2216,7 +2216,7 @@ static PyTypeObject __pyx_type_8survival_8bintrees_12_binarytrees_BaseTree = {
   0, /*tp_weaklistoffset*/
   0, /*tp_iter*/
   0, /*tp_iternext*/
-  __pyx_methods_8survival_8bintrees_12_binarytrees_BaseTree, /*tp_methods*/
+  __pyx_methods_6sksurv_8bintrees_12_binarytrees_BaseTree, /*tp_methods*/
   0, /*tp_members*/
   0, /*tp_getset*/
   0, /*tp_base*/
@@ -2226,7 +2226,7 @@ static PyTypeObject __pyx_type_8survival_8bintrees_12_binarytrees_BaseTree = {
   0, /*tp_dictoffset*/
   0, /*tp_init*/
   0, /*tp_alloc*/
-  __pyx_tp_new_8survival_8bintrees_12_binarytrees_BaseTree, /*tp_new*/
+  __pyx_tp_new_6sksurv_8bintrees_12_binarytrees_BaseTree, /*tp_new*/
   0, /*tp_free*/
   0, /*tp_is_gc*/
   0, /*tp_bases*/
@@ -2241,26 +2241,26 @@ static PyTypeObject __pyx_type_8survival_8bintrees_12_binarytrees_BaseTree = {
   #endif
 };
 
-static PyObject *__pyx_tp_new_8survival_8bintrees_12_binarytrees_RBTree(PyTypeObject *t, PyObject *a, PyObject *k) {
-  PyObject *o = __pyx_tp_new_8survival_8bintrees_12_binarytrees_BaseTree(t, a, k);
+static PyObject *__pyx_tp_new_6sksurv_8bintrees_12_binarytrees_RBTree(PyTypeObject *t, PyObject *a, PyObject *k) {
+  PyObject *o = __pyx_tp_new_6sksurv_8bintrees_12_binarytrees_BaseTree(t, a, k);
   if (unlikely(!o)) return 0;
-  if (unlikely(__pyx_pw_8survival_8bintrees_12_binarytrees_6RBTree_1__cinit__(o, a, k) < 0)) goto bad;
+  if (unlikely(__pyx_pw_6sksurv_8bintrees_12_binarytrees_6RBTree_1__cinit__(o, a, k) < 0)) goto bad;
   return o;
   bad:
   Py_DECREF(o); o = 0;
   return NULL;
 }
 
-static PyMethodDef __pyx_methods_8survival_8bintrees_12_binarytrees_RBTree[] = {
+static PyMethodDef __pyx_methods_6sksurv_8bintrees_12_binarytrees_RBTree[] = {
   {0, 0, 0, 0}
 };
 
-static PyTypeObject __pyx_type_8survival_8bintrees_12_binarytrees_RBTree = {
+static PyTypeObject __pyx_type_6sksurv_8bintrees_12_binarytrees_RBTree = {
   PyVarObject_HEAD_INIT(0, 0)
-  "survival.bintrees._binarytrees.RBTree", /*tp_name*/
-  sizeof(struct __pyx_obj_8survival_8bintrees_12_binarytrees_RBTree), /*tp_basicsize*/
+  "sksurv.bintrees._binarytrees.RBTree", /*tp_name*/
+  sizeof(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_RBTree), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_8survival_8bintrees_12_binarytrees_BaseTree, /*tp_dealloc*/
+  __pyx_tp_dealloc_6sksurv_8bintrees_12_binarytrees_BaseTree, /*tp_dealloc*/
   0, /*tp_print*/
   0, /*tp_getattr*/
   0, /*tp_setattr*/
@@ -2288,7 +2288,7 @@ static PyTypeObject __pyx_type_8survival_8bintrees_12_binarytrees_RBTree = {
   0, /*tp_weaklistoffset*/
   0, /*tp_iter*/
   0, /*tp_iternext*/
-  __pyx_methods_8survival_8bintrees_12_binarytrees_RBTree, /*tp_methods*/
+  __pyx_methods_6sksurv_8bintrees_12_binarytrees_RBTree, /*tp_methods*/
   0, /*tp_members*/
   0, /*tp_getset*/
   0, /*tp_base*/
@@ -2298,7 +2298,7 @@ static PyTypeObject __pyx_type_8survival_8bintrees_12_binarytrees_RBTree = {
   0, /*tp_dictoffset*/
   0, /*tp_init*/
   0, /*tp_alloc*/
-  __pyx_tp_new_8survival_8bintrees_12_binarytrees_RBTree, /*tp_new*/
+  __pyx_tp_new_6sksurv_8bintrees_12_binarytrees_RBTree, /*tp_new*/
   0, /*tp_free*/
   0, /*tp_is_gc*/
   0, /*tp_bases*/
@@ -2313,26 +2313,26 @@ static PyTypeObject __pyx_type_8survival_8bintrees_12_binarytrees_RBTree = {
   #endif
 };
 
-static PyObject *__pyx_tp_new_8survival_8bintrees_12_binarytrees_AVLTree(PyTypeObject *t, PyObject *a, PyObject *k) {
-  PyObject *o = __pyx_tp_new_8survival_8bintrees_12_binarytrees_BaseTree(t, a, k);
+static PyObject *__pyx_tp_new_6sksurv_8bintrees_12_binarytrees_AVLTree(PyTypeObject *t, PyObject *a, PyObject *k) {
+  PyObject *o = __pyx_tp_new_6sksurv_8bintrees_12_binarytrees_BaseTree(t, a, k);
   if (unlikely(!o)) return 0;
-  if (unlikely(__pyx_pw_8survival_8bintrees_12_binarytrees_7AVLTree_1__cinit__(o, a, k) < 0)) goto bad;
+  if (unlikely(__pyx_pw_6sksurv_8bintrees_12_binarytrees_7AVLTree_1__cinit__(o, a, k) < 0)) goto bad;
   return o;
   bad:
   Py_DECREF(o); o = 0;
   return NULL;
 }
 
-static PyMethodDef __pyx_methods_8survival_8bintrees_12_binarytrees_AVLTree[] = {
+static PyMethodDef __pyx_methods_6sksurv_8bintrees_12_binarytrees_AVLTree[] = {
   {0, 0, 0, 0}
 };
 
-static PyTypeObject __pyx_type_8survival_8bintrees_12_binarytrees_AVLTree = {
+static PyTypeObject __pyx_type_6sksurv_8bintrees_12_binarytrees_AVLTree = {
   PyVarObject_HEAD_INIT(0, 0)
-  "survival.bintrees._binarytrees.AVLTree", /*tp_name*/
-  sizeof(struct __pyx_obj_8survival_8bintrees_12_binarytrees_AVLTree), /*tp_basicsize*/
+  "sksurv.bintrees._binarytrees.AVLTree", /*tp_name*/
+  sizeof(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_AVLTree), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_8survival_8bintrees_12_binarytrees_BaseTree, /*tp_dealloc*/
+  __pyx_tp_dealloc_6sksurv_8bintrees_12_binarytrees_BaseTree, /*tp_dealloc*/
   0, /*tp_print*/
   0, /*tp_getattr*/
   0, /*tp_setattr*/
@@ -2360,7 +2360,7 @@ static PyTypeObject __pyx_type_8survival_8bintrees_12_binarytrees_AVLTree = {
   0, /*tp_weaklistoffset*/
   0, /*tp_iter*/
   0, /*tp_iternext*/
-  __pyx_methods_8survival_8bintrees_12_binarytrees_AVLTree, /*tp_methods*/
+  __pyx_methods_6sksurv_8bintrees_12_binarytrees_AVLTree, /*tp_methods*/
   0, /*tp_members*/
   0, /*tp_getset*/
   0, /*tp_base*/
@@ -2370,7 +2370,7 @@ static PyTypeObject __pyx_type_8survival_8bintrees_12_binarytrees_AVLTree = {
   0, /*tp_dictoffset*/
   0, /*tp_init*/
   0, /*tp_alloc*/
-  __pyx_tp_new_8survival_8bintrees_12_binarytrees_AVLTree, /*tp_new*/
+  __pyx_tp_new_6sksurv_8bintrees_12_binarytrees_AVLTree, /*tp_new*/
   0, /*tp_free*/
   0, /*tp_is_gc*/
   0, /*tp_bases*/
@@ -2385,26 +2385,26 @@ static PyTypeObject __pyx_type_8survival_8bintrees_12_binarytrees_AVLTree = {
   #endif
 };
 
-static PyObject *__pyx_tp_new_8survival_8bintrees_12_binarytrees_AATree(PyTypeObject *t, PyObject *a, PyObject *k) {
-  PyObject *o = __pyx_tp_new_8survival_8bintrees_12_binarytrees_BaseTree(t, a, k);
+static PyObject *__pyx_tp_new_6sksurv_8bintrees_12_binarytrees_AATree(PyTypeObject *t, PyObject *a, PyObject *k) {
+  PyObject *o = __pyx_tp_new_6sksurv_8bintrees_12_binarytrees_BaseTree(t, a, k);
   if (unlikely(!o)) return 0;
-  if (unlikely(__pyx_pw_8survival_8bintrees_12_binarytrees_6AATree_1__cinit__(o, a, k) < 0)) goto bad;
+  if (unlikely(__pyx_pw_6sksurv_8bintrees_12_binarytrees_6AATree_1__cinit__(o, a, k) < 0)) goto bad;
   return o;
   bad:
   Py_DECREF(o); o = 0;
   return NULL;
 }
 
-static PyMethodDef __pyx_methods_8survival_8bintrees_12_binarytrees_AATree[] = {
+static PyMethodDef __pyx_methods_6sksurv_8bintrees_12_binarytrees_AATree[] = {
   {0, 0, 0, 0}
 };
 
-static PyTypeObject __pyx_type_8survival_8bintrees_12_binarytrees_AATree = {
+static PyTypeObject __pyx_type_6sksurv_8bintrees_12_binarytrees_AATree = {
   PyVarObject_HEAD_INIT(0, 0)
-  "survival.bintrees._binarytrees.AATree", /*tp_name*/
-  sizeof(struct __pyx_obj_8survival_8bintrees_12_binarytrees_AATree), /*tp_basicsize*/
+  "sksurv.bintrees._binarytrees.AATree", /*tp_name*/
+  sizeof(struct __pyx_obj_6sksurv_8bintrees_12_binarytrees_AATree), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_8survival_8bintrees_12_binarytrees_BaseTree, /*tp_dealloc*/
+  __pyx_tp_dealloc_6sksurv_8bintrees_12_binarytrees_BaseTree, /*tp_dealloc*/
   0, /*tp_print*/
   0, /*tp_getattr*/
   0, /*tp_setattr*/
@@ -2432,7 +2432,7 @@ static PyTypeObject __pyx_type_8survival_8bintrees_12_binarytrees_AATree = {
   0, /*tp_weaklistoffset*/
   0, /*tp_iter*/
   0, /*tp_iternext*/
-  __pyx_methods_8survival_8bintrees_12_binarytrees_AATree, /*tp_methods*/
+  __pyx_methods_6sksurv_8bintrees_12_binarytrees_AATree, /*tp_methods*/
   0, /*tp_members*/
   0, /*tp_getset*/
   0, /*tp_base*/
@@ -2442,7 +2442,7 @@ static PyTypeObject __pyx_type_8survival_8bintrees_12_binarytrees_AATree = {
   0, /*tp_dictoffset*/
   0, /*tp_init*/
   0, /*tp_alloc*/
-  __pyx_tp_new_8survival_8bintrees_12_binarytrees_AATree, /*tp_new*/
+  __pyx_tp_new_6sksurv_8bintrees_12_binarytrees_AATree, /*tp_new*/
   0, /*tp_free*/
   0, /*tp_is_gc*/
   0, /*tp_bases*/
@@ -2502,7 +2502,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "survival/bintrees/_binarytrees.pyx":75
+  /* "sksurv/bintrees/_binarytrees.pyx":75
  *     def count_larger_with_event(self, double key, bool has_event):
  *         if not has_event:
  *             return 0, 0.0             # <<<<<<<<<<<<<<
@@ -2513,7 +2513,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple_);
   __Pyx_GIVEREF(__pyx_tuple_);
 
-  /* "survival/bintrees/_binarytrees.pyx":82
+  /* "sksurv/bintrees/_binarytrees.pyx":82
  *     def __cinit__(self, int size):
  *         if size <= 0:
  *             raise ValueError('size must be greater zero')             # <<<<<<<<<<<<<<
@@ -2524,7 +2524,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__2);
   __Pyx_GIVEREF(__pyx_tuple__2);
 
-  /* "survival/bintrees/_binarytrees.pyx":88
+  /* "sksurv/bintrees/_binarytrees.pyx":88
  *     def __cinit__(self, int size):
  *         if size <= 0:
  *             raise ValueError('size must be greater zero')             # <<<<<<<<<<<<<<
@@ -2535,7 +2535,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__3);
   __Pyx_GIVEREF(__pyx_tuple__3);
 
-  /* "survival/bintrees/_binarytrees.pyx":94
+  /* "sksurv/bintrees/_binarytrees.pyx":94
  *     def __cinit__(self, int size):
  *         if size <= 0:
  *             raise ValueError('size must be greater zero')             # <<<<<<<<<<<<<<
@@ -2625,14 +2625,14 @@ PyMODINIT_FUNC PyInit__binarytrees(void)
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
-  if (__pyx_module_is_main_survival__bintrees___binarytrees) {
+  if (__pyx_module_is_main_sksurv__bintrees___binarytrees) {
     if (PyObject_SetAttrString(__pyx_m, "__name__", __pyx_n_s_main) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) __PYX_ERR(0, 1, __pyx_L1_error)
-    if (!PyDict_GetItemString(modules, "survival.bintrees._binarytrees")) {
-      if (unlikely(PyDict_SetItemString(modules, "survival.bintrees._binarytrees", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
+    if (!PyDict_GetItemString(modules, "sksurv.bintrees._binarytrees")) {
+      if (unlikely(PyDict_SetItemString(modules, "sksurv.bintrees._binarytrees", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
     }
   }
   #endif
@@ -2644,25 +2644,25 @@ PyMODINIT_FUNC PyInit__binarytrees(void)
   /*--- Variable export code ---*/
   /*--- Function export code ---*/
   /*--- Type init code ---*/
-  if (PyType_Ready(&__pyx_type_8survival_8bintrees_12_binarytrees_BaseTree) < 0) __PYX_ERR(0, 37, __pyx_L1_error)
-  __pyx_type_8survival_8bintrees_12_binarytrees_BaseTree.tp_print = 0;
-  if (PyObject_SetAttrString(__pyx_m, "BaseTree", (PyObject *)&__pyx_type_8survival_8bintrees_12_binarytrees_BaseTree) < 0) __PYX_ERR(0, 37, __pyx_L1_error)
-  __pyx_ptype_8survival_8bintrees_12_binarytrees_BaseTree = &__pyx_type_8survival_8bintrees_12_binarytrees_BaseTree;
-  __pyx_type_8survival_8bintrees_12_binarytrees_RBTree.tp_base = __pyx_ptype_8survival_8bintrees_12_binarytrees_BaseTree;
-  if (PyType_Ready(&__pyx_type_8survival_8bintrees_12_binarytrees_RBTree) < 0) __PYX_ERR(0, 79, __pyx_L1_error)
-  __pyx_type_8survival_8bintrees_12_binarytrees_RBTree.tp_print = 0;
-  if (PyObject_SetAttrString(__pyx_m, "RBTree", (PyObject *)&__pyx_type_8survival_8bintrees_12_binarytrees_RBTree) < 0) __PYX_ERR(0, 79, __pyx_L1_error)
-  __pyx_ptype_8survival_8bintrees_12_binarytrees_RBTree = &__pyx_type_8survival_8bintrees_12_binarytrees_RBTree;
-  __pyx_type_8survival_8bintrees_12_binarytrees_AVLTree.tp_base = __pyx_ptype_8survival_8bintrees_12_binarytrees_BaseTree;
-  if (PyType_Ready(&__pyx_type_8survival_8bintrees_12_binarytrees_AVLTree) < 0) __PYX_ERR(0, 85, __pyx_L1_error)
-  __pyx_type_8survival_8bintrees_12_binarytrees_AVLTree.tp_print = 0;
-  if (PyObject_SetAttrString(__pyx_m, "AVLTree", (PyObject *)&__pyx_type_8survival_8bintrees_12_binarytrees_AVLTree) < 0) __PYX_ERR(0, 85, __pyx_L1_error)
-  __pyx_ptype_8survival_8bintrees_12_binarytrees_AVLTree = &__pyx_type_8survival_8bintrees_12_binarytrees_AVLTree;
-  __pyx_type_8survival_8bintrees_12_binarytrees_AATree.tp_base = __pyx_ptype_8survival_8bintrees_12_binarytrees_BaseTree;
-  if (PyType_Ready(&__pyx_type_8survival_8bintrees_12_binarytrees_AATree) < 0) __PYX_ERR(0, 91, __pyx_L1_error)
-  __pyx_type_8survival_8bintrees_12_binarytrees_AATree.tp_print = 0;
-  if (PyObject_SetAttrString(__pyx_m, "AATree", (PyObject *)&__pyx_type_8survival_8bintrees_12_binarytrees_AATree) < 0) __PYX_ERR(0, 91, __pyx_L1_error)
-  __pyx_ptype_8survival_8bintrees_12_binarytrees_AATree = &__pyx_type_8survival_8bintrees_12_binarytrees_AATree;
+  if (PyType_Ready(&__pyx_type_6sksurv_8bintrees_12_binarytrees_BaseTree) < 0) __PYX_ERR(0, 37, __pyx_L1_error)
+  __pyx_type_6sksurv_8bintrees_12_binarytrees_BaseTree.tp_print = 0;
+  if (PyObject_SetAttrString(__pyx_m, "BaseTree", (PyObject *)&__pyx_type_6sksurv_8bintrees_12_binarytrees_BaseTree) < 0) __PYX_ERR(0, 37, __pyx_L1_error)
+  __pyx_ptype_6sksurv_8bintrees_12_binarytrees_BaseTree = &__pyx_type_6sksurv_8bintrees_12_binarytrees_BaseTree;
+  __pyx_type_6sksurv_8bintrees_12_binarytrees_RBTree.tp_base = __pyx_ptype_6sksurv_8bintrees_12_binarytrees_BaseTree;
+  if (PyType_Ready(&__pyx_type_6sksurv_8bintrees_12_binarytrees_RBTree) < 0) __PYX_ERR(0, 79, __pyx_L1_error)
+  __pyx_type_6sksurv_8bintrees_12_binarytrees_RBTree.tp_print = 0;
+  if (PyObject_SetAttrString(__pyx_m, "RBTree", (PyObject *)&__pyx_type_6sksurv_8bintrees_12_binarytrees_RBTree) < 0) __PYX_ERR(0, 79, __pyx_L1_error)
+  __pyx_ptype_6sksurv_8bintrees_12_binarytrees_RBTree = &__pyx_type_6sksurv_8bintrees_12_binarytrees_RBTree;
+  __pyx_type_6sksurv_8bintrees_12_binarytrees_AVLTree.tp_base = __pyx_ptype_6sksurv_8bintrees_12_binarytrees_BaseTree;
+  if (PyType_Ready(&__pyx_type_6sksurv_8bintrees_12_binarytrees_AVLTree) < 0) __PYX_ERR(0, 85, __pyx_L1_error)
+  __pyx_type_6sksurv_8bintrees_12_binarytrees_AVLTree.tp_print = 0;
+  if (PyObject_SetAttrString(__pyx_m, "AVLTree", (PyObject *)&__pyx_type_6sksurv_8bintrees_12_binarytrees_AVLTree) < 0) __PYX_ERR(0, 85, __pyx_L1_error)
+  __pyx_ptype_6sksurv_8bintrees_12_binarytrees_AVLTree = &__pyx_type_6sksurv_8bintrees_12_binarytrees_AVLTree;
+  __pyx_type_6sksurv_8bintrees_12_binarytrees_AATree.tp_base = __pyx_ptype_6sksurv_8bintrees_12_binarytrees_BaseTree;
+  if (PyType_Ready(&__pyx_type_6sksurv_8bintrees_12_binarytrees_AATree) < 0) __PYX_ERR(0, 91, __pyx_L1_error)
+  __pyx_type_6sksurv_8bintrees_12_binarytrees_AATree.tp_print = 0;
+  if (PyObject_SetAttrString(__pyx_m, "AATree", (PyObject *)&__pyx_type_6sksurv_8bintrees_12_binarytrees_AATree) < 0) __PYX_ERR(0, 91, __pyx_L1_error)
+  __pyx_ptype_6sksurv_8bintrees_12_binarytrees_AATree = &__pyx_type_6sksurv_8bintrees_12_binarytrees_AATree;
   /*--- Type import code ---*/
   /*--- Variable import code ---*/
   /*--- Function import code ---*/
@@ -2671,7 +2671,7 @@ PyMODINIT_FUNC PyInit__binarytrees(void)
   if (__Pyx_patch_abc() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
 
-  /* "survival/bintrees/_binarytrees.pyx":1
+  /* "sksurv/bintrees/_binarytrees.pyx":1
  * # This program is free software: you can redistribute it and/or modify             # <<<<<<<<<<<<<<
  * # it under the terms of the GNU General Public License as published by
  * # the Free Software Foundation, either version 3 of the License, or
@@ -2688,11 +2688,11 @@ PyMODINIT_FUNC PyInit__binarytrees(void)
   __Pyx_XDECREF(__pyx_t_1);
   if (__pyx_m) {
     if (__pyx_d) {
-      __Pyx_AddTraceback("init survival.bintrees._binarytrees", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init sksurv.bintrees._binarytrees", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     Py_DECREF(__pyx_m); __pyx_m = 0;
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init survival.bintrees._binarytrees");
+    PyErr_SetString(PyExc_ImportError, "init sksurv.bintrees._binarytrees");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();

@@ -427,8 +427,8 @@ static CYTHON_INLINE float __PYX_NAN() {
   #endif
 #endif
 
-#define __PYX_HAVE__survival__svm___minlip
-#define __PYX_HAVE_API__survival__svm___minlip
+#define __PYX_HAVE__sksurv__svm___minlip
+#define __PYX_HAVE_API__sksurv__svm___minlip
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -653,7 +653,7 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "survival/svm/_minlip.pyx",
+  "sksurv/svm/_minlip.pyx",
   "__init__.pxd",
   "stringsource",
   "type.pxd",
@@ -1815,7 +1815,7 @@ static PyTypeObject *__pyx_ptype_5numpy_ufunc = 0;
 static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *, char *, char *, int *); /*proto*/
 static CYTHON_INLINE int __pyx_f_5numpy_import_array(void); /*proto*/
 
-/* Module declarations from 'survival.svm._minlip' */
+/* Module declarations from 'sksurv.svm._minlip' */
 static PyTypeObject *__pyx_array_type = 0;
 static PyTypeObject *__pyx_MemviewEnum_type = 0;
 static PyTypeObject *__pyx_memoryview_type = 0;
@@ -1827,10 +1827,10 @@ static PyObject *contiguous = 0;
 static PyObject *indirect_contiguous = 0;
 static int __pyx_memoryview_thread_locks_used;
 static PyThread_type_lock __pyx_memoryview_thread_locks[8];
-static CYTHON_INLINE void __pyx_f_8survival_3svm_7_minlip_set_entries(__Pyx_memviewslice, __Pyx_memviewslice, npy_intp, npy_intp, npy_intp); /*proto*/
-static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_direct_neighbor(__Pyx_memviewslice, __Pyx_memviewslice, __Pyx_memviewslice, __Pyx_memviewslice); /*proto*/
-static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_nearest_neighbor(__Pyx_memviewslice, __Pyx_memviewslice, __Pyx_memviewslice, __Pyx_memviewslice); /*proto*/
-static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_full(__Pyx_memviewslice, __Pyx_memviewslice, __Pyx_memviewslice, __Pyx_memviewslice); /*proto*/
+static CYTHON_INLINE void __pyx_f_6sksurv_3svm_7_minlip_set_entries(__Pyx_memviewslice, __Pyx_memviewslice, npy_intp, npy_intp, npy_intp); /*proto*/
+static npy_intp __pyx_f_6sksurv_3svm_7_minlip_create_difference_matrix_direct_neighbor(__Pyx_memviewslice, __Pyx_memviewslice, __Pyx_memviewslice, __Pyx_memviewslice); /*proto*/
+static npy_intp __pyx_f_6sksurv_3svm_7_minlip_create_difference_matrix_nearest_neighbor(__Pyx_memviewslice, __Pyx_memviewslice, __Pyx_memviewslice, __Pyx_memviewslice); /*proto*/
+static npy_intp __pyx_f_6sksurv_3svm_7_minlip_create_difference_matrix_full(__Pyx_memviewslice, __Pyx_memviewslice, __Pyx_memviewslice, __Pyx_memviewslice); /*proto*/
 static struct __pyx_array_obj *__pyx_array_new(PyObject *, Py_ssize_t, char *, char *, char *); /*proto*/
 static void *__pyx_align_pointer(void *, size_t); /*proto*/
 static PyObject *__pyx_memoryview_new(PyObject *, int, int, __Pyx_TypeInfo *); /*proto*/
@@ -1867,10 +1867,10 @@ static __Pyx_TypeInfo __Pyx_TypeInfo_nn_npy_double = { "npy_double", NULL, sizeo
 static __Pyx_TypeInfo __Pyx_TypeInfo_nn_npy_intp = { "npy_intp", NULL, sizeof(npy_intp), { 0 }, 0, IS_UNSIGNED(npy_intp) ? 'U' : 'I', IS_UNSIGNED(npy_intp), 0 };
 static __Pyx_TypeInfo __Pyx_TypeInfo_nn_npy_int8 = { "npy_int8", NULL, sizeof(npy_int8), { 0 }, 0, IS_UNSIGNED(npy_int8) ? 'U' : 'I', IS_UNSIGNED(npy_int8), 0 };
 static __Pyx_TypeInfo __Pyx_TypeInfo_nn_npy_uint8 = { "npy_uint8", NULL, sizeof(npy_uint8), { 0 }, 0, IS_UNSIGNED(npy_uint8) ? 'U' : 'I', IS_UNSIGNED(npy_uint8), 0 };
-#define __Pyx_MODULE_NAME "survival.svm._minlip"
-int __pyx_module_is_main_survival__svm___minlip = 0;
+#define __Pyx_MODULE_NAME "sksurv.svm._minlip"
+int __pyx_module_is_main_sksurv__svm___minlip = 0;
 
-/* Implementation of 'survival.svm._minlip' */
+/* Implementation of 'sksurv.svm._minlip' */
 static PyObject *__pyx_builtin_ValueError;
 static PyObject *__pyx_builtin_range;
 static PyObject *__pyx_builtin_RuntimeError;
@@ -1946,9 +1946,9 @@ static const char __pyx_k_scipy_sparse[] = "scipy.sparse";
 static const char __pyx_k_pyx_getbuffer[] = "__pyx_getbuffer";
 static const char __pyx_k_allocate_buffer[] = "allocate_buffer";
 static const char __pyx_k_dtype_is_object[] = "dtype_is_object";
+static const char __pyx_k_sksurv_svm__minlip[] = "sksurv.svm._minlip";
 static const char __pyx_k_strided_and_direct[] = "<strided and direct>";
 static const char __pyx_k_strided_and_indirect[] = "<strided and indirect>";
-static const char __pyx_k_survival_svm__minlip[] = "survival.svm._minlip";
 static const char __pyx_k_contiguous_and_direct[] = "<contiguous and direct>";
 static const char __pyx_k_MemoryView_of_r_object[] = "<MemoryView of %r object>";
 static const char __pyx_k_MemoryView_of_r_at_0x_x[] = "<MemoryView of %r at 0x%x>";
@@ -1960,7 +1960,7 @@ static const char __pyx_k_itemsize_0_for_cython_array[] = "itemsize <= 0 for cyt
 static const char __pyx_k_ndarray_is_not_C_contiguous[] = "ndarray is not C contiguous";
 static const char __pyx_k_unable_to_allocate_array_data[] = "unable to allocate array data.";
 static const char __pyx_k_strided_and_direct_or_indirect[] = "<strided and direct or indirect>";
-static const char __pyx_k_home_sebp_Projekte_survival_sup[] = "/home/sebp/Projekte/survival-support-vector-machine/survival/svm/_minlip.pyx";
+static const char __pyx_k_home_sebp_Projekte_scikit_survi[] = "/home/sebp/Projekte/scikit-survival/sksurv/svm/_minlip.pyx";
 static const char __pyx_k_numpy_core_multiarray_failed_to[] = "numpy.core.multiarray failed to import";
 static const char __pyx_k_unknown_dtype_code_in_numpy_pxd[] = "unknown dtype code in numpy.pxd (%d)";
 static const char __pyx_k_Buffer_view_does_not_expose_stri[] = "Buffer view does not expose strides";
@@ -2025,7 +2025,7 @@ static PyObject *__pyx_n_s_format;
 static PyObject *__pyx_n_s_fortran;
 static PyObject *__pyx_n_u_fortran;
 static PyObject *__pyx_kp_s_got_differing_extents_in_dimensi;
-static PyObject *__pyx_kp_s_home_sebp_Projekte_survival_sup;
+static PyObject *__pyx_kp_s_home_sebp_Projekte_scikit_survi;
 static PyObject *__pyx_n_s_id;
 static PyObject *__pyx_n_s_import;
 static PyObject *__pyx_n_s_indptr;
@@ -2062,6 +2062,7 @@ static PyObject *__pyx_n_s_ret;
 static PyObject *__pyx_n_s_scipy_sparse;
 static PyObject *__pyx_n_s_shape;
 static PyObject *__pyx_n_s_size;
+static PyObject *__pyx_n_s_sksurv_svm__minlip;
 static PyObject *__pyx_n_s_start;
 static PyObject *__pyx_n_s_step;
 static PyObject *__pyx_n_s_stop;
@@ -2069,7 +2070,6 @@ static PyObject *__pyx_kp_s_strided_and_direct;
 static PyObject *__pyx_kp_s_strided_and_direct_or_indirect;
 static PyObject *__pyx_kp_s_strided_and_indirect;
 static PyObject *__pyx_n_s_struct;
-static PyObject *__pyx_n_s_survival_svm__minlip;
 static PyObject *__pyx_n_s_test;
 static PyObject *__pyx_n_s_time;
 static PyObject *__pyx_kp_s_unable_to_allocate_array_data;
@@ -2077,7 +2077,7 @@ static PyObject *__pyx_kp_s_unable_to_allocate_shape_and_str;
 static PyObject *__pyx_kp_u_unknown_dtype_code_in_numpy_pxd;
 static PyObject *__pyx_n_s_unpack;
 static PyObject *__pyx_n_s_values;
-static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_event, PyArrayObject *__pyx_v_time, PyObject *__pyx_v_kind); /* proto */
+static PyObject *__pyx_pf_6sksurv_3svm_7_minlip_create_difference_matrix(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_event, PyArrayObject *__pyx_v_time, PyObject *__pyx_v_kind); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static int __pyx_array___pyx_pf_15View_dot_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx_v_self, PyObject *__pyx_v_shape, Py_ssize_t __pyx_v_itemsize, PyObject *__pyx_v_format, PyObject *__pyx_v_mode, int __pyx_v_allocate_buffer); /* proto */
@@ -2150,7 +2150,7 @@ static PyObject *__pyx_tuple__29;
 static PyObject *__pyx_tuple__30;
 static PyObject *__pyx_codeobj__25;
 
-/* "survival/svm/_minlip.pyx":28
+/* "sksurv/svm/_minlip.pyx":28
  * @cython.wraparound(False)
  * @cython.boundscheck(False)
  * def create_difference_matrix(cnp.npy_uint8[:] event,             # <<<<<<<<<<<<<<
@@ -2159,9 +2159,9 @@ static PyObject *__pyx_codeobj__25;
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8survival_3svm_7_minlip_1create_difference_matrix(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_8survival_3svm_7_minlip_1create_difference_matrix = {"create_difference_matrix", (PyCFunction)__pyx_pw_8survival_3svm_7_minlip_1create_difference_matrix, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_8survival_3svm_7_minlip_1create_difference_matrix(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_6sksurv_3svm_7_minlip_1create_difference_matrix(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_6sksurv_3svm_7_minlip_1create_difference_matrix = {"create_difference_matrix", (PyCFunction)__pyx_pw_6sksurv_3svm_7_minlip_1create_difference_matrix, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_6sksurv_3svm_7_minlip_1create_difference_matrix(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   __Pyx_memviewslice __pyx_v_event = { 0, 0, { 0 }, { 0 }, { 0 } };
   PyArrayObject *__pyx_v_time = 0;
   PyObject *__pyx_v_kind = 0;
@@ -2215,12 +2215,12 @@ static PyObject *__pyx_pw_8survival_3svm_7_minlip_1create_difference_matrix(PyOb
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("create_difference_matrix", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 28, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("survival.svm._minlip.create_difference_matrix", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.svm._minlip.create_difference_matrix", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_time), __pyx_ptype_5numpy_ndarray, 1, "time", 0))) __PYX_ERR(0, 29, __pyx_L1_error)
-  __pyx_r = __pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(__pyx_self, __pyx_v_event, __pyx_v_time, __pyx_v_kind);
+  __pyx_r = __pyx_pf_6sksurv_3svm_7_minlip_create_difference_matrix(__pyx_self, __pyx_v_event, __pyx_v_time, __pyx_v_kind);
 
   /* function exit code */
   goto __pyx_L0;
@@ -2231,7 +2231,7 @@ static PyObject *__pyx_pw_8survival_3svm_7_minlip_1create_difference_matrix(PyOb
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_event, PyArrayObject *__pyx_v_time, PyObject *__pyx_v_kind) {
+static PyObject *__pyx_pf_6sksurv_3svm_7_minlip_create_difference_matrix(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_event, PyArrayObject *__pyx_v_time, PyObject *__pyx_v_kind) {
   PyArrayObject *__pyx_v_order = 0;
   PyArrayObject *__pyx_v_values = 0;
   PyArrayObject *__pyx_v_columns = 0;
@@ -2300,7 +2300,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
   }
   __pyx_pybuffernd_time.diminfo[0].strides = __pyx_pybuffernd_time.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_time.diminfo[0].shape = __pyx_pybuffernd_time.rcbuffer->pybuffer.shape[0];
 
-  /* "survival/svm/_minlip.pyx":36
+  /* "sksurv/svm/_minlip.pyx":36
  *     cdef cnp.npy_intp max_size
  *     cdef cnp.npy_intp k
  *     cdef cnp.npy_intp n_samples = event.shape[0]             # <<<<<<<<<<<<<<
@@ -2309,7 +2309,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
  */
   __pyx_v_n_samples = (__pyx_v_event.shape[0]);
 
-  /* "survival/svm/_minlip.pyx":40
+  /* "sksurv/svm/_minlip.pyx":40
  *     cdef object ret
  * 
  *     order = cnp.PyArray_ArgSort(time, 0, cnp.NPY_MERGESORT)             # <<<<<<<<<<<<<<
@@ -2340,7 +2340,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
   __pyx_v_order = ((PyArrayObject *)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "survival/svm/_minlip.pyx":42
+  /* "sksurv/svm/_minlip.pyx":42
  *     order = cnp.PyArray_ArgSort(time, 0, cnp.NPY_MERGESORT)
  * 
  *     if kind == "all":             # <<<<<<<<<<<<<<
@@ -2350,7 +2350,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
   __pyx_t_7 = (__Pyx_PyUnicode_Equals(__pyx_v_kind, __pyx_n_u_all, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 42, __pyx_L1_error)
   if (__pyx_t_7) {
 
-    /* "survival/svm/_minlip.pyx":43
+    /* "sksurv/svm/_minlip.pyx":43
  * 
  *     if kind == "all":
  *         max_size = n_samples * n_samples * 2             # <<<<<<<<<<<<<<
@@ -2359,7 +2359,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
  */
     __pyx_v_max_size = ((__pyx_v_n_samples * __pyx_v_n_samples) * 2);
 
-    /* "survival/svm/_minlip.pyx":44
+    /* "sksurv/svm/_minlip.pyx":44
  *     if kind == "all":
  *         max_size = n_samples * n_samples * 2
  *         values = cnp.PyArray_EMPTY(1, &max_size, cnp.NPY_INT8, 0)             # <<<<<<<<<<<<<<
@@ -2390,7 +2390,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
     __pyx_v_values = ((PyArrayObject *)__pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "survival/svm/_minlip.pyx":45
+    /* "sksurv/svm/_minlip.pyx":45
  *         max_size = n_samples * n_samples * 2
  *         values = cnp.PyArray_EMPTY(1, &max_size, cnp.NPY_INT8, 0)
  *         columns = cnp.PyArray_EMPTY(1, &max_size, cnp.NPY_INTP, 0)             # <<<<<<<<<<<<<<
@@ -2421,7 +2421,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
     __pyx_v_columns = ((PyArrayObject *)__pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "survival/svm/_minlip.pyx":47
+    /* "sksurv/svm/_minlip.pyx":47
  *         columns = cnp.PyArray_EMPTY(1, &max_size, cnp.NPY_INTP, 0)
  * 
  *         k = create_difference_matrix_full(event, order, values, columns)             # <<<<<<<<<<<<<<
@@ -2434,7 +2434,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
     if (unlikely(!__pyx_t_11.memview)) __PYX_ERR(0, 47, __pyx_L1_error)
     __pyx_t_12 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn_npy_intp(((PyObject *)__pyx_v_columns));
     if (unlikely(!__pyx_t_12.memview)) __PYX_ERR(0, 47, __pyx_L1_error)
-    __pyx_v_k = __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_full(__pyx_v_event, __pyx_t_10, __pyx_t_11, __pyx_t_12);
+    __pyx_v_k = __pyx_f_6sksurv_3svm_7_minlip_create_difference_matrix_full(__pyx_v_event, __pyx_t_10, __pyx_t_11, __pyx_t_12);
     __PYX_XDEC_MEMVIEW(&__pyx_t_10, 1);
     __pyx_t_10.memview = NULL;
     __pyx_t_10.data = NULL;
@@ -2445,7 +2445,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
     __pyx_t_12.memview = NULL;
     __pyx_t_12.data = NULL;
 
-    /* "survival/svm/_minlip.pyx":42
+    /* "sksurv/svm/_minlip.pyx":42
  *     order = cnp.PyArray_ArgSort(time, 0, cnp.NPY_MERGESORT)
  * 
  *     if kind == "all":             # <<<<<<<<<<<<<<
@@ -2455,7 +2455,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
     goto __pyx_L3;
   }
 
-  /* "survival/svm/_minlip.pyx":48
+  /* "sksurv/svm/_minlip.pyx":48
  * 
  *         k = create_difference_matrix_full(event, order, values, columns)
  *     elif kind == "nearest":             # <<<<<<<<<<<<<<
@@ -2465,7 +2465,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
   __pyx_t_7 = (__Pyx_PyUnicode_Equals(__pyx_v_kind, __pyx_n_u_nearest, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 48, __pyx_L1_error)
   if (__pyx_t_7) {
 
-    /* "survival/svm/_minlip.pyx":49
+    /* "sksurv/svm/_minlip.pyx":49
  *         k = create_difference_matrix_full(event, order, values, columns)
  *     elif kind == "nearest":
  *         max_size = n_samples * 2             # <<<<<<<<<<<<<<
@@ -2474,7 +2474,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
  */
     __pyx_v_max_size = (__pyx_v_n_samples * 2);
 
-    /* "survival/svm/_minlip.pyx":50
+    /* "sksurv/svm/_minlip.pyx":50
  *     elif kind == "nearest":
  *         max_size = n_samples * 2
  *         values = cnp.PyArray_EMPTY(1, &max_size, cnp.NPY_INT8, 0)             # <<<<<<<<<<<<<<
@@ -2505,7 +2505,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
     __pyx_v_values = ((PyArrayObject *)__pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "survival/svm/_minlip.pyx":51
+    /* "sksurv/svm/_minlip.pyx":51
  *         max_size = n_samples * 2
  *         values = cnp.PyArray_EMPTY(1, &max_size, cnp.NPY_INT8, 0)
  *         columns = cnp.PyArray_EMPTY(1, &max_size, cnp.NPY_INTP, 0)             # <<<<<<<<<<<<<<
@@ -2536,7 +2536,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
     __pyx_v_columns = ((PyArrayObject *)__pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "survival/svm/_minlip.pyx":53
+    /* "sksurv/svm/_minlip.pyx":53
  *         columns = cnp.PyArray_EMPTY(1, &max_size, cnp.NPY_INTP, 0)
  * 
  *         k = create_difference_matrix_nearest_neighbor(event, order, values, columns)             # <<<<<<<<<<<<<<
@@ -2549,7 +2549,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
     if (unlikely(!__pyx_t_11.memview)) __PYX_ERR(0, 53, __pyx_L1_error)
     __pyx_t_10 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn_npy_intp(((PyObject *)__pyx_v_columns));
     if (unlikely(!__pyx_t_10.memview)) __PYX_ERR(0, 53, __pyx_L1_error)
-    __pyx_v_k = __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_nearest_neighbor(__pyx_v_event, __pyx_t_12, __pyx_t_11, __pyx_t_10);
+    __pyx_v_k = __pyx_f_6sksurv_3svm_7_minlip_create_difference_matrix_nearest_neighbor(__pyx_v_event, __pyx_t_12, __pyx_t_11, __pyx_t_10);
     __PYX_XDEC_MEMVIEW(&__pyx_t_12, 1);
     __pyx_t_12.memview = NULL;
     __pyx_t_12.data = NULL;
@@ -2560,7 +2560,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
     __pyx_t_10.memview = NULL;
     __pyx_t_10.data = NULL;
 
-    /* "survival/svm/_minlip.pyx":48
+    /* "sksurv/svm/_minlip.pyx":48
  * 
  *         k = create_difference_matrix_full(event, order, values, columns)
  *     elif kind == "nearest":             # <<<<<<<<<<<<<<
@@ -2570,7 +2570,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
     goto __pyx_L3;
   }
 
-  /* "survival/svm/_minlip.pyx":54
+  /* "sksurv/svm/_minlip.pyx":54
  * 
  *         k = create_difference_matrix_nearest_neighbor(event, order, values, columns)
  *     elif kind == "next":             # <<<<<<<<<<<<<<
@@ -2580,7 +2580,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
   __pyx_t_7 = (__Pyx_PyUnicode_Equals(__pyx_v_kind, __pyx_n_u_next, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 54, __pyx_L1_error)
   if (__pyx_t_7) {
 
-    /* "survival/svm/_minlip.pyx":55
+    /* "sksurv/svm/_minlip.pyx":55
  *         k = create_difference_matrix_nearest_neighbor(event, order, values, columns)
  *     elif kind == "next":
  *         max_size = n_samples * 2             # <<<<<<<<<<<<<<
@@ -2589,7 +2589,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
  */
     __pyx_v_max_size = (__pyx_v_n_samples * 2);
 
-    /* "survival/svm/_minlip.pyx":56
+    /* "sksurv/svm/_minlip.pyx":56
  *     elif kind == "next":
  *         max_size = n_samples * 2
  *         values = cnp.PyArray_EMPTY(1, &max_size, cnp.NPY_INT8, 0)             # <<<<<<<<<<<<<<
@@ -2620,7 +2620,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
     __pyx_v_values = ((PyArrayObject *)__pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "survival/svm/_minlip.pyx":57
+    /* "sksurv/svm/_minlip.pyx":57
  *         max_size = n_samples * 2
  *         values = cnp.PyArray_EMPTY(1, &max_size, cnp.NPY_INT8, 0)
  *         columns = cnp.PyArray_EMPTY(1, &max_size, cnp.NPY_INTP, 0)             # <<<<<<<<<<<<<<
@@ -2651,7 +2651,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
     __pyx_v_columns = ((PyArrayObject *)__pyx_t_1);
     __pyx_t_1 = 0;
 
-    /* "survival/svm/_minlip.pyx":59
+    /* "sksurv/svm/_minlip.pyx":59
  *         columns = cnp.PyArray_EMPTY(1, &max_size, cnp.NPY_INTP, 0)
  * 
  *         k = create_difference_matrix_direct_neighbor(event, order, values, columns)             # <<<<<<<<<<<<<<
@@ -2664,7 +2664,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
     if (unlikely(!__pyx_t_11.memview)) __PYX_ERR(0, 59, __pyx_L1_error)
     __pyx_t_12 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn_npy_intp(((PyObject *)__pyx_v_columns));
     if (unlikely(!__pyx_t_12.memview)) __PYX_ERR(0, 59, __pyx_L1_error)
-    __pyx_v_k = __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_direct_neighbor(__pyx_v_event, __pyx_t_10, __pyx_t_11, __pyx_t_12);
+    __pyx_v_k = __pyx_f_6sksurv_3svm_7_minlip_create_difference_matrix_direct_neighbor(__pyx_v_event, __pyx_t_10, __pyx_t_11, __pyx_t_12);
     __PYX_XDEC_MEMVIEW(&__pyx_t_10, 1);
     __pyx_t_10.memview = NULL;
     __pyx_t_10.data = NULL;
@@ -2675,7 +2675,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
     __pyx_t_12.memview = NULL;
     __pyx_t_12.data = NULL;
 
-    /* "survival/svm/_minlip.pyx":54
+    /* "sksurv/svm/_minlip.pyx":54
  * 
  *         k = create_difference_matrix_nearest_neighbor(event, order, values, columns)
  *     elif kind == "next":             # <<<<<<<<<<<<<<
@@ -2685,7 +2685,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
     goto __pyx_L3;
   }
 
-  /* "survival/svm/_minlip.pyx":61
+  /* "sksurv/svm/_minlip.pyx":61
  *         k = create_difference_matrix_direct_neighbor(event, order, values, columns)
  *     else:
  *         raise ValueError("pairs must be one of (all|nearest|next)")             # <<<<<<<<<<<<<<
@@ -2701,7 +2701,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
   }
   __pyx_L3:;
 
-  /* "survival/svm/_minlip.pyx":64
+  /* "sksurv/svm/_minlip.pyx":64
  * 
  *     cdef cnp.PyArray_Dims new_dim
  *     new_dim.ptr = &k             # <<<<<<<<<<<<<<
@@ -2710,7 +2710,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
  */
   __pyx_v_new_dim.ptr = (&__pyx_v_k);
 
-  /* "survival/svm/_minlip.pyx":65
+  /* "sksurv/svm/_minlip.pyx":65
  *     cdef cnp.PyArray_Dims new_dim
  *     new_dim.ptr = &k
  *     new_dim.len = 1             # <<<<<<<<<<<<<<
@@ -2719,7 +2719,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
  */
   __pyx_v_new_dim.len = 1;
 
-  /* "survival/svm/_minlip.pyx":67
+  /* "sksurv/svm/_minlip.pyx":67
  *     new_dim.len = 1
  * 
  *     ret = cnp.PyArray_Resize(values, &new_dim, 1, cnp.NPY_CORDER)             # <<<<<<<<<<<<<<
@@ -2731,7 +2731,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
   __pyx_v_ret = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "survival/svm/_minlip.pyx":68
+  /* "sksurv/svm/_minlip.pyx":68
  * 
  *     ret = cnp.PyArray_Resize(values, &new_dim, 1, cnp.NPY_CORDER)
  *     if ret is not None:  # returns NULL on error             # <<<<<<<<<<<<<<
@@ -2742,7 +2742,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
   __pyx_t_13 = (__pyx_t_7 != 0);
   if (__pyx_t_13) {
 
-    /* "survival/svm/_minlip.pyx":69
+    /* "sksurv/svm/_minlip.pyx":69
  *     ret = cnp.PyArray_Resize(values, &new_dim, 1, cnp.NPY_CORDER)
  *     if ret is not None:  # returns NULL on error
  *         return             # <<<<<<<<<<<<<<
@@ -2753,7 +2753,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
     __pyx_r = Py_None; __Pyx_INCREF(Py_None);
     goto __pyx_L0;
 
-    /* "survival/svm/_minlip.pyx":68
+    /* "sksurv/svm/_minlip.pyx":68
  * 
  *     ret = cnp.PyArray_Resize(values, &new_dim, 1, cnp.NPY_CORDER)
  *     if ret is not None:  # returns NULL on error             # <<<<<<<<<<<<<<
@@ -2762,7 +2762,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
  */
   }
 
-  /* "survival/svm/_minlip.pyx":71
+  /* "sksurv/svm/_minlip.pyx":71
  *         return
  * 
  *     ret = cnp.PyArray_Resize(columns, &new_dim, 1, cnp.NPY_CORDER)             # <<<<<<<<<<<<<<
@@ -2774,7 +2774,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
   __Pyx_DECREF_SET(__pyx_v_ret, __pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "survival/svm/_minlip.pyx":72
+  /* "sksurv/svm/_minlip.pyx":72
  * 
  *     ret = cnp.PyArray_Resize(columns, &new_dim, 1, cnp.NPY_CORDER)
  *     if ret is not None:  # returns NULL on error             # <<<<<<<<<<<<<<
@@ -2785,7 +2785,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
   __pyx_t_7 = (__pyx_t_13 != 0);
   if (__pyx_t_7) {
 
-    /* "survival/svm/_minlip.pyx":73
+    /* "sksurv/svm/_minlip.pyx":73
  *     ret = cnp.PyArray_Resize(columns, &new_dim, 1, cnp.NPY_CORDER)
  *     if ret is not None:  # returns NULL on error
  *         return             # <<<<<<<<<<<<<<
@@ -2796,7 +2796,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
     __pyx_r = Py_None; __Pyx_INCREF(Py_None);
     goto __pyx_L0;
 
-    /* "survival/svm/_minlip.pyx":72
+    /* "sksurv/svm/_minlip.pyx":72
  * 
  *     ret = cnp.PyArray_Resize(columns, &new_dim, 1, cnp.NPY_CORDER)
  *     if ret is not None:  # returns NULL on error             # <<<<<<<<<<<<<<
@@ -2805,7 +2805,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
  */
   }
 
-  /* "survival/svm/_minlip.pyx":75
+  /* "sksurv/svm/_minlip.pyx":75
  *         return
  * 
  *     indptr = cnp.PyArray_Arange(0, k + 1, 2, cnp.NPY_INTP)             # <<<<<<<<<<<<<<
@@ -2836,7 +2836,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
   __pyx_v_indptr = ((PyArrayObject *)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "survival/svm/_minlip.pyx":76
+  /* "sksurv/svm/_minlip.pyx":76
  * 
  *     indptr = cnp.PyArray_Arange(0, k + 1, 2, cnp.NPY_INTP)
  *     D = csr_matrix((values, columns, indptr), shape=(k // 2, n_samples), copy=False, dtype=np.int8)             # <<<<<<<<<<<<<<
@@ -2893,7 +2893,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
   __pyx_v_D = __pyx_t_18;
   __pyx_t_18 = 0;
 
-  /* "survival/svm/_minlip.pyx":78
+  /* "sksurv/svm/_minlip.pyx":78
  *     D = csr_matrix((values, columns, indptr), shape=(k // 2, n_samples), copy=False, dtype=np.int8)
  * 
  *     return D             # <<<<<<<<<<<<<<
@@ -2905,7 +2905,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
   __pyx_r = __pyx_v_D;
   goto __pyx_L0;
 
-  /* "survival/svm/_minlip.pyx":28
+  /* "sksurv/svm/_minlip.pyx":28
  * @cython.wraparound(False)
  * @cython.boundscheck(False)
  * def create_difference_matrix(cnp.npy_uint8[:] event,             # <<<<<<<<<<<<<<
@@ -2934,7 +2934,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_time.rcbuffer->pybuffer);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_values.rcbuffer->pybuffer);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("survival.svm._minlip.create_difference_matrix", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.svm._minlip.create_difference_matrix", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   goto __pyx_L2;
   __pyx_L0:;
@@ -2956,7 +2956,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
   return __pyx_r;
 }
 
-/* "survival/svm/_minlip.pyx":84
+/* "sksurv/svm/_minlip.pyx":84
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * cdef inline void set_entries(cnp.npy_intp[:] columns,             # <<<<<<<<<<<<<<
@@ -2964,7 +2964,7 @@ static PyObject *__pyx_pf_8survival_3svm_7_minlip_create_difference_matrix(CYTHO
  *                              cnp.npy_intp k,
  */
 
-static CYTHON_INLINE void __pyx_f_8survival_3svm_7_minlip_set_entries(__Pyx_memviewslice __pyx_v_columns, __Pyx_memviewslice __pyx_v_values, npy_intp __pyx_v_k, npy_intp __pyx_v_i, npy_intp __pyx_v_j) {
+static CYTHON_INLINE void __pyx_f_6sksurv_3svm_7_minlip_set_entries(__Pyx_memviewslice __pyx_v_columns, __Pyx_memviewslice __pyx_v_values, npy_intp __pyx_v_k, npy_intp __pyx_v_i, npy_intp __pyx_v_j) {
   int __pyx_t_1;
   Py_ssize_t __pyx_t_2;
   Py_ssize_t __pyx_t_3;
@@ -2975,7 +2975,7 @@ static CYTHON_INLINE void __pyx_f_8survival_3svm_7_minlip_set_entries(__Pyx_memv
   Py_ssize_t __pyx_t_8;
   Py_ssize_t __pyx_t_9;
 
-  /* "survival/svm/_minlip.pyx":89
+  /* "sksurv/svm/_minlip.pyx":89
  *                              cnp.npy_intp i, cnp.npy_intp j) nogil:
  *     """Create sparse matrix with sorted indices"""
  *     if i < j:             # <<<<<<<<<<<<<<
@@ -2985,7 +2985,7 @@ static CYTHON_INLINE void __pyx_f_8survival_3svm_7_minlip_set_entries(__Pyx_memv
   __pyx_t_1 = ((__pyx_v_i < __pyx_v_j) != 0);
   if (__pyx_t_1) {
 
-    /* "survival/svm/_minlip.pyx":90
+    /* "sksurv/svm/_minlip.pyx":90
  *     """Create sparse matrix with sorted indices"""
  *     if i < j:
  *         columns[k] = i             # <<<<<<<<<<<<<<
@@ -2995,7 +2995,7 @@ static CYTHON_INLINE void __pyx_f_8survival_3svm_7_minlip_set_entries(__Pyx_memv
     __pyx_t_2 = __pyx_v_k;
     *((npy_intp *) ( /* dim=0 */ (__pyx_v_columns.data + __pyx_t_2 * __pyx_v_columns.strides[0]) )) = __pyx_v_i;
 
-    /* "survival/svm/_minlip.pyx":91
+    /* "sksurv/svm/_minlip.pyx":91
  *     if i < j:
  *         columns[k] = i
  *         values[k] = 1             # <<<<<<<<<<<<<<
@@ -3005,7 +3005,7 @@ static CYTHON_INLINE void __pyx_f_8survival_3svm_7_minlip_set_entries(__Pyx_memv
     __pyx_t_3 = __pyx_v_k;
     *((npy_int8 *) ( /* dim=0 */ (__pyx_v_values.data + __pyx_t_3 * __pyx_v_values.strides[0]) )) = 1;
 
-    /* "survival/svm/_minlip.pyx":92
+    /* "sksurv/svm/_minlip.pyx":92
  *         columns[k] = i
  *         values[k] = 1
  *         columns[k + 1] = j             # <<<<<<<<<<<<<<
@@ -3015,7 +3015,7 @@ static CYTHON_INLINE void __pyx_f_8survival_3svm_7_minlip_set_entries(__Pyx_memv
     __pyx_t_4 = (__pyx_v_k + 1);
     *((npy_intp *) ( /* dim=0 */ (__pyx_v_columns.data + __pyx_t_4 * __pyx_v_columns.strides[0]) )) = __pyx_v_j;
 
-    /* "survival/svm/_minlip.pyx":93
+    /* "sksurv/svm/_minlip.pyx":93
  *         values[k] = 1
  *         columns[k + 1] = j
  *         values[k + 1] = -1             # <<<<<<<<<<<<<<
@@ -3025,7 +3025,7 @@ static CYTHON_INLINE void __pyx_f_8survival_3svm_7_minlip_set_entries(__Pyx_memv
     __pyx_t_5 = (__pyx_v_k + 1);
     *((npy_int8 *) ( /* dim=0 */ (__pyx_v_values.data + __pyx_t_5 * __pyx_v_values.strides[0]) )) = -1;
 
-    /* "survival/svm/_minlip.pyx":89
+    /* "sksurv/svm/_minlip.pyx":89
  *                              cnp.npy_intp i, cnp.npy_intp j) nogil:
  *     """Create sparse matrix with sorted indices"""
  *     if i < j:             # <<<<<<<<<<<<<<
@@ -3035,7 +3035,7 @@ static CYTHON_INLINE void __pyx_f_8survival_3svm_7_minlip_set_entries(__Pyx_memv
     goto __pyx_L3;
   }
 
-  /* "survival/svm/_minlip.pyx":95
+  /* "sksurv/svm/_minlip.pyx":95
  *         values[k + 1] = -1
  *     else:
  *         columns[k] = j             # <<<<<<<<<<<<<<
@@ -3046,7 +3046,7 @@ static CYTHON_INLINE void __pyx_f_8survival_3svm_7_minlip_set_entries(__Pyx_memv
     __pyx_t_6 = __pyx_v_k;
     *((npy_intp *) ( /* dim=0 */ (__pyx_v_columns.data + __pyx_t_6 * __pyx_v_columns.strides[0]) )) = __pyx_v_j;
 
-    /* "survival/svm/_minlip.pyx":96
+    /* "sksurv/svm/_minlip.pyx":96
  *     else:
  *         columns[k] = j
  *         values[k] = -1             # <<<<<<<<<<<<<<
@@ -3056,7 +3056,7 @@ static CYTHON_INLINE void __pyx_f_8survival_3svm_7_minlip_set_entries(__Pyx_memv
     __pyx_t_7 = __pyx_v_k;
     *((npy_int8 *) ( /* dim=0 */ (__pyx_v_values.data + __pyx_t_7 * __pyx_v_values.strides[0]) )) = -1;
 
-    /* "survival/svm/_minlip.pyx":97
+    /* "sksurv/svm/_minlip.pyx":97
  *         columns[k] = j
  *         values[k] = -1
  *         columns[k + 1] = i             # <<<<<<<<<<<<<<
@@ -3066,7 +3066,7 @@ static CYTHON_INLINE void __pyx_f_8survival_3svm_7_minlip_set_entries(__Pyx_memv
     __pyx_t_8 = (__pyx_v_k + 1);
     *((npy_intp *) ( /* dim=0 */ (__pyx_v_columns.data + __pyx_t_8 * __pyx_v_columns.strides[0]) )) = __pyx_v_i;
 
-    /* "survival/svm/_minlip.pyx":98
+    /* "sksurv/svm/_minlip.pyx":98
  *         values[k] = -1
  *         columns[k + 1] = i
  *         values[k + 1] = 1             # <<<<<<<<<<<<<<
@@ -3078,7 +3078,7 @@ static CYTHON_INLINE void __pyx_f_8survival_3svm_7_minlip_set_entries(__Pyx_memv
   }
   __pyx_L3:;
 
-  /* "survival/svm/_minlip.pyx":84
+  /* "sksurv/svm/_minlip.pyx":84
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * cdef inline void set_entries(cnp.npy_intp[:] columns,             # <<<<<<<<<<<<<<
@@ -3089,7 +3089,7 @@ static CYTHON_INLINE void __pyx_f_8survival_3svm_7_minlip_set_entries(__Pyx_memv
   /* function exit code */
 }
 
-/* "survival/svm/_minlip.pyx":104
+/* "sksurv/svm/_minlip.pyx":104
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * cdef cnp.npy_intp create_difference_matrix_direct_neighbor(cnp.npy_uint8[:] event,             # <<<<<<<<<<<<<<
@@ -3097,7 +3097,7 @@ static CYTHON_INLINE void __pyx_f_8survival_3svm_7_minlip_set_entries(__Pyx_memv
  *                                               cnp.npy_int8[:] values,
  */
 
-static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_direct_neighbor(__Pyx_memviewslice __pyx_v_event, __Pyx_memviewslice __pyx_v_o, __Pyx_memviewslice __pyx_v_values, __Pyx_memviewslice __pyx_v_columns) {
+static npy_intp __pyx_f_6sksurv_3svm_7_minlip_create_difference_matrix_direct_neighbor(__Pyx_memviewslice __pyx_v_event, __Pyx_memviewslice __pyx_v_o, __Pyx_memviewslice __pyx_v_values, __Pyx_memviewslice __pyx_v_columns) {
   npy_intp __pyx_v_n_samples;
   npy_intp __pyx_v_i;
   npy_intp __pyx_v_j;
@@ -3111,7 +3111,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_direct_
   Py_ssize_t __pyx_t_6;
   Py_ssize_t __pyx_t_7;
 
-  /* "survival/svm/_minlip.pyx":109
+  /* "sksurv/svm/_minlip.pyx":109
  *                                               cnp.npy_intp[:] columns) nogil:
  *     """Only compare against direct nearest neighbor according to time"""
  *     cdef cnp.npy_intp n_samples = event.shape[0]             # <<<<<<<<<<<<<<
@@ -3120,7 +3120,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_direct_
  */
   __pyx_v_n_samples = (__pyx_v_event.shape[0]);
 
-  /* "survival/svm/_minlip.pyx":111
+  /* "sksurv/svm/_minlip.pyx":111
  *     cdef cnp.npy_intp n_samples = event.shape[0]
  *     cdef cnp.npy_intp i
  *     cdef cnp.npy_intp j = 0             # <<<<<<<<<<<<<<
@@ -3129,7 +3129,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_direct_
  */
   __pyx_v_j = 0;
 
-  /* "survival/svm/_minlip.pyx":112
+  /* "sksurv/svm/_minlip.pyx":112
  *     cdef cnp.npy_intp i
  *     cdef cnp.npy_intp j = 0
  *     cdef cnp.npy_intp k = 0             # <<<<<<<<<<<<<<
@@ -3138,7 +3138,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_direct_
  */
   __pyx_v_k = 0;
 
-  /* "survival/svm/_minlip.pyx":116
+  /* "sksurv/svm/_minlip.pyx":116
  *     cdef cnp.npy_intp k2
  * 
  *     for i in range(1, n_samples):             # <<<<<<<<<<<<<<
@@ -3149,7 +3149,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_direct_
   for (__pyx_t_2 = 1; __pyx_t_2 < __pyx_t_1; __pyx_t_2+=1) {
     __pyx_v_i = __pyx_t_2;
 
-    /* "survival/svm/_minlip.pyx":117
+    /* "sksurv/svm/_minlip.pyx":117
  * 
  *     for i in range(1, n_samples):
  *         while j < i:             # <<<<<<<<<<<<<<
@@ -3160,7 +3160,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_direct_
       __pyx_t_3 = ((__pyx_v_j < __pyx_v_i) != 0);
       if (!__pyx_t_3) break;
 
-      /* "survival/svm/_minlip.pyx":118
+      /* "sksurv/svm/_minlip.pyx":118
  *     for i in range(1, n_samples):
  *         while j < i:
  *             if event[o[j]]:             # <<<<<<<<<<<<<<
@@ -3172,7 +3172,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_direct_
       __pyx_t_3 = ((*((npy_uint8 *) ( /* dim=0 */ (__pyx_v_event.data + __pyx_t_5 * __pyx_v_event.strides[0]) ))) != 0);
       if (__pyx_t_3) {
 
-        /* "survival/svm/_minlip.pyx":119
+        /* "sksurv/svm/_minlip.pyx":119
  *         while j < i:
  *             if event[o[j]]:
  *                 set_entries(columns, values, k, o[i], o[j])             # <<<<<<<<<<<<<<
@@ -3181,9 +3181,9 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_direct_
  */
         __pyx_t_6 = __pyx_v_i;
         __pyx_t_7 = __pyx_v_j;
-        __pyx_f_8survival_3svm_7_minlip_set_entries(__pyx_v_columns, __pyx_v_values, __pyx_v_k, (*((npy_intp *) ( /* dim=0 */ (__pyx_v_o.data + __pyx_t_6 * __pyx_v_o.strides[0]) ))), (*((npy_intp *) ( /* dim=0 */ (__pyx_v_o.data + __pyx_t_7 * __pyx_v_o.strides[0]) ))));
+        __pyx_f_6sksurv_3svm_7_minlip_set_entries(__pyx_v_columns, __pyx_v_values, __pyx_v_k, (*((npy_intp *) ( /* dim=0 */ (__pyx_v_o.data + __pyx_t_6 * __pyx_v_o.strides[0]) ))), (*((npy_intp *) ( /* dim=0 */ (__pyx_v_o.data + __pyx_t_7 * __pyx_v_o.strides[0]) ))));
 
-        /* "survival/svm/_minlip.pyx":120
+        /* "sksurv/svm/_minlip.pyx":120
  *             if event[o[j]]:
  *                 set_entries(columns, values, k, o[i], o[j])
  *                 k += 2             # <<<<<<<<<<<<<<
@@ -3192,7 +3192,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_direct_
  */
         __pyx_v_k = (__pyx_v_k + 2);
 
-        /* "survival/svm/_minlip.pyx":118
+        /* "sksurv/svm/_minlip.pyx":118
  *     for i in range(1, n_samples):
  *         while j < i:
  *             if event[o[j]]:             # <<<<<<<<<<<<<<
@@ -3201,7 +3201,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_direct_
  */
       }
 
-      /* "survival/svm/_minlip.pyx":121
+      /* "sksurv/svm/_minlip.pyx":121
  *                 set_entries(columns, values, k, o[i], o[j])
  *                 k += 2
  *             j += 1             # <<<<<<<<<<<<<<
@@ -3212,7 +3212,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_direct_
     }
   }
 
-  /* "survival/svm/_minlip.pyx":123
+  /* "sksurv/svm/_minlip.pyx":123
  *             j += 1
  * 
  *     return k             # <<<<<<<<<<<<<<
@@ -3222,7 +3222,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_direct_
   __pyx_r = __pyx_v_k;
   goto __pyx_L0;
 
-  /* "survival/svm/_minlip.pyx":104
+  /* "sksurv/svm/_minlip.pyx":104
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * cdef cnp.npy_intp create_difference_matrix_direct_neighbor(cnp.npy_uint8[:] event,             # <<<<<<<<<<<<<<
@@ -3235,7 +3235,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_direct_
   return __pyx_r;
 }
 
-/* "survival/svm/_minlip.pyx":129
+/* "sksurv/svm/_minlip.pyx":129
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * cdef cnp.npy_intp create_difference_matrix_nearest_neighbor(cnp.npy_uint8[:] event,             # <<<<<<<<<<<<<<
@@ -3243,7 +3243,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_direct_
  *                                                cnp.npy_int8[:] values,
  */
 
-static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_nearest_neighbor(__Pyx_memviewslice __pyx_v_event, __Pyx_memviewslice __pyx_v_o, __Pyx_memviewslice __pyx_v_values, __Pyx_memviewslice __pyx_v_columns) {
+static npy_intp __pyx_f_6sksurv_3svm_7_minlip_create_difference_matrix_nearest_neighbor(__Pyx_memviewslice __pyx_v_event, __Pyx_memviewslice __pyx_v_o, __Pyx_memviewslice __pyx_v_values, __Pyx_memviewslice __pyx_v_columns) {
   npy_intp __pyx_v_n_samples;
   npy_intp __pyx_v_k;
   npy_intp __pyx_v_i;
@@ -3257,7 +3257,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_nearest
   Py_ssize_t __pyx_t_6;
   Py_ssize_t __pyx_t_7;
 
-  /* "survival/svm/_minlip.pyx":135
+  /* "sksurv/svm/_minlip.pyx":135
  *     """Only considers comparable pairs (i, j) where j is uncensored sample
  *     with highest survival time smaller than y_i"""
  *     cdef cnp.npy_intp n_samples = event.shape[0]             # <<<<<<<<<<<<<<
@@ -3266,7 +3266,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_nearest
  */
   __pyx_v_n_samples = (__pyx_v_event.shape[0]);
 
-  /* "survival/svm/_minlip.pyx":136
+  /* "sksurv/svm/_minlip.pyx":136
  *     with highest survival time smaller than y_i"""
  *     cdef cnp.npy_intp n_samples = event.shape[0]
  *     cdef cnp.npy_intp k = 0             # <<<<<<<<<<<<<<
@@ -3275,7 +3275,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_nearest
  */
   __pyx_v_k = 0;
 
-  /* "survival/svm/_minlip.pyx":139
+  /* "sksurv/svm/_minlip.pyx":139
  *     cdef cnp.npy_intp i, j
  * 
  *     for i in range(1, n_samples):             # <<<<<<<<<<<<<<
@@ -3286,7 +3286,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_nearest
   for (__pyx_t_2 = 1; __pyx_t_2 < __pyx_t_1; __pyx_t_2+=1) {
     __pyx_v_i = __pyx_t_2;
 
-    /* "survival/svm/_minlip.pyx":140
+    /* "sksurv/svm/_minlip.pyx":140
  * 
  *     for i in range(1, n_samples):
  *         j = i - 1             # <<<<<<<<<<<<<<
@@ -3295,7 +3295,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_nearest
  */
     __pyx_v_j = (__pyx_v_i - 1);
 
-    /* "survival/svm/_minlip.pyx":141
+    /* "sksurv/svm/_minlip.pyx":141
  *     for i in range(1, n_samples):
  *         j = i - 1
  *         while j >= 0:             # <<<<<<<<<<<<<<
@@ -3306,7 +3306,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_nearest
       __pyx_t_3 = ((__pyx_v_j >= 0) != 0);
       if (!__pyx_t_3) break;
 
-      /* "survival/svm/_minlip.pyx":142
+      /* "sksurv/svm/_minlip.pyx":142
  *         j = i - 1
  *         while j >= 0:
  *             if event[o[j]]:             # <<<<<<<<<<<<<<
@@ -3318,7 +3318,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_nearest
       __pyx_t_3 = ((*((npy_uint8 *) ( /* dim=0 */ (__pyx_v_event.data + __pyx_t_5 * __pyx_v_event.strides[0]) ))) != 0);
       if (__pyx_t_3) {
 
-        /* "survival/svm/_minlip.pyx":143
+        /* "sksurv/svm/_minlip.pyx":143
  *         while j >= 0:
  *             if event[o[j]]:
  *                 set_entries(columns, values, k, o[i], o[j])             # <<<<<<<<<<<<<<
@@ -3327,9 +3327,9 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_nearest
  */
         __pyx_t_6 = __pyx_v_i;
         __pyx_t_7 = __pyx_v_j;
-        __pyx_f_8survival_3svm_7_minlip_set_entries(__pyx_v_columns, __pyx_v_values, __pyx_v_k, (*((npy_intp *) ( /* dim=0 */ (__pyx_v_o.data + __pyx_t_6 * __pyx_v_o.strides[0]) ))), (*((npy_intp *) ( /* dim=0 */ (__pyx_v_o.data + __pyx_t_7 * __pyx_v_o.strides[0]) ))));
+        __pyx_f_6sksurv_3svm_7_minlip_set_entries(__pyx_v_columns, __pyx_v_values, __pyx_v_k, (*((npy_intp *) ( /* dim=0 */ (__pyx_v_o.data + __pyx_t_6 * __pyx_v_o.strides[0]) ))), (*((npy_intp *) ( /* dim=0 */ (__pyx_v_o.data + __pyx_t_7 * __pyx_v_o.strides[0]) ))));
 
-        /* "survival/svm/_minlip.pyx":144
+        /* "sksurv/svm/_minlip.pyx":144
  *             if event[o[j]]:
  *                 set_entries(columns, values, k, o[i], o[j])
  *                 k += 2             # <<<<<<<<<<<<<<
@@ -3338,7 +3338,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_nearest
  */
         __pyx_v_k = (__pyx_v_k + 2);
 
-        /* "survival/svm/_minlip.pyx":145
+        /* "sksurv/svm/_minlip.pyx":145
  *                 set_entries(columns, values, k, o[i], o[j])
  *                 k += 2
  *                 break             # <<<<<<<<<<<<<<
@@ -3347,7 +3347,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_nearest
  */
         goto __pyx_L6_break;
 
-        /* "survival/svm/_minlip.pyx":142
+        /* "sksurv/svm/_minlip.pyx":142
  *         j = i - 1
  *         while j >= 0:
  *             if event[o[j]]:             # <<<<<<<<<<<<<<
@@ -3356,7 +3356,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_nearest
  */
       }
 
-      /* "survival/svm/_minlip.pyx":146
+      /* "sksurv/svm/_minlip.pyx":146
  *                 k += 2
  *                 break
  *             j -= 1             # <<<<<<<<<<<<<<
@@ -3368,7 +3368,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_nearest
     __pyx_L6_break:;
   }
 
-  /* "survival/svm/_minlip.pyx":148
+  /* "sksurv/svm/_minlip.pyx":148
  *             j -= 1
  * 
  *     return k             # <<<<<<<<<<<<<<
@@ -3378,7 +3378,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_nearest
   __pyx_r = __pyx_v_k;
   goto __pyx_L0;
 
-  /* "survival/svm/_minlip.pyx":129
+  /* "sksurv/svm/_minlip.pyx":129
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * cdef cnp.npy_intp create_difference_matrix_nearest_neighbor(cnp.npy_uint8[:] event,             # <<<<<<<<<<<<<<
@@ -3391,7 +3391,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_nearest
   return __pyx_r;
 }
 
-/* "survival/svm/_minlip.pyx":154
+/* "sksurv/svm/_minlip.pyx":154
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * cdef cnp.npy_intp create_difference_matrix_full(cnp.npy_uint8[:] event,             # <<<<<<<<<<<<<<
@@ -3399,7 +3399,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_nearest
  *                                    cnp.npy_int8[:] values,
  */
 
-static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_full(__Pyx_memviewslice __pyx_v_event, __Pyx_memviewslice __pyx_v_o, __Pyx_memviewslice __pyx_v_values, __Pyx_memviewslice __pyx_v_columns) {
+static npy_intp __pyx_f_6sksurv_3svm_7_minlip_create_difference_matrix_full(__Pyx_memviewslice __pyx_v_event, __Pyx_memviewslice __pyx_v_o, __Pyx_memviewslice __pyx_v_values, __Pyx_memviewslice __pyx_v_columns) {
   npy_intp __pyx_v_n_samples;
   npy_intp __pyx_v_i;
   npy_intp __pyx_v_j;
@@ -3415,7 +3415,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_full(__
   Py_ssize_t __pyx_t_8;
   Py_ssize_t __pyx_t_9;
 
-  /* "survival/svm/_minlip.pyx":159
+  /* "sksurv/svm/_minlip.pyx":159
  *                                    cnp.npy_intp[:] columns) nogil:
  *     """Considers all possible comparable pairs"""
  *     cdef cnp.npy_intp n_samples = event.shape[0]             # <<<<<<<<<<<<<<
@@ -3424,7 +3424,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_full(__
  */
   __pyx_v_n_samples = (__pyx_v_event.shape[0]);
 
-  /* "survival/svm/_minlip.pyx":161
+  /* "sksurv/svm/_minlip.pyx":161
  *     cdef cnp.npy_intp n_samples = event.shape[0]
  *     cdef cnp.npy_intp i, j
  *     cdef cnp.npy_intp k = 0             # <<<<<<<<<<<<<<
@@ -3433,7 +3433,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_full(__
  */
   __pyx_v_k = 0;
 
-  /* "survival/svm/_minlip.pyx":163
+  /* "sksurv/svm/_minlip.pyx":163
  *     cdef cnp.npy_intp k = 0
  * 
  *     for i in range(1, n_samples):             # <<<<<<<<<<<<<<
@@ -3444,7 +3444,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_full(__
   for (__pyx_t_2 = 1; __pyx_t_2 < __pyx_t_1; __pyx_t_2+=1) {
     __pyx_v_i = __pyx_t_2;
 
-    /* "survival/svm/_minlip.pyx":164
+    /* "sksurv/svm/_minlip.pyx":164
  * 
  *     for i in range(1, n_samples):
  *         for j in range(i):             # <<<<<<<<<<<<<<
@@ -3455,7 +3455,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_full(__
     for (__pyx_t_4 = 0; __pyx_t_4 < __pyx_t_3; __pyx_t_4+=1) {
       __pyx_v_j = __pyx_t_4;
 
-      /* "survival/svm/_minlip.pyx":165
+      /* "sksurv/svm/_minlip.pyx":165
  *     for i in range(1, n_samples):
  *         for j in range(i):
  *             if event[o[j]]:             # <<<<<<<<<<<<<<
@@ -3467,7 +3467,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_full(__
       __pyx_t_7 = ((*((npy_uint8 *) ( /* dim=0 */ (__pyx_v_event.data + __pyx_t_6 * __pyx_v_event.strides[0]) ))) != 0);
       if (__pyx_t_7) {
 
-        /* "survival/svm/_minlip.pyx":166
+        /* "sksurv/svm/_minlip.pyx":166
  *         for j in range(i):
  *             if event[o[j]]:
  *                 set_entries(columns, values, k, o[i], o[j])             # <<<<<<<<<<<<<<
@@ -3476,9 +3476,9 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_full(__
  */
         __pyx_t_8 = __pyx_v_i;
         __pyx_t_9 = __pyx_v_j;
-        __pyx_f_8survival_3svm_7_minlip_set_entries(__pyx_v_columns, __pyx_v_values, __pyx_v_k, (*((npy_intp *) ( /* dim=0 */ (__pyx_v_o.data + __pyx_t_8 * __pyx_v_o.strides[0]) ))), (*((npy_intp *) ( /* dim=0 */ (__pyx_v_o.data + __pyx_t_9 * __pyx_v_o.strides[0]) ))));
+        __pyx_f_6sksurv_3svm_7_minlip_set_entries(__pyx_v_columns, __pyx_v_values, __pyx_v_k, (*((npy_intp *) ( /* dim=0 */ (__pyx_v_o.data + __pyx_t_8 * __pyx_v_o.strides[0]) ))), (*((npy_intp *) ( /* dim=0 */ (__pyx_v_o.data + __pyx_t_9 * __pyx_v_o.strides[0]) ))));
 
-        /* "survival/svm/_minlip.pyx":167
+        /* "sksurv/svm/_minlip.pyx":167
  *             if event[o[j]]:
  *                 set_entries(columns, values, k, o[i], o[j])
  *                 k += 2             # <<<<<<<<<<<<<<
@@ -3487,7 +3487,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_full(__
  */
         __pyx_v_k = (__pyx_v_k + 2);
 
-        /* "survival/svm/_minlip.pyx":165
+        /* "sksurv/svm/_minlip.pyx":165
  *     for i in range(1, n_samples):
  *         for j in range(i):
  *             if event[o[j]]:             # <<<<<<<<<<<<<<
@@ -3498,7 +3498,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_full(__
     }
   }
 
-  /* "survival/svm/_minlip.pyx":169
+  /* "sksurv/svm/_minlip.pyx":169
  *                 k += 2
  * 
  *     return k             # <<<<<<<<<<<<<<
@@ -3506,7 +3506,7 @@ static npy_intp __pyx_f_8survival_3svm_7_minlip_create_difference_matrix_full(__
   __pyx_r = __pyx_v_k;
   goto __pyx_L0;
 
-  /* "survival/svm/_minlip.pyx":154
+  /* "sksurv/svm/_minlip.pyx":154
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * cdef cnp.npy_intp create_difference_matrix_full(cnp.npy_uint8[:] event,             # <<<<<<<<<<<<<<
@@ -17809,7 +17809,7 @@ static PyBufferProcs __pyx_tp_as_buffer_array = {
 
 static PyTypeObject __pyx_type___pyx_array = {
   PyVarObject_HEAD_INIT(0, 0)
-  "survival.svm._minlip.array", /*tp_name*/
+  "sksurv.svm._minlip.array", /*tp_name*/
   sizeof(struct __pyx_array_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_array, /*tp_dealloc*/
@@ -17915,7 +17915,7 @@ static PyMethodDef __pyx_methods_Enum[] = {
 
 static PyTypeObject __pyx_type___pyx_MemviewEnum = {
   PyVarObject_HEAD_INIT(0, 0)
-  "survival.svm._minlip.Enum", /*tp_name*/
+  "sksurv.svm._minlip.Enum", /*tp_name*/
   sizeof(struct __pyx_MemviewEnum_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_Enum, /*tp_dealloc*/
@@ -18163,7 +18163,7 @@ static PyBufferProcs __pyx_tp_as_buffer_memoryview = {
 
 static PyTypeObject __pyx_type___pyx_memoryview = {
   PyVarObject_HEAD_INIT(0, 0)
-  "survival.svm._minlip.memoryview", /*tp_name*/
+  "sksurv.svm._minlip.memoryview", /*tp_name*/
   sizeof(struct __pyx_memoryview_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_memoryview, /*tp_dealloc*/
@@ -18288,7 +18288,7 @@ static struct PyGetSetDef __pyx_getsets__memoryviewslice[] = {
 
 static PyTypeObject __pyx_type___pyx_memoryviewslice = {
   PyVarObject_HEAD_INIT(0, 0)
-  "survival.svm._minlip._memoryviewslice", /*tp_name*/
+  "sksurv.svm._minlip._memoryviewslice", /*tp_name*/
   sizeof(struct __pyx_memoryviewslice_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc__memoryviewslice, /*tp_dealloc*/
@@ -18422,7 +18422,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_fortran, __pyx_k_fortran, sizeof(__pyx_k_fortran), 0, 0, 1, 1},
   {&__pyx_n_u_fortran, __pyx_k_fortran, sizeof(__pyx_k_fortran), 0, 1, 0, 1},
   {&__pyx_kp_s_got_differing_extents_in_dimensi, __pyx_k_got_differing_extents_in_dimensi, sizeof(__pyx_k_got_differing_extents_in_dimensi), 0, 0, 1, 0},
-  {&__pyx_kp_s_home_sebp_Projekte_survival_sup, __pyx_k_home_sebp_Projekte_survival_sup, sizeof(__pyx_k_home_sebp_Projekte_survival_sup), 0, 0, 1, 0},
+  {&__pyx_kp_s_home_sebp_Projekte_scikit_survi, __pyx_k_home_sebp_Projekte_scikit_survi, sizeof(__pyx_k_home_sebp_Projekte_scikit_survi), 0, 0, 1, 0},
   {&__pyx_n_s_id, __pyx_k_id, sizeof(__pyx_k_id), 0, 0, 1, 1},
   {&__pyx_n_s_import, __pyx_k_import, sizeof(__pyx_k_import), 0, 0, 1, 1},
   {&__pyx_n_s_indptr, __pyx_k_indptr, sizeof(__pyx_k_indptr), 0, 0, 1, 1},
@@ -18459,6 +18459,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_scipy_sparse, __pyx_k_scipy_sparse, sizeof(__pyx_k_scipy_sparse), 0, 0, 1, 1},
   {&__pyx_n_s_shape, __pyx_k_shape, sizeof(__pyx_k_shape), 0, 0, 1, 1},
   {&__pyx_n_s_size, __pyx_k_size, sizeof(__pyx_k_size), 0, 0, 1, 1},
+  {&__pyx_n_s_sksurv_svm__minlip, __pyx_k_sksurv_svm__minlip, sizeof(__pyx_k_sksurv_svm__minlip), 0, 0, 1, 1},
   {&__pyx_n_s_start, __pyx_k_start, sizeof(__pyx_k_start), 0, 0, 1, 1},
   {&__pyx_n_s_step, __pyx_k_step, sizeof(__pyx_k_step), 0, 0, 1, 1},
   {&__pyx_n_s_stop, __pyx_k_stop, sizeof(__pyx_k_stop), 0, 0, 1, 1},
@@ -18466,7 +18467,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s_strided_and_direct_or_indirect, __pyx_k_strided_and_direct_or_indirect, sizeof(__pyx_k_strided_and_direct_or_indirect), 0, 0, 1, 0},
   {&__pyx_kp_s_strided_and_indirect, __pyx_k_strided_and_indirect, sizeof(__pyx_k_strided_and_indirect), 0, 0, 1, 0},
   {&__pyx_n_s_struct, __pyx_k_struct, sizeof(__pyx_k_struct), 0, 0, 1, 1},
-  {&__pyx_n_s_survival_svm__minlip, __pyx_k_survival_svm__minlip, sizeof(__pyx_k_survival_svm__minlip), 0, 0, 1, 1},
   {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
   {&__pyx_n_s_time, __pyx_k_time, sizeof(__pyx_k_time), 0, 0, 1, 1},
   {&__pyx_kp_s_unable_to_allocate_array_data, __pyx_k_unable_to_allocate_array_data, sizeof(__pyx_k_unable_to_allocate_array_data), 0, 0, 1, 0},
@@ -18496,7 +18496,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "survival/svm/_minlip.pyx":61
+  /* "sksurv/svm/_minlip.pyx":61
  *         k = create_difference_matrix_direct_neighbor(event, order, values, columns)
  *     else:
  *         raise ValueError("pairs must be one of (all|nearest|next)")             # <<<<<<<<<<<<<<
@@ -18750,7 +18750,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__23);
   __Pyx_GIVEREF(__pyx_tuple__23);
 
-  /* "survival/svm/_minlip.pyx":28
+  /* "sksurv/svm/_minlip.pyx":28
  * @cython.wraparound(False)
  * @cython.boundscheck(False)
  * def create_difference_matrix(cnp.npy_uint8[:] event,             # <<<<<<<<<<<<<<
@@ -18760,7 +18760,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__24 = PyTuple_Pack(13, __pyx_n_s_event, __pyx_n_s_time, __pyx_n_s_kind, __pyx_n_s_order, __pyx_n_s_values, __pyx_n_s_columns, __pyx_n_s_max_size, __pyx_n_s_k, __pyx_n_s_n_samples, __pyx_n_s_indptr, __pyx_n_s_ret, __pyx_n_s_new_dim, __pyx_n_s_D); if (unlikely(!__pyx_tuple__24)) __PYX_ERR(0, 28, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__24);
   __Pyx_GIVEREF(__pyx_tuple__24);
-  __pyx_codeobj__25 = (PyObject*)__Pyx_PyCode_New(3, 0, 13, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__24, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_sebp_Projekte_survival_sup, __pyx_n_s_create_difference_matrix, 28, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__25)) __PYX_ERR(0, 28, __pyx_L1_error)
+  __pyx_codeobj__25 = (PyObject*)__Pyx_PyCode_New(3, 0, 13, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__24, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_sebp_Projekte_scikit_survi, __pyx_n_s_create_difference_matrix, 28, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__25)) __PYX_ERR(0, 28, __pyx_L1_error)
 
   /* "View.MemoryView":282
  *         return self.name
@@ -18901,14 +18901,14 @@ PyMODINIT_FUNC PyInit__minlip(void)
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
-  if (__pyx_module_is_main_survival__svm___minlip) {
+  if (__pyx_module_is_main_sksurv__svm___minlip) {
     if (PyObject_SetAttrString(__pyx_m, "__name__", __pyx_n_s_main) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) __PYX_ERR(0, 1, __pyx_L1_error)
-    if (!PyDict_GetItemString(modules, "survival.svm._minlip")) {
-      if (unlikely(PyDict_SetItemString(modules, "survival.svm._minlip", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
+    if (!PyDict_GetItemString(modules, "sksurv.svm._minlip")) {
+      if (unlikely(PyDict_SetItemString(modules, "sksurv.svm._minlip", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
     }
   }
   #endif
@@ -18975,7 +18975,7 @@ PyMODINIT_FUNC PyInit__minlip(void)
   if (__Pyx_patch_abc() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
 
-  /* "survival/svm/_minlip.pyx":19
+  /* "sksurv/svm/_minlip.pyx":19
  * cimport cython
  * 
  * import numpy as np             # <<<<<<<<<<<<<<
@@ -18987,7 +18987,7 @@ PyMODINIT_FUNC PyInit__minlip(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_np, __pyx_t_1) < 0) __PYX_ERR(0, 19, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "survival/svm/_minlip.pyx":21
+  /* "sksurv/svm/_minlip.pyx":21
  * import numpy as np
  * cimport numpy as cnp
  * from scipy.sparse import csr_matrix             # <<<<<<<<<<<<<<
@@ -19008,7 +19008,7 @@ PyMODINIT_FUNC PyInit__minlip(void)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "survival/svm/_minlip.pyx":23
+  /* "sksurv/svm/_minlip.pyx":23
  * from scipy.sparse import csr_matrix
  * 
  * cnp.import_array()             # <<<<<<<<<<<<<<
@@ -19017,19 +19017,19 @@ PyMODINIT_FUNC PyInit__minlip(void)
  */
   __pyx_t_3 = __pyx_f_5numpy_import_array(); if (unlikely(__pyx_t_3 == -1)) __PYX_ERR(0, 23, __pyx_L1_error)
 
-  /* "survival/svm/_minlip.pyx":28
+  /* "sksurv/svm/_minlip.pyx":28
  * @cython.wraparound(False)
  * @cython.boundscheck(False)
  * def create_difference_matrix(cnp.npy_uint8[:] event,             # <<<<<<<<<<<<<<
  *                              cnp.ndarray[cnp.npy_double, ndim=1] time,
  *                              object kind):
  */
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_8survival_3svm_7_minlip_1create_difference_matrix, NULL, __pyx_n_s_survival_svm__minlip); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 28, __pyx_L1_error)
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_6sksurv_3svm_7_minlip_1create_difference_matrix, NULL, __pyx_n_s_sksurv_svm__minlip); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 28, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_create_difference_matrix, __pyx_t_2) < 0) __PYX_ERR(0, 28, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "survival/svm/_minlip.pyx":1
+  /* "sksurv/svm/_minlip.pyx":1
  * # This file is part of the submission of the Chair for Computer Aided             # <<<<<<<<<<<<<<
  * # Medical Procedures, Technische Universitaet Muenchen, Germany to the
  * # Prostate Cancer DREAM Challenge 2015.
@@ -19190,11 +19190,11 @@ PyMODINIT_FUNC PyInit__minlip(void)
   __Pyx_XDECREF(__pyx_t_2);
   if (__pyx_m) {
     if (__pyx_d) {
-      __Pyx_AddTraceback("init survival.svm._minlip", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init sksurv.svm._minlip", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     Py_DECREF(__pyx_m); __pyx_m = 0;
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init survival.svm._minlip");
+    PyErr_SetString(PyExc_ImportError, "init sksurv.svm._minlip");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();

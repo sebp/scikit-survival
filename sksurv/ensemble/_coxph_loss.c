@@ -427,8 +427,8 @@ static CYTHON_INLINE float __PYX_NAN() {
   #endif
 #endif
 
-#define __PYX_HAVE__survival__ensemble___coxph_loss
-#define __PYX_HAVE_API__survival__ensemble___coxph_loss
+#define __PYX_HAVE__sksurv__ensemble___coxph_loss
+#define __PYX_HAVE_API__sksurv__ensemble___coxph_loss
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
@@ -654,7 +654,7 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "survival/ensemble/_coxph_loss.pyx",
+  "sksurv/ensemble/_coxph_loss.pyx",
   "__init__.pxd",
   "stringsource",
   "type.pxd",
@@ -1819,7 +1819,7 @@ static PyTypeObject *__pyx_ptype_5numpy_ufunc = 0;
 static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *, char *, char *, int *); /*proto*/
 static CYTHON_INLINE int __pyx_f_5numpy_import_array(void); /*proto*/
 
-/* Module declarations from 'survival.ensemble._coxph_loss' */
+/* Module declarations from 'sksurv.ensemble._coxph_loss' */
 static PyTypeObject *__pyx_array_type = 0;
 static PyTypeObject *__pyx_MemviewEnum_type = 0;
 static PyTypeObject *__pyx_memoryview_type = 0;
@@ -1865,10 +1865,10 @@ static void __pyx_memoryview_slice_assign_scalar(__Pyx_memviewslice *, int, size
 static void __pyx_memoryview__slice_assign_scalar(char *, Py_ssize_t *, Py_ssize_t *, int, size_t, void *); /*proto*/
 static __Pyx_TypeInfo __Pyx_TypeInfo_nn_npy_double = { "npy_double", NULL, sizeof(npy_double), { 0 }, 0, 'R', 0, 0 };
 static __Pyx_TypeInfo __Pyx_TypeInfo_nn_npy_uint8 = { "npy_uint8", NULL, sizeof(npy_uint8), { 0 }, 0, IS_UNSIGNED(npy_uint8) ? 'U' : 'I', IS_UNSIGNED(npy_uint8), 0 };
-#define __Pyx_MODULE_NAME "survival.ensemble._coxph_loss"
-int __pyx_module_is_main_survival__ensemble___coxph_loss = 0;
+#define __Pyx_MODULE_NAME "sksurv.ensemble._coxph_loss"
+int __pyx_module_is_main_sksurv__ensemble___coxph_loss = 0;
 
-/* Implementation of 'survival.ensemble._coxph_loss' */
+/* Implementation of 'sksurv.ensemble._coxph_loss' */
 static PyObject *__pyx_builtin_range;
 static PyObject *__pyx_builtin_ValueError;
 static PyObject *__pyx_builtin_RuntimeError;
@@ -1948,10 +1948,10 @@ static const char __pyx_k_Cannot_index_with_type_s[] = "Cannot index with type '
 static const char __pyx_k_Invalid_shape_in_axis_d_d[] = "Invalid shape in axis %d: %d.";
 static const char __pyx_k_itemsize_0_for_cython_array[] = "itemsize <= 0 for cython.array";
 static const char __pyx_k_ndarray_is_not_C_contiguous[] = "ndarray is not C contiguous";
-static const char __pyx_k_survival_ensemble__coxph_loss[] = "survival.ensemble._coxph_loss";
+static const char __pyx_k_sksurv_ensemble__coxph_loss[] = "sksurv.ensemble._coxph_loss";
 static const char __pyx_k_unable_to_allocate_array_data[] = "unable to allocate array data.";
 static const char __pyx_k_strided_and_direct_or_indirect[] = "<strided and direct or indirect>";
-static const char __pyx_k_home_sebp_Projekte_survival_sup[] = "/home/sebp/Projekte/survival-support-vector-machine/survival/ensemble/_coxph_loss.pyx";
+static const char __pyx_k_home_sebp_Projekte_scikit_survi[] = "/home/sebp/Projekte/scikit-survival/sksurv/ensemble/_coxph_loss.pyx";
 static const char __pyx_k_numpy_core_multiarray_failed_to[] = "numpy.core.multiarray failed to import";
 static const char __pyx_k_unknown_dtype_code_in_numpy_pxd[] = "unknown dtype code in numpy.pxd (%d)";
 static const char __pyx_k_Buffer_view_does_not_expose_stri[] = "Buffer view does not expose strides";
@@ -2015,7 +2015,7 @@ static PyObject *__pyx_n_s_fortran;
 static PyObject *__pyx_n_u_fortran;
 static PyObject *__pyx_kp_s_got_differing_extents_in_dimensi;
 static PyObject *__pyx_n_s_gradient;
-static PyObject *__pyx_kp_s_home_sebp_Projekte_survival_sup;
+static PyObject *__pyx_kp_s_home_sebp_Projekte_scikit_survi;
 static PyObject *__pyx_n_s_i;
 static PyObject *__pyx_n_s_id;
 static PyObject *__pyx_n_s_import;
@@ -2044,6 +2044,7 @@ static PyObject *__pyx_n_s_range;
 static PyObject *__pyx_n_s_s;
 static PyObject *__pyx_n_s_shape;
 static PyObject *__pyx_n_s_size;
+static PyObject *__pyx_n_s_sksurv_ensemble__coxph_loss;
 static PyObject *__pyx_n_s_start;
 static PyObject *__pyx_n_s_step;
 static PyObject *__pyx_n_s_stop;
@@ -2051,7 +2052,6 @@ static PyObject *__pyx_kp_s_strided_and_direct;
 static PyObject *__pyx_kp_s_strided_and_direct_or_indirect;
 static PyObject *__pyx_kp_s_strided_and_indirect;
 static PyObject *__pyx_n_s_struct;
-static PyObject *__pyx_n_s_survival_ensemble__coxph_loss;
 static PyObject *__pyx_n_s_test;
 static PyObject *__pyx_n_s_time;
 static PyObject *__pyx_kp_s_unable_to_allocate_array_data;
@@ -2059,8 +2059,8 @@ static PyObject *__pyx_kp_s_unable_to_allocate_shape_and_str;
 static PyObject *__pyx_kp_u_unknown_dtype_code_in_numpy_pxd;
 static PyObject *__pyx_n_s_unpack;
 static PyObject *__pyx_n_s_y_pred;
-static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradient(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_event, __Pyx_memviewslice __pyx_v_time, __Pyx_memviewslice __pyx_v_y_pred); /* proto */
-static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_2coxph_loss(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_event, __Pyx_memviewslice __pyx_v_time, __Pyx_memviewslice __pyx_v_y_pred); /* proto */
+static PyObject *__pyx_pf_6sksurv_8ensemble_11_coxph_loss_coxph_negative_gradient(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_event, __Pyx_memviewslice __pyx_v_time, __Pyx_memviewslice __pyx_v_y_pred); /* proto */
+static PyObject *__pyx_pf_6sksurv_8ensemble_11_coxph_loss_2coxph_loss(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_event, __Pyx_memviewslice __pyx_v_time, __Pyx_memviewslice __pyx_v_y_pred); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static int __pyx_array___pyx_pf_15View_dot_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx_v_self, PyObject *__pyx_v_shape, Py_ssize_t __pyx_v_itemsize, PyObject *__pyx_v_format, PyObject *__pyx_v_mode, int __pyx_v_allocate_buffer); /* proto */
@@ -2134,7 +2134,7 @@ static PyObject *__pyx_tuple__31;
 static PyObject *__pyx_codeobj__24;
 static PyObject *__pyx_codeobj__26;
 
-/* "survival/ensemble/_coxph_loss.pyx":25
+/* "sksurv/ensemble/_coxph_loss.pyx":25
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * def coxph_negative_gradient(cnp.npy_uint8[:] event,             # <<<<<<<<<<<<<<
@@ -2143,9 +2143,9 @@ static PyObject *__pyx_codeobj__26;
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8survival_8ensemble_11_coxph_loss_1coxph_negative_gradient(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_8survival_8ensemble_11_coxph_loss_1coxph_negative_gradient = {"coxph_negative_gradient", (PyCFunction)__pyx_pw_8survival_8ensemble_11_coxph_loss_1coxph_negative_gradient, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_8survival_8ensemble_11_coxph_loss_1coxph_negative_gradient(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_6sksurv_8ensemble_11_coxph_loss_1coxph_negative_gradient(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_6sksurv_8ensemble_11_coxph_loss_1coxph_negative_gradient = {"coxph_negative_gradient", (PyCFunction)__pyx_pw_6sksurv_8ensemble_11_coxph_loss_1coxph_negative_gradient, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_6sksurv_8ensemble_11_coxph_loss_1coxph_negative_gradient(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   __Pyx_memviewslice __pyx_v_event = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_time = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_y_pred = { 0, 0, { 0 }, { 0 }, { 0 } };
@@ -2199,18 +2199,18 @@ static PyObject *__pyx_pw_8survival_8ensemble_11_coxph_loss_1coxph_negative_grad
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("coxph_negative_gradient", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 25, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("survival.ensemble._coxph_loss.coxph_negative_gradient", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.ensemble._coxph_loss.coxph_negative_gradient", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradient(__pyx_self, __pyx_v_event, __pyx_v_time, __pyx_v_y_pred);
+  __pyx_r = __pyx_pf_6sksurv_8ensemble_11_coxph_loss_coxph_negative_gradient(__pyx_self, __pyx_v_event, __pyx_v_time, __pyx_v_y_pred);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradient(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_event, __Pyx_memviewslice __pyx_v_time, __Pyx_memviewslice __pyx_v_y_pred) {
+static PyObject *__pyx_pf_6sksurv_8ensemble_11_coxph_loss_coxph_negative_gradient(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_event, __Pyx_memviewslice __pyx_v_time, __Pyx_memviewslice __pyx_v_y_pred) {
   npy_double __pyx_v_s;
   int __pyx_v_i;
   int __pyx_v_j;
@@ -2252,7 +2252,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradi
   __pyx_pybuffernd_gradient.data = NULL;
   __pyx_pybuffernd_gradient.rcbuffer = &__pyx_pybuffer_gradient;
 
-  /* "survival/ensemble/_coxph_loss.pyx":31
+  /* "sksurv/ensemble/_coxph_loss.pyx":31
  *     cdef int i
  *     cdef int j
  *     cdef cnp.npy_intp n_samples = event.shape[0]             # <<<<<<<<<<<<<<
@@ -2261,7 +2261,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradi
  */
   __pyx_v_n_samples = (__pyx_v_event.shape[0]);
 
-  /* "survival/ensemble/_coxph_loss.pyx":33
+  /* "sksurv/ensemble/_coxph_loss.pyx":33
  *     cdef cnp.npy_intp n_samples = event.shape[0]
  * 
  *     cdef cnp.ndarray[cnp.npy_double, ndim=1] gradient = cnp.PyArray_EMPTY(1, &n_samples, cnp.NPY_DOUBLE, 0)             # <<<<<<<<<<<<<<
@@ -2284,7 +2284,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradi
   __pyx_v_gradient = ((PyArrayObject *)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "survival/ensemble/_coxph_loss.pyx":34
+  /* "sksurv/ensemble/_coxph_loss.pyx":34
  * 
  *     cdef cnp.ndarray[cnp.npy_double, ndim=1] gradient = cnp.PyArray_EMPTY(1, &n_samples, cnp.NPY_DOUBLE, 0)
  *     cdef cnp.npy_double[:] exp_tsj = cnp.PyArray_ZEROS(1, &n_samples, cnp.NPY_DOUBLE, 0)             # <<<<<<<<<<<<<<
@@ -2300,7 +2300,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradi
   __pyx_t_3.memview = NULL;
   __pyx_t_3.data = NULL;
 
-  /* "survival/ensemble/_coxph_loss.pyx":36
+  /* "sksurv/ensemble/_coxph_loss.pyx":36
  *     cdef cnp.npy_double[:] exp_tsj = cnp.PyArray_ZEROS(1, &n_samples, cnp.NPY_DOUBLE, 0)
  * 
  *     cdef cnp.npy_double[:] exp_pred = np.exp(y_pred)             # <<<<<<<<<<<<<<
@@ -2367,7 +2367,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradi
   __pyx_t_3.memview = NULL;
   __pyx_t_3.data = NULL;
 
-  /* "survival/ensemble/_coxph_loss.pyx":37
+  /* "sksurv/ensemble/_coxph_loss.pyx":37
  * 
  *     cdef cnp.npy_double[:] exp_pred = np.exp(y_pred)
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -2381,7 +2381,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradi
       #endif
       /*try:*/ {
 
-        /* "survival/ensemble/_coxph_loss.pyx":38
+        /* "sksurv/ensemble/_coxph_loss.pyx":38
  *     cdef cnp.npy_double[:] exp_pred = np.exp(y_pred)
  *     with nogil:
  *         for i in range(n_samples):             # <<<<<<<<<<<<<<
@@ -2392,7 +2392,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradi
         for (__pyx_t_9 = 0; __pyx_t_9 < __pyx_t_8; __pyx_t_9+=1) {
           __pyx_v_i = __pyx_t_9;
 
-          /* "survival/ensemble/_coxph_loss.pyx":39
+          /* "sksurv/ensemble/_coxph_loss.pyx":39
  *     with nogil:
  *         for i in range(n_samples):
  *             for j in range(n_samples):             # <<<<<<<<<<<<<<
@@ -2403,7 +2403,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradi
           for (__pyx_t_11 = 0; __pyx_t_11 < __pyx_t_10; __pyx_t_11+=1) {
             __pyx_v_j = __pyx_t_11;
 
-            /* "survival/ensemble/_coxph_loss.pyx":40
+            /* "sksurv/ensemble/_coxph_loss.pyx":40
  *         for i in range(n_samples):
  *             for j in range(n_samples):
  *                 if time[j] >= time[i]:             # <<<<<<<<<<<<<<
@@ -2415,7 +2415,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradi
             __pyx_t_14 = (((*((npy_double *) ( /* dim=0 */ (__pyx_v_time.data + __pyx_t_12 * __pyx_v_time.strides[0]) ))) >= (*((npy_double *) ( /* dim=0 */ (__pyx_v_time.data + __pyx_t_13 * __pyx_v_time.strides[0]) )))) != 0);
             if (__pyx_t_14) {
 
-              /* "survival/ensemble/_coxph_loss.pyx":41
+              /* "sksurv/ensemble/_coxph_loss.pyx":41
  *             for j in range(n_samples):
  *                 if time[j] >= time[i]:
  *                     exp_tsj[i] += exp_pred[j]             # <<<<<<<<<<<<<<
@@ -2426,7 +2426,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradi
               __pyx_t_16 = __pyx_v_i;
               *((npy_double *) ( /* dim=0 */ (__pyx_v_exp_tsj.data + __pyx_t_16 * __pyx_v_exp_tsj.strides[0]) )) += (*((npy_double *) ( /* dim=0 */ (__pyx_v_exp_pred.data + __pyx_t_15 * __pyx_v_exp_pred.strides[0]) )));
 
-              /* "survival/ensemble/_coxph_loss.pyx":40
+              /* "sksurv/ensemble/_coxph_loss.pyx":40
  *         for i in range(n_samples):
  *             for j in range(n_samples):
  *                 if time[j] >= time[i]:             # <<<<<<<<<<<<<<
@@ -2437,7 +2437,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradi
           }
         }
 
-        /* "survival/ensemble/_coxph_loss.pyx":43
+        /* "sksurv/ensemble/_coxph_loss.pyx":43
  *                     exp_tsj[i] += exp_pred[j]
  * 
  *         for i in range(n_samples):             # <<<<<<<<<<<<<<
@@ -2448,7 +2448,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradi
         for (__pyx_t_9 = 0; __pyx_t_9 < __pyx_t_8; __pyx_t_9+=1) {
           __pyx_v_i = __pyx_t_9;
 
-          /* "survival/ensemble/_coxph_loss.pyx":44
+          /* "sksurv/ensemble/_coxph_loss.pyx":44
  * 
  *         for i in range(n_samples):
  *             s = 0             # <<<<<<<<<<<<<<
@@ -2457,7 +2457,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradi
  */
           __pyx_v_s = 0.0;
 
-          /* "survival/ensemble/_coxph_loss.pyx":45
+          /* "sksurv/ensemble/_coxph_loss.pyx":45
  *         for i in range(n_samples):
  *             s = 0
  *             for j in range(n_samples):             # <<<<<<<<<<<<<<
@@ -2468,7 +2468,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradi
           for (__pyx_t_11 = 0; __pyx_t_11 < __pyx_t_10; __pyx_t_11+=1) {
             __pyx_v_j = __pyx_t_11;
 
-            /* "survival/ensemble/_coxph_loss.pyx":46
+            /* "sksurv/ensemble/_coxph_loss.pyx":46
  *             s = 0
  *             for j in range(n_samples):
  *                 if event[j] and time[i] >= time[j]:             # <<<<<<<<<<<<<<
@@ -2489,7 +2489,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradi
             __pyx_L16_bool_binop_done:;
             if (__pyx_t_14) {
 
-              /* "survival/ensemble/_coxph_loss.pyx":47
+              /* "sksurv/ensemble/_coxph_loss.pyx":47
  *             for j in range(n_samples):
  *                 if event[j] and time[i] >= time[j]:
  *                     s += exp_pred[i] / exp_tsj[j]             # <<<<<<<<<<<<<<
@@ -2500,7 +2500,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradi
               __pyx_t_22 = __pyx_v_j;
               __pyx_v_s = (__pyx_v_s + ((*((npy_double *) ( /* dim=0 */ (__pyx_v_exp_pred.data + __pyx_t_21 * __pyx_v_exp_pred.strides[0]) ))) / (*((npy_double *) ( /* dim=0 */ (__pyx_v_exp_tsj.data + __pyx_t_22 * __pyx_v_exp_tsj.strides[0]) )))));
 
-              /* "survival/ensemble/_coxph_loss.pyx":46
+              /* "sksurv/ensemble/_coxph_loss.pyx":46
  *             s = 0
  *             for j in range(n_samples):
  *                 if event[j] and time[i] >= time[j]:             # <<<<<<<<<<<<<<
@@ -2510,7 +2510,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradi
             }
           }
 
-          /* "survival/ensemble/_coxph_loss.pyx":48
+          /* "sksurv/ensemble/_coxph_loss.pyx":48
  *                 if event[j] and time[i] >= time[j]:
  *                     s += exp_pred[i] / exp_tsj[j]
  *             gradient[i] = event[i] - s             # <<<<<<<<<<<<<<
@@ -2523,7 +2523,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradi
         }
       }
 
-      /* "survival/ensemble/_coxph_loss.pyx":37
+      /* "sksurv/ensemble/_coxph_loss.pyx":37
  * 
  *     cdef cnp.npy_double[:] exp_pred = np.exp(y_pred)
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -2541,7 +2541,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradi
       }
   }
 
-  /* "survival/ensemble/_coxph_loss.pyx":50
+  /* "sksurv/ensemble/_coxph_loss.pyx":50
  *             gradient[i] = event[i] - s
  * 
  *     return gradient             # <<<<<<<<<<<<<<
@@ -2553,7 +2553,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradi
   __pyx_r = ((PyObject *)__pyx_v_gradient);
   goto __pyx_L0;
 
-  /* "survival/ensemble/_coxph_loss.pyx":25
+  /* "sksurv/ensemble/_coxph_loss.pyx":25
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * def coxph_negative_gradient(cnp.npy_uint8[:] event,             # <<<<<<<<<<<<<<
@@ -2575,7 +2575,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradi
     __Pyx_ErrFetch(&__pyx_type, &__pyx_value, &__pyx_tb);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_gradient.rcbuffer->pybuffer);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("survival.ensemble._coxph_loss.coxph_negative_gradient", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.ensemble._coxph_loss.coxph_negative_gradient", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   goto __pyx_L2;
   __pyx_L0:;
@@ -2592,7 +2592,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradi
   return __pyx_r;
 }
 
-/* "survival/ensemble/_coxph_loss.pyx":56
+/* "sksurv/ensemble/_coxph_loss.pyx":56
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * def coxph_loss(cnp.npy_uint8[:] event,             # <<<<<<<<<<<<<<
@@ -2601,9 +2601,9 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_coxph_negative_gradi
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8survival_8ensemble_11_coxph_loss_3coxph_loss(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_8survival_8ensemble_11_coxph_loss_3coxph_loss = {"coxph_loss", (PyCFunction)__pyx_pw_8survival_8ensemble_11_coxph_loss_3coxph_loss, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_8survival_8ensemble_11_coxph_loss_3coxph_loss(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_6sksurv_8ensemble_11_coxph_loss_3coxph_loss(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_6sksurv_8ensemble_11_coxph_loss_3coxph_loss = {"coxph_loss", (PyCFunction)__pyx_pw_6sksurv_8ensemble_11_coxph_loss_3coxph_loss, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_6sksurv_8ensemble_11_coxph_loss_3coxph_loss(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   __Pyx_memviewslice __pyx_v_event = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_time = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_y_pred = { 0, 0, { 0 }, { 0 }, { 0 } };
@@ -2657,18 +2657,18 @@ static PyObject *__pyx_pw_8survival_8ensemble_11_coxph_loss_3coxph_loss(PyObject
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("coxph_loss", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 56, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("survival.ensemble._coxph_loss.coxph_loss", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.ensemble._coxph_loss.coxph_loss", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8survival_8ensemble_11_coxph_loss_2coxph_loss(__pyx_self, __pyx_v_event, __pyx_v_time, __pyx_v_y_pred);
+  __pyx_r = __pyx_pf_6sksurv_8ensemble_11_coxph_loss_2coxph_loss(__pyx_self, __pyx_v_event, __pyx_v_time, __pyx_v_y_pred);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_2coxph_loss(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_event, __Pyx_memviewslice __pyx_v_time, __Pyx_memviewslice __pyx_v_y_pred) {
+static PyObject *__pyx_pf_6sksurv_8ensemble_11_coxph_loss_2coxph_loss(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_event, __Pyx_memviewslice __pyx_v_time, __Pyx_memviewslice __pyx_v_y_pred) {
   npy_intp __pyx_v_n_samples;
   npy_double __pyx_v_at_risk;
   npy_double __pyx_v_loss;
@@ -2689,7 +2689,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_2coxph_loss(CYTHON_U
   PyObject *__pyx_t_11 = NULL;
   __Pyx_RefNannySetupContext("coxph_loss", 0);
 
-  /* "survival/ensemble/_coxph_loss.pyx":59
+  /* "sksurv/ensemble/_coxph_loss.pyx":59
  *                cnp.npy_double[:] time,
  *                cnp.npy_double[:] y_pred):
  *     cdef cnp.npy_intp n_samples = event.shape[0]             # <<<<<<<<<<<<<<
@@ -2698,7 +2698,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_2coxph_loss(CYTHON_U
  */
   __pyx_v_n_samples = (__pyx_v_event.shape[0]);
 
-  /* "survival/ensemble/_coxph_loss.pyx":61
+  /* "sksurv/ensemble/_coxph_loss.pyx":61
  *     cdef cnp.npy_intp n_samples = event.shape[0]
  *     cdef cnp.npy_double at_risk
  *     cdef cnp.npy_double loss = 0             # <<<<<<<<<<<<<<
@@ -2707,7 +2707,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_2coxph_loss(CYTHON_U
  */
   __pyx_v_loss = 0.0;
 
-  /* "survival/ensemble/_coxph_loss.pyx":63
+  /* "sksurv/ensemble/_coxph_loss.pyx":63
  *     cdef cnp.npy_double loss = 0
  * 
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -2721,7 +2721,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_2coxph_loss(CYTHON_U
       #endif
       /*try:*/ {
 
-        /* "survival/ensemble/_coxph_loss.pyx":64
+        /* "sksurv/ensemble/_coxph_loss.pyx":64
  * 
  *     with nogil:
  *         for i in range(n_samples):             # <<<<<<<<<<<<<<
@@ -2732,7 +2732,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_2coxph_loss(CYTHON_U
         for (__pyx_t_2 = 0; __pyx_t_2 < __pyx_t_1; __pyx_t_2+=1) {
           __pyx_v_i = __pyx_t_2;
 
-          /* "survival/ensemble/_coxph_loss.pyx":65
+          /* "sksurv/ensemble/_coxph_loss.pyx":65
  *     with nogil:
  *         for i in range(n_samples):
  *             at_risk = 0             # <<<<<<<<<<<<<<
@@ -2741,7 +2741,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_2coxph_loss(CYTHON_U
  */
           __pyx_v_at_risk = 0.0;
 
-          /* "survival/ensemble/_coxph_loss.pyx":66
+          /* "sksurv/ensemble/_coxph_loss.pyx":66
  *         for i in range(n_samples):
  *             at_risk = 0
  *             for j in range(n_samples):             # <<<<<<<<<<<<<<
@@ -2752,7 +2752,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_2coxph_loss(CYTHON_U
           for (__pyx_t_4 = 0; __pyx_t_4 < __pyx_t_3; __pyx_t_4+=1) {
             __pyx_v_j = __pyx_t_4;
 
-            /* "survival/ensemble/_coxph_loss.pyx":67
+            /* "sksurv/ensemble/_coxph_loss.pyx":67
  *             at_risk = 0
  *             for j in range(n_samples):
  *                 if time[j] >= time[i]:             # <<<<<<<<<<<<<<
@@ -2764,7 +2764,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_2coxph_loss(CYTHON_U
             __pyx_t_7 = (((*((npy_double *) ( /* dim=0 */ (__pyx_v_time.data + __pyx_t_5 * __pyx_v_time.strides[0]) ))) >= (*((npy_double *) ( /* dim=0 */ (__pyx_v_time.data + __pyx_t_6 * __pyx_v_time.strides[0]) )))) != 0);
             if (__pyx_t_7) {
 
-              /* "survival/ensemble/_coxph_loss.pyx":68
+              /* "sksurv/ensemble/_coxph_loss.pyx":68
  *             for j in range(n_samples):
  *                 if time[j] >= time[i]:
  *                     at_risk += math.exp(y_pred[j])             # <<<<<<<<<<<<<<
@@ -2774,7 +2774,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_2coxph_loss(CYTHON_U
               __pyx_t_8 = __pyx_v_j;
               __pyx_v_at_risk = (__pyx_v_at_risk + exp((*((npy_double *) ( /* dim=0 */ (__pyx_v_y_pred.data + __pyx_t_8 * __pyx_v_y_pred.strides[0]) )))));
 
-              /* "survival/ensemble/_coxph_loss.pyx":67
+              /* "sksurv/ensemble/_coxph_loss.pyx":67
  *             at_risk = 0
  *             for j in range(n_samples):
  *                 if time[j] >= time[i]:             # <<<<<<<<<<<<<<
@@ -2784,7 +2784,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_2coxph_loss(CYTHON_U
             }
           }
 
-          /* "survival/ensemble/_coxph_loss.pyx":69
+          /* "sksurv/ensemble/_coxph_loss.pyx":69
  *                 if time[j] >= time[i]:
  *                     at_risk += math.exp(y_pred[j])
  *             loss += event[i] * (y_pred[i] - math.log(at_risk))             # <<<<<<<<<<<<<<
@@ -2797,7 +2797,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_2coxph_loss(CYTHON_U
         }
       }
 
-      /* "survival/ensemble/_coxph_loss.pyx":63
+      /* "sksurv/ensemble/_coxph_loss.pyx":63
  *     cdef cnp.npy_double loss = 0
  * 
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -2815,7 +2815,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_2coxph_loss(CYTHON_U
       }
   }
 
-  /* "survival/ensemble/_coxph_loss.pyx":71
+  /* "sksurv/ensemble/_coxph_loss.pyx":71
  *             loss += event[i] * (y_pred[i] - math.log(at_risk))
  * 
  *     return - loss             # <<<<<<<<<<<<<<
@@ -2827,7 +2827,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_2coxph_loss(CYTHON_U
   __pyx_t_11 = 0;
   goto __pyx_L0;
 
-  /* "survival/ensemble/_coxph_loss.pyx":56
+  /* "sksurv/ensemble/_coxph_loss.pyx":56
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * def coxph_loss(cnp.npy_uint8[:] event,             # <<<<<<<<<<<<<<
@@ -2838,7 +2838,7 @@ static PyObject *__pyx_pf_8survival_8ensemble_11_coxph_loss_2coxph_loss(CYTHON_U
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_11);
-  __Pyx_AddTraceback("survival.ensemble._coxph_loss.coxph_loss", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.ensemble._coxph_loss.coxph_loss", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __PYX_XDEC_MEMVIEW(&__pyx_v_event, 1);
@@ -17139,7 +17139,7 @@ static PyBufferProcs __pyx_tp_as_buffer_array = {
 
 static PyTypeObject __pyx_type___pyx_array = {
   PyVarObject_HEAD_INIT(0, 0)
-  "survival.ensemble._coxph_loss.array", /*tp_name*/
+  "sksurv.ensemble._coxph_loss.array", /*tp_name*/
   sizeof(struct __pyx_array_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_array, /*tp_dealloc*/
@@ -17245,7 +17245,7 @@ static PyMethodDef __pyx_methods_Enum[] = {
 
 static PyTypeObject __pyx_type___pyx_MemviewEnum = {
   PyVarObject_HEAD_INIT(0, 0)
-  "survival.ensemble._coxph_loss.Enum", /*tp_name*/
+  "sksurv.ensemble._coxph_loss.Enum", /*tp_name*/
   sizeof(struct __pyx_MemviewEnum_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_Enum, /*tp_dealloc*/
@@ -17493,7 +17493,7 @@ static PyBufferProcs __pyx_tp_as_buffer_memoryview = {
 
 static PyTypeObject __pyx_type___pyx_memoryview = {
   PyVarObject_HEAD_INIT(0, 0)
-  "survival.ensemble._coxph_loss.memoryview", /*tp_name*/
+  "sksurv.ensemble._coxph_loss.memoryview", /*tp_name*/
   sizeof(struct __pyx_memoryview_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_memoryview, /*tp_dealloc*/
@@ -17618,7 +17618,7 @@ static struct PyGetSetDef __pyx_getsets__memoryviewslice[] = {
 
 static PyTypeObject __pyx_type___pyx_memoryviewslice = {
   PyVarObject_HEAD_INIT(0, 0)
-  "survival.ensemble._coxph_loss._memoryviewslice", /*tp_name*/
+  "sksurv.ensemble._coxph_loss._memoryviewslice", /*tp_name*/
   sizeof(struct __pyx_memoryviewslice_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc__memoryviewslice, /*tp_dealloc*/
@@ -17752,7 +17752,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_u_fortran, __pyx_k_fortran, sizeof(__pyx_k_fortran), 0, 1, 0, 1},
   {&__pyx_kp_s_got_differing_extents_in_dimensi, __pyx_k_got_differing_extents_in_dimensi, sizeof(__pyx_k_got_differing_extents_in_dimensi), 0, 0, 1, 0},
   {&__pyx_n_s_gradient, __pyx_k_gradient, sizeof(__pyx_k_gradient), 0, 0, 1, 1},
-  {&__pyx_kp_s_home_sebp_Projekte_survival_sup, __pyx_k_home_sebp_Projekte_survival_sup, sizeof(__pyx_k_home_sebp_Projekte_survival_sup), 0, 0, 1, 0},
+  {&__pyx_kp_s_home_sebp_Projekte_scikit_survi, __pyx_k_home_sebp_Projekte_scikit_survi, sizeof(__pyx_k_home_sebp_Projekte_scikit_survi), 0, 0, 1, 0},
   {&__pyx_n_s_i, __pyx_k_i, sizeof(__pyx_k_i), 0, 0, 1, 1},
   {&__pyx_n_s_id, __pyx_k_id, sizeof(__pyx_k_id), 0, 0, 1, 1},
   {&__pyx_n_s_import, __pyx_k_import, sizeof(__pyx_k_import), 0, 0, 1, 1},
@@ -17781,6 +17781,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_s, __pyx_k_s, sizeof(__pyx_k_s), 0, 0, 1, 1},
   {&__pyx_n_s_shape, __pyx_k_shape, sizeof(__pyx_k_shape), 0, 0, 1, 1},
   {&__pyx_n_s_size, __pyx_k_size, sizeof(__pyx_k_size), 0, 0, 1, 1},
+  {&__pyx_n_s_sksurv_ensemble__coxph_loss, __pyx_k_sksurv_ensemble__coxph_loss, sizeof(__pyx_k_sksurv_ensemble__coxph_loss), 0, 0, 1, 1},
   {&__pyx_n_s_start, __pyx_k_start, sizeof(__pyx_k_start), 0, 0, 1, 1},
   {&__pyx_n_s_step, __pyx_k_step, sizeof(__pyx_k_step), 0, 0, 1, 1},
   {&__pyx_n_s_stop, __pyx_k_stop, sizeof(__pyx_k_stop), 0, 0, 1, 1},
@@ -17788,7 +17789,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s_strided_and_direct_or_indirect, __pyx_k_strided_and_direct_or_indirect, sizeof(__pyx_k_strided_and_direct_or_indirect), 0, 0, 1, 0},
   {&__pyx_kp_s_strided_and_indirect, __pyx_k_strided_and_indirect, sizeof(__pyx_k_strided_and_indirect), 0, 0, 1, 0},
   {&__pyx_n_s_struct, __pyx_k_struct, sizeof(__pyx_k_struct), 0, 0, 1, 1},
-  {&__pyx_n_s_survival_ensemble__coxph_loss, __pyx_k_survival_ensemble__coxph_loss, sizeof(__pyx_k_survival_ensemble__coxph_loss), 0, 0, 1, 1},
   {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
   {&__pyx_n_s_time, __pyx_k_time, sizeof(__pyx_k_time), 0, 0, 1, 1},
   {&__pyx_kp_s_unable_to_allocate_array_data, __pyx_k_unable_to_allocate_array_data, sizeof(__pyx_k_unable_to_allocate_array_data), 0, 0, 1, 0},
@@ -18061,7 +18061,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__22);
   __Pyx_GIVEREF(__pyx_tuple__22);
 
-  /* "survival/ensemble/_coxph_loss.pyx":25
+  /* "sksurv/ensemble/_coxph_loss.pyx":25
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * def coxph_negative_gradient(cnp.npy_uint8[:] event,             # <<<<<<<<<<<<<<
@@ -18071,9 +18071,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__23 = PyTuple_Pack(10, __pyx_n_s_event, __pyx_n_s_time, __pyx_n_s_y_pred, __pyx_n_s_s, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_n_samples, __pyx_n_s_gradient, __pyx_n_s_exp_tsj, __pyx_n_s_exp_pred); if (unlikely(!__pyx_tuple__23)) __PYX_ERR(0, 25, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__23);
   __Pyx_GIVEREF(__pyx_tuple__23);
-  __pyx_codeobj__24 = (PyObject*)__Pyx_PyCode_New(3, 0, 10, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__23, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_sebp_Projekte_survival_sup, __pyx_n_s_coxph_negative_gradient, 25, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__24)) __PYX_ERR(0, 25, __pyx_L1_error)
+  __pyx_codeobj__24 = (PyObject*)__Pyx_PyCode_New(3, 0, 10, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__23, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_sebp_Projekte_scikit_survi, __pyx_n_s_coxph_negative_gradient, 25, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__24)) __PYX_ERR(0, 25, __pyx_L1_error)
 
-  /* "survival/ensemble/_coxph_loss.pyx":56
+  /* "sksurv/ensemble/_coxph_loss.pyx":56
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * def coxph_loss(cnp.npy_uint8[:] event,             # <<<<<<<<<<<<<<
@@ -18083,7 +18083,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__25 = PyTuple_Pack(8, __pyx_n_s_event, __pyx_n_s_time, __pyx_n_s_y_pred, __pyx_n_s_n_samples, __pyx_n_s_at_risk, __pyx_n_s_loss, __pyx_n_s_i, __pyx_n_s_j); if (unlikely(!__pyx_tuple__25)) __PYX_ERR(0, 56, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__25);
   __Pyx_GIVEREF(__pyx_tuple__25);
-  __pyx_codeobj__26 = (PyObject*)__Pyx_PyCode_New(3, 0, 8, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__25, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_sebp_Projekte_survival_sup, __pyx_n_s_coxph_loss, 56, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__26)) __PYX_ERR(0, 56, __pyx_L1_error)
+  __pyx_codeobj__26 = (PyObject*)__Pyx_PyCode_New(3, 0, 8, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__25, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_sebp_Projekte_scikit_survi, __pyx_n_s_coxph_loss, 56, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__26)) __PYX_ERR(0, 56, __pyx_L1_error)
 
   /* "View.MemoryView":282
  *         return self.name
@@ -18223,14 +18223,14 @@ PyMODINIT_FUNC PyInit__coxph_loss(void)
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
-  if (__pyx_module_is_main_survival__ensemble___coxph_loss) {
+  if (__pyx_module_is_main_sksurv__ensemble___coxph_loss) {
     if (PyObject_SetAttrString(__pyx_m, "__name__", __pyx_n_s_main) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) __PYX_ERR(0, 1, __pyx_L1_error)
-    if (!PyDict_GetItemString(modules, "survival.ensemble._coxph_loss")) {
-      if (unlikely(PyDict_SetItemString(modules, "survival.ensemble._coxph_loss", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
+    if (!PyDict_GetItemString(modules, "sksurv.ensemble._coxph_loss")) {
+      if (unlikely(PyDict_SetItemString(modules, "sksurv.ensemble._coxph_loss", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
     }
   }
   #endif
@@ -18297,7 +18297,7 @@ PyMODINIT_FUNC PyInit__coxph_loss(void)
   if (__Pyx_patch_abc() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
 
-  /* "survival/ensemble/_coxph_loss.pyx":16
+  /* "sksurv/ensemble/_coxph_loss.pyx":16
  * from libc cimport math
  * 
  * import numpy as np             # <<<<<<<<<<<<<<
@@ -18309,7 +18309,7 @@ PyMODINIT_FUNC PyInit__coxph_loss(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_np, __pyx_t_1) < 0) __PYX_ERR(0, 16, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "survival/ensemble/_coxph_loss.pyx":19
+  /* "sksurv/ensemble/_coxph_loss.pyx":19
  * cimport numpy as cnp
  * 
  * cnp.import_array()             # <<<<<<<<<<<<<<
@@ -18318,31 +18318,31 @@ PyMODINIT_FUNC PyInit__coxph_loss(void)
  */
   __pyx_t_2 = __pyx_f_5numpy_import_array(); if (unlikely(__pyx_t_2 == -1)) __PYX_ERR(0, 19, __pyx_L1_error)
 
-  /* "survival/ensemble/_coxph_loss.pyx":25
+  /* "sksurv/ensemble/_coxph_loss.pyx":25
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * def coxph_negative_gradient(cnp.npy_uint8[:] event,             # <<<<<<<<<<<<<<
  *                             cnp.npy_double[:] time,
  *                             cnp.npy_double[:] y_pred):
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_8survival_8ensemble_11_coxph_loss_1coxph_negative_gradient, NULL, __pyx_n_s_survival_ensemble__coxph_loss); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 25, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6sksurv_8ensemble_11_coxph_loss_1coxph_negative_gradient, NULL, __pyx_n_s_sksurv_ensemble__coxph_loss); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 25, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_coxph_negative_gradient, __pyx_t_1) < 0) __PYX_ERR(0, 25, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "survival/ensemble/_coxph_loss.pyx":56
+  /* "sksurv/ensemble/_coxph_loss.pyx":56
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * def coxph_loss(cnp.npy_uint8[:] event,             # <<<<<<<<<<<<<<
  *                cnp.npy_double[:] time,
  *                cnp.npy_double[:] y_pred):
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_8survival_8ensemble_11_coxph_loss_3coxph_loss, NULL, __pyx_n_s_survival_ensemble__coxph_loss); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 56, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6sksurv_8ensemble_11_coxph_loss_3coxph_loss, NULL, __pyx_n_s_sksurv_ensemble__coxph_loss); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 56, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_coxph_loss, __pyx_t_1) < 0) __PYX_ERR(0, 56, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "survival/ensemble/_coxph_loss.pyx":1
+  /* "sksurv/ensemble/_coxph_loss.pyx":1
  * # This program is free software: you can redistribute it and/or modify             # <<<<<<<<<<<<<<
  * # it under the terms of the GNU General Public License as published by
  * # the Free Software Foundation, either version 3 of the License, or
@@ -18502,11 +18502,11 @@ PyMODINIT_FUNC PyInit__coxph_loss(void)
   __Pyx_XDECREF(__pyx_t_1);
   if (__pyx_m) {
     if (__pyx_d) {
-      __Pyx_AddTraceback("init survival.ensemble._coxph_loss", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init sksurv.ensemble._coxph_loss", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     Py_DECREF(__pyx_m); __pyx_m = 0;
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init survival.ensemble._coxph_loss");
+    PyErr_SetString(PyExc_ImportError, "init sksurv.ensemble._coxph_loss");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();

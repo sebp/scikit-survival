@@ -427,8 +427,8 @@ static CYTHON_INLINE float __PYX_NAN() {
   #endif
 #endif
 
-#define __PYX_HAVE__survival__kernels___clinical_kernel
-#define __PYX_HAVE_API__survival__kernels___clinical_kernel
+#define __PYX_HAVE__sksurv__kernels___clinical_kernel
+#define __PYX_HAVE_API__sksurv__kernels___clinical_kernel
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
@@ -654,7 +654,7 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "survival/kernels/_clinical_kernel.pyx",
+  "sksurv/kernels/_clinical_kernel.pyx",
   "__init__.pxd",
   "stringsource",
   "type.pxd",
@@ -1821,7 +1821,7 @@ static PyTypeObject *__pyx_ptype_5numpy_ufunc = 0;
 static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *, char *, char *, int *); /*proto*/
 static CYTHON_INLINE int __pyx_f_5numpy_import_array(void); /*proto*/
 
-/* Module declarations from 'survival.kernels._clinical_kernel' */
+/* Module declarations from 'sksurv.kernels._clinical_kernel' */
 static PyTypeObject *__pyx_array_type = 0;
 static PyTypeObject *__pyx_MemviewEnum_type = 0;
 static PyTypeObject *__pyx_memoryview_type = 0;
@@ -1833,7 +1833,7 @@ static PyObject *contiguous = 0;
 static PyObject *indirect_contiguous = 0;
 static int __pyx_memoryview_thread_locks_used;
 static PyThread_type_lock __pyx_memoryview_thread_locks[8];
-static void __pyx_f_8survival_7kernels_16_clinical_kernel__get_min_and_max(__Pyx_memviewslice, npy_double *, npy_double *); /*proto*/
+static void __pyx_f_6sksurv_7kernels_16_clinical_kernel__get_min_and_max(__Pyx_memviewslice, npy_double *, npy_double *); /*proto*/
 static CYTHON_INLINE PyObject *__Pyx_carray_to_py_Py__ssize__t(Py_ssize_t *, Py_ssize_t); /*proto*/
 static CYTHON_INLINE PyObject *__Pyx_carray_to_tuple_Py__ssize__t(Py_ssize_t *, Py_ssize_t); /*proto*/
 static struct __pyx_array_obj *__pyx_array_new(PyObject *, Py_ssize_t, char *, char *, char *); /*proto*/
@@ -1870,10 +1870,10 @@ static void __pyx_memoryview_slice_assign_scalar(__Pyx_memviewslice *, int, size
 static void __pyx_memoryview__slice_assign_scalar(char *, Py_ssize_t *, Py_ssize_t *, int, size_t, void *); /*proto*/
 static __Pyx_TypeInfo __Pyx_TypeInfo_nn_npy_double = { "npy_double", NULL, sizeof(npy_double), { 0 }, 0, 'R', 0, 0 };
 static __Pyx_TypeInfo __Pyx_TypeInfo_nn_npy_int8 = { "npy_int8", NULL, sizeof(npy_int8), { 0 }, 0, IS_UNSIGNED(npy_int8) ? 'U' : 'I', IS_UNSIGNED(npy_int8), 0 };
-#define __Pyx_MODULE_NAME "survival.kernels._clinical_kernel"
-int __pyx_module_is_main_survival__kernels___clinical_kernel = 0;
+#define __Pyx_MODULE_NAME "sksurv.kernels._clinical_kernel"
+int __pyx_module_is_main_sksurv__kernels___clinical_kernel = 0;
 
-/* Implementation of 'survival.kernels._clinical_kernel' */
+/* Implementation of 'sksurv.kernels._clinical_kernel' */
 static PyObject *__pyx_builtin_range;
 static PyObject *__pyx_builtin_ValueError;
 static PyObject *__pyx_builtin_RuntimeError;
@@ -1954,9 +1954,10 @@ static const char __pyx_k_itemsize_0_for_cython_array[] = "itemsize <= 0 for cyt
 static const char __pyx_k_ndarray_is_not_C_contiguous[] = "ndarray is not C contiguous";
 static const char __pyx_k_unable_to_allocate_array_data[] = "unable to allocate array data.";
 static const char __pyx_k_strided_and_direct_or_indirect[] = "<strided and direct or indirect>";
-static const char __pyx_k_home_sebp_Projekte_survival_sup[] = "/home/sebp/Projekte/survival-support-vector-machine/survival/kernels/_clinical_kernel.pyx";
+static const char __pyx_k_home_sebp_Projekte_scikit_survi[] = "/home/sebp/Projekte/scikit-survival/sksurv/kernels/_clinical_kernel.pyx";
 static const char __pyx_k_numpy_core_multiarray_failed_to[] = "numpy.core.multiarray failed to import";
 static const char __pyx_k_out_matrix_must_be_of_shape_d_d[] = "out matrix must be of shape (%d, %d)";
+static const char __pyx_k_sksurv_kernels__clinical_kernel[] = "sksurv.kernels._clinical_kernel";
 static const char __pyx_k_unknown_dtype_code_in_numpy_pxd[] = "unknown dtype code in numpy.pxd (%d)";
 static const char __pyx_k_Buffer_view_does_not_expose_stri[] = "Buffer view does not expose strides";
 static const char __pyx_k_Can_only_create_a_buffer_that_is[] = "Can only create a buffer that is contiguous in memory.";
@@ -1972,7 +1973,6 @@ static const char __pyx_k_got_differing_extents_in_dimensi[] = "got differing ex
 static const char __pyx_k_ndarray_is_not_Fortran_contiguou[] = "ndarray is not Fortran contiguous";
 static const char __pyx_k_numpy_core_umath_failed_to_impor[] = "numpy.core.umath failed to import";
 static const char __pyx_k_pairwise_continuous_ordinal_kern[] = "pairwise_continuous_ordinal_kernel";
-static const char __pyx_k_survival_kernels__clinical_kerne[] = "survival.kernels._clinical_kernel";
 static const char __pyx_k_unable_to_allocate_shape_and_str[] = "unable to allocate shape and strides.";
 static const char __pyx_k_Format_string_allocated_too_shor_2[] = "Format string allocated too short.";
 static PyObject *__pyx_n_s_ASCII;
@@ -2016,7 +2016,7 @@ static PyObject *__pyx_n_s_format;
 static PyObject *__pyx_n_s_fortran;
 static PyObject *__pyx_n_u_fortran;
 static PyObject *__pyx_kp_s_got_differing_extents_in_dimensi;
-static PyObject *__pyx_kp_s_home_sebp_Projekte_survival_sup;
+static PyObject *__pyx_kp_s_home_sebp_Projekte_scikit_survi;
 static PyObject *__pyx_n_s_i;
 static PyObject *__pyx_n_s_id;
 static PyObject *__pyx_n_s_import;
@@ -2053,6 +2053,7 @@ static PyObject *__pyx_n_s_range;
 static PyObject *__pyx_n_s_ranges;
 static PyObject *__pyx_n_s_shape;
 static PyObject *__pyx_n_s_size;
+static PyObject *__pyx_n_s_sksurv_kernels__clinical_kernel;
 static PyObject *__pyx_n_s_start;
 static PyObject *__pyx_n_s_step;
 static PyObject *__pyx_n_s_stop;
@@ -2060,7 +2061,6 @@ static PyObject *__pyx_kp_s_strided_and_direct;
 static PyObject *__pyx_kp_s_strided_and_direct_or_indirect;
 static PyObject *__pyx_kp_s_strided_and_indirect;
 static PyObject *__pyx_n_s_struct;
-static PyObject *__pyx_n_s_survival_kernels__clinical_kerne;
 static PyObject *__pyx_n_s_test;
 static PyObject *__pyx_kp_s_unable_to_allocate_array_data;
 static PyObject *__pyx_kp_s_unable_to_allocate_shape_and_str;
@@ -2068,10 +2068,10 @@ static PyObject *__pyx_kp_u_unknown_dtype_code_in_numpy_pxd;
 static PyObject *__pyx_n_s_unpack;
 static PyObject *__pyx_n_s_x;
 static PyObject *__pyx_n_s_y;
-static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_continuous_ordinal_kernel_with_ranges(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_x, __Pyx_memviewslice __pyx_v_y, __Pyx_memviewslice __pyx_v_ranges, __Pyx_memviewslice __pyx_v_out); /* proto */
-static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_2continuous_ordinal_kernel(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_x, __Pyx_memviewslice __pyx_v_y, __Pyx_memviewslice __pyx_v_out); /* proto */
-static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_4pairwise_continuous_ordinal_kernel(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_x, __Pyx_memviewslice __pyx_v_y, __Pyx_memviewslice __pyx_v_ranges); /* proto */
-static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_6pairwise_nominal_kernel(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_x, __Pyx_memviewslice __pyx_v_y); /* proto */
+static PyObject *__pyx_pf_6sksurv_7kernels_16_clinical_kernel_continuous_ordinal_kernel_with_ranges(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_x, __Pyx_memviewslice __pyx_v_y, __Pyx_memviewslice __pyx_v_ranges, __Pyx_memviewslice __pyx_v_out); /* proto */
+static PyObject *__pyx_pf_6sksurv_7kernels_16_clinical_kernel_2continuous_ordinal_kernel(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_x, __Pyx_memviewslice __pyx_v_y, __Pyx_memviewslice __pyx_v_out); /* proto */
+static PyObject *__pyx_pf_6sksurv_7kernels_16_clinical_kernel_4pairwise_continuous_ordinal_kernel(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_x, __Pyx_memviewslice __pyx_v_y, __Pyx_memviewslice __pyx_v_ranges); /* proto */
+static PyObject *__pyx_pf_6sksurv_7kernels_16_clinical_kernel_6pairwise_nominal_kernel(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_x, __Pyx_memviewslice __pyx_v_y); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static int __pyx_array___pyx_pf_15View_dot_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx_v_self, PyObject *__pyx_v_shape, Py_ssize_t __pyx_v_itemsize, PyObject *__pyx_v_format, PyObject *__pyx_v_mode, int __pyx_v_allocate_buffer); /* proto */
@@ -2149,7 +2149,7 @@ static PyObject *__pyx_codeobj__26;
 static PyObject *__pyx_codeobj__28;
 static PyObject *__pyx_codeobj__30;
 
-/* "survival/kernels/_clinical_kernel.pyx":24
+/* "sksurv/kernels/_clinical_kernel.pyx":24
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * cdef void _get_min_and_max(cnp.npy_double[:] x, cnp.npy_double * min_out, cnp.npy_double * max_out) nogil:             # <<<<<<<<<<<<<<
@@ -2157,7 +2157,7 @@ static PyObject *__pyx_codeobj__30;
  *     cdef cnp.npy_double amax = x[0]
  */
 
-static void __pyx_f_8survival_7kernels_16_clinical_kernel__get_min_and_max(__Pyx_memviewslice __pyx_v_x, npy_double *__pyx_v_min_out, npy_double *__pyx_v_max_out) {
+static void __pyx_f_6sksurv_7kernels_16_clinical_kernel__get_min_and_max(__Pyx_memviewslice __pyx_v_x, npy_double *__pyx_v_min_out, npy_double *__pyx_v_max_out) {
   npy_double __pyx_v_amin;
   npy_double __pyx_v_amax;
   int __pyx_v_i;
@@ -2171,7 +2171,7 @@ static void __pyx_f_8survival_7kernels_16_clinical_kernel__get_min_and_max(__Pyx
   Py_ssize_t __pyx_t_8;
   Py_ssize_t __pyx_t_9;
 
-  /* "survival/kernels/_clinical_kernel.pyx":25
+  /* "sksurv/kernels/_clinical_kernel.pyx":25
  * @cython.boundscheck(False)
  * cdef void _get_min_and_max(cnp.npy_double[:] x, cnp.npy_double * min_out, cnp.npy_double * max_out) nogil:
  *     cdef cnp.npy_double amin = x[0]             # <<<<<<<<<<<<<<
@@ -2181,7 +2181,7 @@ static void __pyx_f_8survival_7kernels_16_clinical_kernel__get_min_and_max(__Pyx
   __pyx_t_1 = 0;
   __pyx_v_amin = (*((npy_double *) ( /* dim=0 */ (__pyx_v_x.data + __pyx_t_1 * __pyx_v_x.strides[0]) )));
 
-  /* "survival/kernels/_clinical_kernel.pyx":26
+  /* "sksurv/kernels/_clinical_kernel.pyx":26
  * cdef void _get_min_and_max(cnp.npy_double[:] x, cnp.npy_double * min_out, cnp.npy_double * max_out) nogil:
  *     cdef cnp.npy_double amin = x[0]
  *     cdef cnp.npy_double amax = x[0]             # <<<<<<<<<<<<<<
@@ -2191,7 +2191,7 @@ static void __pyx_f_8survival_7kernels_16_clinical_kernel__get_min_and_max(__Pyx
   __pyx_t_2 = 0;
   __pyx_v_amax = (*((npy_double *) ( /* dim=0 */ (__pyx_v_x.data + __pyx_t_2 * __pyx_v_x.strides[0]) )));
 
-  /* "survival/kernels/_clinical_kernel.pyx":29
+  /* "sksurv/kernels/_clinical_kernel.pyx":29
  *     cdef int i
  * 
  *     for i in range(x.shape[0]):             # <<<<<<<<<<<<<<
@@ -2202,7 +2202,7 @@ static void __pyx_f_8survival_7kernels_16_clinical_kernel__get_min_and_max(__Pyx
   for (__pyx_t_4 = 0; __pyx_t_4 < __pyx_t_3; __pyx_t_4+=1) {
     __pyx_v_i = __pyx_t_4;
 
-    /* "survival/kernels/_clinical_kernel.pyx":30
+    /* "sksurv/kernels/_clinical_kernel.pyx":30
  * 
  *     for i in range(x.shape[0]):
  *         if x[i] < amin:             # <<<<<<<<<<<<<<
@@ -2213,7 +2213,7 @@ static void __pyx_f_8survival_7kernels_16_clinical_kernel__get_min_and_max(__Pyx
     __pyx_t_6 = (((*((npy_double *) ( /* dim=0 */ (__pyx_v_x.data + __pyx_t_5 * __pyx_v_x.strides[0]) ))) < __pyx_v_amin) != 0);
     if (__pyx_t_6) {
 
-      /* "survival/kernels/_clinical_kernel.pyx":31
+      /* "sksurv/kernels/_clinical_kernel.pyx":31
  *     for i in range(x.shape[0]):
  *         if x[i] < amin:
  *             amin = x[i]             # <<<<<<<<<<<<<<
@@ -2223,7 +2223,7 @@ static void __pyx_f_8survival_7kernels_16_clinical_kernel__get_min_and_max(__Pyx
       __pyx_t_7 = __pyx_v_i;
       __pyx_v_amin = (*((npy_double *) ( /* dim=0 */ (__pyx_v_x.data + __pyx_t_7 * __pyx_v_x.strides[0]) )));
 
-      /* "survival/kernels/_clinical_kernel.pyx":30
+      /* "sksurv/kernels/_clinical_kernel.pyx":30
  * 
  *     for i in range(x.shape[0]):
  *         if x[i] < amin:             # <<<<<<<<<<<<<<
@@ -2232,7 +2232,7 @@ static void __pyx_f_8survival_7kernels_16_clinical_kernel__get_min_and_max(__Pyx
  */
     }
 
-    /* "survival/kernels/_clinical_kernel.pyx":32
+    /* "sksurv/kernels/_clinical_kernel.pyx":32
  *         if x[i] < amin:
  *             amin = x[i]
  *         if x[i] > amax:             # <<<<<<<<<<<<<<
@@ -2243,7 +2243,7 @@ static void __pyx_f_8survival_7kernels_16_clinical_kernel__get_min_and_max(__Pyx
     __pyx_t_6 = (((*((npy_double *) ( /* dim=0 */ (__pyx_v_x.data + __pyx_t_8 * __pyx_v_x.strides[0]) ))) > __pyx_v_amax) != 0);
     if (__pyx_t_6) {
 
-      /* "survival/kernels/_clinical_kernel.pyx":33
+      /* "sksurv/kernels/_clinical_kernel.pyx":33
  *             amin = x[i]
  *         if x[i] > amax:
  *             amax = x[i]             # <<<<<<<<<<<<<<
@@ -2253,7 +2253,7 @@ static void __pyx_f_8survival_7kernels_16_clinical_kernel__get_min_and_max(__Pyx
       __pyx_t_9 = __pyx_v_i;
       __pyx_v_amax = (*((npy_double *) ( /* dim=0 */ (__pyx_v_x.data + __pyx_t_9 * __pyx_v_x.strides[0]) )));
 
-      /* "survival/kernels/_clinical_kernel.pyx":32
+      /* "sksurv/kernels/_clinical_kernel.pyx":32
  *         if x[i] < amin:
  *             amin = x[i]
  *         if x[i] > amax:             # <<<<<<<<<<<<<<
@@ -2263,7 +2263,7 @@ static void __pyx_f_8survival_7kernels_16_clinical_kernel__get_min_and_max(__Pyx
     }
   }
 
-  /* "survival/kernels/_clinical_kernel.pyx":35
+  /* "sksurv/kernels/_clinical_kernel.pyx":35
  *             amax = x[i]
  * 
  *     min_out[0] = amin             # <<<<<<<<<<<<<<
@@ -2272,7 +2272,7 @@ static void __pyx_f_8survival_7kernels_16_clinical_kernel__get_min_and_max(__Pyx
  */
   (__pyx_v_min_out[0]) = __pyx_v_amin;
 
-  /* "survival/kernels/_clinical_kernel.pyx":36
+  /* "sksurv/kernels/_clinical_kernel.pyx":36
  * 
  *     min_out[0] = amin
  *     max_out[0] = amax             # <<<<<<<<<<<<<<
@@ -2281,7 +2281,7 @@ static void __pyx_f_8survival_7kernels_16_clinical_kernel__get_min_and_max(__Pyx
  */
   (__pyx_v_max_out[0]) = __pyx_v_amax;
 
-  /* "survival/kernels/_clinical_kernel.pyx":24
+  /* "sksurv/kernels/_clinical_kernel.pyx":24
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * cdef void _get_min_and_max(cnp.npy_double[:] x, cnp.npy_double * min_out, cnp.npy_double * max_out) nogil:             # <<<<<<<<<<<<<<
@@ -2292,7 +2292,7 @@ static void __pyx_f_8survival_7kernels_16_clinical_kernel__get_min_and_max(__Pyx
   /* function exit code */
 }
 
-/* "survival/kernels/_clinical_kernel.pyx":42
+/* "sksurv/kernels/_clinical_kernel.pyx":42
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * def continuous_ordinal_kernel_with_ranges(cnp.npy_double[:, :] x,             # <<<<<<<<<<<<<<
@@ -2301,9 +2301,9 @@ static void __pyx_f_8survival_7kernels_16_clinical_kernel__get_min_and_max(__Pyx
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8survival_7kernels_16_clinical_kernel_1continuous_ordinal_kernel_with_ranges(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_8survival_7kernels_16_clinical_kernel_1continuous_ordinal_kernel_with_ranges = {"continuous_ordinal_kernel_with_ranges", (PyCFunction)__pyx_pw_8survival_7kernels_16_clinical_kernel_1continuous_ordinal_kernel_with_ranges, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_8survival_7kernels_16_clinical_kernel_1continuous_ordinal_kernel_with_ranges(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_6sksurv_7kernels_16_clinical_kernel_1continuous_ordinal_kernel_with_ranges(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_6sksurv_7kernels_16_clinical_kernel_1continuous_ordinal_kernel_with_ranges = {"continuous_ordinal_kernel_with_ranges", (PyCFunction)__pyx_pw_6sksurv_7kernels_16_clinical_kernel_1continuous_ordinal_kernel_with_ranges, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_6sksurv_7kernels_16_clinical_kernel_1continuous_ordinal_kernel_with_ranges(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   __Pyx_memviewslice __pyx_v_x = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_y = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_ranges = { 0, 0, { 0 }, { 0 }, { 0 } };
@@ -2366,18 +2366,18 @@ static PyObject *__pyx_pw_8survival_7kernels_16_clinical_kernel_1continuous_ordi
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("continuous_ordinal_kernel_with_ranges", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 42, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("survival.kernels._clinical_kernel.continuous_ordinal_kernel_with_ranges", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.kernels._clinical_kernel.continuous_ordinal_kernel_with_ranges", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8survival_7kernels_16_clinical_kernel_continuous_ordinal_kernel_with_ranges(__pyx_self, __pyx_v_x, __pyx_v_y, __pyx_v_ranges, __pyx_v_out);
+  __pyx_r = __pyx_pf_6sksurv_7kernels_16_clinical_kernel_continuous_ordinal_kernel_with_ranges(__pyx_self, __pyx_v_x, __pyx_v_y, __pyx_v_ranges, __pyx_v_out);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_continuous_ordinal_kernel_with_ranges(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_x, __Pyx_memviewslice __pyx_v_y, __Pyx_memviewslice __pyx_v_ranges, __Pyx_memviewslice __pyx_v_out) {
+static PyObject *__pyx_pf_6sksurv_7kernels_16_clinical_kernel_continuous_ordinal_kernel_with_ranges(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_x, __Pyx_memviewslice __pyx_v_y, __Pyx_memviewslice __pyx_v_ranges, __Pyx_memviewslice __pyx_v_out) {
   npy_intp __pyx_v_n_samples_x;
   npy_intp __pyx_v_n_samples_y;
   npy_intp __pyx_v_n_features;
@@ -2406,7 +2406,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_continuous_ordin
   Py_ssize_t __pyx_t_18;
   __Pyx_RefNannySetupContext("continuous_ordinal_kernel_with_ranges", 0);
 
-  /* "survival/kernels/_clinical_kernel.pyx":46
+  /* "sksurv/kernels/_clinical_kernel.pyx":46
  *                                           cnp.npy_double[:] ranges,
  *                                           cnp.npy_double[:, :] out):
  *     cdef cnp.npy_intp n_samples_x = x.shape[0]             # <<<<<<<<<<<<<<
@@ -2415,7 +2415,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_continuous_ordin
  */
   __pyx_v_n_samples_x = (__pyx_v_x.shape[0]);
 
-  /* "survival/kernels/_clinical_kernel.pyx":47
+  /* "sksurv/kernels/_clinical_kernel.pyx":47
  *                                           cnp.npy_double[:, :] out):
  *     cdef cnp.npy_intp n_samples_x = x.shape[0]
  *     cdef cnp.npy_intp n_samples_y = y.shape[0]             # <<<<<<<<<<<<<<
@@ -2424,7 +2424,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_continuous_ordin
  */
   __pyx_v_n_samples_y = (__pyx_v_y.shape[0]);
 
-  /* "survival/kernels/_clinical_kernel.pyx":48
+  /* "sksurv/kernels/_clinical_kernel.pyx":48
  *     cdef cnp.npy_intp n_samples_x = x.shape[0]
  *     cdef cnp.npy_intp n_samples_y = y.shape[0]
  *     cdef cnp.npy_intp n_features = x.shape[1]             # <<<<<<<<<<<<<<
@@ -2433,7 +2433,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_continuous_ordin
  */
   __pyx_v_n_features = (__pyx_v_x.shape[1]);
 
-  /* "survival/kernels/_clinical_kernel.pyx":51
+  /* "sksurv/kernels/_clinical_kernel.pyx":51
  *     cdef int i, j, k
  * 
  *     if out.shape[0] != n_samples_x or out.shape[1] != n_samples_y:             # <<<<<<<<<<<<<<
@@ -2451,7 +2451,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_continuous_ordin
   __pyx_L4_bool_binop_done:;
   if (__pyx_t_1) {
 
-    /* "survival/kernels/_clinical_kernel.pyx":52
+    /* "sksurv/kernels/_clinical_kernel.pyx":52
  * 
  *     if out.shape[0] != n_samples_x or out.shape[1] != n_samples_y:
  *         raise ValueError("out matrix must be of shape (%d, %d)" % out.shape)             # <<<<<<<<<<<<<<
@@ -2475,7 +2475,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_continuous_ordin
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __PYX_ERR(0, 52, __pyx_L1_error)
 
-    /* "survival/kernels/_clinical_kernel.pyx":51
+    /* "sksurv/kernels/_clinical_kernel.pyx":51
  *     cdef int i, j, k
  * 
  *     if out.shape[0] != n_samples_x or out.shape[1] != n_samples_y:             # <<<<<<<<<<<<<<
@@ -2484,7 +2484,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_continuous_ordin
  */
   }
 
-  /* "survival/kernels/_clinical_kernel.pyx":54
+  /* "sksurv/kernels/_clinical_kernel.pyx":54
  *         raise ValueError("out matrix must be of shape (%d, %d)" % out.shape)
  * 
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -2498,7 +2498,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_continuous_ordin
       #endif
       /*try:*/ {
 
-        /* "survival/kernels/_clinical_kernel.pyx":55
+        /* "sksurv/kernels/_clinical_kernel.pyx":55
  * 
  *     with nogil:
  *         for i in range(n_samples_x):             # <<<<<<<<<<<<<<
@@ -2509,7 +2509,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_continuous_ordin
         for (__pyx_t_6 = 0; __pyx_t_6 < __pyx_t_5; __pyx_t_6+=1) {
           __pyx_v_i = __pyx_t_6;
 
-          /* "survival/kernels/_clinical_kernel.pyx":56
+          /* "sksurv/kernels/_clinical_kernel.pyx":56
  *     with nogil:
  *         for i in range(n_samples_x):
  *             for j in range(n_samples_y):             # <<<<<<<<<<<<<<
@@ -2520,7 +2520,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_continuous_ordin
           for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_7; __pyx_t_8+=1) {
             __pyx_v_j = __pyx_t_8;
 
-            /* "survival/kernels/_clinical_kernel.pyx":57
+            /* "sksurv/kernels/_clinical_kernel.pyx":57
  *         for i in range(n_samples_x):
  *             for j in range(n_samples_y):
  *                 for k in range(n_features):             # <<<<<<<<<<<<<<
@@ -2531,7 +2531,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_continuous_ordin
             for (__pyx_t_10 = 0; __pyx_t_10 < __pyx_t_9; __pyx_t_10+=1) {
               __pyx_v_k = __pyx_t_10;
 
-              /* "survival/kernels/_clinical_kernel.pyx":58
+              /* "sksurv/kernels/_clinical_kernel.pyx":58
  *             for j in range(n_samples_y):
  *                 for k in range(n_features):
  *                     out[i, j] += (ranges[k] - math.fabs(x[i, k] - y[j, k])) / ranges[k]             # <<<<<<<<<<<<<<
@@ -2552,7 +2552,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_continuous_ordin
         }
       }
 
-      /* "survival/kernels/_clinical_kernel.pyx":54
+      /* "sksurv/kernels/_clinical_kernel.pyx":54
  *         raise ValueError("out matrix must be of shape (%d, %d)" % out.shape)
  * 
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -2570,7 +2570,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_continuous_ordin
       }
   }
 
-  /* "survival/kernels/_clinical_kernel.pyx":60
+  /* "sksurv/kernels/_clinical_kernel.pyx":60
  *                     out[i, j] += (ranges[k] - math.fabs(x[i, k] - y[j, k])) / ranges[k]
  * 
  *     return out             # <<<<<<<<<<<<<<
@@ -2584,7 +2584,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_continuous_ordin
   __pyx_t_4 = 0;
   goto __pyx_L0;
 
-  /* "survival/kernels/_clinical_kernel.pyx":42
+  /* "sksurv/kernels/_clinical_kernel.pyx":42
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * def continuous_ordinal_kernel_with_ranges(cnp.npy_double[:, :] x,             # <<<<<<<<<<<<<<
@@ -2596,7 +2596,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_continuous_ordin
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_AddTraceback("survival.kernels._clinical_kernel.continuous_ordinal_kernel_with_ranges", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.kernels._clinical_kernel.continuous_ordinal_kernel_with_ranges", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __PYX_XDEC_MEMVIEW(&__pyx_v_x, 1);
@@ -2608,7 +2608,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_continuous_ordin
   return __pyx_r;
 }
 
-/* "survival/kernels/_clinical_kernel.pyx":66
+/* "sksurv/kernels/_clinical_kernel.pyx":66
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * def continuous_ordinal_kernel(cnp.npy_double[:, :] x,             # <<<<<<<<<<<<<<
@@ -2617,9 +2617,9 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_continuous_ordin
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8survival_7kernels_16_clinical_kernel_3continuous_ordinal_kernel(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_8survival_7kernels_16_clinical_kernel_3continuous_ordinal_kernel = {"continuous_ordinal_kernel", (PyCFunction)__pyx_pw_8survival_7kernels_16_clinical_kernel_3continuous_ordinal_kernel, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_8survival_7kernels_16_clinical_kernel_3continuous_ordinal_kernel(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_6sksurv_7kernels_16_clinical_kernel_3continuous_ordinal_kernel(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_6sksurv_7kernels_16_clinical_kernel_3continuous_ordinal_kernel = {"continuous_ordinal_kernel", (PyCFunction)__pyx_pw_6sksurv_7kernels_16_clinical_kernel_3continuous_ordinal_kernel, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_6sksurv_7kernels_16_clinical_kernel_3continuous_ordinal_kernel(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   __Pyx_memviewslice __pyx_v_x = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_y = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_out = { 0, 0, { 0 }, { 0 }, { 0 } };
@@ -2673,18 +2673,18 @@ static PyObject *__pyx_pw_8survival_7kernels_16_clinical_kernel_3continuous_ordi
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("continuous_ordinal_kernel", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 66, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("survival.kernels._clinical_kernel.continuous_ordinal_kernel", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.kernels._clinical_kernel.continuous_ordinal_kernel", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8survival_7kernels_16_clinical_kernel_2continuous_ordinal_kernel(__pyx_self, __pyx_v_x, __pyx_v_y, __pyx_v_out);
+  __pyx_r = __pyx_pf_6sksurv_7kernels_16_clinical_kernel_2continuous_ordinal_kernel(__pyx_self, __pyx_v_x, __pyx_v_y, __pyx_v_out);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_2continuous_ordinal_kernel(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_x, __Pyx_memviewslice __pyx_v_y, __Pyx_memviewslice __pyx_v_out) {
+static PyObject *__pyx_pf_6sksurv_7kernels_16_clinical_kernel_2continuous_ordinal_kernel(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_x, __Pyx_memviewslice __pyx_v_y, __Pyx_memviewslice __pyx_v_out) {
   npy_intp __pyx_v_n_samples_x;
   npy_intp __pyx_v_n_features;
   npy_double __pyx_v_min_x;
@@ -2699,18 +2699,22 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_2continuous_ordi
   __Pyx_memviewslice __pyx_t_2 = { 0, 0, { 0 }, { 0 }, { 0 } };
   npy_intp __pyx_t_3;
   npy_intp __pyx_t_4;
-  Py_ssize_t __pyx_t_5;
-  PyObject *__pyx_t_6 = NULL;
-  PyObject *__pyx_t_7 = NULL;
-  PyObject *__pyx_t_8 = NULL;
-  PyObject *__pyx_t_9 = NULL;
+  npy_double __pyx_t_5;
+  npy_double __pyx_t_6;
+  npy_double __pyx_t_7;
+  npy_double __pyx_t_8;
+  Py_ssize_t __pyx_t_9;
   PyObject *__pyx_t_10 = NULL;
   PyObject *__pyx_t_11 = NULL;
-  int __pyx_t_12;
+  PyObject *__pyx_t_12 = NULL;
   PyObject *__pyx_t_13 = NULL;
+  PyObject *__pyx_t_14 = NULL;
+  PyObject *__pyx_t_15 = NULL;
+  int __pyx_t_16;
+  PyObject *__pyx_t_17 = NULL;
   __Pyx_RefNannySetupContext("continuous_ordinal_kernel", 0);
 
-  /* "survival/kernels/_clinical_kernel.pyx":69
+  /* "sksurv/kernels/_clinical_kernel.pyx":69
  *                               cnp.npy_double[:, :] y,
  *                               cnp.npy_double[:, :] out):
  *     cdef cnp.npy_intp n_samples_x = x.shape[0]             # <<<<<<<<<<<<<<
@@ -2719,7 +2723,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_2continuous_ordi
  */
   __pyx_v_n_samples_x = (__pyx_v_x.shape[0]);
 
-  /* "survival/kernels/_clinical_kernel.pyx":70
+  /* "sksurv/kernels/_clinical_kernel.pyx":70
  *                               cnp.npy_double[:, :] out):
  *     cdef cnp.npy_intp n_samples_x = x.shape[0]
  *     cdef cnp.npy_intp n_features = x.shape[1]             # <<<<<<<<<<<<<<
@@ -2728,7 +2732,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_2continuous_ordi
  */
   __pyx_v_n_features = (__pyx_v_x.shape[1]);
 
-  /* "survival/kernels/_clinical_kernel.pyx":73
+  /* "sksurv/kernels/_clinical_kernel.pyx":73
  *     cdef cnp.npy_double min_x, max_x, min_y, max_y
  * 
  *     cdef cnp.npy_double[:] ranges = cnp.PyArray_EMPTY(1, &n_samples_x, cnp.NPY_DOUBLE, 0)             # <<<<<<<<<<<<<<
@@ -2744,7 +2748,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_2continuous_ordi
   __pyx_t_2.memview = NULL;
   __pyx_t_2.data = NULL;
 
-  /* "survival/kernels/_clinical_kernel.pyx":74
+  /* "sksurv/kernels/_clinical_kernel.pyx":74
  * 
  *     cdef cnp.npy_double[:] ranges = cnp.PyArray_EMPTY(1, &n_samples_x, cnp.NPY_DOUBLE, 0)
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -2758,7 +2762,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_2continuous_ordi
       #endif
       /*try:*/ {
 
-        /* "survival/kernels/_clinical_kernel.pyx":75
+        /* "sksurv/kernels/_clinical_kernel.pyx":75
  *     cdef cnp.npy_double[:] ranges = cnp.PyArray_EMPTY(1, &n_samples_x, cnp.NPY_DOUBLE, 0)
  *     with nogil:
  *         for i in range(n_features):             # <<<<<<<<<<<<<<
@@ -2769,12 +2773,12 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_2continuous_ordi
         for (__pyx_t_4 = 0; __pyx_t_4 < __pyx_t_3; __pyx_t_4+=1) {
           __pyx_v_i = __pyx_t_4;
 
-          /* "survival/kernels/_clinical_kernel.pyx":76
+          /* "sksurv/kernels/_clinical_kernel.pyx":76
  *     with nogil:
  *         for i in range(n_features):
  *             _get_min_and_max(x[:, i], &min_x, &max_x)             # <<<<<<<<<<<<<<
  *             _get_min_and_max(y[:, i], &min_y, &max_y)
- *             ranges[i] = math.fmax(max_x, max_y) - math.fmin(min_x, min_y)
+ *             ranges[i] = max(max_x, max_y) - min(min_x, min_y)
  */
           __pyx_t_2.data = __pyx_v_x.data;
           __pyx_t_2.memview = __pyx_v_x.memview;
@@ -2802,16 +2806,16 @@ __pyx_t_2.strides[0] = __pyx_v_x.strides[0];
         __pyx_t_2.data += __pyx_tmp_idx * __pyx_tmp_stride;
 }
 
-__pyx_f_8survival_7kernels_16_clinical_kernel__get_min_and_max(__pyx_t_2, (&__pyx_v_min_x), (&__pyx_v_max_x));
+__pyx_f_6sksurv_7kernels_16_clinical_kernel__get_min_and_max(__pyx_t_2, (&__pyx_v_min_x), (&__pyx_v_max_x));
           __PYX_XDEC_MEMVIEW(&__pyx_t_2, 0);
           __pyx_t_2.memview = NULL;
           __pyx_t_2.data = NULL;
 
-          /* "survival/kernels/_clinical_kernel.pyx":77
+          /* "sksurv/kernels/_clinical_kernel.pyx":77
  *         for i in range(n_features):
  *             _get_min_and_max(x[:, i], &min_x, &max_x)
  *             _get_min_and_max(y[:, i], &min_y, &max_y)             # <<<<<<<<<<<<<<
- *             ranges[i] = math.fmax(max_x, max_y) - math.fmin(min_x, min_y)
+ *             ranges[i] = max(max_x, max_y) - min(min_x, min_y)
  * 
  */
           __pyx_t_2.data = __pyx_v_y.data;
@@ -2840,24 +2844,38 @@ __pyx_t_2.strides[0] = __pyx_v_y.strides[0];
         __pyx_t_2.data += __pyx_tmp_idx * __pyx_tmp_stride;
 }
 
-__pyx_f_8survival_7kernels_16_clinical_kernel__get_min_and_max(__pyx_t_2, (&__pyx_v_min_y), (&__pyx_v_max_y));
+__pyx_f_6sksurv_7kernels_16_clinical_kernel__get_min_and_max(__pyx_t_2, (&__pyx_v_min_y), (&__pyx_v_max_y));
           __PYX_XDEC_MEMVIEW(&__pyx_t_2, 0);
           __pyx_t_2.memview = NULL;
           __pyx_t_2.data = NULL;
 
-          /* "survival/kernels/_clinical_kernel.pyx":78
+          /* "sksurv/kernels/_clinical_kernel.pyx":78
  *             _get_min_and_max(x[:, i], &min_x, &max_x)
  *             _get_min_and_max(y[:, i], &min_y, &max_y)
- *             ranges[i] = math.fmax(max_x, max_y) - math.fmin(min_x, min_y)             # <<<<<<<<<<<<<<
+ *             ranges[i] = max(max_x, max_y) - min(min_x, min_y)             # <<<<<<<<<<<<<<
  * 
  *     return continuous_ordinal_kernel_with_ranges(x, y, ranges, out)
  */
-          __pyx_t_5 = __pyx_v_i;
-          *((npy_double *) ( /* dim=0 */ (__pyx_v_ranges.data + __pyx_t_5 * __pyx_v_ranges.strides[0]) )) = (fmax(__pyx_v_max_x, __pyx_v_max_y) - fmin(__pyx_v_min_x, __pyx_v_min_y));
+          __pyx_t_5 = __pyx_v_max_y;
+          __pyx_t_6 = __pyx_v_max_x;
+          if (((__pyx_t_5 > __pyx_t_6) != 0)) {
+            __pyx_t_7 = __pyx_t_5;
+          } else {
+            __pyx_t_7 = __pyx_t_6;
+          }
+          __pyx_t_5 = __pyx_v_min_y;
+          __pyx_t_6 = __pyx_v_min_x;
+          if (((__pyx_t_5 < __pyx_t_6) != 0)) {
+            __pyx_t_8 = __pyx_t_5;
+          } else {
+            __pyx_t_8 = __pyx_t_6;
+          }
+          __pyx_t_9 = __pyx_v_i;
+          *((npy_double *) ( /* dim=0 */ (__pyx_v_ranges.data + __pyx_t_9 * __pyx_v_ranges.strides[0]) )) = (__pyx_t_7 - __pyx_t_8);
         }
       }
 
-      /* "survival/kernels/_clinical_kernel.pyx":74
+      /* "sksurv/kernels/_clinical_kernel.pyx":74
  * 
  *     cdef cnp.npy_double[:] ranges = cnp.PyArray_EMPTY(1, &n_samples_x, cnp.NPY_DOUBLE, 0)
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -2881,88 +2899,88 @@ __pyx_f_8survival_7kernels_16_clinical_kernel__get_min_and_max(__pyx_t_2, (&__py
       }
   }
 
-  /* "survival/kernels/_clinical_kernel.pyx":80
- *             ranges[i] = math.fmax(max_x, max_y) - math.fmin(min_x, min_y)
+  /* "sksurv/kernels/_clinical_kernel.pyx":80
+ *             ranges[i] = max(max_x, max_y) - min(min_x, min_y)
  * 
  *     return continuous_ordinal_kernel_with_ranges(x, y, ranges, out)             # <<<<<<<<<<<<<<
  * 
  * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_6 = __Pyx_GetModuleGlobalName(__pyx_n_s_continuous_ordinal_kernel_with_r); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 80, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_7 = __pyx_memoryview_fromslice(__pyx_v_x, 2, (PyObject *(*)(char *)) __pyx_memview_get_nn_npy_double, (int (*)(char *, PyObject *)) __pyx_memview_set_nn_npy_double, 0);; if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 80, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_7);
-  __pyx_t_8 = __pyx_memoryview_fromslice(__pyx_v_y, 2, (PyObject *(*)(char *)) __pyx_memview_get_nn_npy_double, (int (*)(char *, PyObject *)) __pyx_memview_set_nn_npy_double, 0);; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 80, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_8);
-  __pyx_t_9 = __pyx_memoryview_fromslice(__pyx_v_ranges, 1, (PyObject *(*)(char *)) __pyx_memview_get_nn_npy_double, (int (*)(char *, PyObject *)) __pyx_memview_set_nn_npy_double, 0);; if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 80, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_9);
-  __pyx_t_10 = __pyx_memoryview_fromslice(__pyx_v_out, 2, (PyObject *(*)(char *)) __pyx_memview_get_nn_npy_double, (int (*)(char *, PyObject *)) __pyx_memview_set_nn_npy_double, 0);; if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 80, __pyx_L1_error)
+  __pyx_t_10 = __Pyx_GetModuleGlobalName(__pyx_n_s_continuous_ordinal_kernel_with_r); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 80, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_10);
-  __pyx_t_11 = NULL;
-  __pyx_t_12 = 0;
-  if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_6))) {
-    __pyx_t_11 = PyMethod_GET_SELF(__pyx_t_6);
-    if (likely(__pyx_t_11)) {
-      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_6);
-      __Pyx_INCREF(__pyx_t_11);
+  __pyx_t_11 = __pyx_memoryview_fromslice(__pyx_v_x, 2, (PyObject *(*)(char *)) __pyx_memview_get_nn_npy_double, (int (*)(char *, PyObject *)) __pyx_memview_set_nn_npy_double, 0);; if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 80, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_11);
+  __pyx_t_12 = __pyx_memoryview_fromslice(__pyx_v_y, 2, (PyObject *(*)(char *)) __pyx_memview_get_nn_npy_double, (int (*)(char *, PyObject *)) __pyx_memview_set_nn_npy_double, 0);; if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 80, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_12);
+  __pyx_t_13 = __pyx_memoryview_fromslice(__pyx_v_ranges, 1, (PyObject *(*)(char *)) __pyx_memview_get_nn_npy_double, (int (*)(char *, PyObject *)) __pyx_memview_set_nn_npy_double, 0);; if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 80, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_13);
+  __pyx_t_14 = __pyx_memoryview_fromslice(__pyx_v_out, 2, (PyObject *(*)(char *)) __pyx_memview_get_nn_npy_double, (int (*)(char *, PyObject *)) __pyx_memview_set_nn_npy_double, 0);; if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 80, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_14);
+  __pyx_t_15 = NULL;
+  __pyx_t_16 = 0;
+  if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_10))) {
+    __pyx_t_15 = PyMethod_GET_SELF(__pyx_t_10);
+    if (likely(__pyx_t_15)) {
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_10);
+      __Pyx_INCREF(__pyx_t_15);
       __Pyx_INCREF(function);
-      __Pyx_DECREF_SET(__pyx_t_6, function);
-      __pyx_t_12 = 1;
+      __Pyx_DECREF_SET(__pyx_t_10, function);
+      __pyx_t_16 = 1;
     }
   }
   #if CYTHON_FAST_PYCALL
-  if (PyFunction_Check(__pyx_t_6)) {
-    PyObject *__pyx_temp[5] = {__pyx_t_11, __pyx_t_7, __pyx_t_8, __pyx_t_9, __pyx_t_10};
-    __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_6, __pyx_temp+1-__pyx_t_12, 4+__pyx_t_12); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 80, __pyx_L1_error)
-    __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
+  if (PyFunction_Check(__pyx_t_10)) {
+    PyObject *__pyx_temp[5] = {__pyx_t_15, __pyx_t_11, __pyx_t_12, __pyx_t_13, __pyx_t_14};
+    __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_10, __pyx_temp+1-__pyx_t_16, 4+__pyx_t_16); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 80, __pyx_L1_error)
+    __Pyx_XDECREF(__pyx_t_15); __pyx_t_15 = 0;
     __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
+    __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+    __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
+    __Pyx_DECREF(__pyx_t_13); __pyx_t_13 = 0;
+    __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
   } else
   #endif
   #if CYTHON_FAST_PYCCALL
-  if (__Pyx_PyFastCFunction_Check(__pyx_t_6)) {
-    PyObject *__pyx_temp[5] = {__pyx_t_11, __pyx_t_7, __pyx_t_8, __pyx_t_9, __pyx_t_10};
-    __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_6, __pyx_temp+1-__pyx_t_12, 4+__pyx_t_12); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 80, __pyx_L1_error)
-    __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
+  if (__Pyx_PyFastCFunction_Check(__pyx_t_10)) {
+    PyObject *__pyx_temp[5] = {__pyx_t_15, __pyx_t_11, __pyx_t_12, __pyx_t_13, __pyx_t_14};
+    __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_10, __pyx_temp+1-__pyx_t_16, 4+__pyx_t_16); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 80, __pyx_L1_error)
+    __Pyx_XDECREF(__pyx_t_15); __pyx_t_15 = 0;
     __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
+    __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+    __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
+    __Pyx_DECREF(__pyx_t_13); __pyx_t_13 = 0;
+    __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
   } else
   #endif
   {
-    __pyx_t_13 = PyTuple_New(4+__pyx_t_12); if (unlikely(!__pyx_t_13)) __PYX_ERR(0, 80, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_13);
-    if (__pyx_t_11) {
-      __Pyx_GIVEREF(__pyx_t_11); PyTuple_SET_ITEM(__pyx_t_13, 0, __pyx_t_11); __pyx_t_11 = NULL;
+    __pyx_t_17 = PyTuple_New(4+__pyx_t_16); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 80, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_17);
+    if (__pyx_t_15) {
+      __Pyx_GIVEREF(__pyx_t_15); PyTuple_SET_ITEM(__pyx_t_17, 0, __pyx_t_15); __pyx_t_15 = NULL;
     }
-    __Pyx_GIVEREF(__pyx_t_7);
-    PyTuple_SET_ITEM(__pyx_t_13, 0+__pyx_t_12, __pyx_t_7);
-    __Pyx_GIVEREF(__pyx_t_8);
-    PyTuple_SET_ITEM(__pyx_t_13, 1+__pyx_t_12, __pyx_t_8);
-    __Pyx_GIVEREF(__pyx_t_9);
-    PyTuple_SET_ITEM(__pyx_t_13, 2+__pyx_t_12, __pyx_t_9);
-    __Pyx_GIVEREF(__pyx_t_10);
-    PyTuple_SET_ITEM(__pyx_t_13, 3+__pyx_t_12, __pyx_t_10);
-    __pyx_t_7 = 0;
-    __pyx_t_8 = 0;
-    __pyx_t_9 = 0;
-    __pyx_t_10 = 0;
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_t_13, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 80, __pyx_L1_error)
+    __Pyx_GIVEREF(__pyx_t_11);
+    PyTuple_SET_ITEM(__pyx_t_17, 0+__pyx_t_16, __pyx_t_11);
+    __Pyx_GIVEREF(__pyx_t_12);
+    PyTuple_SET_ITEM(__pyx_t_17, 1+__pyx_t_16, __pyx_t_12);
+    __Pyx_GIVEREF(__pyx_t_13);
+    PyTuple_SET_ITEM(__pyx_t_17, 2+__pyx_t_16, __pyx_t_13);
+    __Pyx_GIVEREF(__pyx_t_14);
+    PyTuple_SET_ITEM(__pyx_t_17, 3+__pyx_t_16, __pyx_t_14);
+    __pyx_t_11 = 0;
+    __pyx_t_12 = 0;
+    __pyx_t_13 = 0;
+    __pyx_t_14 = 0;
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_10, __pyx_t_17, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 80, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __Pyx_DECREF(__pyx_t_13); __pyx_t_13 = 0;
+    __Pyx_DECREF(__pyx_t_17); __pyx_t_17 = 0;
   }
-  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+  __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "survival/kernels/_clinical_kernel.pyx":66
+  /* "sksurv/kernels/_clinical_kernel.pyx":66
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * def continuous_ordinal_kernel(cnp.npy_double[:, :] x,             # <<<<<<<<<<<<<<
@@ -2974,14 +2992,14 @@ __pyx_f_8survival_7kernels_16_clinical_kernel__get_min_and_max(__pyx_t_2, (&__py
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __PYX_XDEC_MEMVIEW(&__pyx_t_2, 1);
-  __Pyx_XDECREF(__pyx_t_6);
-  __Pyx_XDECREF(__pyx_t_7);
-  __Pyx_XDECREF(__pyx_t_8);
-  __Pyx_XDECREF(__pyx_t_9);
   __Pyx_XDECREF(__pyx_t_10);
   __Pyx_XDECREF(__pyx_t_11);
+  __Pyx_XDECREF(__pyx_t_12);
   __Pyx_XDECREF(__pyx_t_13);
-  __Pyx_AddTraceback("survival.kernels._clinical_kernel.continuous_ordinal_kernel", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_XDECREF(__pyx_t_14);
+  __Pyx_XDECREF(__pyx_t_15);
+  __Pyx_XDECREF(__pyx_t_17);
+  __Pyx_AddTraceback("sksurv.kernels._clinical_kernel.continuous_ordinal_kernel", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __PYX_XDEC_MEMVIEW(&__pyx_v_ranges, 1);
@@ -2993,7 +3011,7 @@ __pyx_f_8survival_7kernels_16_clinical_kernel__get_min_and_max(__pyx_t_2, (&__py
   return __pyx_r;
 }
 
-/* "survival/kernels/_clinical_kernel.pyx":86
+/* "sksurv/kernels/_clinical_kernel.pyx":86
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * def pairwise_continuous_ordinal_kernel(cnp.npy_double[:] x,             # <<<<<<<<<<<<<<
@@ -3002,9 +3020,9 @@ __pyx_f_8survival_7kernels_16_clinical_kernel__get_min_and_max(__pyx_t_2, (&__py
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8survival_7kernels_16_clinical_kernel_5pairwise_continuous_ordinal_kernel(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_8survival_7kernels_16_clinical_kernel_5pairwise_continuous_ordinal_kernel = {"pairwise_continuous_ordinal_kernel", (PyCFunction)__pyx_pw_8survival_7kernels_16_clinical_kernel_5pairwise_continuous_ordinal_kernel, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_8survival_7kernels_16_clinical_kernel_5pairwise_continuous_ordinal_kernel(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_6sksurv_7kernels_16_clinical_kernel_5pairwise_continuous_ordinal_kernel(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_6sksurv_7kernels_16_clinical_kernel_5pairwise_continuous_ordinal_kernel = {"pairwise_continuous_ordinal_kernel", (PyCFunction)__pyx_pw_6sksurv_7kernels_16_clinical_kernel_5pairwise_continuous_ordinal_kernel, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_6sksurv_7kernels_16_clinical_kernel_5pairwise_continuous_ordinal_kernel(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   __Pyx_memviewslice __pyx_v_x = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_y = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_ranges = { 0, 0, { 0 }, { 0 }, { 0 } };
@@ -3058,18 +3076,18 @@ static PyObject *__pyx_pw_8survival_7kernels_16_clinical_kernel_5pairwise_contin
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("pairwise_continuous_ordinal_kernel", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 86, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("survival.kernels._clinical_kernel.pairwise_continuous_ordinal_kernel", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.kernels._clinical_kernel.pairwise_continuous_ordinal_kernel", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8survival_7kernels_16_clinical_kernel_4pairwise_continuous_ordinal_kernel(__pyx_self, __pyx_v_x, __pyx_v_y, __pyx_v_ranges);
+  __pyx_r = __pyx_pf_6sksurv_7kernels_16_clinical_kernel_4pairwise_continuous_ordinal_kernel(__pyx_self, __pyx_v_x, __pyx_v_y, __pyx_v_ranges);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_4pairwise_continuous_ordinal_kernel(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_x, __Pyx_memviewslice __pyx_v_y, __Pyx_memviewslice __pyx_v_ranges) {
+static PyObject *__pyx_pf_6sksurv_7kernels_16_clinical_kernel_4pairwise_continuous_ordinal_kernel(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_x, __Pyx_memviewslice __pyx_v_y, __Pyx_memviewslice __pyx_v_ranges) {
   npy_double __pyx_v_out;
   int __pyx_v_k;
   PyObject *__pyx_r = NULL;
@@ -3083,7 +3101,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_4pairwise_contin
   PyObject *__pyx_t_7 = NULL;
   __Pyx_RefNannySetupContext("pairwise_continuous_ordinal_kernel", 0);
 
-  /* "survival/kernels/_clinical_kernel.pyx":89
+  /* "sksurv/kernels/_clinical_kernel.pyx":89
  *                                        cnp.npy_double[:] y,
  *                                        cnp.npy_double[:] ranges):
  *     cdef cnp.npy_double out = 0             # <<<<<<<<<<<<<<
@@ -3092,7 +3110,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_4pairwise_contin
  */
   __pyx_v_out = 0.0;
 
-  /* "survival/kernels/_clinical_kernel.pyx":92
+  /* "sksurv/kernels/_clinical_kernel.pyx":92
  *     cdef int k
  * 
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -3106,7 +3124,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_4pairwise_contin
       #endif
       /*try:*/ {
 
-        /* "survival/kernels/_clinical_kernel.pyx":93
+        /* "sksurv/kernels/_clinical_kernel.pyx":93
  * 
  *     with nogil:
  *         for k in range(x.shape[0]):             # <<<<<<<<<<<<<<
@@ -3117,7 +3135,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_4pairwise_contin
         for (__pyx_t_2 = 0; __pyx_t_2 < __pyx_t_1; __pyx_t_2+=1) {
           __pyx_v_k = __pyx_t_2;
 
-          /* "survival/kernels/_clinical_kernel.pyx":94
+          /* "sksurv/kernels/_clinical_kernel.pyx":94
  *     with nogil:
  *         for k in range(x.shape[0]):
  *             out += (ranges[k] - math.fabs(x[k] - y[k])) / ranges[k]             # <<<<<<<<<<<<<<
@@ -3132,7 +3150,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_4pairwise_contin
         }
       }
 
-      /* "survival/kernels/_clinical_kernel.pyx":92
+      /* "sksurv/kernels/_clinical_kernel.pyx":92
  *     cdef int k
  * 
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -3150,7 +3168,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_4pairwise_contin
       }
   }
 
-  /* "survival/kernels/_clinical_kernel.pyx":96
+  /* "sksurv/kernels/_clinical_kernel.pyx":96
  *             out += (ranges[k] - math.fabs(x[k] - y[k])) / ranges[k]
  * 
  *     return out             # <<<<<<<<<<<<<<
@@ -3164,7 +3182,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_4pairwise_contin
   __pyx_t_7 = 0;
   goto __pyx_L0;
 
-  /* "survival/kernels/_clinical_kernel.pyx":86
+  /* "sksurv/kernels/_clinical_kernel.pyx":86
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * def pairwise_continuous_ordinal_kernel(cnp.npy_double[:] x,             # <<<<<<<<<<<<<<
@@ -3175,7 +3193,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_4pairwise_contin
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_7);
-  __Pyx_AddTraceback("survival.kernels._clinical_kernel.pairwise_continuous_ordinal_kernel", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.kernels._clinical_kernel.pairwise_continuous_ordinal_kernel", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __PYX_XDEC_MEMVIEW(&__pyx_v_x, 1);
@@ -3186,7 +3204,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_4pairwise_contin
   return __pyx_r;
 }
 
-/* "survival/kernels/_clinical_kernel.pyx":102
+/* "sksurv/kernels/_clinical_kernel.pyx":102
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * def pairwise_nominal_kernel(cnp.npy_int8[:] x,             # <<<<<<<<<<<<<<
@@ -3195,9 +3213,9 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_4pairwise_contin
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8survival_7kernels_16_clinical_kernel_7pairwise_nominal_kernel(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_8survival_7kernels_16_clinical_kernel_7pairwise_nominal_kernel = {"pairwise_nominal_kernel", (PyCFunction)__pyx_pw_8survival_7kernels_16_clinical_kernel_7pairwise_nominal_kernel, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_8survival_7kernels_16_clinical_kernel_7pairwise_nominal_kernel(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_6sksurv_7kernels_16_clinical_kernel_7pairwise_nominal_kernel(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyMethodDef __pyx_mdef_6sksurv_7kernels_16_clinical_kernel_7pairwise_nominal_kernel = {"pairwise_nominal_kernel", (PyCFunction)__pyx_pw_6sksurv_7kernels_16_clinical_kernel_7pairwise_nominal_kernel, METH_VARARGS|METH_KEYWORDS, 0};
+static PyObject *__pyx_pw_6sksurv_7kernels_16_clinical_kernel_7pairwise_nominal_kernel(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   __Pyx_memviewslice __pyx_v_x = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_y = { 0, 0, { 0 }, { 0 }, { 0 } };
   PyObject *__pyx_r = 0;
@@ -3242,18 +3260,18 @@ static PyObject *__pyx_pw_8survival_7kernels_16_clinical_kernel_7pairwise_nomina
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("pairwise_nominal_kernel", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 102, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("survival.kernels._clinical_kernel.pairwise_nominal_kernel", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.kernels._clinical_kernel.pairwise_nominal_kernel", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8survival_7kernels_16_clinical_kernel_6pairwise_nominal_kernel(__pyx_self, __pyx_v_x, __pyx_v_y);
+  __pyx_r = __pyx_pf_6sksurv_7kernels_16_clinical_kernel_6pairwise_nominal_kernel(__pyx_self, __pyx_v_x, __pyx_v_y);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_6pairwise_nominal_kernel(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_x, __Pyx_memviewslice __pyx_v_y) {
+static PyObject *__pyx_pf_6sksurv_7kernels_16_clinical_kernel_6pairwise_nominal_kernel(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_x, __Pyx_memviewslice __pyx_v_y) {
   npy_double __pyx_v_out;
   int __pyx_v_k;
   PyObject *__pyx_r = NULL;
@@ -3266,7 +3284,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_6pairwise_nomina
   PyObject *__pyx_t_6 = NULL;
   __Pyx_RefNannySetupContext("pairwise_nominal_kernel", 0);
 
-  /* "survival/kernels/_clinical_kernel.pyx":104
+  /* "sksurv/kernels/_clinical_kernel.pyx":104
  * def pairwise_nominal_kernel(cnp.npy_int8[:] x,
  *                             cnp.npy_int8[:] y):
  *     cdef cnp.npy_double out = 0             # <<<<<<<<<<<<<<
@@ -3275,7 +3293,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_6pairwise_nomina
  */
   __pyx_v_out = 0.0;
 
-  /* "survival/kernels/_clinical_kernel.pyx":107
+  /* "sksurv/kernels/_clinical_kernel.pyx":107
  *     cdef int k
  * 
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -3289,7 +3307,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_6pairwise_nomina
       #endif
       /*try:*/ {
 
-        /* "survival/kernels/_clinical_kernel.pyx":108
+        /* "sksurv/kernels/_clinical_kernel.pyx":108
  * 
  *     with nogil:
  *         for k in range(x.shape[0]):             # <<<<<<<<<<<<<<
@@ -3300,7 +3318,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_6pairwise_nomina
         for (__pyx_t_2 = 0; __pyx_t_2 < __pyx_t_1; __pyx_t_2+=1) {
           __pyx_v_k = __pyx_t_2;
 
-          /* "survival/kernels/_clinical_kernel.pyx":109
+          /* "sksurv/kernels/_clinical_kernel.pyx":109
  *     with nogil:
  *         for k in range(x.shape[0]):
  *             if x[k] == y[k]:             # <<<<<<<<<<<<<<
@@ -3312,7 +3330,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_6pairwise_nomina
           __pyx_t_5 = (((*((npy_int8 *) ( /* dim=0 */ (__pyx_v_x.data + __pyx_t_3 * __pyx_v_x.strides[0]) ))) == (*((npy_int8 *) ( /* dim=0 */ (__pyx_v_y.data + __pyx_t_4 * __pyx_v_y.strides[0]) )))) != 0);
           if (__pyx_t_5) {
 
-            /* "survival/kernels/_clinical_kernel.pyx":110
+            /* "sksurv/kernels/_clinical_kernel.pyx":110
  *         for k in range(x.shape[0]):
  *             if x[k] == y[k]:
  *                 out += 1.             # <<<<<<<<<<<<<<
@@ -3321,7 +3339,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_6pairwise_nomina
  */
             __pyx_v_out = (__pyx_v_out + 1.);
 
-            /* "survival/kernels/_clinical_kernel.pyx":109
+            /* "sksurv/kernels/_clinical_kernel.pyx":109
  *     with nogil:
  *         for k in range(x.shape[0]):
  *             if x[k] == y[k]:             # <<<<<<<<<<<<<<
@@ -3332,7 +3350,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_6pairwise_nomina
         }
       }
 
-      /* "survival/kernels/_clinical_kernel.pyx":107
+      /* "sksurv/kernels/_clinical_kernel.pyx":107
  *     cdef int k
  * 
  *     with nogil:             # <<<<<<<<<<<<<<
@@ -3350,7 +3368,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_6pairwise_nomina
       }
   }
 
-  /* "survival/kernels/_clinical_kernel.pyx":112
+  /* "sksurv/kernels/_clinical_kernel.pyx":112
  *                 out += 1.
  * 
  *     return out             # <<<<<<<<<<<<<<
@@ -3362,7 +3380,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_6pairwise_nomina
   __pyx_t_6 = 0;
   goto __pyx_L0;
 
-  /* "survival/kernels/_clinical_kernel.pyx":102
+  /* "sksurv/kernels/_clinical_kernel.pyx":102
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * def pairwise_nominal_kernel(cnp.npy_int8[:] x,             # <<<<<<<<<<<<<<
@@ -3373,7 +3391,7 @@ static PyObject *__pyx_pf_8survival_7kernels_16_clinical_kernel_6pairwise_nomina
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_6);
-  __Pyx_AddTraceback("survival.kernels._clinical_kernel.pairwise_nominal_kernel", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("sksurv.kernels._clinical_kernel.pairwise_nominal_kernel", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __PYX_XDEC_MEMVIEW(&__pyx_v_x, 1);
@@ -17882,7 +17900,7 @@ static PyBufferProcs __pyx_tp_as_buffer_array = {
 
 static PyTypeObject __pyx_type___pyx_array = {
   PyVarObject_HEAD_INIT(0, 0)
-  "survival.kernels._clinical_kernel.array", /*tp_name*/
+  "sksurv.kernels._clinical_kernel.array", /*tp_name*/
   sizeof(struct __pyx_array_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_array, /*tp_dealloc*/
@@ -17988,7 +18006,7 @@ static PyMethodDef __pyx_methods_Enum[] = {
 
 static PyTypeObject __pyx_type___pyx_MemviewEnum = {
   PyVarObject_HEAD_INIT(0, 0)
-  "survival.kernels._clinical_kernel.Enum", /*tp_name*/
+  "sksurv.kernels._clinical_kernel.Enum", /*tp_name*/
   sizeof(struct __pyx_MemviewEnum_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_Enum, /*tp_dealloc*/
@@ -18236,7 +18254,7 @@ static PyBufferProcs __pyx_tp_as_buffer_memoryview = {
 
 static PyTypeObject __pyx_type___pyx_memoryview = {
   PyVarObject_HEAD_INIT(0, 0)
-  "survival.kernels._clinical_kernel.memoryview", /*tp_name*/
+  "sksurv.kernels._clinical_kernel.memoryview", /*tp_name*/
   sizeof(struct __pyx_memoryview_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_memoryview, /*tp_dealloc*/
@@ -18361,7 +18379,7 @@ static struct PyGetSetDef __pyx_getsets__memoryviewslice[] = {
 
 static PyTypeObject __pyx_type___pyx_memoryviewslice = {
   PyVarObject_HEAD_INIT(0, 0)
-  "survival.kernels._clinical_kernel._memoryviewslice", /*tp_name*/
+  "sksurv.kernels._clinical_kernel._memoryviewslice", /*tp_name*/
   sizeof(struct __pyx_memoryviewslice_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc__memoryviewslice, /*tp_dealloc*/
@@ -18489,7 +18507,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_fortran, __pyx_k_fortran, sizeof(__pyx_k_fortran), 0, 0, 1, 1},
   {&__pyx_n_u_fortran, __pyx_k_fortran, sizeof(__pyx_k_fortran), 0, 1, 0, 1},
   {&__pyx_kp_s_got_differing_extents_in_dimensi, __pyx_k_got_differing_extents_in_dimensi, sizeof(__pyx_k_got_differing_extents_in_dimensi), 0, 0, 1, 0},
-  {&__pyx_kp_s_home_sebp_Projekte_survival_sup, __pyx_k_home_sebp_Projekte_survival_sup, sizeof(__pyx_k_home_sebp_Projekte_survival_sup), 0, 0, 1, 0},
+  {&__pyx_kp_s_home_sebp_Projekte_scikit_survi, __pyx_k_home_sebp_Projekte_scikit_survi, sizeof(__pyx_k_home_sebp_Projekte_scikit_survi), 0, 0, 1, 0},
   {&__pyx_n_s_i, __pyx_k_i, sizeof(__pyx_k_i), 0, 0, 1, 1},
   {&__pyx_n_s_id, __pyx_k_id, sizeof(__pyx_k_id), 0, 0, 1, 1},
   {&__pyx_n_s_import, __pyx_k_import, sizeof(__pyx_k_import), 0, 0, 1, 1},
@@ -18526,6 +18544,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_ranges, __pyx_k_ranges, sizeof(__pyx_k_ranges), 0, 0, 1, 1},
   {&__pyx_n_s_shape, __pyx_k_shape, sizeof(__pyx_k_shape), 0, 0, 1, 1},
   {&__pyx_n_s_size, __pyx_k_size, sizeof(__pyx_k_size), 0, 0, 1, 1},
+  {&__pyx_n_s_sksurv_kernels__clinical_kernel, __pyx_k_sksurv_kernels__clinical_kernel, sizeof(__pyx_k_sksurv_kernels__clinical_kernel), 0, 0, 1, 1},
   {&__pyx_n_s_start, __pyx_k_start, sizeof(__pyx_k_start), 0, 0, 1, 1},
   {&__pyx_n_s_step, __pyx_k_step, sizeof(__pyx_k_step), 0, 0, 1, 1},
   {&__pyx_n_s_stop, __pyx_k_stop, sizeof(__pyx_k_stop), 0, 0, 1, 1},
@@ -18533,7 +18552,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s_strided_and_direct_or_indirect, __pyx_k_strided_and_direct_or_indirect, sizeof(__pyx_k_strided_and_direct_or_indirect), 0, 0, 1, 0},
   {&__pyx_kp_s_strided_and_indirect, __pyx_k_strided_and_indirect, sizeof(__pyx_k_strided_and_indirect), 0, 0, 1, 0},
   {&__pyx_n_s_struct, __pyx_k_struct, sizeof(__pyx_k_struct), 0, 0, 1, 1},
-  {&__pyx_n_s_survival_kernels__clinical_kerne, __pyx_k_survival_kernels__clinical_kerne, sizeof(__pyx_k_survival_kernels__clinical_kerne), 0, 0, 1, 1},
   {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
   {&__pyx_kp_s_unable_to_allocate_array_data, __pyx_k_unable_to_allocate_array_data, sizeof(__pyx_k_unable_to_allocate_array_data), 0, 0, 1, 0},
   {&__pyx_kp_s_unable_to_allocate_shape_and_str, __pyx_k_unable_to_allocate_shape_and_str, sizeof(__pyx_k_unable_to_allocate_shape_and_str), 0, 0, 1, 0},
@@ -18806,7 +18824,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__22);
   __Pyx_GIVEREF(__pyx_tuple__22);
 
-  /* "survival/kernels/_clinical_kernel.pyx":42
+  /* "sksurv/kernels/_clinical_kernel.pyx":42
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * def continuous_ordinal_kernel_with_ranges(cnp.npy_double[:, :] x,             # <<<<<<<<<<<<<<
@@ -18816,9 +18834,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__23 = PyTuple_Pack(10, __pyx_n_s_x, __pyx_n_s_y, __pyx_n_s_ranges, __pyx_n_s_out, __pyx_n_s_n_samples_x, __pyx_n_s_n_samples_y, __pyx_n_s_n_features, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k); if (unlikely(!__pyx_tuple__23)) __PYX_ERR(0, 42, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__23);
   __Pyx_GIVEREF(__pyx_tuple__23);
-  __pyx_codeobj__24 = (PyObject*)__Pyx_PyCode_New(4, 0, 10, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__23, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_sebp_Projekte_survival_sup, __pyx_n_s_continuous_ordinal_kernel_with_r, 42, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__24)) __PYX_ERR(0, 42, __pyx_L1_error)
+  __pyx_codeobj__24 = (PyObject*)__Pyx_PyCode_New(4, 0, 10, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__23, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_sebp_Projekte_scikit_survi, __pyx_n_s_continuous_ordinal_kernel_with_r, 42, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__24)) __PYX_ERR(0, 42, __pyx_L1_error)
 
-  /* "survival/kernels/_clinical_kernel.pyx":66
+  /* "sksurv/kernels/_clinical_kernel.pyx":66
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * def continuous_ordinal_kernel(cnp.npy_double[:, :] x,             # <<<<<<<<<<<<<<
@@ -18828,9 +18846,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__25 = PyTuple_Pack(11, __pyx_n_s_x, __pyx_n_s_y, __pyx_n_s_out, __pyx_n_s_n_samples_x, __pyx_n_s_n_features, __pyx_n_s_min_x, __pyx_n_s_max_x, __pyx_n_s_min_y, __pyx_n_s_max_y, __pyx_n_s_ranges, __pyx_n_s_i); if (unlikely(!__pyx_tuple__25)) __PYX_ERR(0, 66, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__25);
   __Pyx_GIVEREF(__pyx_tuple__25);
-  __pyx_codeobj__26 = (PyObject*)__Pyx_PyCode_New(3, 0, 11, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__25, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_sebp_Projekte_survival_sup, __pyx_n_s_continuous_ordinal_kernel, 66, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__26)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __pyx_codeobj__26 = (PyObject*)__Pyx_PyCode_New(3, 0, 11, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__25, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_sebp_Projekte_scikit_survi, __pyx_n_s_continuous_ordinal_kernel, 66, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__26)) __PYX_ERR(0, 66, __pyx_L1_error)
 
-  /* "survival/kernels/_clinical_kernel.pyx":86
+  /* "sksurv/kernels/_clinical_kernel.pyx":86
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * def pairwise_continuous_ordinal_kernel(cnp.npy_double[:] x,             # <<<<<<<<<<<<<<
@@ -18840,9 +18858,9 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__27 = PyTuple_Pack(5, __pyx_n_s_x, __pyx_n_s_y, __pyx_n_s_ranges, __pyx_n_s_out, __pyx_n_s_k); if (unlikely(!__pyx_tuple__27)) __PYX_ERR(0, 86, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__27);
   __Pyx_GIVEREF(__pyx_tuple__27);
-  __pyx_codeobj__28 = (PyObject*)__Pyx_PyCode_New(3, 0, 5, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__27, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_sebp_Projekte_survival_sup, __pyx_n_s_pairwise_continuous_ordinal_kern, 86, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__28)) __PYX_ERR(0, 86, __pyx_L1_error)
+  __pyx_codeobj__28 = (PyObject*)__Pyx_PyCode_New(3, 0, 5, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__27, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_sebp_Projekte_scikit_survi, __pyx_n_s_pairwise_continuous_ordinal_kern, 86, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__28)) __PYX_ERR(0, 86, __pyx_L1_error)
 
-  /* "survival/kernels/_clinical_kernel.pyx":102
+  /* "sksurv/kernels/_clinical_kernel.pyx":102
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * def pairwise_nominal_kernel(cnp.npy_int8[:] x,             # <<<<<<<<<<<<<<
@@ -18852,7 +18870,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__29 = PyTuple_Pack(4, __pyx_n_s_x, __pyx_n_s_y, __pyx_n_s_out, __pyx_n_s_k); if (unlikely(!__pyx_tuple__29)) __PYX_ERR(0, 102, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__29);
   __Pyx_GIVEREF(__pyx_tuple__29);
-  __pyx_codeobj__30 = (PyObject*)__Pyx_PyCode_New(2, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__29, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_sebp_Projekte_survival_sup, __pyx_n_s_pairwise_nominal_kernel, 102, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__30)) __PYX_ERR(0, 102, __pyx_L1_error)
+  __pyx_codeobj__30 = (PyObject*)__Pyx_PyCode_New(2, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__29, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_sebp_Projekte_scikit_survi, __pyx_n_s_pairwise_nominal_kernel, 102, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__30)) __PYX_ERR(0, 102, __pyx_L1_error)
 
   /* "View.MemoryView":282
  *         return self.name
@@ -18992,14 +19010,14 @@ PyMODINIT_FUNC PyInit__clinical_kernel(void)
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
-  if (__pyx_module_is_main_survival__kernels___clinical_kernel) {
+  if (__pyx_module_is_main_sksurv__kernels___clinical_kernel) {
     if (PyObject_SetAttrString(__pyx_m, "__name__", __pyx_n_s_main) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) __PYX_ERR(0, 1, __pyx_L1_error)
-    if (!PyDict_GetItemString(modules, "survival.kernels._clinical_kernel")) {
-      if (unlikely(PyDict_SetItemString(modules, "survival.kernels._clinical_kernel", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
+    if (!PyDict_GetItemString(modules, "sksurv.kernels._clinical_kernel")) {
+      if (unlikely(PyDict_SetItemString(modules, "sksurv.kernels._clinical_kernel", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
     }
   }
   #endif
@@ -19066,7 +19084,7 @@ PyMODINIT_FUNC PyInit__clinical_kernel(void)
   if (__Pyx_patch_abc() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
 
-  /* "survival/kernels/_clinical_kernel.pyx":18
+  /* "sksurv/kernels/_clinical_kernel.pyx":18
  * cimport numpy as cnp
  * 
  * cnp.import_array()             # <<<<<<<<<<<<<<
@@ -19075,55 +19093,55 @@ PyMODINIT_FUNC PyInit__clinical_kernel(void)
  */
   __pyx_t_1 = __pyx_f_5numpy_import_array(); if (unlikely(__pyx_t_1 == -1)) __PYX_ERR(0, 18, __pyx_L1_error)
 
-  /* "survival/kernels/_clinical_kernel.pyx":42
+  /* "sksurv/kernels/_clinical_kernel.pyx":42
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * def continuous_ordinal_kernel_with_ranges(cnp.npy_double[:, :] x,             # <<<<<<<<<<<<<<
  *                                           cnp.npy_double[:, :] y,
  *                                           cnp.npy_double[:] ranges,
  */
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_8survival_7kernels_16_clinical_kernel_1continuous_ordinal_kernel_with_ranges, NULL, __pyx_n_s_survival_kernels__clinical_kerne); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 42, __pyx_L1_error)
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_6sksurv_7kernels_16_clinical_kernel_1continuous_ordinal_kernel_with_ranges, NULL, __pyx_n_s_sksurv_kernels__clinical_kernel); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 42, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_continuous_ordinal_kernel_with_r, __pyx_t_2) < 0) __PYX_ERR(0, 42, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "survival/kernels/_clinical_kernel.pyx":66
+  /* "sksurv/kernels/_clinical_kernel.pyx":66
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * def continuous_ordinal_kernel(cnp.npy_double[:, :] x,             # <<<<<<<<<<<<<<
  *                               cnp.npy_double[:, :] y,
  *                               cnp.npy_double[:, :] out):
  */
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_8survival_7kernels_16_clinical_kernel_3continuous_ordinal_kernel, NULL, __pyx_n_s_survival_kernels__clinical_kerne); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_6sksurv_7kernels_16_clinical_kernel_3continuous_ordinal_kernel, NULL, __pyx_n_s_sksurv_kernels__clinical_kernel); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 66, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_continuous_ordinal_kernel, __pyx_t_2) < 0) __PYX_ERR(0, 66, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "survival/kernels/_clinical_kernel.pyx":86
+  /* "sksurv/kernels/_clinical_kernel.pyx":86
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * def pairwise_continuous_ordinal_kernel(cnp.npy_double[:] x,             # <<<<<<<<<<<<<<
  *                                        cnp.npy_double[:] y,
  *                                        cnp.npy_double[:] ranges):
  */
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_8survival_7kernels_16_clinical_kernel_5pairwise_continuous_ordinal_kernel, NULL, __pyx_n_s_survival_kernels__clinical_kerne); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 86, __pyx_L1_error)
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_6sksurv_7kernels_16_clinical_kernel_5pairwise_continuous_ordinal_kernel, NULL, __pyx_n_s_sksurv_kernels__clinical_kernel); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 86, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_pairwise_continuous_ordinal_kern, __pyx_t_2) < 0) __PYX_ERR(0, 86, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "survival/kernels/_clinical_kernel.pyx":102
+  /* "sksurv/kernels/_clinical_kernel.pyx":102
  * @cython.cdivision(True)
  * @cython.boundscheck(False)
  * def pairwise_nominal_kernel(cnp.npy_int8[:] x,             # <<<<<<<<<<<<<<
  *                             cnp.npy_int8[:] y):
  *     cdef cnp.npy_double out = 0
  */
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_8survival_7kernels_16_clinical_kernel_7pairwise_nominal_kernel, NULL, __pyx_n_s_survival_kernels__clinical_kerne); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 102, __pyx_L1_error)
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_6sksurv_7kernels_16_clinical_kernel_7pairwise_nominal_kernel, NULL, __pyx_n_s_sksurv_kernels__clinical_kernel); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 102, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_pairwise_nominal_kernel, __pyx_t_2) < 0) __PYX_ERR(0, 102, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "survival/kernels/_clinical_kernel.pyx":1
+  /* "sksurv/kernels/_clinical_kernel.pyx":1
  * # This program is free software: you can redistribute it and/or modify             # <<<<<<<<<<<<<<
  * # it under the terms of the GNU General Public License as published by
  * # the Free Software Foundation, either version 3 of the License, or
@@ -19283,11 +19301,11 @@ PyMODINIT_FUNC PyInit__clinical_kernel(void)
   __Pyx_XDECREF(__pyx_t_2);
   if (__pyx_m) {
     if (__pyx_d) {
-      __Pyx_AddTraceback("init survival.kernels._clinical_kernel", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init sksurv.kernels._clinical_kernel", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     Py_DECREF(__pyx_m); __pyx_m = 0;
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init survival.kernels._clinical_kernel");
+    PyErr_SetString(PyExc_ImportError, "init sksurv.kernels._clinical_kernel");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
