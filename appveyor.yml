@@ -1,0 +1,59 @@
+# AppVeyor.com is a Continuous Integration service to build and run tests under
+# Windows
+
+environment:
+  global:
+    NUMPY_VERSION: 1.11
+  # see https://www.appveyor.com/docs/build-environment/#python
+  matrix:
+    - TARGET_ARCH: "x64"
+      CONDA_PY: "34"
+      PY_CONDITION: "python >=3.4,<3.5"
+      CONDA_INSTALL_LOCN: "C:\\Miniconda3-x64"
+    # cvxopt is only available for python <3.5
+    # https://github.com/cvxopt/cvxopt/issues/94
+    # - TARGET_ARCH: "x64"
+    #   CONDA_PY: "35"
+    #   PY_CONDITION: "python >=3.5,<3.6"
+    #   CONDA_INSTALL_LOCN: "C:\\Miniconda35-x64"
+    # - TARGET_ARCH: "x64"
+    #   CONDA_PY: "36"
+    #   PY_CONDITION: "python >=3.6"
+    #   CONDA_INSTALL_LOCN: "C:\\Miniconda36-x64"
+
+# We always use a 64-bit machine.
+platform:
+- x64
+
+install:
+  - cmd: set "OLDPATH=%PATH%"
+  - cmd: set "PATH=%CONDA_INSTALL_LOCN%\\Scripts;%CONDA_INSTALL_LOCN%\\Library\\bin;%PATH%"
+  - cmd: conda update --yes --quiet conda
+  - cmd: set "PATH=%OLDPATH%"
+  - cmd: call %CONDA_INSTALL_LOCN%\Scripts\activate.bat
+  - cmd: conda config --set always_yes yes
+
+  # Upgrade to the latest version of pip to avoid it displaying warnings
+  # about it being out of date.
+  - cmd: pip install --disable-pip-version-check --user --upgrade pip
+
+  # Install the build and runtime dependencies of the project.
+  - cmd: conda install "%PY_CONDITION%" numpy=%NUMPY_VERSION% pandas scipy nose
+  - cmd: pip install -r requirements.txt
+  # Create binary packages for the project.
+  - cmd: python setup.py bdist_wheel bdist_wininst
+  - ps: "ls dist"
+
+  # Install the generated wheel package to test it
+  - cmd: pip install --pre --no-index --find-links dist/ scikit-survival
+  - cmd: rmdir sksurv /s /q
+
+test_script:
+  - cmd: nosetests -w tests -a "!slow" -e "test_breast_cancer_rbf_cvxopt$"
+
+artifacts:
+  # Archive the generated wheel package in the ci.appveyor.com build report.
+  - path: dist\*
+
+# Skip .NET project specific build phase.
+build: off
