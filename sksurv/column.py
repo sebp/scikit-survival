@@ -184,14 +184,14 @@ def categorical_to_numeric(table):
             return column.cat.codes
         if column.dtype.char == "O":
             try:
-                nc = column.astype(int)
+                nc = column.astype(numpy.int64)
             except ValueError:
                 classes = column.dropna().unique()
                 classes.sort(kind="mergesort")
                 nc = column.replace(classes, numpy.arange(classes.shape[0]))
             return nc
         elif column.dtype == bool:
-            return column.astype(int)
+            return column.astype(numpy.int64)
 
         return column
 

@@ -283,7 +283,8 @@ class TestCategoricalToNumeric(TestCase):
         input_series = pandas.Series(["a", "a", "b", "b", "b", "c"], name="Thr33",
                                index=["Alpha", "Beta", "Gamma", "Delta", "Eta", "Mu"])
         expected = pandas.Series([0, 0, 1, 1, 1, 2], name="Thr33",
-                                 index=["Alpha", "Beta", "Gamma", "Delta", "Eta", "Mu"])
+                                 index=["Alpha", "Beta", "Gamma", "Delta", "Eta", "Mu"],
+                                 dtype=numpy.int64)
 
         actual = column.categorical_to_numeric(input_series)
 
@@ -293,7 +294,8 @@ class TestCategoricalToNumeric(TestCase):
         input_series = pandas.Series([True, True, False, False, True, False, True], name="human",
                                      index=["Alpha", "Beta", "Gamma", "Delta", "Eta", "Mu", "Zeta"])
         expected = pandas.Series([1, 1, 0, 0, 1, 0, 1], name="human",
-                                 index=["Alpha", "Beta", "Gamma", "Delta", "Eta", "Mu", "Zeta"])
+                                 index=["Alpha", "Beta", "Gamma", "Delta", "Eta", "Mu", "Zeta"],
+                                 dtype=numpy.int64)
 
         actual = column.categorical_to_numeric(input_series)
 
@@ -320,10 +322,10 @@ class TestCategoricalToNumeric(TestCase):
             numpy.repeat([0], 10),
             numpy.repeat([2], 5),
             numpy.repeat([3], 13),
-            numpy.repeat([1], 3)))
+            numpy.repeat([1], 3))).astype(numpy.int64)
         b_num = numpy.concatenate((
             numpy.repeat([1], 8),
-            numpy.repeat([0], 23)))
+            numpy.repeat([0], 23))).astype(numpy.int64)
         expected = pandas.DataFrame({"a_category": a_num,
                                      "a_binary": b_num,
                                      "a_number": c.copy()})
