@@ -1,5 +1,6 @@
 from os.path import join, dirname
 
+from nose.plugins.attrib import attr
 import numpy
 from numpy.testing import TestCase, run_module_suite, assert_array_almost_equal, assert_array_equal
 
@@ -370,6 +371,7 @@ class TestMinlip(TestCase):
         self.assertEqual(1, v[3])
         self.assertEqual(32, v[4])
 
+    @attr('slow')
     def test_breast_cancer_rbf_cvxpy(self):
         x = scale(self.x.values)
         m = MinlipSurvivalAnalysis(solver="cvxpy", alpha=1, kernel="rbf",
@@ -400,6 +402,7 @@ class TestMinlip(TestCase):
         self.assertRaisesRegex(ValueError, "unknown solver: \[\('why', 'are'\), \('you', 'doing this'\)\]",
                                m.fit, self.x.values, self.y)
 
+    @attr('slow')
     def test_kernel_precomputed(self):
         from sklearn.metrics.pairwise import pairwise_kernels
         from sklearn.utils.metaestimators import _safe_split

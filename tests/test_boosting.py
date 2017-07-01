@@ -1,5 +1,6 @@
 from os.path import join, dirname
 
+from nose.plugins.attrib import attr
 import numpy
 from numpy.testing import TestCase, run_module_suite, assert_array_equal, assert_array_almost_equal
 import pandas
@@ -66,6 +67,7 @@ class TestGradientBoosting(TestCase):
                                            "Model n_features is 14 and input n_features is 2 ",
                                model.predict, self.x[:, :2])
 
+    @attr('slow')
     def test_fit_dropout(self):
         model = GradientBoostingSurvivalAnalysis(n_estimators=100, max_features=8,
                                                  learning_rate=1.0, dropout_rate=0.03,
@@ -267,6 +269,7 @@ class TestSparseGradientBoosting(TestCase):
 
             assert_array_almost_equal(sparse_predict, dense_predict)
 
+    @attr('slow')
     def test_dropout(self):
         for loss in ('coxph', 'squared', 'ipcwls'):
             model = GradientBoostingSurvivalAnalysis(loss=loss, n_estimators=100, max_depth=1, min_samples_split=10,

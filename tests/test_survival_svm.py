@@ -2,6 +2,7 @@ import unittest
 from functools import partial
 from os.path import join, dirname
 
+from nose.plugins.attrib import attr
 import numpy
 from numpy.testing import TestCase, run_module_suite, assert_array_almost_equal, assert_array_equal
 from sklearn.decomposition import KernelPCA
@@ -286,6 +287,7 @@ class TestSurvivalSVM(TestCase):
         assert_array_equal(expected, A.todense())
 
 
+@attr('slow')
 class SurvivalModeCases(object):
     OPTIMIZER = None
 
@@ -504,6 +506,7 @@ class TestKernelSurvivalSVM(TestCase):
         rmse = numpy.sqrt(mean_squared_error(self.y['lenfol'], pred))
         self.assertAlmostEqual(15837.658418546907, rmse, 4)
 
+    @attr('slow')
     def test_fit_and_predict_rbf_rbtree(self):
         ssvm = FastKernelSurvivalSVM(optimizer="rbtree", kernel='rbf', random_state=0)
         ssvm.fit(self.x.values, self.y)
@@ -514,6 +517,7 @@ class TestKernelSurvivalSVM(TestCase):
         c = ssvm.score(self.x.values, self.y)
         self.assertAlmostEqual(0.92230102862313534, c, 3)
 
+    @attr('slow')
     def test_fit_and_predict_rbf_avltree(self):
         ssvm = FastKernelSurvivalSVM(optimizer="avltree", kernel='rbf', random_state=0)
         ssvm.fit(self.x.values, self.y)
@@ -524,6 +528,7 @@ class TestKernelSurvivalSVM(TestCase):
         c = ssvm.score(self.x.values, self.y)
         self.assertLessEqual(abs(0.92460312179802795 - c), 1e-3)
 
+    @attr('slow')
     def test_fit_and_predict_regression_rbf(self):
         ssvm = FastKernelSurvivalSVM(optimizer="rbtree", rank_ratio=0.0, kernel="rbf",
                                      max_iter=50, fit_intercept=True, random_state=0)
@@ -536,6 +541,7 @@ class TestKernelSurvivalSVM(TestCase):
         rmse = numpy.sqrt(mean_squared_error(self.y['lenfol'], pred))
         self.assertAlmostEqual(783.525277, rmse, 6)
 
+    @attr('slow')
     def test_fit_and_predict_hybrid_rbf(self):
         ssvm = FastKernelSurvivalSVM(optimizer="rbtree", rank_ratio=0.5, kernel="rbf",
                                      max_iter=50, fit_intercept=True, random_state=0)
@@ -548,6 +554,7 @@ class TestKernelSurvivalSVM(TestCase):
         rmse = numpy.sqrt(mean_squared_error(self.y['lenfol'], pred))
         self.assertLessEqual(abs(880.20361811281487 - rmse), 75)
 
+    @attr('slow')
     def test_fit_and_predict_clinical_kernel(self):
         x_full, y = load_whas500()
 
@@ -565,6 +572,7 @@ class TestKernelSurvivalSVM(TestCase):
         c = ssvm.score(x.values, y)
         self.assertLessEqual(abs(0.83699051218246412 - c), 1e-3)
 
+    @attr('slow')
     def test_compare_rbf(self):
         x, y = load_whas500()
         x = encode_categorical(standardize(x))
@@ -590,6 +598,7 @@ class TestKernelSurvivalSVM(TestCase):
         self.assertAlmostEqual(c1[0], c2[0])
         self.assertTupleEqual(c1[1:], c2[1:])
 
+    @attr('slow')
     def test_compare_clinical_kernel(self):
         x_full, y = load_whas500()
 

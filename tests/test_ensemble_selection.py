@@ -1,5 +1,6 @@
 from os.path import join, dirname
 
+from nose.plugins.attrib import attr
 import numpy
 from numpy.testing import TestCase, run_module_suite, assert_array_almost_equal
 from sklearn.model_selection import KFold, ParameterGrid
@@ -48,6 +49,7 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
         meta = EnsembleSelection(base_estimators, n_estimators=0.4, scorer=score_cindex, cv=cv, **kwargs)
         return meta
 
+    @attr('slow')
     def test_fit(self):
         meta = self._create_ensemble()
         self.assertEqual(len(meta), 0)
@@ -62,6 +64,7 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
         expected_score = numpy.array([0.7858721, 59050, 16084, 15, 119])
         assert_array_almost_equal(score, expected_score)
 
+    @attr('slow')
     def test_fit_spearman_correlation(self):
         meta = self._create_ensemble(correlation="spearman")
         self.assertEqual(len(meta), 0)
@@ -74,6 +77,7 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
         expected_score = numpy.array([0.7858721, 59050, 16084, 15, 119])
         assert_array_almost_equal(score, expected_score)
 
+    @attr('slow')
     def test_fit_kendall_correlation(self):
         meta = self._create_ensemble(correlation="kendall")
         self.assertEqual(len(meta), 0)
@@ -86,6 +90,7 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
         expected_score = numpy.array([0.7587460, 57013, 18124, 12, 119])
         assert_array_almost_equal(score, expected_score)
 
+    @attr('slow')
     def test_fit_custom_kernel(self):
         svm_grid = ParameterGrid({"alpha": 2. ** numpy.arange(-5, 5, 2)})
 
@@ -223,6 +228,7 @@ class TestEnsembleSelectionRegressor(TestCase):
                                           cv=cv, n_jobs=1)
         return meta
 
+    @attr('slow')
     def test_fit_and_predict(self):
         meta = self._create_ensemble()
         self.assertEqual(len(meta), 0)
