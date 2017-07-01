@@ -75,7 +75,7 @@ def continuous_ordinal_kernel(cnp.npy_double[:, :] x,
         for i in range(n_features):
             _get_min_and_max(x[:, i], &min_x, &max_x)
             _get_min_and_max(y[:, i], &min_y, &max_y)
-            ranges[i] = math.fmax(max_x, max_y) - math.fmin(min_x, min_y)
+            ranges[i] = max(max_x, max_y) - min(min_x, min_y)
 
     return continuous_ordinal_kernel_with_ranges(x, y, ranges, out)
 
