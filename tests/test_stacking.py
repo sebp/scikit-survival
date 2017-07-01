@@ -119,7 +119,7 @@ class TestStackingClassifier(TestCase):
         p = meta.predict(x)
         acc = accuracy_score(y, p)
 
-        self.assertEqual(0.98, acc)
+        self.assertGreaterEqual(acc, 0.98)
 
     def test_predict_proba(self):
         data = load_iris()
