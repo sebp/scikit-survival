@@ -18,7 +18,7 @@ from .util import check_y_survival
 __all__ = ['kaplan_meier_estimator', 'nelson_aalen_estimator', 'ipc_weights']
 
 
-def _compute_counts(event, time):
+def _compute_counts(event, time, order=None):
     """Count right censored and uncensored samples at each unique time point.
 
     Parameters
@@ -28,6 +28,10 @@ def _compute_counts(event, time):
 
     time : array
         Survival time or time of censoring.
+
+    order : array or None
+        Indices to order time in ascending order.
+        If None, order will be computed.
 
     Returns
     -------
@@ -42,7 +46,8 @@ def _compute_counts(event, time):
     """
     n_samples = event.shape[0]
 
-    order = numpy.argsort(time, kind="mergesort")
+    if order is None:
+        order = numpy.argsort(time, kind="mergesort")
 
     uniq_times = numpy.empty(n_samples, dtype=time.dtype)
     uniq_events = numpy.empty(n_samples, dtype=numpy.int_)
