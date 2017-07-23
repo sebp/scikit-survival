@@ -24,13 +24,16 @@ def check_columns_exist(actual, expected):
     missing_features = expected.difference(actual)
     if len(missing_features) != 0:
         raise ValueError("%d features are missing from data: %s" % (
-            len(missing_features), sorted(list(missing_features))
+            len(missing_features), missing_features.tolist()
         ))
 
 
 class OneHotEncoder(BaseEstimator, TransformerMixin):
     """Encode categorical columns with `M` categories into `M-1` columns according
     to the one-hot scheme.
+
+    The order of non-categorical columns is preserved, encoded columns are inserted
+    inplace of the original column.
 
     Parameters
     ----------
@@ -40,7 +43,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    `feature_names_` : set
+    `feature_names_` : pandas.Index
         List of encoded columns.
 
     `categories_` : dict
@@ -52,11 +55,6 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
     """
     def __init__(self, allow_drop=True):
         self.allow_drop = allow_drop
-
-    @property
-    def feature_names_(self):
-        check_is_fitted(self, "encoded_columns_")
-        return frozenset(self.categories_.keys())
 
     def fit(self, X):
         """Retrieve categorical columns.
@@ -97,6 +95,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         columns_to_encode = X.select_dtypes(include=["object", "category"]).columns
         x_dummy = self._encode(X, columns_to_encode)
 
+        self.feature_names_ = columns_to_encode
         self.categories_ = {k: X[k].cat.categories for k in columns_to_encode}
         self.encoded_columns_ = x_dummy.columns
         return x_dummy
@@ -115,7 +114,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
             Encoded data.
         """
         check_is_fitted(self, "encoded_columns_")
-        check_columns_exist(frozenset(X.columns), self.feature_names_)
+        check_columns_exist(X.columns, self.feature_names_)
 
         Xt = X.copy()
         for col, cat in self.categories_.items():

@@ -30,16 +30,17 @@ def create_data(n_samples=117):
 
 
 def encoded_data(data):
-    dat_cat = data.select_dtypes(include=["category"])
+    expected = []
+    for nam, col in data.iteritems():
+        if hasattr(col, "cat"):
+            for cat in col.cat.categories[1:]:
+                name = '{}={}'.format(nam, cat)
+                s = pd.Series(col == cat, dtype=np.float64)
+                expected.append((name, s))
+        else:
+            expected.append((nam, col))
 
-    expected_cat = {}
-    for nam, col in dat_cat.iteritems():
-        for cat in col.cat.categories[1:]:
-            expected_cat['{}={}'.format(nam, cat)] = pd.Series(
-                col == cat, dtype=np.float64)
-    expected_cat = pd.DataFrame(expected_cat)
-
-    expected_data = pd.concat((data.drop(dat_cat, axis=1), expected_cat), axis=1)
+    expected_data = pd.DataFrame.from_items(expected)
     return expected_data
 
 
@@ -50,8 +51,8 @@ class TestOneHotEncoder(TestCase):
 
         t = OneHotEncoder().fit(data)
 
-        self.assertSetEqual(t.feature_names_,
-                            {'binary_1', 'binary_2', 'many', 'trinary'})
+        self.assertListEqual(t.feature_names_.tolist(),
+                             ['binary_1', 'binary_2', 'many', 'trinary'])
         self.assertSetEqual(set(t.encoded_columns_),
                             set(expected_data.columns))
 
@@ -64,8 +65,7 @@ class TestOneHotEncoder(TestCase):
         expected_data = encoded_data(data)
 
         actual_data = OneHotEncoder().fit_transform(data)
-        tm.assert_frame_equal(actual_data.sort_index(axis=1),
-                              expected_data.sort_index(axis=1))
+        tm.assert_frame_equal(actual_data, expected_data)
 
     def test_transform(self):
         data = create_data()
@@ -74,12 +74,11 @@ class TestOneHotEncoder(TestCase):
         data = create_data(165)
         expected_data = encoded_data(data)
         actual_data = t.transform(data)
-        tm.assert_frame_equal(actual_data.sort_index(axis=1),
-                              expected_data.sort_index(axis=1))
+        tm.assert_frame_equal(actual_data, expected_data)
 
-        expected_data = encoded_data(data.iloc[:, ::-1])
-        tm.assert_frame_equal(actual_data.sort_index(axis=1),
-                              expected_data.sort_index(axis=1))
+        data = pd.concat((data.iloc[:, :2], data.iloc[:, 5:], data.iloc[:, 2:5]), axis=1)
+        actual_data = t.transform(data)
+        tm.assert_frame_equal(actual_data, expected_data)
 
     def test_transform_other_columns(self):
         data = create_data()
