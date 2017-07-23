@@ -90,7 +90,7 @@ def _encode_categorical_series(series, allow_drop=True):
     return series
 
 
-def encode_categorical(table, **kwargs):
+def encode_categorical(table, columns=None, **kwargs):
     """
     Encode categorical columns with `M` categories into `M-1` columns according
     to the one-hot scheme.
@@ -99,6 +99,11 @@ def encode_categorical(table, **kwargs):
     ----------
     table : pandas.DataFrame
         Table with categorical columns to encode.
+
+    columns : list-like, default None
+        Column names in the DataFrame to be encoded.
+        If `columns` is None then all the columns with
+        `object` or `category` dtype will be converted.
 
     allow_drop : boolean, optional, default=True
         Whether to allow dropping categorical columns that only consist
@@ -114,21 +119,27 @@ def encode_categorical(table, **kwargs):
         if not is_categorical_dtype(table.dtype) and not table.dtype.char == "O":
             raise TypeError("series must be of categorical dtype, but was {}".format(table.dtype))
         return _encode_categorical_series(table, **kwargs)
+
+    def _is_categorical_or_object(series):
+        return is_categorical_dtype(series.dtype) or series.dtype.char == "O"
+
+    if columns is None:
+        # for columns containing categories
+        columns_to_encode = {nam for nam, s in table.iteritems() if _is_categorical_or_object(s)}
     else:
-        new_table = pandas.DataFrame(index=table.index)
+        columns_to_encode = set(columns)
 
-        for j in range(table.shape[1]):
-            series = table.iloc[:, j]
+    items = []
+    for name, series in table.iteritems():
+        if name in columns_to_encode:
+            series = _encode_categorical_series(series, **kwargs)
+            if series is None:
+                continue
+        items.append(series)
 
-            # for columns containing categories
-            if is_categorical_dtype(series.dtype) or series.dtype.char == "O":
-                series = _encode_categorical_series(series, **kwargs)
-                if series is None:
-                    continue
-
-            # concat columns of tables
-            new_table = pandas.concat((new_table, series), axis=1, copy=False)
-        return new_table
+    # concat columns of tables
+    new_table = pandas.concat(items, axis=1, copy=False)
+    return new_table
 
 
 def _get_dummies_1d(data, allow_drop=True):
