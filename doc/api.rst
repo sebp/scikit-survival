@@ -72,6 +72,13 @@ Metrics
 
 Pre-Processing
 --------------
+.. currentmodule:: sksurv.preprocessing
+
+.. autosummary::
+    :toctree: generated/
+
+    OneHotEncoder
+
 .. currentmodule:: sksurv.column
 
 .. autosummary::
