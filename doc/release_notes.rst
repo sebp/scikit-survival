@@ -3,6 +3,17 @@
 Release Notes
 =============
 
+scikit-survival 0.3 (2017-08-01)
+--------------------------------
+
+This release adds :meth:`sksurv.linear_model.CoxPHSurvivalAnalysis.predict_survival_function`
+and :meth:`sksurv.linear_model.CoxPHSurvivalAnalysis.predict_cumulative_hazard_function`,
+which return the survival function and cumulative hazard function using Breslow's
+estimator.
+Moreover, it fixes a build error on Windows (`gh #3 <https://github.com/sebp/scikit-survival/issues/3>`_)
+and adds the :class:`sksurv.preprocessing.OneHotEncoder` class, which can be used in
+a `scikit-learn pipeline <http://scikit-learn.org/dev/modules/generated/sklearn.pipeline.Pipeline.html>`_.
+
 
 scikit-survival 0.2 (2017-05-29)
 --------------------------------
