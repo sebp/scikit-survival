@@ -8,7 +8,11 @@ scikit-survival
 
 .. image:: https://travis-ci.org/sebp/scikit-survival.svg
   :target: https://travis-ci.org/sebp/scikit-survival
-  :alt: Build Status
+  :alt: Travis CI Build Status
+
+.. image:: https://ci.appveyor.com/api/projects/status/github/sebp/scikit-survival?branch=master&svg=true
+   :target: https://ci.appveyor.com/project/sebp/scikit-survival
+   :alt: AppVeyor Build Status
 
 .. image:: https://codecov.io/gh/sebp/scikit-survival/branch/master/graph/badge.svg
   :target: https://codecov.io/gh/sebp/scikit-survival
