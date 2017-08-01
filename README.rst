@@ -100,8 +100,8 @@ To check everything is setup correctly run the test suite by executing::
 Examples
 ========
 
-A `simple example <https://nbviewer.jupyter.org/github/sebp/scikit-survival/blob/master/examples/survival-svm.ipynb>`_
-on how to use Survival Support Vector Machines is described in an `Jupyter notebook <https://jupyter.org/>`_.
+An `Introduction to Survival Analysis with scikit-survival <https://nbviewer.jupyter.org/github/sebp/scikit-survival/blob/master/examples/00-introduction.ipynb>`_
+is available as `Jupyter notebook <https://jupyter.org/>`_.
 
 =============
 Documentation
