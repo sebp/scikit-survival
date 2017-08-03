@@ -1,5 +1,5 @@
 {% set name = "scikit-survival" %}
-{% set version = "0.2" %}
+{% set version = "0.3" %}
 
 package:
   name: {{ name|lower }}
@@ -7,7 +7,7 @@ package:
 
 source:
 #  path: ..
-  git_rev: v0.2
+  git_rev: v0.3
   git_url: https://github.com/sebp/scikit-survival
 
 build:
@@ -18,19 +18,19 @@ build:
 
 requirements:
   build:
-    - python
+    - python {{ python }}
     - setuptools
     - setuptools_scm
     - gcc
-    - numpy x.x
+    - numpy {{ numpy }}
     - scipy >=0.16
 
   run:
-    - python
+    - python {{ python }}
     - cvxopt
     - cvxpy
     - numexpr
-    - numpy x.x
+    - numpy {{ numpy }}
     - pandas >=0.18.0,<0.21
     - scikit-learn >=0.18.0,<0.19
     - scipy >=0.16
@@ -59,6 +59,7 @@ test:
     - sksurv.meta.base
     - sksurv.meta.ensemble_selection
     - sksurv.meta.stacking
+    - sksurv.preprocessing
     - sksurv.svm
     - sksurv.svm.minlip
     - sksurv.svm.naive_survival_svm
