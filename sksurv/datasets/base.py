@@ -251,7 +251,8 @@ def load_gbsg2():
 
 
 def load_veterans_lung_cancer():
-    """Load and return the Worcester Heart Attack Study dataset
+    """Load and return data from the Veterans' Administration
+    Lung Cancer Trial
 
     The dataset has 137 samples and 6 features.
     The endpoint is death, which occurred for 128 patients (93.4%).
