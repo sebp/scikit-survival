@@ -1,25 +1,14 @@
 sudo: required
 language: python
 python:
-  - 3.4
   - 3.5
   - 3.6
 env:
   global:
     - NO_SLOW=true
   matrix:
-    - PANDAS_VERSION=0.18 NUMPY_VERSION=1.11
     - PANDAS_VERSION=0.19 NUMPY_VERSION=1.12
     - PANDAS_VERSION=0.20 NUMPY_VERSION=1.13 NO_SLOW=false
-
-matrix:
-  exclude:
-    - python: 3.4
-      env: PANDAS_VERSION=0.20 NUMPY_VERSION=1.13 NO_SLOW=false
-    - python: 3.4
-      env: PANDAS_VERSION=0.19 NUMPY_VERSION=1.12
-    - python: 3.6
-      env: PANDAS_VERSION=0.18 NUMPY_VERSION=1.11
 
 cache:
   directories:

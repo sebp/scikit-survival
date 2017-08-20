@@ -53,7 +53,6 @@ def setup_package():
                                  'Operating System :: Unix',
                                  'Programming Language :: C',
                                  'Programming Language :: Python',
-                                 'Programming Language :: Python :: 3.4',
                                  'Programming Language :: Python :: 3.5',
                                  'Programming Language :: Python :: 3.6',
                                  'Topic :: Software Development',
@@ -67,7 +66,7 @@ def setup_package():
                         'numpy',
                         'pandas >=0.18, <0.21',
                         'scipy',
-                        'scikit-learn >=0.18.0, <0.19'],
+                        'scikit-learn >=0.19.0, <0.20'],
                     extras_require={
                         'full': [
                             'cvxopt',
