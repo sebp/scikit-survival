@@ -522,24 +522,24 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         if isinstance(self.max_features, str):
             if self.max_features == "auto":
-                max_features = self.n_features
+                max_features = self.n_features_
             elif self.max_features == "sqrt":
-                max_features = max(1, int(numpy.sqrt(self.n_features)))
+                max_features = max(1, int(numpy.sqrt(self.n_features_)))
             elif self.max_features == "log2":
-                max_features = max(1, int(numpy.log2(self.n_features)))
+                max_features = max(1, int(numpy.log2(self.n_features_)))
             else:
                 raise ValueError("Invalid value for max_features: %r. "
                                  "Allowed string values are 'auto', 'sqrt' "
                                  "or 'log2'." % self.max_features)
         elif self.max_features is None:
-            max_features = self.n_features
+            max_features = self.n_features_
         elif isinstance(self.max_features, (numbers.Integral, numpy.integer)):
             if self.max_features < 1:
                 raise ValueError("max_features must be in (0, n_features]")
             max_features = self.max_features
         else:  # float
             if 0. < self.max_features <= 1.:
-                max_features = max(int(self.max_features * self.n_features), 1)
+                max_features = max(int(self.max_features * self.n_features_), 1)
             else:
                 raise ValueError("max_features must be in (0, 1.0]")
 
@@ -727,7 +727,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         random_state = check_random_state(self.random_state)
 
         X, event, time = check_arrays_survival(X, y, accept_sparse=['csr', 'csc', 'coo'], dtype=DTYPE)
-        n_samples, self.n_features = X.shape
+        n_samples, self.n_features_ = X.shape
 
         X = X.astype(DTYPE)
         if sample_weight is None:
