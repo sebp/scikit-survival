@@ -480,7 +480,8 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                  criterion='friedman_mse',
                  min_samples_split=2,
                  min_samples_leaf=1, min_weight_fraction_leaf=0.,
-                 max_depth=3, min_impurity_split=1e-7, random_state=None,
+                 max_depth=3, min_impurity_split=None,
+                 min_impurity_decrease=0., random_state=None,
                  max_features=None, max_leaf_nodes=None,
                  subsample=1.0, dropout_rate=0.0,
                  verbose=0):
@@ -494,6 +495,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                          min_weight_fraction_leaf=min_weight_fraction_leaf,
                          max_depth=max_depth,
                          min_impurity_split=min_impurity_split,
+                         min_impurity_decrease=min_impurity_decrease,
                          init=ZeroSurvivalEstimator(),
                          random_state=random_state,
                          max_features=max_features,
