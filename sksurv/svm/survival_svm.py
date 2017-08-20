@@ -14,7 +14,7 @@ from abc import ABCMeta, abstractmethod
 from sklearn.base import BaseEstimator
 from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.utils import check_X_y, check_array, check_consistent_length, check_random_state
-from sklearn.utils.extmath import safe_sparse_dot, squared_norm, fast_dot
+from sklearn.utils.extmath import safe_sparse_dot, squared_norm
 
 from scipy.optimize import minimize
 
@@ -285,7 +285,7 @@ class SimpleOptimizer(RankSVMOptimizer):
         col_sum = numpy.asmatrix(numpy.ones((1, self.Asv.shape[0]), dtype=numpy.int_)) * self.Asv
         v = numpy.asarray(col_sum).squeeze()
 
-        z = fast_dot(self.data_x.T, (self.Asv.T.dot(self.Asv.dot(self.xw)) - v))
+        z = numpy.dot(self.data_x.T, (self.Asv.T.dot(self.Asv.dot(self.xw)) - v))
         return w + self.alpha * z
 
     def _hessian_func(self, w, s):
@@ -321,12 +321,12 @@ class PRSVMOptimizer(RankSVMOptimizer):
         # scipy.sparse.spmatrix.sum uses dtype of matrix, which is too small
         col_sum = numpy.asmatrix(numpy.ones((1, self.Aw.shape[0]), dtype=numpy.int_)) * self.Aw
         v = numpy.asarray(col_sum).squeeze()
-        z = fast_dot(self.data_x.T, self.Aw.T.dot(self.AXw) - v)
+        z = numpy.dot(self.data_x.T, self.Aw.T.dot(self.AXw) - v)
         return w + self.alpha * z
 
     def _hessian_func(self, w, s):
         v = self.Aw.dot(numpy.dot(self.data_x, s))
-        z = self.alpha * fast_dot(self.data_x.T, self.Aw.T.dot(v))
+        z = self.alpha * numpy.dot(self.data_x.T, self.Aw.T.dot(v))
         return s + z
 
 
@@ -420,11 +420,11 @@ class LargeScaleOptimizer(RankSVMOptimizer):
         xw = self._xw
         z = numexpr.evaluate('(l_plus + l_minus) * xw - xv_plus - xv_minus - l_minus + l_plus')
 
-        grad = wf + self._rank_penalty * fast_dot(x.T, z)
+        grad = wf + self._rank_penalty * numpy.dot(x.T, z)
         if self._has_time:
             xc = x.compress(self.regr_mask, axis=0)
             xcs = numpy.dot(xc, wf)
-            grad += self._regr_penalty * (fast_dot(xc.T, xcs) + xc.sum(axis=0) * bias - fast_dot(xc.T, self.y_compressed))
+            grad += self._regr_penalty * (numpy.dot(xc.T, xcs) + xc.sum(axis=0) * bias - numpy.dot(xc.T, self.y_compressed))
 
             # intercept
             if self._fit_intercept:
@@ -442,10 +442,10 @@ class LargeScaleOptimizer(RankSVMOptimizer):
         xs = numpy.dot(x, s_feat)
         xs = numexpr.evaluate('(l_plus + l_minus) * xs - xv_plus - xv_minus')
 
-        hessp = s_feat + self._rank_penalty * fast_dot(x.T, xs)
+        hessp = s_feat + self._rank_penalty * numpy.dot(x.T, xs)
         if self._has_time:
             xc = x.compress(self.regr_mask, axis=0)
-            hessp += self._regr_penalty * fast_dot(xc.T, numpy.dot(xc, s_feat))
+            hessp += self._regr_penalty * numpy.dot(xc.T, numpy.dot(xc, s_feat))
 
             # intercept
             if self._fit_intercept:
@@ -544,12 +544,12 @@ class NonlinearLargeScaleOptimizer(RankSVMOptimizer):
         l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(beta)
         z = numexpr.evaluate('(l_plus + l_minus) * Kw - xv_plus - xv_minus - l_minus + l_plus')
 
-        gradient = Kw + self._rank_penalty * fast_dot(K, z)
+        gradient = Kw + self._rank_penalty * numpy.dot(K, z)
         if self._has_time:
             K_comp = K.compress(self.regr_mask, axis=0)
             K_comp_beta = numpy.dot(K_comp, beta)
-            gradient += self._regr_penalty * (fast_dot(K_comp.T, K_comp_beta)
-                                              + K_comp.sum(axis=0) * bias - fast_dot(K_comp.T, self.y_compressed))
+            gradient += self._regr_penalty * (numpy.dot(K_comp.T, K_comp_beta)
+                                              + K_comp.sum(axis=0) * bias - numpy.dot(K_comp.T, self.y_compressed))
 
             # intercept
             if self._fit_intercept:
@@ -567,10 +567,10 @@ class NonlinearLargeScaleOptimizer(RankSVMOptimizer):
         l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(s_feat)
         xs = numexpr.evaluate('(l_plus + l_minus) * Ks - xv_plus - xv_minus')
 
-        hessian = Ks + self._rank_penalty * fast_dot(K, xs)
+        hessian = Ks + self._rank_penalty * numpy.dot(K, xs)
         if self._has_time:
             K_comp = K.compress(self.regr_mask, axis=0)
-            hessian += self._regr_penalty * fast_dot(K_comp.T, numpy.dot(K_comp, s_feat))
+            hessian += self._regr_penalty * numpy.dot(K_comp.T, numpy.dot(K_comp, s_feat))
 
             # intercept
             if self._fit_intercept:
