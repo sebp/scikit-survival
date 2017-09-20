@@ -62,7 +62,6 @@ def setup_package():
                     use_scm_version=True,
                     setup_requires=['setuptools_scm'],
                     install_requires=[
-                        'cvxopt',
                         'cvxpy',
                         'numexpr',
                         'numpy',
@@ -70,6 +69,8 @@ def setup_package():
                         'scipy',
                         'scikit-learn >=0.18.0, <0.19'],
                     extras_require={
+                        'full': [
+                            'cvxopt'],
                         'tests': [
                             'nose',
                             'coverage'],

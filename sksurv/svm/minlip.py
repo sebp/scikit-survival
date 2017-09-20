@@ -10,6 +10,14 @@ from ._minlip import create_difference_matrix
 __all__ = ['MinlipSurvivalAnalysis', 'HingeLossSurvivalSVM']
 
 
+def _check_cvxopt():
+    try:
+        import cvxopt
+    except ImportError:
+        raise ImportError("Please install cvxopt from https://github.com/cvxopt/cvxopt")
+    return cvxopt
+
+
 class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     """Survival model related to survival SVM, using a minimal Lipschitz smoothness strategy
     instead of a maximal margin strategy.
@@ -165,8 +173,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         return a.value.T.A, None
 
     def _fit_cvxopt(self, K, D, time):
-        import cvxopt
-
+        cvxopt = _check_cvxopt()
         n_samples = K.shape[0]
 
         P = D.dot(D.dot(K).T).T
@@ -344,7 +351,7 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
         return coef, sv
 
     def _fit_cvxopt(self, K, D, time):
-        import cvxopt
+        cvxopt = _check_cvxopt()
 
         n_pairs = D.shape[0]
 
