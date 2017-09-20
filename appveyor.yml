@@ -12,14 +12,14 @@ environment:
       CONDA_INSTALL_LOCN: "C:\\Miniconda3-x64"
     # cvxopt is only available for python <3.5
     # https://github.com/cvxopt/cvxopt/issues/94
-    # - TARGET_ARCH: "x64"
-    #   CONDA_PY: "35"
-    #   PY_CONDITION: "python >=3.5,<3.6"
-    #   CONDA_INSTALL_LOCN: "C:\\Miniconda35-x64"
-    # - TARGET_ARCH: "x64"
-    #   CONDA_PY: "36"
-    #   PY_CONDITION: "python >=3.6"
-    #   CONDA_INSTALL_LOCN: "C:\\Miniconda36-x64"
+    - TARGET_ARCH: "x64"
+      CONDA_PY: "35"
+      PY_CONDITION: "python >=3.5,<3.6"
+      CONDA_INSTALL_LOCN: "C:\\Miniconda35-x64"
+    - TARGET_ARCH: "x64"
+      CONDA_PY: "36"
+      PY_CONDITION: "python >=3.6"
+      CONDA_INSTALL_LOCN: "C:\\Miniconda36-x64"
 
 # We always use a 64-bit machine.
 platform:
@@ -38,8 +38,18 @@ install:
   - cmd: pip install --disable-pip-version-check --user --upgrade pip
 
   # Install the build and runtime dependencies of the project.
-  - cmd: conda install "%PY_CONDITION%" numpy=%NUMPY_VERSION% pandas scipy nose
-  - cmd: pip install -r requirements.txt
+  - cmd: conda install "%PY_CONDITION%" numpy=%NUMPY_VERSION% pandas scipy nose ecos
+
+  # Install scs from tarball
+  - cmd: pip download --no-cache-dir --no-deps scs==1.2.7
+  - cmd: python ci/appveyor/extract-archive.py scs-1.2.7.tar.gz
+  - cmd: cd scs-1.2.7
+  - cmd: python setup.py install
+  - cmd: cd ..
+  - cmd: rmdir scs-1.2.7 /s /q
+
+  # Install remaining dependencies
+  - cmd: pip install -r ci/appveyor/requirements_%CONDA_PY%.txt
   # Create binary packages for the project.
   - cmd: python setup.py bdist_wheel bdist_wininst
   - ps: "ls dist"

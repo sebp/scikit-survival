@@ -1,0 +1,6 @@
+cvxpy
+numexpr
+numpy
+pandas >=0.18, <0.21
+scipy
+scikit-learn >=0.18.0, <0.19
