@@ -652,7 +652,7 @@ class TestKernelSurvivalSVM(TestCase):
         x = numpy.dot(self.x.values, self.x.values.T)
         ssvm.fit(x, self.y)
 
-        x_new = numpy.empty((100, 14))
+        x_new = numpy.random.randn(100, 14)
         self.assertRaisesRegex(ValueError, r"Precomputed metric requires shape \(n_queries, n_indexed\)\. "
                                            r"Got \(100, 14\) for 500 indexed\.",
                                ssvm.predict, x_new)
