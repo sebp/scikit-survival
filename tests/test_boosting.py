@@ -54,10 +54,15 @@ class TestGradientBoosting(TestCase):
         self.assertEquals(model.max_features_, 8)
         self.assertTrue(hasattr(model, "oob_improvement_"))
 
-        p = model.predict(self.x)
+        incl_mask = numpy.ones(self.x.shape[0], dtype=bool)
+        incl_mask[[35, 111, 174, 206, 236, 268, 497]] = False
+        x_test = self.x[incl_mask]
+        y_test = self.y[incl_mask]
 
-        expected_cindex = numpy.array([0.8610760, 64709, 10440, 0, 119])
-        result = concordance_index_censored(self.y['fstat'], self.y['lenfol'], p)
+        p = model.predict(x_test)
+
+        expected_cindex = numpy.array([0.8592640, 62905, 10303, 0, 110])
+        result = concordance_index_censored(y_test['fstat'], y_test['lenfol'], p)
         assert_array_almost_equal(expected_cindex, numpy.array(result))
 
         self.assertTupleEqual((100,), model.train_score_.shape)
