@@ -16,7 +16,11 @@ else
 
   conda config --set always_yes yes --set changeps1 no
   conda update -q conda
-  conda install anaconda-client gcc
+  if [ "x$TRAVIS_PYTHON_VERSION" = "x3.4" ]; then
+      conda install gcc
+  else
+      conda install gcc_linux-64
+  fi
   conda create -n sksurv-test python=$TRAVIS_PYTHON_VERSION numpy=$NUMPY_VERSION pandas=$PANDAS_VERSION nose coverage
   echo "numpy $NUMPY_VERSION.*" > "$MINICONDA_DIR/envs/sksurv-test/conda-meta/pinned"
   echo "pandas $PANDAS_VERSION.*" >> "$MINICONDA_DIR/envs/sksurv-test/conda-meta/pinned"
