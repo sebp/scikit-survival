@@ -6,7 +6,7 @@ scikit-survival
   :target: COPYING
   :alt: License
 
-.. image:: https://travis-ci.org/sebp/scikit-survival.svg
+.. image:: https://travis-ci.org/sebp/scikit-survival.svg?branch=master
   :target: https://travis-ci.org/sebp/scikit-survival
   :alt: Travis CI Build Status
 
