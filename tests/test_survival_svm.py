@@ -630,7 +630,7 @@ class TestKernelSurvivalSVM(TestCase):
 
     def test_fit_precomputed_kernel_invalid_shape(self):
         ssvm = FastKernelSurvivalSVM(optimizer="rbtree", kernel='precomputed', random_state=0)
-        x = numpy.empty((100, 14))
+        x = numpy.random.randn(100, 14)
         y = numpy.fromiter(zip(numpy.ones(100), numpy.ones(100)), dtype=[('event', bool), ('time', float)])
 
         self.assertRaisesRegex(ValueError, r"Precomputed metric requires shape \(n_queries, n_indexed\)\. "
