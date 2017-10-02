@@ -2,24 +2,25 @@
 # Windows
 
 environment:
-  global:
-    NUMPY_VERSION: 1.11
   # see https://www.appveyor.com/docs/build-environment/#python
   matrix:
+    # cvxopt is only available for python <3.5
+    # https://github.com/cvxopt/cvxopt/issues/94
     - TARGET_ARCH: "x64"
       CONDA_PY: "34"
       PY_CONDITION: "python >=3.4,<3.5"
       CONDA_INSTALL_LOCN: "C:\\Miniconda3-x64"
-    # cvxopt is only available for python <3.5
-    # https://github.com/cvxopt/cvxopt/issues/94
+      NUMPY_VERSION: 1.11
     - TARGET_ARCH: "x64"
       CONDA_PY: "35"
       PY_CONDITION: "python >=3.5,<3.6"
       CONDA_INSTALL_LOCN: "C:\\Miniconda35-x64"
+      NUMPY_VERSION: 1.12
     - TARGET_ARCH: "x64"
       CONDA_PY: "36"
       PY_CONDITION: "python >=3.6"
       CONDA_INSTALL_LOCN: "C:\\Miniconda36-x64"
+      NUMPY_VERSION: 1.13
 
 # We always use a 64-bit machine.
 platform:

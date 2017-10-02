@@ -5,19 +5,19 @@ python:
   - 3.5
   - 3.6
 env:
-  global:
-    - NUMPY_VERSION=1.11
   matrix:
-    - PANDAS_VERSION=0.18
-    - PANDAS_VERSION=0.19
-    - PANDAS_VERSION=0.20
+    - PANDAS_VERSION=0.18 NUMPY_VERSION=1.11
+    - PANDAS_VERSION=0.19 NUMPY_VERSION=1.12
+    - PANDAS_VERSION=0.20 NUMPY_VERSION=1.13
 
 matrix:
   exclude:
     - python: 3.4
-      env: PANDAS_VERSION=0.20
+      env: PANDAS_VERSION=0.20 NUMPY_VERSION=1.13
+    - python: 3.4
+      env: PANDAS_VERSION=0.19 NUMPY_VERSION=1.12
     - python: 3.6
-      env: PANDAS_VERSION=0.18
+      env: PANDAS_VERSION=0.18 NUMPY_VERSION=1.11
 
 cache:
   directories:
