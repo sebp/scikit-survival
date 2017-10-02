@@ -7,7 +7,7 @@ def configuration(parent_package='', top_path=None):
     config = Configuration('kernels', parent_package, top_path)
 
     config.add_extension('_clinical_kernel',
-                         sources=['_clinical_kernel.c'],
+                         sources=['_clinical_kernel.pyx'],
                          include_dirs=[numpy.get_include()])
 
     return config

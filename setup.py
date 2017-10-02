@@ -70,7 +70,8 @@ def setup_package():
                         'scikit-learn >=0.18.0, <0.19'],
                     extras_require={
                         'full': [
-                            'cvxopt'],
+                            'cvxopt',
+                            'cython'],
                         'tests': [
                             'nose',
                             'coverage'],

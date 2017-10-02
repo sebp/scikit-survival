@@ -19,11 +19,11 @@ def configuration(parent_package='', top_path=None):
     config = Configuration('svm', parent_package, top_path)
 
     config.add_extension('_prsvm',
-                         sources=['_prsvm.c'],
+                         sources=['_prsvm.pyx'],
                          include_dirs=[numpy.get_include()])
 
     config.add_extension('_minlip',
-                         sources=['_minlip.c'],
+                         sources=['_minlip.pyx'],
                          include_dirs=[numpy.get_include()])
 
     return config

@@ -19,7 +19,7 @@ def configuration(parent_package='', top_path=None):
     config = Configuration('bintrees', parent_package, top_path)
 
     config.add_extension('_binarytrees',
-                         sources=['_binarytrees.cpp', 'binarytrees.cpp'],
+                         sources=['_binarytrees.pyx', 'binarytrees.cpp'],
                          include_dirs=[numpy.get_include()],
                          language='c++')
 
