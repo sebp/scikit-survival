@@ -295,24 +295,28 @@ class TestToyCvxpyExample(TestCase):
         assert_array_almost_equal(numpy.array([-0.34161366, -5.37419721]), p)
 
 
-class TestToyCvxoptExample(TestCase):
-    def setUp(self):
-        self.x, self.y = create_toy_data()
-
-    def _check_cvxopt(self):
+def skip_without_cvxopt(func):
+    def f(*args, **kwargs):
         try:
             import cvxopt
         except ImportError:
             raise SkipTest("cvxopt not installed")
+        return func(*args, **kwargs)
+    return f
+
+
+class TestToyCvxoptExample(TestCase):
+    def setUp(self):
+        self.x, self.y = create_toy_data()
 
     @property
+    @skip_without_cvxopt
     def minlip_model(self):
-        self._check_cvxopt()
         return MinlipSurvivalAnalysis(solver="cvxopt", alpha=1, pairs="next")
 
     @property
+    @skip_without_cvxopt
     def svm_model(self):
-        self._check_cvxopt()
         return HingeLossSurvivalSVM(solver="cvxopt", alpha=1)
 
     def test_toy_minlip_fit_cvxopt(self):
@@ -442,12 +446,8 @@ class TestMinlipCvxopt(TestCase):
         self.y = y
 
     @property
+    @skip_without_cvxopt
     def model(self):
-        try:
-            import cvxopt
-        except ImportError:
-            raise SkipTest("cvxopt not installed")
-
         return MinlipSurvivalAnalysis(solver="cvxopt", alpha=1, pairs="next")
 
     def test_breast_cancer_cvxopt(self):
