@@ -88,7 +88,8 @@ class TestColumn(TestCase):
 
 
 class TestEncodeCategorical(TestCase):
-    def test_series_categorical(self):
+    @staticmethod
+    def test_series_categorical():
         input_series = pandas.Series(pandas.Categorical.from_codes([1, 1, 0, 2, 0, 1, 2, 1, 2, 0, 0, 1, 2, 2],
                                                                    ["small", "medium", "large"], ordered=False),
                                      name="a_series")
@@ -277,62 +278,62 @@ class TestEncodeCategorical(TestCase):
         tm.assert_frame_equal(actual_df.dropna(), expected_df.dropna(), check_exact=True)
 
 
-class TestCategoricalToNumeric(TestCase):
+def test_categorical_series_to_numeric():
+    input_series = pandas.Series(["a", "a", "b", "b", "b", "c"], name="Thr33",
+                           index=["Alpha", "Beta", "Gamma", "Delta", "Eta", "Mu"])
+    expected = pandas.Series([0, 0, 1, 1, 1, 2], name="Thr33",
+                             index=["Alpha", "Beta", "Gamma", "Delta", "Eta", "Mu"],
+                             dtype=numpy.int64)
 
-    def test_series(self):
-        input_series = pandas.Series(["a", "a", "b", "b", "b", "c"], name="Thr33",
-                               index=["Alpha", "Beta", "Gamma", "Delta", "Eta", "Mu"])
-        expected = pandas.Series([0, 0, 1, 1, 1, 2], name="Thr33",
-                                 index=["Alpha", "Beta", "Gamma", "Delta", "Eta", "Mu"],
-                                 dtype=numpy.int64)
+    actual = column.categorical_to_numeric(input_series)
 
-        actual = column.categorical_to_numeric(input_series)
+    tm.assert_series_equal(actual, expected, check_exact=True)
 
-        tm.assert_series_equal(actual, expected, check_exact=True)
 
-    def test_bool_series(self):
-        input_series = pandas.Series([True, True, False, False, True, False, True], name="human",
-                                     index=["Alpha", "Beta", "Gamma", "Delta", "Eta", "Mu", "Zeta"])
-        expected = pandas.Series([1, 1, 0, 0, 1, 0, 1], name="human",
-                                 index=["Alpha", "Beta", "Gamma", "Delta", "Eta", "Mu", "Zeta"],
-                                 dtype=numpy.int64)
+def test_bool_series_to_numeric():
+    input_series = pandas.Series([True, True, False, False, True, False, True], name="human",
+                                 index=["Alpha", "Beta", "Gamma", "Delta", "Eta", "Mu", "Zeta"])
+    expected = pandas.Series([1, 1, 0, 0, 1, 0, 1], name="human",
+                             index=["Alpha", "Beta", "Gamma", "Delta", "Eta", "Mu", "Zeta"],
+                             dtype=numpy.int64)
 
-        actual = column.categorical_to_numeric(input_series)
+    actual = column.categorical_to_numeric(input_series)
 
-        tm.assert_series_equal(actual, expected, check_exact=True)
+    tm.assert_series_equal(actual, expected, check_exact=True)
 
-    def test_data_frame(self):
-        a = numpy.concatenate((
-            numpy.repeat(["large"], 10),
-            numpy.repeat(["small"], 5),
-            numpy.repeat(["tiny"], 13),
-            numpy.repeat(["medium"], 3)))
-        b = numpy.concatenate((
-            numpy.repeat(["yes"], 8),
-            numpy.repeat(["no"], 23)))
 
-        rnd = numpy.random.RandomState(0)
-        c = rnd.randn(len(a))
+def test_data_frame_to_numeric():
+    a = numpy.concatenate((
+        numpy.repeat(["large"], 10),
+        numpy.repeat(["small"], 5),
+        numpy.repeat(["tiny"], 13),
+        numpy.repeat(["medium"], 3)))
+    b = numpy.concatenate((
+        numpy.repeat(["yes"], 8),
+        numpy.repeat(["no"], 23)))
 
-        input_df = pandas.DataFrame({"a_category": a,
-                                     "a_binary": b,
-                                     "a_number": c.copy()})
+    rnd = numpy.random.RandomState(0)
+    c = rnd.randn(len(a))
 
-        a_num = numpy.concatenate((
-            numpy.repeat([0], 10),
-            numpy.repeat([2], 5),
-            numpy.repeat([3], 13),
-            numpy.repeat([1], 3))).astype(numpy.int64)
-        b_num = numpy.concatenate((
-            numpy.repeat([1], 8),
-            numpy.repeat([0], 23))).astype(numpy.int64)
-        expected = pandas.DataFrame({"a_category": a_num,
-                                     "a_binary": b_num,
-                                     "a_number": c.copy()})
+    input_df = pandas.DataFrame({"a_category": a,
+                                 "a_binary": b,
+                                 "a_number": c.copy()})
 
-        actual = column.categorical_to_numeric(input_df)
+    a_num = numpy.concatenate((
+        numpy.repeat([0], 10),
+        numpy.repeat([2], 5),
+        numpy.repeat([3], 13),
+        numpy.repeat([1], 3))).astype(numpy.int64)
+    b_num = numpy.concatenate((
+        numpy.repeat([1], 8),
+        numpy.repeat([0], 23))).astype(numpy.int64)
+    expected = pandas.DataFrame({"a_category": a_num,
+                                 "a_binary": b_num,
+                                 "a_number": c.copy()})
 
-        tm.assert_frame_equal(actual, expected, check_exact=True)
+    actual = column.categorical_to_numeric(input_df)
+
+    tm.assert_frame_equal(actual, expected, check_exact=True)
 
 
 if __name__ == '__main__':

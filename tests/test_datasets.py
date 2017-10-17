@@ -221,17 +221,18 @@ def _make_and_write_data(fp, n_samples, n_features, with_index, with_labels, see
     return dataset
 
 
+def assert_x_equal(x_true, x_train):
+    tm.assert_index_equal(x_true.columns, x_train.columns, exact=True)
+    tm.assert_index_equal(x_true.index, x_train.index, exact=True)
+
+    tm.assert_frame_equal(x_true, x_train,
+                          check_index_type=False,
+                          check_column_type=True,
+                          check_names=False,
+                          check_less_precise=True)
+
+
 class TestLoadArffFile(TestCase):
-
-    def assert_x_equal(self, x_true, x_train):
-        tm.assert_index_equal(x_true.columns, x_train.columns, exact=True)
-        tm.assert_index_equal(x_true.index, x_train.index, exact=True)
-
-        tm.assert_frame_equal(x_true, x_train,
-                              check_index_type=False,
-                              check_column_type=True,
-                              check_names=False,
-                              check_less_precise=True)
 
     def assert_y_equal(self, y_true, y_train):
         self.assertTupleEqual(y_train.dtype.names, ("event", "time"))
@@ -255,7 +256,7 @@ class TestLoadArffFile(TestCase):
             cols = ["event", "time"]
             x_true = dataset.drop(cols, axis=1)
 
-            self.assert_x_equal(x_true, x_train)
+            assert_x_equal(x_true, x_train)
             self.assert_y_equal(dataset, y_train)
         finally:
             os.unlink(tmp.name)
@@ -330,11 +331,11 @@ class TestLoadArffFile(TestCase):
             cols = ["event", "time"]
 
             x_true = train_dataset.drop(cols, axis=1)
-            self.assert_x_equal(x_true, x_train)
+            assert_x_equal(x_true, x_train)
             self.assert_y_equal(train_dataset, y_train)
 
             x_true = test_dataset.drop(cols, axis=1)
-            self.assert_x_equal(x_true, x_test)
+            assert_x_equal(x_true, x_test)
             self.assert_y_equal(test_dataset, y_test)
         finally:
             os.unlink(tmp_train.name)
@@ -402,10 +403,10 @@ class TestLoadArffFile(TestCase):
             cols = ["event", "time"]
 
             x_true = train_dataset.drop(cols, axis=1)
-            self.assert_x_equal(x_true, x_train)
+            assert_x_equal(x_true, x_train)
             self.assert_y_equal(train_dataset, y_train)
 
-            self.assert_x_equal(test_dataset, x_test)
+            assert_x_equal(test_dataset, x_test)
             self.assertEqual(y_test, None)
         finally:
             os.unlink(tmp_train.name)

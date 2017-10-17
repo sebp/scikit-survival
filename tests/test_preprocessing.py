@@ -60,14 +60,16 @@ class TestOneHotEncoder(TestCase):
                              {k: data[k].cat.categories
                               for k in ['binary_1', 'binary_2', 'many', 'trinary']})
 
-    def test_fit_transform(self):
+    @staticmethod
+    def test_fit_transform():
         data = create_data()
         expected_data = encoded_data(data)
 
         actual_data = OneHotEncoder().fit_transform(data)
         tm.assert_frame_equal(actual_data, expected_data)
 
-    def test_transform(self):
+    @staticmethod
+    def test_transform():
         data = create_data()
 
         t = OneHotEncoder().fit(data)

@@ -7,7 +7,8 @@ from sksurv.util import safe_concat
 
 
 class TestUtil(TestCase):
-    def test_concat_numeric(self):
+    @staticmethod
+    def test_concat_numeric():
         rnd = numpy.random.RandomState(14)
         a = pandas.Series(rnd.randn(100), name="col_A")
         b = pandas.Series(rnd.randn(100), name="col_B")
@@ -20,7 +21,8 @@ class TestUtil(TestCase):
 
         tm.assert_frame_equal(actual_df, expected_df)
 
-    def test_concat_numeric_categorical(self):
+    @staticmethod
+    def test_concat_numeric_categorical():
         rnd = numpy.random.RandomState(14)
         a = pandas.Series(rnd.randn(100), name="col_A")
         b = pandas.Series(pandas.Categorical.from_codes(
@@ -34,7 +36,8 @@ class TestUtil(TestCase):
 
         tm.assert_frame_equal(actual_df, expected_df)
 
-    def test_concat_categorical(self):
+    @staticmethod
+    def test_concat_categorical():
         rnd = numpy.random.RandomState(14)
         a = pandas.DataFrame.from_items([
             ("col_A", pandas.Series(pandas.Categorical.from_codes(
@@ -72,7 +75,8 @@ class TestUtil(TestCase):
         self.assertRaisesRegex(ValueError, "categories for column col_A do not match",
                                safe_concat, (a, b), axis=0)
 
-    def test_concat_dataframe_numeric_categorical(self):
+    @staticmethod
+    def test_concat_dataframe_numeric_categorical():
         rnd = numpy.random.RandomState(14)
         numeric_df = pandas.DataFrame.from_items(
             [("col_A", rnd.randn(100)), ("col_B", rnd.randn(100))]
