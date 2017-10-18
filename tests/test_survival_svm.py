@@ -427,7 +427,7 @@ class TestKernelSurvivalSVM(TestCase):
         self.x = encode_categorical(standardize(x))
 
     def test_default_optimizer(self):
-        self.assertEqual('rbtree', FastKernelSurvivalSVM().fit(self.x.values, self.y).optimizer)
+        self.assertEqual('rbtree', FastKernelSurvivalSVM(tol=1e-4, max_iter=25).fit(self.x.values, self.y).optimizer)
 
     def test_unknown_optimizer(self):
         x = numpy.zeros((100, 10))
@@ -450,7 +450,7 @@ class TestKernelSurvivalSVM(TestCase):
         i = numpy.arange(250)
         numpy.random.RandomState(0).shuffle(i)
         c = ssvm.score(self.x.values[i], self.y[i])
-        self.assertAlmostEqual(0.76923445664157997, c, 6)
+        self.assertAlmostEqual(c, 0.76923445664157997, 6)
 
     def test_fit_and_predict_linear_precomputed(self):
         ssvm = FastKernelSurvivalSVM(optimizer="rbtree", kernel='precomputed', random_state=0)
@@ -463,7 +463,7 @@ class TestKernelSurvivalSVM(TestCase):
         i = numpy.arange(250)
         numpy.random.RandomState(0).shuffle(i)
         c = ssvm.score(x[i], self.y[i])
-        self.assertAlmostEqual(0.76923445664157997, c, 6)
+        self.assertAlmostEqual(c, 0.76923445664157997, 6)
 
     def test_fit_and_predict_linear_regression(self):
         ssvm = FastKernelSurvivalSVM(optimizer="rbtree", rank_ratio=0.0, kernel="linear",
@@ -472,7 +472,7 @@ class TestKernelSurvivalSVM(TestCase):
         ssvm.fit(self.x.values, self.y)
 
         self.assertFalse(ssvm._pairwise)
-        self.assertAlmostEqual(6.3979746625712295, ssvm.intercept_, 5)
+        self.assertAlmostEqual(ssvm.intercept_, 6.3979746625712295, 5)
 
         i = numpy.arange(250)
         numpy.random.RandomState(0).shuffle(i)
@@ -487,7 +487,7 @@ class TestKernelSurvivalSVM(TestCase):
         ssvm.fit(x, self.y)
 
         self.assertTrue(ssvm._pairwise)
-        self.assertAlmostEqual(6.3979746625712295, ssvm.intercept_, 5)
+        self.assertAlmostEqual(ssvm.intercept_, 6.3979746625712295, 5)
 
         i = numpy.arange(250)
         numpy.random.RandomState(0).shuffle(i)
@@ -504,42 +504,44 @@ class TestKernelSurvivalSVM(TestCase):
 
         pred = ssvm.predict(self.x.values)
         rmse = numpy.sqrt(mean_squared_error(self.y['lenfol'], pred))
-        self.assertAlmostEqual(15837.658418546907, rmse, 4)
+        self.assertAlmostEqual(rmse, 15837.658418546907, 4)
 
     @attr('slow')
     def test_fit_and_predict_rbf_rbtree(self):
-        ssvm = FastKernelSurvivalSVM(optimizer="rbtree", kernel='rbf', random_state=0)
+        ssvm = FastKernelSurvivalSVM(optimizer='rbtree', kernel='rbf',
+                                     tol=2e-6, max_iter=75, random_state=0)
         ssvm.fit(self.x.values, self.y)
 
         self.assertFalse(ssvm._pairwise)
         self.assertEquals(self.x.shape[0], ssvm.coef_.shape[0])
 
         c = ssvm.score(self.x.values, self.y)
-        self.assertAlmostEqual(0.92230102862313534, c, 3)
+        self.assertGreaterEqual(c, 0.965)
 
     @attr('slow')
     def test_fit_and_predict_rbf_avltree(self):
-        ssvm = FastKernelSurvivalSVM(optimizer="avltree", kernel='rbf', random_state=0)
+        ssvm = FastKernelSurvivalSVM(optimizer='avltree', kernel='rbf',
+                                     tol=2e-6, max_iter=75, random_state=0)
         ssvm.fit(self.x.values, self.y)
 
         self.assertFalse(ssvm._pairwise)
         self.assertEquals(self.x.shape[0], ssvm.coef_.shape[0])
 
         c = ssvm.score(self.x.values, self.y)
-        self.assertLessEqual(abs(0.92460312179802795 - c), 1e-3)
+        self.assertGreaterEqual(c, 0.965)
 
     @attr('slow')
     def test_fit_and_predict_regression_rbf(self):
         ssvm = FastKernelSurvivalSVM(optimizer="rbtree", rank_ratio=0.0, kernel="rbf",
-                                     max_iter=50, fit_intercept=True, random_state=0)
+                                     tol=1e-6, max_iter=50, fit_intercept=True, random_state=0)
         ssvm.fit(self.x.values, self.y)
 
         self.assertFalse(ssvm._pairwise)
-        self.assertAlmostEqual(4.9267218894089533, ssvm.intercept_)
+        self.assertAlmostEqual(ssvm.intercept_, 4.9267218894089533)
 
         pred = ssvm.predict(self.x.values)
         rmse = numpy.sqrt(mean_squared_error(self.y['lenfol'], pred))
-        self.assertAlmostEqual(783.525277, rmse, 6)
+        self.assertAlmostEqual(rmse, 783.525277, 6)
 
     @attr('slow')
     def test_fit_and_predict_hybrid_rbf(self):
@@ -560,35 +562,33 @@ class TestKernelSurvivalSVM(TestCase):
 
         trans = ClinicalKernelTransform()
         trans.fit(x_full)
+        x = self.x
 
-        x = encode_categorical(standardize(x_full))
-
-        ssvm = FastKernelSurvivalSVM(optimizer="rbtree", kernel=trans.pairwise_kernel, max_iter=100, random_state=0)
+        ssvm = FastKernelSurvivalSVM(optimizer="rbtree", kernel=trans.pairwise_kernel,
+                                     tol=7e-7, max_iter=100, random_state=0)
         ssvm.fit(x.values, y)
 
         self.assertFalse(ssvm._pairwise)
         self.assertEquals(x.shape[0], ssvm.coef_.shape[0])
 
         c = ssvm.score(x.values, y)
-        self.assertLessEqual(abs(0.83699051218246412 - c), 1e-3)
+        self.assertGreaterEqual(c, 0.854)
 
     @attr('slow')
     def test_compare_rbf(self):
-        x, y = load_whas500()
-        x = encode_categorical(standardize(x))
+        kpca = KernelPCA(kernel="rbf", copy_X=True)
+        xt = kpca.fit_transform(self.x)
+        y = self.y
 
-        kpca = KernelPCA(kernel="rbf")
-        xt = kpca.fit_transform(x)
-
-        nrsvm = FastSurvivalSVM(optimizer='rbtree', tol=1e-8, max_iter=1000, random_state=0)
+        nrsvm = FastSurvivalSVM(optimizer='rbtree', tol=1e-6, max_iter=50, random_state=0)
         nrsvm.fit(xt, y)
 
         rsvm = FastKernelSurvivalSVM(optimizer='rbtree', kernel="rbf",
-                                     tol=1e-8, max_iter=1000, random_state=0)
-        rsvm.fit(x, y)
+                                     tol=1e-6, max_iter=65, random_state=0)
+        rsvm.fit(self.x, y)
 
-        pred_nrsvm = nrsvm.predict(kpca.transform(x))
-        pred_rsvm = rsvm.predict(x)
+        pred_nrsvm = nrsvm.predict(kpca.transform(self.x))
+        pred_rsvm = rsvm.predict(self.x)
 
         self.assertEqual(len(pred_nrsvm), len(pred_rsvm))
 
@@ -605,20 +605,18 @@ class TestKernelSurvivalSVM(TestCase):
         trans = ClinicalKernelTransform()
         trans.fit(x_full)
 
-        x = encode_categorical(standardize(x_full))
+        kpca = KernelPCA(kernel=trans.pairwise_kernel, copy_X=True)
+        xt = kpca.fit_transform(self.x)
 
-        kpca = KernelPCA(kernel=trans.pairwise_kernel)
-        xt = kpca.fit_transform(x)
-
-        nrsvm = FastSurvivalSVM(optimizer='rbtree', tol=1e-8, max_iter=1000, random_state=0)
+        nrsvm = FastSurvivalSVM(optimizer='rbtree', tol=1e-8, max_iter=500, random_state=0)
         nrsvm.fit(xt, y)
 
         rsvm = FastKernelSurvivalSVM(optimizer='rbtree', kernel=trans.pairwise_kernel,
-                                     tol=1e-8, max_iter=1000, random_state=0)
-        rsvm.fit(x, y)
+                                     tol=1e-8, max_iter=500, random_state=0)
+        rsvm.fit(self.x.values, y)
 
-        pred_nrsvm = nrsvm.predict(kpca.transform(x))
-        pred_rsvm = rsvm.predict(x)
+        pred_nrsvm = nrsvm.predict(kpca.transform(self.x))
+        pred_rsvm = rsvm.predict(self.x.values)
 
         self.assertEqual(len(pred_nrsvm), len(pred_rsvm))
 
