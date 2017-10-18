@@ -1,4 +1,4 @@
-from numpy.testing import TestCase, run_module_suite, assert_array_almost_equal, assert_array_equal
+from numpy.testing import TestCase, run_module_suite
 import pandas.util.testing as tm
 import pandas
 import numpy

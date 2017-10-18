@@ -1,5 +1,3 @@
-from os.path import join, dirname
-
 import numpy
 from numpy.testing import TestCase, run_module_suite, assert_array_almost_equal
 
