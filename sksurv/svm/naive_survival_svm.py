@@ -44,36 +44,36 @@ class NaiveSurvivalSVM(LinearSVC, SurvivalAnalysisMixin):
 
     Parameters
     ----------
-    alpha : float, positive (default=1.0)
-        Weight of penalizing the squared hinge loss in the objective function (default: 1)
+    alpha : float, positive, default: 1.0
+        Weight of penalizing the squared hinge loss in the objective function.
 
-    loss : string, 'hinge' or 'squared_hinge' (default='squared_hinge')
+    loss : string, 'hinge' or 'squared_hinge', default: 'squared_hinge'
         Specifies the loss function. 'hinge' is the standard SVM loss
         (used e.g. by the SVC class) while 'squared_hinge' is the
         square of the hinge loss.
 
-    penalty : string, 'l1' or 'l2' (default='l2')
+    penalty : 'l1' | 'l2', default: 'l2'
         Specifies the norm used in the penalization. The 'l2'
         penalty is the standard used in SVC. The 'l1' leads to `coef_`
         vectors that are sparse.
 
-    dual : bool, (default=True)
+    dual : bool, default: True
         Select the algorithm to either solve the dual or primal
         optimization problem. Prefer dual=False when n_samples > n_features.
 
-    tol : float, optional (default=1e-4)
+    tol : float, optional, default: 1e-4
         Tolerance for stopping criteria.
 
-    verbose : int (default=0)
+    verbose : int, default: 0
         Enable verbose output. Note that this setting takes advantage of a
         per-process runtime setting in liblinear that, if enabled, may not work
         properly in a multithreaded context.
 
-    random_state : int seed, RandomState instance, or None (default=None)
+    random_state : int seed, RandomState instance, or None, default: None
         The seed of the pseudo random number generator to use when
         shuffling the data.
 
-    max_iter : int (default=1000)
+    max_iter : int, default: 1000
         The maximum number of iterations to be run.
 
     References
@@ -130,12 +130,11 @@ class NaiveSurvivalSVM(LinearSVC, SurvivalAnalysisMixin):
     def fit(self, X, y):
         """Build a survival support vector machine model from training data.
 
-        Parameters
         ----------
-        X : array-like, shape = [n_samples, n_features]
+        X : array-like, shape = (n_samples, n_features)
             Data matrix.
 
-        y : structured array, shape = [n_samples]
+        y : structured array, shape = (n_samples,)
             A structured array containing the binary event indicator
             as first field, and time of event or time of censoring as
             second field.
@@ -158,12 +157,12 @@ class NaiveSurvivalSVM(LinearSVC, SurvivalAnalysisMixin):
 
         Parameters
         ----------
-        X : array-like of shape = [n_samples, n_features]
+        X : array-like, shape = (n_samples, n_features,)
             The input samples.
 
         Returns
         -------
-        y : array of shape = [n_samples]
+        y : ndarray, shape = (n_samples,)
             Predicted ranks.
         """
         return -self.decision_function(X)

@@ -45,7 +45,7 @@ class EnsembleAverage(BaseEstimator):
     def get_base_params(self):
         return self.base_estimators[0].get_params()
 
-    def fit(self, X, y=None, **kwargs):
+    def fit(self, X, y=None, **kwargs):  # pragma: no cover
         return self
 
     def predict(self, X):
@@ -57,7 +57,7 @@ class EnsembleAverage(BaseEstimator):
 
 
 class MeanEstimator(BaseEstimator):
-    def fit(self, X, y=None, **kwargs):
+    def fit(self, X, y=None, **kwargs):  # pragma: no cover
         return self
 
     def predict(self, X):
@@ -65,7 +65,7 @@ class MeanEstimator(BaseEstimator):
 
 
 class MeanRankEstimator(BaseEstimator):
-    def fit(self, X, y=None, **kwargs):
+    def fit(self, X, y=None, **kwargs):  # pragma: no cover
         return self
 
     def predict(self, X):
@@ -174,7 +174,7 @@ class BaseEnsembleSelection(Stacking):
 
         Parameters
         ----------
-        X : array, shape = [n_samples, n_features]
+        X : array, shape = (n_samples, n_features)
             Samples to pre-compute kernel matrix from.
 
         Returns
@@ -279,7 +279,7 @@ class BaseEnsembleSelection(Stacking):
 
         Parameters
         ----------
-        X : array-like, shape = [n_samples, n_features]
+        X : array-like, shape = (n_samples, n_features)
             Training data.
 
         y : array-like, optional
@@ -316,26 +316,26 @@ class EnsembleSelection(BaseEnsembleSelection):
         of the prediction on the test data. The function should return a scalar value.
         *Larger* values of the score are assumed to be better.
 
-    n_estimators : float or int
+    n_estimators : float or int, optional, default: 0.2
         If a float, the percentage of estimators in the ensemble to retain, if an int the
         absolute number of estimators to retain.
 
-    min_score : float, optional, default = 0.66
+    min_score : float, optional, default: 0.66
         Threshold for pruning estimators based on scoring metric. After `fit`, only estimators
         with a score above `min_score` are retained.
 
-    min_correlation : float, optional, default = 0.6
+    min_correlation : float, optional, default: 0.6
         Threshold for Pearson's correlation coefficient that determines when predictions of
         two estimators are significantly correlated.
 
-    cv : int, a cv generator instance, or None
+    cv : int, a cv generator instance, or None, optional
         The input specifying which cv generator to use. It can be an
         integer, in which case it is the number of folds in a KFold,
         None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator. The generator has to ensure
         that each sample is only used once for testing.
 
-    n_jobs : int, default 1
+    n_jobs : int, optional, default: 1
         Number of jobs to run in parallel.
 
     verbose : integer
@@ -343,10 +343,10 @@ class EnsembleSelection(BaseEnsembleSelection):
 
     Attributes
     ----------
-    `scores_` : ndarray, shape = [n_base_estimators,]
+    scores_ : ndarray, shape = (n_base_estimators,)
         Array of scores (relative to best performing estimator)
 
-    `fitted_models_` : ndarray
+    fitted_models_ : ndarray
         Selected models during training based on `scorer`.
 
     References
@@ -445,37 +445,37 @@ class EnsembleSelectionRegressor(BaseEnsembleSelection):
         of the prediction on the test data. The function should return a scalar value.
         *Smaller* values of the score are assumed to be better.
 
-    n_estimators : float or int
+    n_estimators : float or int, optional, default: 0.2
         If a float, the percentage of estimators in the ensemble to retain, if an int the
         absolute number of estimators to retain.
 
-    min_score : float, optional, default = 0.66
+    min_score : float, optional, default: 0.66
         Threshold for pruning estimators based on scoring metric. After `fit`, only estimators
         with a accuracy above `min_score` are retained.
 
-    min_correlation : float, optional, default = 0.6
+    min_correlation : float, optional, default: 0.6
         Threshold for Pearson's correlation coefficient that determines when residuals of
         two estimators are significantly correlated.
 
-    cv : int, a cv generator instance, or None
+    cv : int, a cv generator instance, or None, optional
         The input specifying which cv generator to use. It can be an
         integer, in which case it is the number of folds in a KFold,
         None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator. The generator has to ensure
         that each sample is only used once for testing.
 
-    n_jobs : int, default 1
+    n_jobs : int, optional, default: 1
         Number of jobs to run in parallel.
 
-    verbose : integer
+    verbose : int, optional, default: 0
         Controls the verbosity: the higher, the more messages.
 
     Attributes
     ----------
-    `scores_` : ndarray, shape = [n_base_estimators,]
+    scores_ : ndarray, shape = (n_base_estimators,)
         Array of scores (relative to best performing estimator)
 
-    `fitted_models_` : ndarray
+    fitted_models_ : ndarray
         Selected models during training based on `scorer`.
 
     References

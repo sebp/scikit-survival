@@ -48,7 +48,7 @@ def get_x_y(data_frame, attr_labels, pos_label=None, survival=True):
 
     Parameters
     ----------
-    data_frame : pandas.DataFrame, shape = [n_samples, n_columns]
+    data_frame : pandas.DataFrame, shape = (n_samples, n_columns)
         A data frame.
 
     attr_labels : sequence of str or None
@@ -69,10 +69,10 @@ def get_x_y(data_frame, attr_labels, pos_label=None, survival=True):
 
     Returns
     -------
-    X : pandas.DataFrame, shape = [n_samples, n_columns - len(attr_labels)]
+    X : pandas.DataFrame, shape = (n_samples, n_columns - len(attr_labels))
         Data frame containing features.
 
-    y : None or pandas.DataFrame, shape = [n_samples, len(attr_labels])
+    y : None or pandas.DataFrame, shape = (n_samples, len(attr_labels))
         Data frame containing columns with supervised information.
         If `survival` was `True`, then the column denoting the event
         indicator will be boolean and survival times will be float.
@@ -112,29 +112,29 @@ def load_arff_files_standardized(path_training, attr_labels, pos_label=None, pat
         If ``standardize_numeric`` is set, data is normalized by considering both training
         and testing data.
 
-    survival : bool, optional, default=True
+    survival : bool, optional, default: True
         Whether the dependent variables denote event indicator and survival/censoring time.
 
-    standardize_numeric : bool, optional, default=True
+    standardize_numeric : bool, optional, default: True
         Whether to standardize data to zero mean and unit variance.
         See :func:`sksurv.column.standardize`.
 
-    to_numeric : boo, optional, default=True
+    to_numeric : boo, optional, default: True
         Whether to convert categorical variables to numeric values.
         See :func:`sksurv.column.categorical_to_numeric`.
 
     Returns
     -------
-    x_train : pandas.DataFrame, shape = [n_train, n_features]
+    x_train : pandas.DataFrame, shape = (n_train, n_features)
         Training data.
 
-    y_train : pandas.DataFrame, shape = [n_train, n_labels]
+    y_train : pandas.DataFrame, shape = (n_train, n_labels)
         Dependent variables of training data.
 
-    x_test : None or pandas.DataFrame, shape = [n_train, n_features]
+    x_test : None or pandas.DataFrame, shape = (n_train, n_features)
         Testing data if `path_testing` was provided.
 
-    y_test : None or pandas.DataFrame, shape = [n_train, n_labels]
+    y_test : None or pandas.DataFrame, shape = (n_train, n_labels)
         Dependent variables of testing data if `path_testing` was provided.
     """
     dataset = loadarff(path_training)

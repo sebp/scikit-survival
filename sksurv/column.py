@@ -49,7 +49,7 @@ def standardize(table, with_std=True):
     table : pandas.DataFrame or numpy.ndarray
         Data to standardize.
 
-    with_std : bool, default=True
+    with_std : bool, optional, default: True
         If ``False`` data is only centered and not converted to unit variance.
 
     Returns
@@ -100,12 +100,12 @@ def encode_categorical(table, columns=None, **kwargs):
     table : pandas.DataFrame
         Table with categorical columns to encode.
 
-    columns : list-like, default None
+    columns : list-like, optional, default: None
         Column names in the DataFrame to be encoded.
         If `columns` is None then all the columns with
         `object` or `category` dtype will be converted.
 
-    allow_drop : boolean, optional, default=True
+    allow_drop : boolean, optional, default: True
         Whether to allow dropping categorical columns that only consist
         of a single category.
 

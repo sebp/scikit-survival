@@ -92,36 +92,36 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
     Parameters
     ----------
-    loss : {'coxph', 'squared', 'ipcwls'}, optional (default='coxph')
+    loss : {'coxph', 'squared', 'ipcwls'}, optional, default: 'coxph'
         loss function to be optimized. 'coxph' refers to partial likelihood loss
         of Cox's proportional hazards model. The loss 'squared' minimizes a
         squared regression loss that ignores predictions beyond the time of censoring,
         and 'ipcwls' refers to inverse-probability of censoring weighted least squares error.
 
-    learning_rate : float, optional (default=0.1)
+    learning_rate : float, optional, default: 0.1
         learning rate shrinks the contribution of each base learner by `learning_rate`.
         There is a trade-off between `learning_rate` and `n_estimators`.
 
-    n_estimators : int (default=100)
+    n_estimators : int, default: 100
         The number of boosting stages to perform. Gradient boosting
         is fairly robust to over-fitting so a large number usually
         results in better performance.
 
-    subsample : float, optional (default=1.0)
+    subsample : float, optional, default: 1.0
         The fraction of samples to be used for fitting the individual base
         learners. If smaller than 1.0 this results in Stochastic Gradient
         Boosting. `subsample` interacts with the parameter `n_estimators`.
         Choosing `subsample < 1.0` leads to a reduction of variance
         and an increase in bias.
 
-    dropout_rate : float, optional (default=0.0)
+    dropout_rate : float, optional, default: 0.0
         If larger than zero, the residuals at each iteration are only computed
         from a random subset of base learners. The value corresponds to the
         percentage of base learners that are dropped. In each iteration,
         at least one base learner is dropped. This is an alternative regularization
         to shrinkage, i.e., setting `learning_rate < 1.0`.
 
-    random_state : int seed, RandomState instance, or None (default=None)
+    random_state : int seed, RandomState instance, or None, default: None
         The seed of the pseudo random number generator to use when
         shuffling the data.
 
@@ -132,21 +132,21 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
     Attributes
     ----------
-    `coef_` : array, shape = [n_features]
+    coef\_ : array, shape = (n_features,)
         The aggregated coefficients.
 
-    `loss_` : LossFunction
+    loss_ : LossFunction
         The concrete ``LossFunction`` object.
 
-    `estimators_` : list of base learners
+    estimators_ : list of base learners
         The collection of fitted sub-estimators.
 
-    `train_score_` : array, shape = [n_estimators]
+    train_score_ : array, shape = (n_estimators,)
         The i-th score ``train_score_[i]`` is the deviance (= loss) of the
         model at iteration ``i`` on the in-bag sample.
         If ``subsample == 1`` this is the deviance on the training data.
 
-    `oob_improvement_` : array, shape = [n_estimators]
+    oob_improvement_ : array, shape = (n_estimators,)
         The improvement in loss (= deviance) on the out-of-bag samples
         relative to the previous iteration.
         ``oob_improvement_[0]`` is the improvement in
@@ -154,8 +154,8 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
     References
     ----------
-    Hothorn, T., Bühlmann, P., Dudoit, S., Molinaro, A., van der Laan, M. J.,
-    "Survival ensembles", Biostatistics, 7(3), 355-73, 2006
+    .. [1] Hothorn, T., Bühlmann, P., Dudoit, S., Molinaro, A., van der Laan, M. J.,
+           "Survival ensembles", Biostatistics, 7(3), 355-73, 2006
     """
     def __init__(self, loss="coxph", learning_rate=0.1, n_estimators=100, subsample=1.0,
                  dropout_rate=0, random_state=None, verbose=0):
@@ -254,18 +254,19 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
                 verbose_reporter.update(num_iter, self)
 
     def fit(self, X, y, sample_weight=None):
-        """
+        """Fit estimator.
+
         Parameters
         ----------
-        X : array-like, shape = [n_samples, n_features]
+        X : array-like, shape = (n_samples, n_features)
             Data matrix
 
-        y : structured array, shape = [n_samples]
+        y : structured array, shape = (n_samples,)
             A structured array containing the binary event indicator
             as first field, and time of event or time of censoring as
             second field.
 
-        sample_weight : array-like, shape = [n_samples,], optional
+        sample_weight : array-like, shape = (n_samples,), optional
             Weights given to each sample. If omitted, all samples have weight 1.
 
         Returns
@@ -303,6 +304,18 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         return self
 
     def predict(self, X):
+        """Predict risk scores.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            Data matrix.
+
+        Returns
+        -------
+        risk_score : array, shape = (n_samples,)
+            Predicted risk scores.
+        """
         check_is_fitted(self, 'estimators_')
 
         if X.shape[1] != self.n_features_:
@@ -327,7 +340,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         Returns
         -------
-        coef_ : array, shape = [n_features + 1]
+        coef_ : ndarray, shape = (n_features + 1,)
             Coefficients of features. The first element denotes the intercept.
         """
         coef = numpy.zeros(self.n_features_ + 1, dtype=float)
@@ -365,39 +378,39 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
     Parameters
     ----------
-    loss : {'coxph', 'squared', 'ipcwls'}, optional (default='coxph')
+    loss : {'coxph', 'squared', 'ipcwls'}, optional, default: 'coxph'
         loss function to be optimized. 'coxph' refers to partial likelihood loss
         of Cox's proportional hazards model. The loss 'squared' minimizes a
         squared regression loss that ignores predictions beyond the time of censoring,
         and 'ipcwls' refers to inverse-probability of censoring weighted least squares error.
 
-    learning_rate : float, optional (default=0.1)
+    learning_rate : float, optional, default: 0.1
         learning rate shrinks the contribution of each tree by `learning_rate`.
         There is a trade-off between learning_rate and n_estimators.
 
-    n_estimators : int (default=100)
+    n_estimators : int, default: 100
         The number of boosting stages to perform. Gradient boosting
         is fairly robust to over-fitting so a large number usually
         results in better performance.
 
-    max_depth : integer, optional (default=3)
+    max_depth : integer, optional, default: 3
         maximum depth of the individual regression estimators. The maximum
         depth limits the number of nodes in the tree. Tune this parameter
         for best performance; the best value depends on the interaction
         of the input variables.
         Ignored if ``max_leaf_nodes`` is not None.
 
-    min_samples_split : integer, optional (default=2)
+    min_samples_split : integer, optional, default: 2
         The minimum number of samples required to split an internal node.
 
-    min_samples_leaf : integer, optional (default=1)
+    min_samples_leaf : integer, optional, default: 1
         The minimum number of samples required to be at a leaf node.
 
-    min_weight_fraction_leaf : float, optional (default=0.)
+    min_weight_fraction_leaf : float, optional, default: 0.
         The minimum weighted fraction of the input samples required to be at a
         leaf node.
 
-    max_features : int, float, string or None, optional (default=None)
+    max_features : int, float, string or None, optional, default: None
         The number of features to consider when looking for the best split:
           - If int, then consider `max_features` features at each split.
           - If float, then `max_features` is a percentage and
@@ -415,26 +428,26 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         valid partition of the node samples is found, even if it requires to
         effectively inspect more than ``max_features`` features.
 
-    max_leaf_nodes : int or None, optional (default=None)
+    max_leaf_nodes : int or None, optional, default: None
         Grow trees with ``max_leaf_nodes`` in best-first fashion.
         Best nodes are defined as relative reduction in impurity.
         If None then unlimited number of leaf nodes.
 
-    subsample : float, optional (default=1.0)
+    subsample : float, optional, default: 1.0
         The fraction of samples to be used for fitting the individual base
         learners. If smaller than 1.0 this results in Stochastic Gradient
         Boosting. `subsample` interacts with the parameter `n_estimators`.
         Choosing `subsample < 1.0` leads to a reduction of variance
         and an increase in bias.
 
-    dropout_rate : float, optional (default=0.0)
+    dropout_rate : float, optional, default: 0.0
         If larger than zero, the residuals at each iteration are only computed
         from a random subset of base learners. The value corresponds to the
         percentage of base learners that are dropped. In each iteration,
         at least one base learner is dropped. This is an alternative regularization
         to shrinkage, i.e., setting `learning_rate < 1.0`.
 
-    random_state : int seed, RandomState instance, or None (default=None)
+    random_state : int seed, RandomState instance, or None, default: None
         The seed of the pseudo random number generator to use when
         shuffling the data.
 
@@ -446,18 +459,18 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
     Attributes
     ----------
-    `feature_importances_` : array, shape = [n_features]
+    feature_importances\_ : ndarray, shape = (n_features,)
         The feature importances (the higher, the more important the feature).
 
-    `estimators_` : ndarray of DecisionTreeRegressor, shape = [n_estimators, 1]
+    estimators_ : ndarray of DecisionTreeRegressor, shape = (n_estimators, 1)
         The collection of fitted sub-estimators.
 
-    `train_score_` : array, shape = [n_estimators]
+    train_score_ : ndarray, shape = (n_estimators,)
         The i-th score ``train_score_[i]`` is the deviance (= loss) of the
         model at iteration ``i`` on the in-bag sample.
         If ``subsample == 1`` this is the deviance on the training data.
 
-    `oob_improvement_` : array, shape = [n_estimators]
+    oob_improvement_ : ndarray, shape = (n_estimators,)
         The improvement in loss (= deviance) on the out-of-bag samples
         relative to the previous iteration.
         ``oob_improvement_[0]`` is the improvement in
@@ -686,15 +699,15 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         Parameters
         ----------
-        X : array-like, shape = [n_samples, n_features]
+        X : array-like, shape = (n_samples, n_features)
             Data matrix
 
-        y : structured array, shape = [n_samples]
+        y : structured array, shape = (n_samples,)
             A structured array containing the binary event indicator
             as first field, and time of event or time of censoring as
             second field.
 
-        sample_weight : array-like, shape = [n_samples,], optional
+        sample_weight : array-like, shape = (n_samples,), optional
             Weights given to each sample. If omitted, all samples have weight 1.
 
         monitor : callable, optional
@@ -787,17 +800,17 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         return self._scale_prediction(score)
 
     def predict(self, X):
-        """Predict hazard for X.
+        """Predict risk scores.
 
         Parameters
         ----------
-        X : array-like of shape = [n_samples, n_features]
+        X : array-like, shape = (n_samples, n_features)
             The input samples.
 
         Returns
         -------
-        y : array of shape = [n_samples]
-            The predicted values.
+        y : ndarray, shape = (n_samples,)
+            The risk scores.
         """
         check_is_fitted(self, 'estimators_')
 
@@ -816,12 +829,12 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         Parameters
         ----------
-        X : array-like of shape = [n_samples, n_features]
+        X : array-like, shape = (n_samples, n_features)
             The input samples.
 
         Returns
         -------
-        y : generator of array of shape = [n_samples]
+        y : generator of array of shape = (n_samples,)
             The predicted value of the input samples.
         """
         check_is_fitted(self, 'estimators_')

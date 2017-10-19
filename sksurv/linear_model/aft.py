@@ -34,10 +34,14 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
 
     Parameters
     ----------
-    alpha : {float, array-like}
-        shape = [n_targets]
+    alpha : float, optional, default: 1.0
         Small positive values of alpha improve the conditioning of the problem
         and reduce the variance of the estimates.
+
+    Attributes
+    ----------
+    coef_ : ndarray, shape = (n_features,)
+        Weight vector.
     """
     def __init__(self, alpha=1.0, fit_intercept=True, normalize=False,
                  copy_X=True, max_iter=None, tol=1e-3, solver="auto"):
@@ -50,10 +54,10 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
 
         Parameters
         ----------
-        X : array-like, shape = [n_samples, n_features]
+        X : array-like, shape = (n_samples, n_features)
             Data matrix.
 
-        y : structured array, shape = [n_samples]
+        y : structured array, shape = (n_samples,)
             A structured array containing the binary event indicator
             as first field, and time of event or time of censoring as
             second field.
@@ -74,7 +78,7 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
 
         Parameters
         ----------
-        X : {array-like, sparse matrix}, shape = [n_samples, n_features]
+        X : {array-like, sparse matrix}, shape = (n_samples, n_features)
             Samples.
 
         Returns

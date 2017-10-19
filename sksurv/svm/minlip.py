@@ -37,10 +37,10 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
     Parameters
     ----------
-    solver : "cvxpy" | "cvxopt", optional (default: cvxpy)
+    solver : "cvxpy" | "cvxopt", optional, default: cvxpy
         Which quadratic program solver to use.
 
-    alpha : float, positive  (default: 1)
+    alpha : float, positive, default: 1
         Weight of penalizing the hinge loss in the objective function.
 
     kernel : "linear" | "poly" | "rbf" | "sigmoid" | "cosine" | "precomputed"
@@ -51,7 +51,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         Kernel coefficient for rbf and poly kernels. Default: ``1/n_features``.
         Ignored by other kernels.
 
-    degree : int (default=3)
+    degree : int, default: 3
         Degree for poly kernels. Ignored by other kernels.
 
     coef0 : float, optional
@@ -61,7 +61,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     kernel_params : mapping of string to any, optional
         Parameters (keyword arguments) and values for kernel passed as call
 
-    pairs : "all" | "nearest" | "next", optional (default: "nearest")
+    pairs : "all" | "nearest" | "next", optional, default: "nearest"
         Which constraints to use in the optimization problem.
 
         - all: Use all comparable pairs. Scales quadratic in number of samples
@@ -72,7 +72,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         - next: Only compare against direct nearest neighbor according to observed time,
           disregarding its censoring status. Scales linear in number of samples.
 
-    verbose : bool (default: False)
+    verbose : bool, default: False
         Enable verbose output of solver
 
     timeit : False or int
@@ -82,10 +82,10 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
     Attributes
     ----------
-    `X_fit_` :
+    X_fit_ : ndarray
         Training data.
 
-    `coef_` :
+    coef_ : ndarray, shape = (n_samples,)
         Coefficients of the features in the decision function.
 
     References
@@ -198,10 +198,10 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Parameters
         ----------
-        X : array-like, shape = [n_samples, n_features]
+        X : array-like, shape = (n_samples, n_features)
             Data matrix.
 
-        y : structured array, shape = [n_samples]
+        y : structured array, shape = (n_samples,)
             A structured array containing the binary event indicator
             as first field, and time of event or time of censoring as
             second field.
@@ -223,12 +223,12 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Parameters
         ----------
-        X : array-like of shape = [n_samples, n_features]
+        X : array-like, shape = (n_samples, n_features)
             The input samples.
 
         Returns
         -------
-        y : array of shape = [n_samples]
+        y : ndarray, shape = (n_samples,)
             Predicted risk.
         """
         K = self._get_kernel(X, self.X_fit_)
@@ -259,11 +259,11 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
 
     Parameters
     ----------
-    solver : "cvxpy" | "cvxopt", optional (default: cvxpy)
+    solver : "cvxpy" | "cvxopt", optional, default: cvxpy
         Which quadratic program solver to use.
 
-    alpha : float, positive
-        Weight of penalizing the hinge loss in the objective function (default: 1)
+    alpha : float, positive, default: 1
+        Weight of penalizing the hinge loss in the objective function.
 
     kernel : "linear" | "poly" | "rbf" | "sigmoid" | "cosine" | "precomputed"
         Kernel.
@@ -273,7 +273,7 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
         Kernel coefficient for rbf and poly kernels. Default: ``1/n_features``.
         Ignored by other kernels.
 
-    degree : int (default=3)
+    degree : int, default: 3
         Degree for poly kernels. Ignored by other kernels.
 
     coef0 : float, optional
@@ -283,7 +283,7 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
     kernel_params : mapping of string to any, optional
         Parameters (keyword arguments) and values for kernel passed as call
 
-    pairs : "all" | "nearest" | "next", optional (default: "all")
+    pairs : "all" | "nearest" | "next", optional, default: "all"
         Which constraints to use in the optimization problem.
 
         - all: Use all comparable pairs. Scales quadratic in number of samples.
@@ -293,7 +293,7 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
         - next: Only compare against direct nearest neighbor according to observed time,
           disregarding its censoring status. Scales linear in number of samples.
 
-    verbose : bool (default: False)
+    verbose : bool, default: False
         Enable verbose output of solver.
 
     timeit : False or int
@@ -303,10 +303,10 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
 
     Attributes
     ----------
-    `X_fit_` :
+    X_fit_ : ndarray
         Training data.
 
-    `coef_` :
+    coef_ : ndarray, shape = (n_samples,)
         Coefficients of the features in the decision function.
 
     References

@@ -65,15 +65,15 @@ def clinical_kernel(x, y=None):
 
     Parameters
     ----------
-    x : pandas.DataFrame, shape = [n_samples_x, n_features]
+    x : pandas.DataFrame, shape = (n_samples_x, n_features)
         Training data
 
-    y : pandas.DataFrame, shape = [n_samples_y, n_features]
+    y : pandas.DataFrame, shape = (n_samples_y, n_features)
         Testing data
 
     Returns
     -------
-    kernel : array, shape = [n_samples_x, n_samples_y]
+    kernel : array, shape = (n_samples_x, n_samples_y)
         Kernel matrix. Values are normalized to lie within [0, 1].
 
     References
@@ -141,7 +141,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X: pandas.DataFrame, shape = [n_samples, n_features]
+        X: pandas.DataFrame, shape = (n_samples, n_features)
             Data to estimate parameters from.
         """
         if not self.fit_once:
@@ -194,7 +194,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X: pandas.DataFrame, shape = [n_samples, n_features]
+        X: pandas.DataFrame, shape = (n_samples, n_features)
             Data to estimate parameters from.
 
         Returns
@@ -217,11 +217,11 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        y : array-like, shape = [n_samples_y, n_features]
+        y : array-like, shape = (n_samples_y, n_features)
 
         Returns
         -------
-        kernel : array, shape = [n_samples_y, n_samples_X_fit\_]
+        kernel : ndarray, shape = (n_samples_y, n_samples_X_fit\_)
             Kernel matrix. Values are normalized to lie within [0, 1].
         """
         check_is_fitted(self, 'X_fit_')
@@ -254,15 +254,15 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        x : array-like, shape = [n_samples_x, n_features]
+        x : array-like, shape = (n_samples_x, n_features)
             Training data
 
-        y : array-like, shape = [n_samples_y, n_features]
+        y : array-like, shape = (n_samples_y, n_features)
             Testing data
 
         Returns
         -------
-        kernel : array, shape = [n_samples_x, n_samples_y]
+        kernel : ndarray, shape = (n_samples_x, n_samples_y)
             Kernel matrix. Values are normalized to lie within [0, 1].
         """
         return self.fit(X).transform(Y).T
@@ -272,9 +272,9 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : array, shape = [n_features]
+        X : array, shape = (n_features,)
 
-        Y : array, shape = [n_features]
+        Y : array, shape = (n_features,)
 
         Returns
         -------

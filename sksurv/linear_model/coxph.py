@@ -42,7 +42,7 @@ class CoxPHOptimizer:
 
         Parameters
         ----------
-        w : array, shape = [n_features]
+        w : array, shape = (n_features,)
             Estimate of coefficients
 
         Returns
@@ -127,30 +127,30 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
     Parameters
     ----------
-    alpha : float, optional, default = 0
+    alpha : float, optional, default: 0
         Regularization parameter for ridge regression penalty.
 
-    n_iter : int, optional, default = 100
+    n_iter : int, optional, default: 100
         Maximum number of iterations.
 
-    tol : float, optional, default = 1e-9
+    tol : float, optional, default: 1e-9
         Convergence criteria. Convergence is based on the negative log-likelihood::
 
         |1 - (new neg. log-likelihood / old neg. log-likelihood) | < tol
 
-    verbose : bool, optional, default = False
+    verbose : bool, optional, default: False
         Whether to print statistics on the convergence
         of the optimizer.
 
     Attributes
     ----------
-    `coef_` : ndarray, shape = [n_features]
+    coef_ : ndarray, shape = (n_features,)
         Coefficients of the model
 
-    `cum_baseline_hazard_` : :class:`sksurv.functions.StepFunction`
+    cum_baseline_hazard_ : :class:`sksurv.functions.StepFunction`
         Estimated baseline cumulative hazard function.
 
-    `baseline_survival_` : :class:`sksurv.functions.StepFunction`
+    baseline_survival_ : :class:`sksurv.functions.StepFunction`
         Estimated baseline survival function.
 
     References
@@ -170,13 +170,17 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Parameters
         ----------
-        X : array-like, shape = [n_samples, n_features]
+        X : array-like, shape = (n_samples, n_features)
             Data matrix
 
-        y : structured array, shape = [n_samples]
+        y : structured array, shape = (n_samples,)
             A structured array containing the binary event indicator
             as first field, and time of event or time of censoring as
             second field.
+
+        Returns
+        -------
+        self
         """
         X, event, time = check_arrays_survival(X, y)
 
@@ -235,12 +239,12 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Parameters
         ----------
-        X : array-like, shape = [n_samples, n_features]
+        X : array-like, shape = (n_samples, n_features)
             Data matrix.
 
         Returns
         -------
-        risk_score : array, shape = [n_samples]
+        risk_score : array, shape = (n_samples,)
             Predicted risk scores.
         """
         check_is_fitted(self, "coef_")
@@ -264,12 +268,12 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Parameters
         ----------
-        X : array-like, shape = [n_samples, n_features]
+        X : array-like, shape = (n_samples, n_features)
             Data matrix.
 
         Returns
         -------
-        cum_hazard : ndarray, shape = [n_samples]
+        cum_hazard : ndarray, shape = (n_samples,)
             Predicted cumulative hazard functions.
         """
         risk_score = numpy.exp(self.predict(X))
@@ -296,12 +300,12 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Parameters
         ----------
-        X : array-like, shape = [n_samples, n_features]
+        X : array-like, shape = (n_samples, n_features)
             Data matrix.
 
         Returns
         -------
-        survival : ndarray, shape = [n_samples]
+        survival : ndarray, shape = (n_samples,)
             Predicted survival functions.
         """
         risk_score = numpy.exp(self.predict(X))
@@ -319,13 +323,13 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Parameters
         ----------
-        X : array-like, shape = [n_samples, n_features]
+        X : array-like, shape = (n_samples, n_features)
             Data matrix.
 
-        event : array-like, shape = [n_samples,]
+        event : array-like, shape = (n_samples,)
             Contains binary event indicators.
 
-        time : array-like, shape = [n_samples,]
+        time : array-like, shape = (n_samples,)
             Contains event/censoring times.
 
         Returns

@@ -37,13 +37,13 @@ def concordance_index_censored(event_indicator, event_time, estimate):
 
     Parameters
     ----------
-    event_indicator : array-like, shape = [n_samples,]
+    event_indicator : array-like, shape = (n_samples,)
         Boolean array denotes whether an event occurred
 
-    event_time : array-like, shape = [n_samples,]
+    event_time : array-like, shape = (n_samples,)
         Array containing the time of an event or time of censoring
 
-    estimate : array-like, shape = [n_samples,]
+    estimate : array-like, shape = (n_samples,)
         Estimated risk of experiencing an event
 
     Returns

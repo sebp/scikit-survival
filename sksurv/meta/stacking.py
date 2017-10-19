@@ -33,7 +33,7 @@ class Stacking(BaseEstimator, MetaEstimatorMixin):
         List of (name, estimator) tuples (implementing fit/predict) that are
         part of the ensemble.
 
-    probabilities : bool, optional, default=True
+    probabilities : bool, optional, default: True
         Whether to allow using `predict_proba` method of base learners, if available.
     """
 
@@ -117,7 +117,7 @@ class Stacking(BaseEstimator, MetaEstimatorMixin):
 
         Parameters
         ----------
-        X : array-like, shape = [n_samples, n_features]
+        X : array-like, shape = (n_samples, n_features)
             Training data.
 
         y : array-like, optional
@@ -142,12 +142,12 @@ class Stacking(BaseEstimator, MetaEstimatorMixin):
 
         Parameters
         ----------
-        X : array-like, shape = [n_samples, n_features]
+        X : array-like, shape = (n_samples, n_features)
             Data with samples to predict.
 
         Returns
         -------
-        prediction : array, shape = [n_samples, n_dim]
+        prediction : array, shape = (n_samples, n_dim)
             Prediction of meta estimator that combines
             predictions of base estimators. `n_dim` depends
             on the return value of meta estimator's `predict`
@@ -165,12 +165,12 @@ class Stacking(BaseEstimator, MetaEstimatorMixin):
 
         Parameters
         ----------
-        X : array-like, shape = [n_samples, n_features]
+        X : array-like, shape = (n_samples, n_features)
             Data with samples to predict.
 
         Returns
         -------
-        prediction : array, shape = [n_samples, n_dim]
+        prediction : ndarray, shape = (n_samples, n_dim)
             Prediction of meta estimator that combines
             predictions of base estimators. `n_dim` depends
             on the return value of meta estimator's `predict`
@@ -188,12 +188,12 @@ class Stacking(BaseEstimator, MetaEstimatorMixin):
 
         Parameters
         ----------
-        X : array-like, shape = [n_samples, n_features]
+        X : array-like, shape = (n_samples, n_features)
             Data with samples to predict.
 
         Returns
         -------
-        prediction : array, shape = [n_samples, n_dim]
+        prediction : ndarray, shape = (n_samples, n_dim)
             Prediction of meta estimator that combines
             predictions of base estimators. `n_dim` depends
             on the return value of meta estimator's `predict`

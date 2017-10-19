@@ -33,7 +33,7 @@ def writearff(data, filename, relation_name=None, index=True):
     relation_name : string, optional, default: "pandas"
         Name of relation in ARFF file.
 
-    index : boolean, default True
+    index : boolean, optional, default: True
         Write row names (index)
     """
     if isinstance(filename, str):
