@@ -127,7 +127,7 @@ class NaiveSurvivalSVM(LinearSVC, SurvivalAnalysisMixin):
         y_pairs.resize(k)
         return x_pairs, y_pairs
 
-    def fit(self, X, y):
+    def fit(self, X, y, sample_weight=None):
         """Build a survival support vector machine model from training data.
 
         ----------
@@ -139,6 +139,11 @@ class NaiveSurvivalSVM(LinearSVC, SurvivalAnalysisMixin):
             as first field, and time of event or time of censoring as
             second field.
 
+        sample_weight : array-like, shape = (n_samples,), optional
+            Array of weights that are assigned to individual
+            samples. If not provided,
+            then each sample is given unit weight.
+
         Returns
         -------
         self
@@ -148,7 +153,7 @@ class NaiveSurvivalSVM(LinearSVC, SurvivalAnalysisMixin):
         x_pairs, y_pairs = self._get_survival_pairs(X, y, random_state)
 
         self.C = self.alpha
-        return super().fit(x_pairs, y_pairs)
+        return super().fit(x_pairs, y_pairs, sample_weight=sample_weight)
 
     def predict(self, X):
         """Rank samples according to survival times
