@@ -35,33 +35,34 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
 
     Parameters
     ----------
-    allow_drop : boolean, optional, default=True
+    allow_drop : boolean, optional, default: True
         Whether to allow dropping categorical columns that only consist
         of a single category.
 
     Attributes
     ----------
-    `feature_names_` : pandas.Index
+    feature_names_ : pandas.Index
         List of encoded columns.
 
-    `categories_` : dict
+    categories_ : dict
         Categories of encoded columns.
 
-    `encoded_columns_` : list
+    encoded_columns_ : list
         Name of columns after encoding.
         Includes names of non-categorical columns.
     """
     def __init__(self, allow_drop=True):
         self.allow_drop = allow_drop
 
-    def fit(self, X):
+    def fit(self, X, y=None):
         """Retrieve categorical columns.
 
         Parameters
         ----------
         X : pandas.DataFrame
             Data to encode.
-
+        y :
+            Ignored. For compatibility with Pipeline.
         Returns
         -------
         self : object
@@ -81,9 +82,9 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         X : pandas.DataFrame
             Data to encode.
         y :
-            Ignored. For computability with TransformerMixin.
+            Ignored. For compatibility with TransformerMixin.
         fit_params :
-            Ignored. For computability with TransformerMixin.
+            Ignored. For compatibility with TransformerMixin.
 
         Returns
         -------
