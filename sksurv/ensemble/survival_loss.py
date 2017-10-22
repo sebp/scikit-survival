@@ -49,7 +49,7 @@ class CoxPH(LossFunction):
             ret *= sample_weight
         return ret
 
-    def init_estimator(self):
+    def init_estimator(self):  # pragma: no cover
         return ZeroEstimator()
 
     def update_terminal_regions(self, tree, X, y, residual, y_pred,
@@ -64,7 +64,7 @@ class CoxPH(LossFunction):
 
     def _update_terminal_region(self, tree, terminal_regions, leaf, X, y,
                                 residual, pred, sample_weight):
-        pass
+        """Least squares does not need to update terminal regions"""
 
 
 class CensoredSquaredLoss(LossFunction):
@@ -98,7 +98,7 @@ class CensoredSquaredLoss(LossFunction):
             ret *= sample_weight
         return ret
 
-    def init_estimator(self):
+    def init_estimator(self):  # pragma: no cover
         return ZeroEstimator()
 
     def update_terminal_regions(self, tree, X, y, residual, y_pred,
@@ -113,7 +113,7 @@ class CensoredSquaredLoss(LossFunction):
 
     def _update_terminal_region(self, tree, terminal_regions, leaf, X, y,
                                 residual, pred, sample_weight):
-        pass
+        """Least squares does not need to update terminal regions"""
 
 
 class IPCWLeastSquaresError(LeastSquaresError):
