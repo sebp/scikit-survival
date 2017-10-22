@@ -7,6 +7,7 @@ import numpy
 from numpy.testing import TestCase, run_module_suite, assert_array_almost_equal, assert_array_equal
 from sklearn.decomposition import KernelPCA
 from sklearn.metrics import mean_squared_error
+from sklearn.preprocessing import normalize
 
 from sksurv.bintrees import AVLTree, RBTree
 from sksurv.column import encode_categorical, standardize
@@ -576,19 +577,20 @@ class TestKernelSurvivalSVM(TestCase):
 
     @attr('slow')
     def test_compare_rbf(self):
-        kpca = KernelPCA(kernel="rbf", copy_X=True)
-        xt = kpca.fit_transform(self.x)
+        x = normalize(self.x)
         y = self.y
-
-        nrsvm = FastSurvivalSVM(optimizer='rbtree', tol=1e-6, max_iter=50, random_state=0)
-        nrsvm.fit(xt, y)
 
         rsvm = FastKernelSurvivalSVM(optimizer='rbtree', kernel="rbf",
                                      tol=1e-6, max_iter=65, random_state=0)
-        rsvm.fit(self.x, y)
+        rsvm.fit(x, y)
 
-        pred_nrsvm = nrsvm.predict(kpca.transform(self.x))
-        pred_rsvm = rsvm.predict(self.x)
+        kpca = KernelPCA(kernel="rbf", copy_X=True)
+        xt = kpca.fit_transform(x)
+        nrsvm = FastSurvivalSVM(optimizer='rbtree', tol=1e-6, max_iter=30, random_state=0)
+        nrsvm.fit(xt, y)
+
+        pred_nrsvm = nrsvm.predict(xt)
+        pred_rsvm = rsvm.predict(x)
 
         self.assertEqual(len(pred_nrsvm), len(pred_rsvm))
 
