@@ -16,8 +16,6 @@ from sksurv.svm import FastSurvivalSVM, FastKernelSurvivalSVM
 from sksurv.util import check_arrays_survival
 
 
-
-
 def score_cindex(est, X_test, y_test, **predict_params):
     prediction = est.predict(X_test, **predict_params)
 
@@ -32,7 +30,8 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
 
     def _create_ensemble(self, **kwargs):
         boosting_grid = ParameterGrid({"n_estimators": [100, 250], "subsample": [1.0, 0.75, 0.5]})
-        svm_grid = ParameterGrid({"alpha": 2. ** numpy.arange(-9, 5, 2)})
+        alphas = numpy.exp(numpy.linspace(numpy.log(0.001), numpy.log(2), 5))
+        svm_grid = ParameterGrid({"alpha": alphas})
 
         base_estimators = []
         for i, params in enumerate(boosting_grid):
@@ -40,10 +39,10 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
             base_estimators.append(("gbm_%d" % i, model))
 
         for i, params in enumerate(svm_grid):
-            model = FastSurvivalSVM(max_iter=100, random_state=0, **params)
+            model = FastSurvivalSVM(max_iter=100, tol=1e-6, random_state=0, **params)
             base_estimators.append(("svm_%d" % i, model))
 
-        cv = KFold(n_splits=4, shuffle=True, random_state=0)
+        cv = KFold(n_splits=3, shuffle=True, random_state=0)
         meta = EnsembleSelection(base_estimators, n_estimators=0.4, scorer=score_cindex, cv=cv, **kwargs)
         return meta
 
@@ -53,13 +52,13 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
         self.assertEqual(len(meta), 0)
 
         meta.fit(self.x.values, self.y)
-        self.assertEqual(len(meta), 13)
-        self.assertTupleEqual(meta.scores_.shape, (13,))
+        self.assertEqual(len(meta), 11)
+        self.assertTupleEqual(meta.scores_.shape, (11,))
 
         p = meta.predict(self.x.values)
 
         score = concordance_index_censored(self.y['fstat'], self.y['lenfol'], p)
-        expected_score = numpy.array([0.7858721, 59050, 16084, 15, 119])
+        expected_score = numpy.array([0.7863312, 59088, 16053, 8, 119])
         assert_array_almost_equal(score, expected_score)
 
     @attr('slow')
@@ -72,7 +71,7 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
         p = meta.predict(self.x.values)
 
         score = concordance_index_censored(self.y['fstat'], self.y['lenfol'], p)
-        expected_score = numpy.array([0.7858721, 59050, 16084, 15, 119])
+        expected_score = numpy.array([0.7863312, 59088, 16053, 8, 119])
         assert_array_almost_equal(score, expected_score)
 
     @attr('slow')
@@ -85,12 +84,13 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
         p = meta.predict(self.x.values)
 
         score = concordance_index_censored(self.y['fstat'], self.y['lenfol'], p)
-        expected_score = numpy.array([0.7587460, 57013, 18124, 12, 119])
+        expected_score = numpy.array([0.7663043, 57570, 17545, 34, 119])
         assert_array_almost_equal(score, expected_score)
 
     @attr('slow')
     def test_fit_custom_kernel(self):
-        svm_grid = ParameterGrid({"alpha": 2. ** numpy.arange(-5, 5, 2)})
+        alphas = numpy.exp(numpy.linspace(numpy.log(0.001), numpy.log(2), 5))
+        svm_grid = ParameterGrid({"alpha": alphas})
 
         transform = ClinicalKernelTransform(fit_once=True)
         transform.prepare(self.x)
@@ -101,10 +101,11 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
             base_estimators.append(("svm_linear_%d" % i, model))
 
         for i, params in enumerate(svm_grid):
-            model = FastKernelSurvivalSVM(kernel=transform.pairwise_kernel, max_iter=100, random_state=0, **params)
+            model = FastKernelSurvivalSVM(kernel=transform.pairwise_kernel, max_iter=45, tol=1e-5,
+                                          random_state=0, **params)
             base_estimators.append(("svm_kernel_%d" % i, model))
 
-        cv = KFold(n_splits=4, shuffle=True, random_state=0)
+        cv = KFold(n_splits=3, shuffle=True, random_state=0)
         meta = EnsembleSelection(base_estimators, n_estimators=0.4, scorer=score_cindex, cv=cv, n_jobs=4)
 
         meta.fit(self.x.values, self.y)
@@ -114,7 +115,7 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
         p = meta.predict(self.x.values)
 
         score = concordance_index_censored(self.y['fstat'], self.y['lenfol'], p)
-        expected_score = numpy.array([0.7980346, 59958, 15164, 27, 119])
+        expected_score = numpy.array([0.8024125, 60285, 14833, 31, 119])
         assert_array_almost_equal(score, expected_score)
 
     def test_min_score(self):
