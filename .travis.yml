@@ -41,6 +41,4 @@ install:
 script: ci/run_tests.sh
 
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
-  - pip install codacy-coverage
-  - python-codacy-coverage -r coverage.xml
+  - ci/submit_coverage.sh
