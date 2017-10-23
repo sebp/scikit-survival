@@ -89,7 +89,7 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
 
     @attr('slow')
     def test_fit_custom_kernel(self):
-        alphas = numpy.exp(numpy.linspace(numpy.log(0.001), numpy.log(2), 5))
+        alphas = numpy.exp(numpy.linspace(numpy.log(0.001), numpy.log(0.5), 5))
         svm_grid = ParameterGrid({"alpha": alphas})
 
         transform = ClinicalKernelTransform(fit_once=True)
@@ -115,7 +115,7 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
         p = meta.predict(self.x.values)
 
         score = concordance_index_censored(self.y['fstat'], self.y['lenfol'], p)
-        expected_score = numpy.array([0.8024125, 60285, 14833, 31, 119])
+        expected_score = numpy.array([0.7978084, 59938, 15178, 33, 119])
         assert_array_almost_equal(score, expected_score)
 
     def test_min_score(self):
