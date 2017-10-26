@@ -274,7 +274,7 @@ def load_veterans_lung_cancer():
         "The Statistical Analysis of Failure Time Data." John Wiley & Sons, Inc. (2002)
     """
     fn = resource_filename(__name__, 'data/veteran.arff')
-    return get_x_y(loadarff(fn), attr_labels=['Status', 'Survival_in_days'], pos_label="'dead'")
+    return get_x_y(loadarff(fn), attr_labels=['Status', 'Survival_in_days'], pos_label="dead")
 
 
 def load_aids(endpoint="aids"):
@@ -356,4 +356,4 @@ def load_breast_cancer():
         Clin. Cancer Res. 13(11), 3207–14 (2007)
     """
     fn = resource_filename(__name__, 'data/breast_cancer_GSE7390-metastasis.arff')
-    return get_x_y(loadarff(fn), attr_labels=['e.tdm', 't.tdm'], pos_label="'1'")
+    return get_x_y(loadarff(fn), attr_labels=['e.tdm', 't.tdm'], pos_label="1")
