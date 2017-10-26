@@ -3,6 +3,16 @@
 Release Notes
 =============
 
+scikit-survival 0.4 (2017-10-27)
+--------------------------------
+
+This release adds :class:`sksurv.linear_model.CoxnetSurvivalAnalysis`, which implements
+an efficient algorithm to fit Cox's proportional hazards model with LASSO, ridge, and
+elastic net penalty.
+Moreover, it includes support for Windows with Python 3.5 and later by making the cvxopt
+package optional.
+
+
 scikit-survival 0.3 (2017-08-01)
 --------------------------------
 
