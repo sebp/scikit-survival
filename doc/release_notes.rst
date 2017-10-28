@@ -3,7 +3,7 @@
 Release Notes
 =============
 
-scikit-survival 0.4 (2017-10-27)
+scikit-survival 0.4 (2017-10-28)
 --------------------------------
 
 This release adds :class:`sksurv.linear_model.CoxnetSurvivalAnalysis`, which implements
