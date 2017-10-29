@@ -77,7 +77,7 @@ Installing from source
 
 First, create a new environment, named ``sksurv``::
 
-  conda create -n sksurv python=3 --file requirements.txt
+  conda create -n sksurv -c sebp python=3 --file requirements.txt
 
 
 To work in this environment, ``activate`` it as follows::
