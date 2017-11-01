@@ -312,6 +312,7 @@ if on_rtd:
         'sksurv.bintrees._binarytrees',
         'sksurv.ensemble._coxph_loss',
         'sksurv.kernels._clinical_kernel',
+        'sksurv.linear_model._coxnet',
         'sksurv.svm._minlip',
         'sksurv.svm._prsvm']
 
