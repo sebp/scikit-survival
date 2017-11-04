@@ -10,7 +10,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from abc import ABCMeta, abstractmethod, abstractproperty
+from abc import ABCMeta, abstractmethod
 from sklearn.base import BaseEstimator
 from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.utils import check_X_y, check_array, check_consistent_length, check_random_state
@@ -203,7 +203,8 @@ class RankSVMOptimizer(object, metaclass=ABCMeta):
     def _hessian_func(self, w, s):
         """Evaluate Hessian at w"""
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def n_coefficients(self):
         """Return number of coefficients (includes intercept)"""
 
