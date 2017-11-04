@@ -165,13 +165,13 @@ def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None):
 
     Parameters
     ----------
-    event : array-like, shape = [n_samples,]
+    event : array-like, shape = (n_samples,)
         Contains binary event indicators.
 
-    time_exit : array-like, shape = [n_samples,]
+    time_exit : array-like, shape = (n_samples,)
         Contains event/censoring times.
 
-    time_enter : array-like, shape = [n_samples,], optional
+    time_enter : array-like, shape = )n_samples,), optional
         Contains time when each individual entered the study for
         left truncated survival data.
 
@@ -181,10 +181,10 @@ def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None):
 
     Returns
     -------
-    time : array, shape = [n_times]
+    time : array, shape = (n_times,)
         Unique times.
 
-    prob_survival : array, shape = [n_times]
+    prob_survival : array, shape = (n_times,)
         Survival probability at each unique time point.
         If `time_enter` is provided, estimates are conditional probabilities.
 
@@ -226,17 +226,18 @@ def nelson_aalen_estimator(event, time):
 
     Parameters
     ----------
-    y : structured array, shape = [n_samples]
-        A structured array containing the binary event indicator
-        as first field, and time of event or time of censoring as
-        second field.
+    event : array-like, shape = (n_samples,)
+        Contains binary event indicators.
+
+    time : array-like, shape = (n_samples,)
+        Contains event/censoring times.
 
     Returns
     -------
-    time : array, shape = [n_times]
+    time : array, shape = (n_times,)
         Unique times.
 
-    cum_hazard : array, shape = [n_times]
+    cum_hazard : array, shape = (n_times,)
         Cumulative hazard at each unique time point.
 
     References
@@ -261,15 +262,15 @@ def ipc_weights(event, time):
 
     Parameters
     ----------
-    event : array, shape = [n_samples]
+    event : array, shape = (n_samples,)
         Boolean event indicator.
 
-    time_start : array, shape = [n_samples]
+    time : array, shape = (n_samples,)
         Time when a subject experienced an event or was censored.
 
     Returns
     -------
-    weights : array, shape = [n_samples]
+    weights : array, shape = (n_samples,)
         inverse probability of censoring weights
     """
     if event.all():

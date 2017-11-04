@@ -197,6 +197,12 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         X: pandas.DataFrame, shape = (n_samples, n_features)
             Data to estimate parameters from.
 
+        y : None
+            Argument is ignored (included for compatibility reasons).
+
+        kwargs : dict
+            Argument is ignored (included for compatibility reasons).
+
         Returns
         -------
         self : object

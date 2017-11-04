@@ -23,7 +23,7 @@ def writearff(data, filename, relation_name=None, index=True):
 
     Parameters
     ----------
-    data_frame : :class:`pandas.DataFrame`
+    data : :class:`pandas.DataFrame`
         DataFrame containing data
 
     filename : string or file-like object
