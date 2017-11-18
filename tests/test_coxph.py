@@ -125,6 +125,15 @@ class TestCoxPH(TestCase):
             self.assertEqual("Optimization did not converge: Maximum number of iterations has been exceeded.",
                              str(w[0].message))
 
+    def test_verbose(self):
+        cph = CoxPHSurvivalAnalysis(verbose=99)
+        cph.fit(self.x.values, self.y)
+
+        cph.set_params(n_iter=1)
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("ignore")
+            cph.fit(self.x.values, self.y)
+
     def test_cum_baseline_hazard(self):
         cph = CoxPHSurvivalAnalysis()
         cph.fit(self.x.values, self.y)

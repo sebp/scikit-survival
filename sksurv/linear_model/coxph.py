@@ -15,6 +15,7 @@ import warnings
 import numpy
 from scipy.linalg import solve
 from sklearn.base import BaseEstimator
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.utils.extmath import squared_norm
 from sklearn.utils.validation import check_is_fitted
 
@@ -138,9 +139,9 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         |1 - (new neg. log-likelihood / old neg. log-likelihood) | < tol
 
-    verbose : bool, optional, default: False
-        Whether to print statistics on the convergence
-        of the optimizer.
+    verbose : int, optional, default: 0
+        Specified the amount of additional debug information
+        during optimization.
 
     Attributes
     ----------
@@ -159,7 +160,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
            Journal of the Royal Statistical Society. Series B, 34, 187-220, 1972.
     """
 
-    def __init__(self, alpha=0, n_iter=100, tol=1e-9, verbose=False):
+    def __init__(self, alpha=0, n_iter=100, tol=1e-9, verbose=0):
         self.alpha = alpha
         self.n_iter = n_iter
         self.tol = tol
@@ -189,14 +190,17 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         optimizer = CoxPHOptimizer(X, event, time, self.alpha)
 
+        verbose = self.verbose
         w = numpy.zeros(X.shape[1])
         w_prev = w
         i = 0
         loss = float('inf')
         while True:
             if i >= self.n_iter:
+                if verbose > 0:
+                    print("iter {:>6d}: reached maximum number of iterations. Stopping.".format(i + 1))
                 warnings.warn(('Optimization did not converge: Maximum number of iterations has been exceeded.'),
-                              stacklevel=2)
+                              stacklevel=2, category=ConvergenceWarning)
                 break
 
             optimizer.update(w)
@@ -208,25 +212,30 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
             w_new = w - delta
             loss_new = optimizer.nlog_likelihood(w_new)
+            if verbose > 2:
+                print("iter {:>6d}: update = {}".format(i + 1, delta))
+            if verbose > 1:
+                print("iter {:>6d}: loss = {:.10f}".format(i + 1, loss_new))
             if loss_new > loss:
                 # perform step-halving if negative log-likelihood does not decrease
                 w = (w_prev + w) / 2
                 loss = optimizer.nlog_likelihood(w)
+                if verbose > 1:
+                    print("iter {:>6d}: loss increased, performing step-halving. loss = {:.10f}".format(i, loss))
                 i += 1
                 continue
 
             w_prev = w
             w = w_new
-            i += 1
 
             res = numpy.abs(1 - (loss_new / loss))
             if res < self.tol:
+                if verbose > 0:
+                    print("iter {:>6d}: optimization converged".format(i + 1))
                 break
 
             loss = loss_new
-
-        if self.verbose:
-            print("Optimization stopped after %d iterations" % i)
+            i += 1
 
         self.coef_ = w
         self.cum_baseline_hazard_ = self._fit_baseline_hazard_function(X, event, time)
