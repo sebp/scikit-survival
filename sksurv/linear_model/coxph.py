@@ -194,6 +194,11 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         i = 0
         loss = float('inf')
         while True:
+            if i >= self.n_iter:
+                warnings.warn(('Optimization did not converge: Maximum number of iterations has been exceeded.'),
+                              stacklevel=2)
+                break
+
             optimizer.update(w)
             delta = solve(optimizer.hessian, optimizer.gradient,
                           overwrite_a=False, overwrite_b=False, check_finite=False)
@@ -216,10 +221,6 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
             res = numpy.abs(1 - (loss_new / loss))
             if res < self.tol:
-                break
-            elif i >= self.n_iter:
-                warnings.warn(('Optimization did not converge: Maximum number of iterations has been exceeded.'),
-                              stacklevel=2)
                 break
 
             loss = loss_new
