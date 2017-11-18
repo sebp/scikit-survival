@@ -144,7 +144,7 @@ def encode_categorical(table, columns=None, **kwargs):
 
 def _get_dummies_1d(data, allow_drop=True):
     # Series avoids inconsistent NaN handling
-    cat = pandas.Categorical.from_array(pandas.Series(data))
+    cat = pandas.Categorical(data)
     levels = cat.categories
     number_of_cols = len(levels)
 
