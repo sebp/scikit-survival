@@ -52,13 +52,13 @@ this unique characteristic of such a dataset into account.
 Requirements
 ============
 
-- Python 3.4 or later
+- Python 3.5 or later
 - cvxpy
 - cvxopt
 - numexpr
 - numpy 1.10 or later
-- pandas 0.18 or later
-- scikit-learn 0.18
+- pandas 0.19 or later
+- scikit-learn 0.19
 - scipy 0.17 or later
 - C/C++ compiler
 

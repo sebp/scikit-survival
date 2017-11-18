@@ -2,13 +2,6 @@ import os
 import os.path
 import sys
 
-# NumPy 1.11.2 contains a bug which prevents submodules from working correctly
-# on Python 3.4 unless importlib.machinery has been imported at some time.
-try:
-    import importlib.machinery
-except:
-    pass
-
 from setuptools import find_packages
 
 
@@ -95,7 +88,7 @@ def setup_package():
 
 if __name__ == "__main__":
     py_version = sys.version_info[:2]
-    if py_version < (3, 4):
-        raise RuntimeError('Python 3.4 or later is required')
+    if py_version < (3, 5):
+        raise RuntimeError('Python 3.5 or later is required')
 
     setup_package()
