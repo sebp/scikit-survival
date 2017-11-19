@@ -1,6 +1,18 @@
 API reference
 =============
 
+Non-parametric Estimators
+-------------------------
+.. currentmodule:: sksurv.nonparametric
+
+.. autosummary::
+    :toctree: generated/
+
+    kaplan_meier_estimator
+    nelson_aalen_estimator
+    ipc_weights
+
+
 Linear Models
 -------------
 .. currentmodule:: sksurv.linear_model
