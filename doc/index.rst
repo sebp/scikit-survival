@@ -14,6 +14,7 @@ Documentation
 .. toctree::
    :maxdepth: 1
 
+   understanding_predictions
    api
    release_notes
 
