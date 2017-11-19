@@ -130,7 +130,7 @@ class TestCoxPH(TestCase):
         cph.fit(self.x.values, self.y)
 
         cph.set_params(n_iter=1)
-        with warnings.catch_warnings(record=True) as w:
+        with warnings.catch_warnings(record=True):
             warnings.simplefilter("ignore")
             cph.fit(self.x.values, self.y)
 
