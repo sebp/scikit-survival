@@ -171,7 +171,7 @@ def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None):
     time_exit : array-like, shape = (n_samples,)
         Contains event/censoring times.
 
-    time_enter : array-like, shape = )n_samples,), optional
+    time_enter : array-like, shape = (n_samples,), optional
         Contains time when each individual entered the study for
         left truncated survival data.
 
