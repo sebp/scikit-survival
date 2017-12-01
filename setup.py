@@ -2,6 +2,7 @@ import os
 import os.path
 import sys
 
+from distutils.command.sdist import sdist
 from setuptools import find_packages
 
 
@@ -51,6 +52,8 @@ def setup_package():
                                  'Topic :: Software Development',
                                  'Topic :: Scientific/Engineering',
                     ],
+                    zip_safe=False,
+                    include_package_data=True,
                     use_scm_version=True,
                     setup_requires=['setuptools_scm'],
                     install_requires=[
@@ -69,7 +72,8 @@ def setup_package():
                             'coverage'],
                         'docs': [
                             'sphinx >= 1.4',
-                            'numpydoc']}
+                            'numpydoc']},
+                    cmdclass={'sdist': sdist},
     )
 
     if (len(sys.argv) >= 2

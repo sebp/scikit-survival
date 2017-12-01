@@ -1,8 +1,13 @@
 include README.rst COPYING MANIFEST.in requirements.txt
 recursive-include doc *.py *.rst Makefile
 recursive-include examples *.py *.ipynb
-recursive-include sksurv *.c *.h *.pyx *.pxd
+recursive-include sksurv *.pyx *.pxd
 recursive-include sksurv/datasets/data *.arff README.md
+recursive-include tests test*.py
+include sksurv/bintrees/binarytrees.cpp
+include sksurv/bintrees/binarytrees.h
+graft sksurv/linear_model/src
+graft tests/data
 prune doc/_build
 prune doc/generated
 prune */__pycache__
