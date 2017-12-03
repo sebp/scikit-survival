@@ -24,7 +24,9 @@ before_install:
 install:
   - conda install -n sksurv-test -c sebp --file requirements.txt
   - source activate sksurv-test
-  - python setup.py install
+  - pip install --disable-pip-version-check --upgrade pip
+  - python setup.py sdist
+  - pip install --pre --no-index --find-links dist/ scikit-survival
   - rm -fr sksurv
 
 # command to run tests
