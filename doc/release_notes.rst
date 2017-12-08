@@ -3,6 +3,14 @@
 Release Notes
 =============
 
+scikit-survival 0.5 (2017-12-09)
+--------------------------------
+
+This release adds support for scikit-learn 0.19 and pandas 0.21. In turn,
+support for older versions is dropped, namely Python 3.4, scikit-learn 0.18,
+and pandas 0.18.
+
+
 scikit-survival 0.4 (2017-10-28)
 --------------------------------
 
