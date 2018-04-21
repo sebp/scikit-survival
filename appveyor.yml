@@ -31,7 +31,7 @@ install:
 
   # Upgrade to the latest version of pip to avoid it displaying warnings
   # about it being out of date.
-  - cmd: pip install --disable-pip-version-check --user --upgrade pip
+  - cmd: pip install --disable-pip-version-check --user --upgrade "pip<10.0"
 
   # Install the build and runtime dependencies of the project.
   - cmd: conda install "%PY_CONDITION%" mkl=2017.0.3 numpy=%NUMPY_VERSION% "pandas<0.22" scipy nose ecos cython scikit-learn=0.18
