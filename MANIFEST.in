@@ -6,7 +6,9 @@ recursive-include sksurv/datasets/data *.arff README.md
 recursive-include tests test*.py
 include sksurv/bintrees/binarytrees.cpp
 include sksurv/bintrees/binarytrees.h
-graft sksurv/linear_model/src
+include sksurv/linear_model/src/coxnet_wrapper.h
+graft sksurv/linear_model/src/coxnet
+graft sksurv/linear_model/src/eigen/Eigen
 graft tests/data
 prune doc/_build
 prune doc/generated

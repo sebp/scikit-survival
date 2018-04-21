@@ -1,3 +1,4 @@
+from os.path import join
 import numpy
 
 
@@ -8,7 +9,8 @@ def configuration(parent_package='', top_path=None):
 
     config.add_extension('_coxnet',
                          sources=['_coxnet.pyx'],
-                         include_dirs=[numpy.get_include(), 'src'],
+                         include_dirs=[numpy.get_include(), 'src',
+                                       join('src', 'eigen')],
                          language='c++',
                          extra_compile_args=["-std=c++11"])
 
