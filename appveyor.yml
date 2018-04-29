@@ -39,7 +39,7 @@ install:
   - cmd: pip install --disable-pip-version-check --user --upgrade "pip<10.0"
 
   # Install the build and runtime dependencies of the project.
-  - cmd: conda install "%PY_CONDITION%" "mkl=2017.0.*" numpy=%NUMPY_VERSION% "pandas<0.23" scipy nose ecos cython scikit-learn=0.19
+  - cmd: conda install "%PY_CONDITION%" "mkl=2018.0.*" numpy=%NUMPY_VERSION% "pandas<0.23" scipy nose ecos cython scikit-learn=0.19
 
   # Install scs from tarball
   - cmd: pip download --no-cache-dir --no-deps scs==1.2.7
