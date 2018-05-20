@@ -57,7 +57,7 @@ def setup_package():
                     use_scm_version=True,
                     setup_requires=['setuptools_scm'],
                     install_requires=[
-                        'cvxpy',
+                        'cvxpy <1.0',
                         'numexpr',
                         'numpy',
                         'pandas >=0.19, <0.22',
