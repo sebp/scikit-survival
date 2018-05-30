@@ -131,7 +131,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
     def _check_params(self, n_features):
         if not 0 < self.l1_ratio <= 1:
-            raise ValueError("l1_ratio must be in interval ]0;1], but was %f" % self.l1_ratio)
+            raise ValueError("l1_ratio must be in interval (0,1], but was %f" % self.l1_ratio)
 
         if self.tol <= 0:
             raise ValueError("tolerance must be positive, but was %f" % self.tol)
