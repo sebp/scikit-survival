@@ -27,7 +27,7 @@ install:
   - conda list -n sksurv-test
   - source activate sksurv-test
   - pip install --disable-pip-version-check --upgrade pip
-  - python setup.py sdist
+  - python setup.py bdist_wheel
   - pip install --pre --no-index --find-links dist/ scikit-survival
   - rm -fr sksurv
 
