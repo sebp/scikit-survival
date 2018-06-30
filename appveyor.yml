@@ -51,6 +51,7 @@ install:
 
   # Install remaining dependencies
   - cmd: pip install -r ci/appveyor/requirements_%CONDA_PY%.txt
+  - cmd: conda list
   # Initialize the submodules
   - cmd: git submodule update --init --recursive
   # Create binary packages for the project.

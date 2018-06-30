@@ -24,6 +24,7 @@ before_install:
 # command to install dependencies
 install:
   - conda install -n sksurv-test -c sebp --file requirements.txt
+  - conda list -n sksurv-test
   - source activate sksurv-test
   - pip install --disable-pip-version-check --upgrade pip
   - python setup.py sdist
