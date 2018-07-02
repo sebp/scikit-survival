@@ -580,13 +580,13 @@ class TestKernelSurvivalSVM(TestCase):
         x = normalize(self.x)
         y = self.y
 
-        rsvm = FastKernelSurvivalSVM(optimizer='rbtree', kernel="rbf",
-                                     tol=1e-6, max_iter=65, random_state=0)
+        rsvm = FastKernelSurvivalSVM(optimizer='rbtree', kernel="rbf", gamma=0.5,
+                                     tol=1e-6, max_iter=70, random_state=0xf38)
         rsvm.fit(x, y)
 
-        kpca = KernelPCA(kernel="rbf", copy_X=True)
+        kpca = KernelPCA(kernel="rbf", copy_X=True, gamma=0.5, random_state=0xf38)
         xt = kpca.fit_transform(x)
-        nrsvm = FastSurvivalSVM(optimizer='rbtree', tol=1e-6, max_iter=30, random_state=0)
+        nrsvm = FastSurvivalSVM(optimizer='rbtree', tol=1e-6, max_iter=30, random_state=0xf38)
         nrsvm.fit(xt, y)
 
         pred_nrsvm = nrsvm.predict(xt)
