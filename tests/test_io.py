@@ -7,6 +7,8 @@ import numpy
 import pandas
 import pandas.util.testing as tm
 
+from collections import OrderedDict
+
 from sksurv.io import loadarff, writearff
 
 
@@ -40,7 +42,7 @@ class ReadArffTest(TestCase):
         with StringIO(contents) as fp:
             actual_df = loadarff(fp)
 
-        expected_df = pandas.DataFrame.from_items(
+        expected_df = pandas.DataFrame.from_dict(OrderedDict(
             [("attr_nominal",
               pandas.Series(pandas.Categorical.from_codes(
                   [1, 2, 0, -1, 2, 1],
@@ -50,7 +52,7 @@ class ReadArffTest(TestCase):
                   [2, 0, -1, 1, 0, 1],
                   ['"hard liquor"', 'mate', '"red wine"'])))
              ]
-        )
+        ))
 
         tm.assert_frame_equal(expected_df, actual_df, check_exact=True)
 

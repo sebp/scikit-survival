@@ -3,6 +3,7 @@ import pandas.util.testing as tm
 import pandas
 import numpy
 
+from collections import OrderedDict
 from sksurv import column
 
 NUMERIC_DATA_FRAME = pandas.DataFrame(numpy.arange(50).reshape(10, 5))
@@ -93,10 +94,10 @@ class TestEncodeCategorical(TestCase):
         input_series = pandas.Series(pandas.Categorical.from_codes([1, 1, 0, 2, 0, 1, 2, 1, 2, 0, 0, 1, 2, 2],
                                                                    ["small", "medium", "large"], ordered=False),
                                      name="a_series")
-        expected_df = pandas.DataFrame.from_items(
+        expected_df = pandas.DataFrame.from_dict(OrderedDict(
             [("a_series=medium", numpy.array([1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0], dtype=float)),
              ("a_series=large", numpy.array([0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1], dtype=float))
-            ])
+            ]))
 
         actual_df = column.encode_categorical(input_series)
 
@@ -159,8 +160,10 @@ class TestEncodeCategorical(TestCase):
         c = rnd.randn(len(a))
 
         index = numpy.ceil(numpy.arange(0, len(a) // 2, 0.5))
-        df = pandas.DataFrame.from_items([("a_category", pandas.Series(a, index=index)),
-                                          ("a_number", pandas.Series(c, index=index, copy=True))])
+        df = pandas.DataFrame.from_dict(OrderedDict([
+            ("a_category", pandas.Series(a, index=index)),
+            ("a_number", pandas.Series(c, index=index, copy=True))
+        ]))
 
         actual_df = column.encode_categorical(df)
 
@@ -211,8 +214,8 @@ class TestEncodeCategorical(TestCase):
         rnd = numpy.random.RandomState(0)
         c = rnd.randn(len(b))
 
-        df = pandas.DataFrame({"a_binary": b,
-                               "a_number": c.copy()})
+        df = pandas.DataFrame(OrderedDict("a_binary"=b,
+                                          "a_number"=c.copy()))
 
         actual_df = column.encode_categorical(df)
 
@@ -221,8 +224,10 @@ class TestEncodeCategorical(TestCase):
             numpy.repeat([numpy.nan], 10),
             numpy.repeat([0.], 16)))
 
-        expected_df = pandas.DataFrame({"a_number": c.copy(),
-                                        "a_binary=yes": eb})
+        d = OrderedDict()
+        d['a_binary=yes'] = eb
+        d['a_number'] = c.copy()
+        expected_df = pandas.DataFrame(d)
 
         self.assertTupleEqual(actual_df.shape, expected_df.shape)
         tm.assert_frame_equal(actual_df.isnull(), expected_df.isnull())

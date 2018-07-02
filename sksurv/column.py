@@ -17,6 +17,8 @@ import pandas
 
 from pandas.api.types import is_categorical_dtype
 
+from packaging import version
+
 __all__ = ['categorical_to_numeric', 'encode_categorical', 'standardize']
 
 
@@ -198,4 +200,7 @@ def categorical_to_numeric(table):
     if isinstance(table, pandas.Series):
         return pandas.Series(transform(table), name=table.name, index=table.index)
     else:
-        return table.apply(transform, axis=0, reduce=False)
+        if version.parse(pandas.__version__) >= version.parse('0.23.0'):
+            return table.apply(transform, axis=1, result_type='reduce')
+        else:
+            return table.apply(transform, axis=0, reduce=False)

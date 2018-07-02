@@ -3,6 +3,8 @@ import numpy as np
 from numpy.testing import run_module_suite, TestCase
 import pandas.util.testing as tm
 
+from collections import OrderedDict
+
 from sksurv.preprocessing import OneHotEncoder
 
 
@@ -11,7 +13,7 @@ def create_data(n_samples=117):
     data_num = pd.DataFrame(rnd.rand(n_samples, 5),
                             columns=["N%d" % i for i in range(5)])
 
-    dat_cat = pd.DataFrame(dict(
+    dat_cat = pd.DataFrame(OrderedDict(
         binary_1=pd.Categorical.from_codes(
             rnd.binomial(1, 0.6, n_samples),
             ["Yes", "No"]),
@@ -40,7 +42,7 @@ def encoded_data(data):
         else:
             expected.append((nam, col))
 
-    expected_data = pd.DataFrame.from_items(expected)
+    expected_data = pd.DataFrame.from_dict(OrderedDict(expected))
     return expected_data
 
 
@@ -52,13 +54,13 @@ class TestOneHotEncoder(TestCase):
         t = OneHotEncoder().fit(data)
 
         self.assertListEqual(t.feature_names_.tolist(),
-                             ['binary_1', 'binary_2', 'many', 'trinary'])
+                             ['binary_1', 'binary_2', 'trinary', 'many'])
         self.assertSetEqual(set(t.encoded_columns_),
                             set(expected_data.columns))
 
         self.assertDictEqual(t.categories_,
                              {k: data[k].cat.categories
-                              for k in ['binary_1', 'binary_2', 'many', 'trinary']})
+                              for k in ['binary_1', 'binary_2', 'trinary', 'many']})
 
     @staticmethod
     def test_fit_transform():

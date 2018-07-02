@@ -11,16 +11,19 @@ environment:
       PY_CONDITION: "python >=3.5,<3.6"
       CONDA_INSTALL_LOCN: "C:\\Miniconda35-x64"
       NUMPY_VERSION: 1.12
+      PANDAS_VERSION: 0.22
     - TARGET_ARCH: "x64"
       CONDA_PY: "36"
       PY_CONDITION: "python >=3.6"
       CONDA_INSTALL_LOCN: "C:\\Miniconda36-x64"
       NUMPY_VERSION: 1.13
+      PANDAS_VERSION: 0.23
     - TARGET_ARCH: "x64"
       CONDA_PY: "36"
       PY_CONDITION: "python >=3.6"
       CONDA_INSTALL_LOCN: "C:\\Miniconda36-x64"
       NUMPY_VERSION: 1.14
+      PANDAS_VERSION: 0.23
 
 # We always use a 64-bit machine.
 platform:
@@ -39,7 +42,7 @@ install:
   - cmd: pip install --disable-pip-version-check --user --upgrade "pip<10.0"
 
   # Install the build and runtime dependencies of the project.
-  - cmd: conda install "%PY_CONDITION%" "mkl=2018.0.*" numpy=%NUMPY_VERSION% "pandas<0.23" scipy nose ecos cython scikit-learn=0.19
+  - cmd: conda install "%PY_CONDITION%" "mkl=2018.0.*" numpy=%NUMPY_VERSION% pandas=%PANDAS_VERSION% scipy nose ecos cython scikit-learn=0.19
 
   # Install scs from tarball
   - cmd: pip download --no-cache-dir --no-deps scs==1.2.7
