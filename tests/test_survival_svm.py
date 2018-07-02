@@ -479,7 +479,7 @@ class TestKernelSurvivalSVM(TestCase):
         numpy.random.RandomState(0).shuffle(i)
         pred = ssvm.predict(self.x.values[i])
         rmse = numpy.sqrt(mean_squared_error(self.y['lenfol'][i], pred))
-        self.assertLessEqual(abs(1339.3006854574726 - rmse), 0.25)
+        self.assertLessEqual(rmse, 1339.3006854574726 + 0.275)
 
     def test_fit_and_predict_linear_regression_precomputed(self):
         ssvm = FastKernelSurvivalSVM(optimizer="rbtree", rank_ratio=0.0, kernel="precomputed",
@@ -494,7 +494,7 @@ class TestKernelSurvivalSVM(TestCase):
         numpy.random.RandomState(0).shuffle(i)
         pred = ssvm.predict(x[i])
         rmse = numpy.sqrt(mean_squared_error(self.y['lenfol'][i], pred))
-        self.assertLessEqual(abs(1339.3006854574726 - rmse), 0.25)
+        self.assertLessEqual(rmse, 1339.3006854574726 + 0.275)
 
     def test_fit_and_predict_linear_regression_no_intercept(self):
         ssvm = FastKernelSurvivalSVM(optimizer="rbtree", rank_ratio=0.0, kernel="linear",
@@ -597,8 +597,10 @@ class TestKernelSurvivalSVM(TestCase):
         c1 = concordance_index_censored(y['fstat'], y['lenfol'], pred_nrsvm)
         c2 = concordance_index_censored(y['fstat'], y['lenfol'], pred_rsvm)
 
-        self.assertAlmostEqual(c1[0], c2[0])
-        self.assertTupleEqual(c1[1:], c2[1:])
+        self.assertAlmostEqual(c1[0], c2[0], 3)
+        self.assertLessEqual(abs(c1[1] - c2[1]), 1)
+        self.assertLessEqual(abs(c1[2] - c2[2]), 1)
+        self.assertTupleEqual(c1[3:], c2[3:])
 
     @attr('slow')
     def test_compare_clinical_kernel(self):
