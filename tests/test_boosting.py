@@ -29,7 +29,7 @@ class TestGradientBoosting(TestCase):
                                                  random_state=0)
         model.fit(self.x, self.y)
 
-        self.assertEquals(model.max_features_, 14)
+        self.assertEqual(model.max_features_, 14)
         self.assertFalse(hasattr(model, "oob_improvement_"))
 
         p = model.predict(self.x)
@@ -49,7 +49,7 @@ class TestGradientBoosting(TestCase):
                                                  random_state=0)
         model.fit(self.x, self.y)
 
-        self.assertEquals(model.max_features_, 8)
+        self.assertEqual(model.max_features_, 8)
         self.assertTrue(hasattr(model, "oob_improvement_"))
 
         incl_mask = numpy.ones(self.x.shape[0], dtype=bool)
@@ -78,7 +78,7 @@ class TestGradientBoosting(TestCase):
         model.fit(self.x, self.y)
 
         self.assertFalse(hasattr(model, "oob_improvement_"))
-        self.assertEquals(model.max_features_, 8)
+        self.assertEqual(model.max_features_, 8)
 
         p = model.predict(self.x)
 

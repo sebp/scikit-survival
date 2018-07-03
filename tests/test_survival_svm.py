@@ -309,7 +309,7 @@ class SurvivalModeCases(object):
                                      -0.53009875, -0.01394175])
         assert_array_almost_equal(expected_coef, ssvm.coef_)
 
-        self.assertEquals(self.x.shape[1], ssvm.coef_.shape[0])
+        self.assertEqual(self.x.shape[1], ssvm.coef_.shape[0])
 
         c = ssvm.score(self.x.values, self.y)
 
@@ -446,7 +446,7 @@ class TestKernelSurvivalSVM(TestCase):
         ssvm.fit(self.x.values, self.y)
 
         self.assertFalse(ssvm._pairwise)
-        self.assertEquals(self.x.shape[0], ssvm.coef_.shape[0])
+        self.assertEqual(self.x.shape[0], ssvm.coef_.shape[0])
 
         i = numpy.arange(250)
         numpy.random.RandomState(0).shuffle(i)
@@ -459,7 +459,7 @@ class TestKernelSurvivalSVM(TestCase):
         ssvm.fit(x, self.y)
 
         self.assertTrue(ssvm._pairwise)
-        self.assertEquals(self.x.shape[0], ssvm.coef_.shape[0])
+        self.assertEqual(self.x.shape[0], ssvm.coef_.shape[0])
 
         i = numpy.arange(250)
         numpy.random.RandomState(0).shuffle(i)
@@ -514,7 +514,7 @@ class TestKernelSurvivalSVM(TestCase):
         ssvm.fit(self.x.values, self.y)
 
         self.assertFalse(ssvm._pairwise)
-        self.assertEquals(self.x.shape[0], ssvm.coef_.shape[0])
+        self.assertEqual(self.x.shape[0], ssvm.coef_.shape[0])
 
         c = ssvm.score(self.x.values, self.y)
         self.assertGreaterEqual(c, 0.965)
@@ -526,7 +526,7 @@ class TestKernelSurvivalSVM(TestCase):
         ssvm.fit(self.x.values, self.y)
 
         self.assertFalse(ssvm._pairwise)
-        self.assertEquals(self.x.shape[0], ssvm.coef_.shape[0])
+        self.assertEqual(self.x.shape[0], ssvm.coef_.shape[0])
 
         c = ssvm.score(self.x.values, self.y)
         self.assertGreaterEqual(c, 0.965)
@@ -570,7 +570,7 @@ class TestKernelSurvivalSVM(TestCase):
         ssvm.fit(x.values, y)
 
         self.assertFalse(ssvm._pairwise)
-        self.assertEquals(x.shape[0], ssvm.coef_.shape[0])
+        self.assertEqual(x.shape[0], ssvm.coef_.shape[0])
 
         c = ssvm.score(x.values, y)
         self.assertGreaterEqual(c, 0.854)
