@@ -461,7 +461,7 @@ class TestCoxnetSurvivalAnalysis(TestCase):
 
         penalty[11] = -numpy.infty
         self.assertRaisesRegex(ValueError,
-                               "Negative values in data passed to penalty_factor",
+                               "Input contains NaN, infinity or a value too large",
                                self._fit_example, penalty_factor=penalty)
 
         penalty[11] = numpy.infty
@@ -491,7 +491,7 @@ class TestCoxnetSurvivalAnalysis(TestCase):
 
         alphas[1] = -numpy.infty
         self.assertRaisesRegex(ValueError,
-                               "Negative values in data passed to alphas",
+                               "Input contains NaN, infinity or a value too large",
                                self._fit_example, alphas=alphas)
 
         alphas[1] = numpy.infty
