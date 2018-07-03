@@ -131,15 +131,15 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
                            ('svm', FastSurvivalSVM())]
         meta = EnsembleSelection(base_estimators, scorer=score_cindex, min_correlation=1.2)
 
-        self.assertRaisesRegex(ValueError, "min_correlation must be in \[-1; 1\], but was 1.2",
+        self.assertRaisesRegex(ValueError, r"min_correlation must be in \[-1; 1\], but was 1.2",
                                meta.fit, self.x, self.y)
 
         meta.set_params(min_correlation=-2.1)
-        self.assertRaisesRegex(ValueError, "min_correlation must be in \[-1; 1\], but was -2.1",
+        self.assertRaisesRegex(ValueError, r"min_correlation must be in \[-1; 1\], but was -2.1",
                                meta.fit, self.x, self.y)
 
         meta.set_params(min_correlation=numpy.nan)
-        self.assertRaisesRegex(ValueError, "min_correlation must be in \[-1; 1\], but was nan",
+        self.assertRaisesRegex(ValueError, r"min_correlation must be in \[-1; 1\], but was nan",
                                meta.fit, self.x, self.y)
 
     def test_scorer(self):
@@ -163,7 +163,7 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
                                meta.fit, self.x, self.y)
 
         meta.set_params(n_estimators=1000)
-        self.assertRaisesRegex(ValueError, "n_estimators \(1000\) must not exceed number of base learners \(2\)",
+        self.assertRaisesRegex(ValueError, r"n_estimators \(1000\) must not exceed number of base learners \(2\)",
                                meta.fit, self.x, self.y)
 
     def test_correlation(self):

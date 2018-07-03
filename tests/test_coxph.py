@@ -106,11 +106,11 @@ class TestCoxPH(TestCase):
     def test_alpha(self):
         cph = CoxPHSurvivalAnalysis(alpha=-0.0001)
 
-        self.assertRaisesRegex(ValueError, "alpha must be positive, but was -0\.0001",
+        self.assertRaisesRegex(ValueError, r"alpha must be positive, but was -0\.0001",
                                cph.fit, self.x.values, self.y)
 
         cph.set_params(alpha=-1.25)
-        self.assertRaisesRegex(ValueError, "alpha must be positive, but was -1\.25",
+        self.assertRaisesRegex(ValueError, r"alpha must be positive, but was -1\.25",
                                cph.fit, self.x.values, self.y)
 
     def test_convergence(self):

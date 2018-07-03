@@ -413,7 +413,7 @@ class TestMinlipCvxpy(TestCase):
                                m.fit, self.x.values, self.y)
 
         m.set_params(solver=[('why', 'are'), ('you', 'doing this')])
-        self.assertRaisesRegex(ValueError, "unknown solver: \[\('why', 'are'\), \('you', 'doing this'\)\]",
+        self.assertRaisesRegex(ValueError, r"unknown solver: \[\('why', 'are'\), \('you', 'doing this'\)\]",
                                m.fit, self.x.values, self.y)
 
     @attr('slow')

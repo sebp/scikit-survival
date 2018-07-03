@@ -402,7 +402,7 @@ class TestCoxnetSurvivalAnalysis(TestCase):
     def test_invalid_l1_ratio(self):
         for val in (0, -1, -1e-6, 1 + 1e-6, 1512, numpy.nan, numpy.infty):
             self.assertRaisesRegex(ValueError,
-                                   "l1_ratio must be in interval \]0;1\]",
+                                   r"l1_ratio must be in interval \]0;1\]",
                                    self._fit_example, l1_ratio=val)
 
     def test_invalid_tol(self):
@@ -425,23 +425,23 @@ class TestCoxnetSurvivalAnalysis(TestCase):
 
     def test_invalid_penalty_factor_length(self):
         self.assertRaisesRegex(ValueError,
-                               "penalty_factor must be array of length "
-                               "n_features \(30\), but got 0",
+                               r"penalty_factor must be array of length "
+                               r"n_features \(30\), but got 0",
                                self._fit_example, penalty_factor=numpy.array([]))
 
         self.assertRaisesRegex(ValueError,
-                               "penalty_factor must be array of length "
-                               "n_features \(30\), but got 1",
+                               r"penalty_factor must be array of length "
+                               r"n_features \(30\), but got 1",
                                self._fit_example, penalty_factor=numpy.ones(1))
 
         self.assertRaisesRegex(ValueError,
-                               "penalty_factor must be array of length "
-                               "n_features \(30\), but got 29",
+                               r"penalty_factor must be array of length "
+                               r"n_features \(30\), but got 29",
                                self._fit_example, penalty_factor=numpy.ones(29))
 
         self.assertRaisesRegex(ValueError,
-                               "penalty_factor must be array of length "
-                               "n_features \(30\), but got 31",
+                               r"penalty_factor must be array of length "
+                               r"n_features \(30\), but got 31",
                                self._fit_example, penalty_factor=numpy.ones(31))
 
     def test_invalid_penalty_factor_value(self):

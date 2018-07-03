@@ -128,12 +128,12 @@ class TestGradientBoosting(TestCase):
 
         model.set_params(max_features=-1)
         self.assertRaisesRegex(ValueError,
-                               "max_features must be in \(0, n_features\]",
+                               r"max_features must be in \(0, n_features\]",
                                model.fit, self.x, self.y)
 
         model.set_params(max_features=-1.125)
         self.assertRaisesRegex(ValueError,
-                               "max_features must be in \(0, 1.0\]",
+                               r"max_features must be in \(0, 1.0\]",
                                model.fit, self.x, self.y)
 
         model.set_params(max_features="fail_me")
@@ -469,11 +469,11 @@ class ExceptionCases:
         y['time'] = [12, 14, 6, 9, 1]
         y['event'] = [False, False, True, True, False]
 
-        self.assertRaisesRegex(ValueError, "dropout_rate must be within \[0; 1\[, but was -0.1",
+        self.assertRaisesRegex(ValueError, r"dropout_rate must be within \[0; 1\[, but was -0.1",
                                model.fit, x, y)
 
         model.set_params(dropout_rate=1.2)
-        self.assertRaisesRegex(ValueError, "dropout_rate must be within \[0; 1\[, but was 1.2",
+        self.assertRaisesRegex(ValueError, r"dropout_rate must be within \[0; 1\[, but was 1.2",
                                model.fit, x, y)
 
     def test_sample_weight(self):
@@ -484,11 +484,11 @@ class ExceptionCases:
         y['time'] = [12, 14, 6, 9, 1]
         y['event'] = [False, False, True, True, False]
 
-        self.assertRaisesRegex(ValueError, "Found input variables with inconsistent numbers of samples: \[5, 3\]",
+        self.assertRaisesRegex(ValueError, r"Found input variables with inconsistent numbers of samples: \[5, 3\]",
                                model.fit, x, y, [2, 3, 4])
 
         model.set_params(dropout_rate=1.2)
-        self.assertRaisesRegex(ValueError, "Found input variables with inconsistent numbers of samples: \[5, 8\]",
+        self.assertRaisesRegex(ValueError, r"Found input variables with inconsistent numbers of samples: \[5, 8\]",
                                model.fit, x, y, [2, 4, 5, 6, 7, 1, 2, 7])
 
 

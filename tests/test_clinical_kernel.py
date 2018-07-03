@@ -201,8 +201,8 @@ class TestClinicalKernel(TestCase):
         t = ClinicalKernelTransform()
         t.fit(self.data)
 
-        self.assertRaisesRegex(ValueError, 'Incompatible dimension for X and Y matrices: '
-                                           'X.shape\[1\] == 4 while Y.shape\[1\] == 17',
+        self.assertRaisesRegex(ValueError, r'Incompatible dimension for X and Y matrices: '
+                                           r'X.shape\[1\] == 4 while Y.shape\[1\] == 17',
                                pairwise_kernels, t.X_fit_, numpy.zeros((2, 17), dtype=float),
                                metric=t.pairwise_kernel, n_jobs=1)
 
@@ -235,7 +235,7 @@ class TestClinicalKernel(TestCase):
                                      ["2016-01-01", "1954-06-30", "1999-03-01", "2005-02-25", "2112-12-31",
                                       "1731-09-16"], dtype='datetime64')})
 
-        self.assertRaisesRegex(TypeError, 'unsupported dtype: dtype\(.+\)',
+        self.assertRaisesRegex(TypeError, r'unsupported dtype: dtype\(.+\)',
                                t.prepare, data)
 
     def test_feature_mismatch(self):

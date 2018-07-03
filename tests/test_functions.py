@@ -28,7 +28,7 @@ class TestStepFunction(TestCase):
 
         for v in values:
             self.assertRaisesRegex(ValueError,
-                                   "x must be within \[0.0+; 9.0+\], but was.+",
+                                   r"x must be within \[0.0+; 9.0+\], but was.+",
                                    self.f, v)
 
     def test_not_finite(self):

@@ -60,7 +60,7 @@ class TestStackingClassifier(TestCase):
 
     def test_names_not_unique(self):
         self.assertRaisesRegex(ValueError,
-                               "Names provided are not unique: \('m1', 'm2', 'm1'\)",
+                               r"Names provided are not unique: \('m1', 'm2', 'm1'\)",
                                Stacking, _NoFitEstimator,
                                [('m1', _PredictDummy), ('m2', _PredictDummy), ('m1', _PredictDummy)])
 

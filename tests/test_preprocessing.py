@@ -90,17 +90,17 @@ class TestOneHotEncoder(TestCase):
 
         data_renamed = data.rename(columns={"binary_1": "renamed_1"})
         self.assertRaisesRegex(ValueError,
-                               "1 features are missing from data: \['binary_1'\]",
+                               r"1 features are missing from data: \['binary_1'\]",
                                t.transform, data_renamed)
 
         data_dropped = data.drop('trinary', axis=1)
         self.assertRaisesRegex(ValueError,
-                               "1 features are missing from data: \['trinary'\]",
+                               r"1 features are missing from data: \['trinary'\]",
                                t.transform, data_dropped)
 
         data_renamed = data.rename(columns={"binary_1": "renamed_1", "many": "too_many"})
         self.assertRaisesRegex(ValueError,
-                               "2 features are missing from data: \['binary_1', 'many'\]",
+                               r"2 features are missing from data: \['binary_1', 'many'\]",
                                t.transform, data_renamed)
 
 

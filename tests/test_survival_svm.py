@@ -41,19 +41,19 @@ class TestSurvivalSVM(TestCase):
         y['time'] = numpy.arange(100, dtype=float)
 
         ssvm = FastSurvivalSVM(rank_ratio=-1)
-        self.assertRaisesRegex(ValueError, "rank_ratio must be in \[0; 1\]",
+        self.assertRaisesRegex(ValueError, r"rank_ratio must be in \[0; 1\]",
                                ssvm.fit, x, y)
 
         ssvm.set_params(rank_ratio=1.2)
-        self.assertRaisesRegex(ValueError, "rank_ratio must be in \[0; 1\]",
+        self.assertRaisesRegex(ValueError, r"rank_ratio must be in \[0; 1\]",
                                ssvm.fit, x, y)
 
         ssvm.set_params(rank_ratio=numpy.nan)
-        self.assertRaisesRegex(ValueError, "rank_ratio must be in \[0; 1\]",
+        self.assertRaisesRegex(ValueError, r"rank_ratio must be in \[0; 1\]",
                                ssvm.fit, x, y)
 
         ssvm.set_params(rank_ratio=numpy.inf)
-        self.assertRaisesRegex(ValueError, "rank_ratio must be in \[0; 1\]",
+        self.assertRaisesRegex(ValueError, r"rank_ratio must be in \[0; 1\]",
                                ssvm.fit, x, y)
 
     def test_regression_not_supported(self):
