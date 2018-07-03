@@ -1,11 +1,13 @@
-import unittest
 from functools import partial
 from os.path import join, dirname
+import unittest
+import warnings
 
 from nose.plugins.attrib import attr
 import numpy
 from numpy.testing import TestCase, run_module_suite, assert_array_almost_equal, assert_array_equal
 from sklearn.decomposition import KernelPCA
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import normalize
 
@@ -428,7 +430,11 @@ class TestKernelSurvivalSVM(TestCase):
         self.x = encode_categorical(standardize(x))
 
     def test_default_optimizer(self):
-        self.assertEqual('rbtree', FastKernelSurvivalSVM(tol=1e-4, max_iter=25).fit(self.x.values, self.y).optimizer)
+        ssvm = FastKernelSurvivalSVM(tol=1e-4, max_iter=25)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=ConvergenceWarning)
+            ssvm.fit(self.x.values, self.y)
+        self.assertEqual('rbtree', ssvm.optimizer)
 
     def test_unknown_optimizer(self):
         x = numpy.zeros((100, 10))
