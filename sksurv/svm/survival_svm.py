@@ -12,6 +12,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from abc import ABCMeta, abstractmethod
 from sklearn.base import BaseEstimator
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.utils import check_X_y, check_array, check_consistent_length, check_random_state
 from sklearn.utils.extmath import safe_sparse_dot, squared_norm
@@ -687,7 +688,9 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
             self.coef_ = coef
 
         if not opt_result.success:
-            warnings.warn(('Optimization did not converge: ' + opt_result.message), stacklevel=2)
+            warnings.warn(('Optimization did not converge: ' + opt_result.message),
+                          category=ConvergenceWarning,
+                          stacklevel=2)
         self.optimizer_result_ = opt_result
 
         return self
