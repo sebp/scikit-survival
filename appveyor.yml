@@ -63,6 +63,7 @@ install:
   - cmd: rmdir sksurv /s /q
 
 test_script:
+  - cmd: set "PYTHONWARNINGS=default"
   - cmd: nosetests -w tests -a "!slow" -e "test_breast_cancer_rbf_cvxopt$"
 
 artifacts:

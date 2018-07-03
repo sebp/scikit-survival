@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+export PYTHONWARNINGS="default"
 
 if [[ "x$NO_SLOW" != "xtrue" ]]; then
   nosetests -w tests --with-coverage --cover-xml --cover-package=sksurv --cover-tests
