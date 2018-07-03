@@ -220,7 +220,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, Y):
-        """Compute all pairwise distances between `self.X_fit_` and `Y`.
+        r"""Compute all pairwise distances between `self.X_fit_` and `Y`.
 
         Parameters
         ----------
