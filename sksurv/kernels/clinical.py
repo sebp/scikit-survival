@@ -13,6 +13,7 @@
 import numpy
 import pandas
 
+from pandas.api.types import is_categorical_dtype, is_numeric_dtype
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
@@ -162,7 +163,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
         for i, dt in enumerate(X.dtypes):
             col = X.iloc[:, i]
-            if pandas.core.common.is_categorical_dtype(dt):
+            if is_categorical_dtype(dt):
                 if col.cat.ordered:
                     numeric_ranges.append(col.cat.codes.max() - col.cat.codes.min())
                     numeric_columns.append(i)
@@ -170,7 +171,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
                     nominal_columns.append(i)
 
                 col = col.cat.codes
-            elif pandas.core.common.is_numeric_dtype(dt):
+            elif is_numeric_dtype(dt):
                 numeric_ranges.append(col.max() - col.min())
                 numeric_columns.append(i)
             else:

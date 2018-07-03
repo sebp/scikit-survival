@@ -282,7 +282,7 @@ if on_rtd:
         'numexpr',
         'numpy',
         'pandas',
-        'pandas.core.common',
+        'pandas.api.types',
         'scipy',
         'scipy.io.arff',
         'scipy.linalg',
