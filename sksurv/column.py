@@ -10,6 +10,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from distutils.version import LooseVersion
 import logging
 
 import numpy
@@ -17,7 +18,8 @@ import pandas
 
 from pandas.api.types import is_categorical_dtype
 
-from packaging import version
+_pandas_version_under0p23 = LooseVersion(pandas.__version__) < LooseVersion('0.23')
+
 
 __all__ = ['categorical_to_numeric', 'encode_categorical', 'standardize']
 
@@ -200,7 +202,7 @@ def categorical_to_numeric(table):
     if isinstance(table, pandas.Series):
         return pandas.Series(transform(table), name=table.name, index=table.index)
     else:
-        if version.parse(pandas.__version__) >= version.parse('0.23.0'):
-            return table.apply(transform, axis=1, result_type='reduce')
-        else:
+        if _pandas_version_under0p23:
             return table.apply(transform, axis=0, reduce=False)
+        else:
+            return table.apply(transform, axis=1, result_type='reduce')
