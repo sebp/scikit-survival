@@ -582,31 +582,29 @@ class TestKernelSurvivalSVM(TestCase):
         self.assertGreaterEqual(c, 0.854)
 
     @attr('slow')
-    def test_compare_rbf(self):
+    def test_compare_builtin_kernel(self):
         x = normalize(self.x)
         y = self.y
 
-        rsvm = FastKernelSurvivalSVM(optimizer='rbtree', kernel="rbf", gamma=0.5,
-                                     tol=1e-6, max_iter=70, random_state=0xf38)
+        rsvm = FastKernelSurvivalSVM(optimizer='rbtree', kernel="polynomial",
+                                     gamma=0.5, degree=2,
+                                     tol=1e-8, max_iter=100, random_state=0xf38)
         rsvm.fit(x, y)
-
-        kpca = KernelPCA(kernel="rbf", copy_X=True, gamma=0.5, random_state=0xf38)
-        xt = kpca.fit_transform(x)
-        nrsvm = FastSurvivalSVM(optimizer='rbtree', tol=1e-6, max_iter=30, random_state=0xf38)
-        nrsvm.fit(xt, y)
-
-        pred_nrsvm = nrsvm.predict(xt)
         pred_rsvm = rsvm.predict(x)
+
+        kpca = KernelPCA(kernel="polynomial", copy_X=True, gamma=0.5, degree=2, random_state=0xf38)
+        xt = kpca.fit_transform(x)
+        nrsvm = FastSurvivalSVM(optimizer='rbtree', tol=1e-8, max_iter=100, random_state=0xf38)
+        nrsvm.fit(xt, y)
+        pred_nrsvm = nrsvm.predict(xt)
 
         self.assertEqual(len(pred_nrsvm), len(pred_rsvm))
 
         c1 = concordance_index_censored(y['fstat'], y['lenfol'], pred_nrsvm)
         c2 = concordance_index_censored(y['fstat'], y['lenfol'], pred_rsvm)
 
-        self.assertAlmostEqual(c1[0], c2[0], 3)
-        self.assertLessEqual(abs(c1[1] - c2[1]), 1)
-        self.assertLessEqual(abs(c1[2] - c2[2]), 1)
-        self.assertTupleEqual(c1[3:], c2[3:])
+        self.assertAlmostEqual(c1[0], c2[0])
+        self.assertTupleEqual(c1[1:], c2[1:])
 
     @attr('slow')
     def test_compare_clinical_kernel(self):
