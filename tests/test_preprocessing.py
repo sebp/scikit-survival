@@ -13,20 +13,20 @@ def create_data(n_samples=117):
     data_num = pd.DataFrame(rnd.rand(n_samples, 5),
                             columns=["N%d" % i for i in range(5)])
 
-    dat_cat = pd.DataFrame(OrderedDict(
-        binary_1=pd.Categorical.from_codes(
+    dat_cat = pd.DataFrame(OrderedDict([
+        ("binary_1", pd.Categorical.from_codes(
             rnd.binomial(1, 0.6, n_samples),
-            ["Yes", "No"]),
-        binary_2=pd.Categorical.from_codes(
+            ["Yes", "No"])),
+        ("binary_2", pd.Categorical.from_codes(
             rnd.binomial(1, 0.376, n_samples),
-            ["East", "West"]),
-        trinary=pd.Categorical.from_codes(
+            ["East", "West"])),
+        ("trinary", pd.Categorical.from_codes(
             rnd.binomial(2, 0.76, n_samples),
-            ["Green", "Blue", "Red"]),
-        many=pd.Categorical.from_codes(
+            ["Green", "Blue", "Red"])),
+        ("many", pd.Categorical.from_codes(
             rnd.binomial(5, 0.47, n_samples),
-            ["One", "Two", "Three", "Four", "Five", "Six"])
-    ))
+            ["One", "Two", "Three", "Four", "Five", "Six"]))
+    ]))
     data = pd.concat((data_num, dat_cat), axis=1)
     return data
 
