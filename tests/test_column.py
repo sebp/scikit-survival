@@ -214,8 +214,8 @@ class TestEncodeCategorical(TestCase):
         rnd = numpy.random.RandomState(0)
         c = rnd.randn(len(b))
 
-        df = pandas.DataFrame(OrderedDict("a_binary"=b,
-                                          "a_number"=c.copy()))
+        df = pandas.DataFrame(OrderedDict([("a_binary", b),
+                                          ("a_number", c.copy())]))
 
         actual_df = column.encode_categorical(df)
 
