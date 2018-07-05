@@ -205,4 +205,4 @@ def categorical_to_numeric(table):
         if _pandas_version_under0p23:
             return table.apply(transform, axis=0, reduce=False)
         else:
-            return table.apply(transform, axis=1, result_type='reduce')
+            return table.apply(transform, axis=0, result_type='reduce')
