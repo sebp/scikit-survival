@@ -19,7 +19,7 @@ __all__ = ["loadarff"]
 
 def _to_pandas(data, meta):
     data_dict = {}
-    attrnames = meta.names()
+    attrnames = sorted(meta.names())
     for name in attrnames:
         tp, attr_format = meta[name]
         if tp == "nominal":
@@ -38,7 +38,7 @@ def _to_pandas(data, meta):
             data_dict[name] = p
 
     # currently, this step converts all pandas.Categorial columns back to pandas.Series
-    return pandas.DataFrame(data_dict)
+    return pandas.DataFrame.from_dict(data_dict)
 
 
 def loadarff(filename):
