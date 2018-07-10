@@ -15,7 +15,7 @@ __all__ = ['MinlipSurvivalAnalysis', 'HingeLossSurvivalSVM']
 def _check_cvxopt():
     try:
         import cvxopt
-    except ImportError:
+    except ImportError: # pragma: no cover
         raise ImportError("Please install cvxopt from https://github.com/cvxopt/cvxopt")
     return cvxopt
 
