@@ -21,7 +21,7 @@ from ..base import SurvivalAnalysisMixin
 from ..util import check_arrays_survival
 
 
-class NaiveSurvivalSVM(LinearSVC, SurvivalAnalysisMixin):
+class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
     """Naive version of linear Survival Support Vector Machine.
 
     Uses regular linear support vector classifier (liblinear).

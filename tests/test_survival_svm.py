@@ -758,32 +758,53 @@ class TestAVLTreeSurvivalCounter(SurvivalCounterCases, TestCase):
 
 class TestNaiveSurvivalSVM(TestCase):
 
-    def setUp(self):
+    def get_data_without_ties(self):
         # naive survival SVM does resolve ties in survival time differently,
         # therefore use data without ties
         data = loadarff(WHAS500_NOTIES_FILE)
-        x, self.y = get_x_y(data, ['fstat', 'lenfol'], '1')
-        self.x = encode_categorical(x)
+        x, y = get_x_y(data, ['fstat', 'lenfol'], '1')
+        x = encode_categorical(x)
+        return x, y
+
+    def get_data_with_ties(self):
+        # naive survival SVM does resolve ties in survival time differently,
+        # therefore use data without ties
+        x, y = load_whas500()
+        x = normalize(encode_categorical(x))
+        return x, y
 
     def test_survival_squared_hinge_loss(self):
-        nrsvm = NaiveSurvivalSVM(loss='squared_hinge', dual=False, tol=1e-8, max_iter=1000, random_state=0)
-        nrsvm.fit(self.x, self.y)
+        x, y = self.get_data_without_ties()
 
-        rsvm = FastSurvivalSVM(optimizer='avltree', tol=1e-8, max_iter=1000, random_state=0)
-        rsvm.fit(self.x, self.y)
+        nrsvm = NaiveSurvivalSVM(loss='squared_hinge', dual=False, tol=8e-7, max_iter=1000, random_state=0)
+        nrsvm.fit(x, y)
+
+        rsvm = FastSurvivalSVM(optimizer='avltree', tol=8e-7, max_iter=1000, random_state=0)
+        rsvm.fit(x, y)
 
         assert_array_almost_equal(nrsvm.coef_.ravel(), rsvm.coef_, 3)
 
-        pred_nrsvm = nrsvm.predict(self.x)
-        pred_rsvm = rsvm.predict(self.x)
+        pred_nrsvm = nrsvm.predict(x)
+        pred_rsvm = rsvm.predict(x)
 
         self.assertEqual(len(pred_nrsvm), len(pred_rsvm))
 
-        c1 = concordance_index_censored(self.y['fstat'], self.y['lenfol'], pred_nrsvm)
-        c2 = concordance_index_censored(self.y['fstat'], self.y['lenfol'], pred_rsvm)
+        c1 = concordance_index_censored(y['fstat'], y['lenfol'], pred_nrsvm)
+        c2 = concordance_index_censored(y['fstat'], y['lenfol'], pred_rsvm)
 
         self.assertAlmostEqual(c1[0], c2[0])
         self.assertTupleEqual(c1[1:], c2[1:])
+
+    def test_fit_with_ties(self):
+        x, y = self.get_data_with_ties()
+
+        nrsvm = NaiveSurvivalSVM(loss='squared_hinge', dual=False, tol=1e-8, max_iter=1000, random_state=0)
+        nrsvm.fit(x, y)
+
+        self.assertTupleEqual(nrsvm.coef_.shape, (1, 14))
+
+        cindex = nrsvm.score(x, y)
+        self.assertAlmostEqual(cindex, 0.7760582309811175)
 
 
 if __name__ == '__main__':
