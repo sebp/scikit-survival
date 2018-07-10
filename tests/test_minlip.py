@@ -389,7 +389,7 @@ class TestMinlipCvxpy(TestCase):
     def test_breast_cancer_rbf_cvxpy(self):
         x = scale(self.x.values)
         m = MinlipSurvivalAnalysis(solver="cvxpy", alpha=1, kernel="rbf",
-                                   gamma=32, pairs="next")
+                                   gamma=32, pairs="next", max_iter=1000)
         m.fit(x, self.y)
 
         self.assertTupleEqual((1, self.x.shape[0]), m.coef_.shape)
@@ -448,7 +448,7 @@ class TestMinlipCvxopt(TestCase):
     @property
     @skip_without_cvxopt
     def model(self):
-        return MinlipSurvivalAnalysis(solver="cvxopt", alpha=1, pairs="next")
+        return MinlipSurvivalAnalysis(solver="cvxopt", alpha=1, pairs="next", max_iter=1000)
 
     def test_breast_cancer_cvxopt(self):
         m = self.model

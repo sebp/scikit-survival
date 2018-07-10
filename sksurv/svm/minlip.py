@@ -1,7 +1,9 @@
 import numpy
 from scipy import sparse
 from sklearn.base import BaseEstimator
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import pairwise_kernels
+import warnings
 
 from ..base import SurvivalAnalysisMixin
 from ..util import check_arrays_survival
@@ -80,6 +82,10 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         The given number of repetitions are performed. Results can be accessed from the
         ``timings_`` attribute.
 
+    max_iter : int, optional
+        Maximum number of iterations to perform. By default
+        use solver's default value.
+
     Attributes
     ----------
     X_fit_ : ndarray
@@ -97,7 +103,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
     def __init__(self, solver="cvxpy",
                  alpha=1.0, kernel="linear", gamma=None, degree=3, coef0=1, kernel_params=None,
-                 pairs="nearest", verbose=False, timeit=None):
+                 pairs="nearest", verbose=False, timeit=None, max_iter=None):
         self.solver = solver
         self.alpha = alpha
         self.kernel = kernel
@@ -108,6 +114,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         self.pairs = pairs
         self.verbose = verbose
         self.timeit = timeit
+        self.max_iter = max_iter
 
     @property
     def _pairwise(self):
@@ -168,7 +175,16 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         constraints = [a >= 0., -alpha <= D.T * a, D.T * a <= alpha]
 
         prob = cvxpy.Problem(obj, constraints)
-        prob.solve(verbose=self.verbose)
+        solver_opts = dict(verbose=self.verbose)
+        if self.max_iter is not None:
+            solver_opts['max_iters'] = int(self.max_iter)
+        prob.solve(**solver_opts)
+        if prob.status != 'optimal':
+            s = prob.solver_stats
+            warnings.warn(('cvxpy solver {} did not converge after {} iterations: {}'.format(
+                s.solver_name, s.num_iters, prob.status)),
+                          category=ConvergenceWarning,
+                          stacklevel=2)
 
         return a.value.T.A, None
 
@@ -189,7 +205,15 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         # Gsp = cvxopt.spmatrix(G.data, G.row, G.col, G.shape)
 
         cvxopt.solvers.options["show_progress"] = int(self.verbose)
+        if self.max_iter is not None:
+            cvxopt.solvers.options['maxiters'] = int(self.max_iter)
+
         sol = cvxopt.solvers.qp(cvxopt.matrix(P), cvxopt.matrix(q), Gsp, cvxopt.matrix(h))
+        if sol['status'] != 'optimal':
+            warnings.warn(('cvxopt solver did not converge: {} (duality gap = {})'.format(
+                sol['status'], sol['gap'])),
+                          category=ConvergenceWarning,
+                          stacklevel=2)
 
         return numpy.array(sol['x']).T, None
 
