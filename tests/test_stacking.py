@@ -106,6 +106,10 @@ class TestStackingClassifier(TestCase):
         self.assertIsInstance(meta.get_params()["meta_estimator"], DecisionTreeClassifier)
         self.assertFalse(meta.get_params()["probabilities"])
 
+        p = meta.get_params(deep=False)
+        self.assertSetEqual(set(p.keys()),
+                            {"meta_estimator", "base_estimators", "probabilities"})
+
     def test_predict(self):
         data = load_iris()
         x = data["data"]
