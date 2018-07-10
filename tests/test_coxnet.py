@@ -24,6 +24,15 @@ def assert_columns_almost_equal(actual, expected, decimal=6):
                                   err_msg="Column %d: %s" % (i, col))
 
 
+def assert_predictions_equal(coxnet, x, expected_pred):
+    pred = numpy.array([
+        coxnet.predict(x.iloc[122:123, :], alpha=a)[0] for a in coxnet.alphas_])
+    assert_array_almost_equal(pred, expected_pred)
+
+    pred_last = coxnet.predict(x.iloc[122:123, :])
+    assert_array_almost_equal(pred_last, expected_pred[-1])
+
+
 class TestCoxnetSurvivalAnalysis(TestCase):
     def _fit_example(self, **kwargs):
         x, y = get_x_y(pandas.read_csv(EXAMPLE_FILE), ["status", "time"],
@@ -80,9 +89,7 @@ class TestCoxnetSurvivalAnalysis(TestCase):
             -0.397093422412222, -0.40046816729172, -0.402004566839427, -0.40331328958967, -0.404500835078198,
             -0.405588873666053, -0.406584748259676, -0.407495670627834, -0.407927461818659, -0.408063340186696
         ])
-        pred = numpy.array([
-            coxnet.predict(x.iloc[122:123, :], alpha=a)[0] for a in coxnet.alphas_])
-        assert_array_almost_equal(pred, expected_pred)
+        assert_predictions_equal(coxnet, x, expected_pred)
 
     def test_example_1_penalty_factor_1(self):
         expected_alphas = numpy.array(
@@ -125,9 +132,7 @@ class TestCoxnetSurvivalAnalysis(TestCase):
             -0.414144504730355, -0.41438652016618, -0.414598984650713, -0.414796366581722, -0.414979630970168,
             -0.415149243472181, -0.415305936592074, -0.414884495552163
         ])
-        pred = numpy.array([
-            coxnet.predict(x.iloc[122:123, :], alpha=a)[0] for a in coxnet.alphas_])
-        assert_array_almost_equal(pred, expected_pred)
+        assert_predictions_equal(coxnet, x, expected_pred)
 
     def test_example_1_penalty_factor_2(self):
         expected_alphas = numpy.array(
@@ -172,9 +177,7 @@ class TestCoxnetSurvivalAnalysis(TestCase):
             -0.410650182963323, -0.411197059249143, -0.411692846517166, -0.412145302413102, -0.412561364082062,
             -0.4129435341443, -0.41329427736124, -0.413095216567575
         ])
-        pred = numpy.array([
-            coxnet.predict(x.iloc[122:123, :], alpha=a)[0] for a in coxnet.alphas_])
-        assert_array_almost_equal(pred, expected_pred)
+        assert_predictions_equal(coxnet, x, expected_pred)
 
     def test_example_1_unpenalized(self):
         expected_alphas = numpy.array(
@@ -214,9 +217,7 @@ class TestCoxnetSurvivalAnalysis(TestCase):
             -0.402505065734498, -0.403764001966903, -0.404916031377837, -0.405970148147989, -0.406934334318935,
             -0.407120115909973
         ])
-        pred = numpy.array([
-            coxnet.predict(x.iloc[122:123, :], alpha=a)[0] for a in coxnet.alphas_])
-        assert_array_almost_equal(pred, expected_pred)
+        assert_predictions_equal(coxnet, x, expected_pred)
 
     def test_example_2(self):
         expected_alphas = numpy.array(
@@ -265,9 +266,7 @@ class TestCoxnetSurvivalAnalysis(TestCase):
             -0.403353040387268, -0.405235426737329, -0.406286722398451, -0.407239920728446, -0.408098144214668,
             -0.408543625518507, -0.409505822297035, -0.409923859178006
         ])
-        pred = numpy.array([
-            coxnet.predict(x.iloc[122:123, :], alpha=a)[0] for a in coxnet.alphas_])
-        assert_array_almost_equal(pred, expected_pred)
+        assert_predictions_equal(coxnet, x, expected_pred)
 
     def test_example_2_normalize(self):
         expected_alphas = numpy.array(
@@ -306,9 +305,7 @@ class TestCoxnetSurvivalAnalysis(TestCase):
             -12.157813645944, -12.1990911046183, -12.2378380608187, -12.2647532662837, -12.2898323148056,
             -12.3129678566791, -12.3367564940579, -12.358304617252, -12.3780929390135
         ])
-        pred = numpy.array([
-            coxnet.predict(x.iloc[122:123, :], alpha=a)[0] for a in expected_alphas])
-        assert_array_almost_equal(pred, expected_pred)
+        assert_predictions_equal(coxnet, x, expected_pred)
 
     def test_example_2_standardize(self):
         from sklearn.preprocessing import StandardScaler
@@ -354,9 +351,7 @@ class TestCoxnetSurvivalAnalysis(TestCase):
         assert_columns_almost_equal(coef, expected_coef)
 
         expected_pred = numpy.array([0, 0, 0, 0, 0, 0, -7.82043051660585])
-        pred = numpy.array([
-            coxnet.predict(x.iloc[122:123, :], alpha=a)[0] for a in expected_alphas])
-        assert_array_almost_equal(pred, expected_pred)
+        assert_predictions_equal(coxnet, x, expected_pred)
 
     def test_example_2_with_n_alpha(self):
         expected_alphas = numpy.array([
@@ -377,9 +372,7 @@ class TestCoxnetSurvivalAnalysis(TestCase):
         expected_pred = numpy.array([
             0, -0.585544346463982, -4.3131376746924, -7.67018844671395, -9.54168719460625, -10.920819487563,
             -12.0733454980442, -12.3385685033175, -12.4597634855469, -12.530947384041, -12.5681225386368])
-        pred = numpy.array([
-            coxnet.predict(x.iloc[122:123, :], alpha=a)[0] for a in expected_alphas])
-        assert_array_almost_equal(pred, expected_pred)
+        assert_predictions_equal(coxnet, x, expected_pred)
 
     def test_example_2_predict(self):
         x, y, coxnet = self._fit_example(l1_ratio=0.9, n_alphas=11,
