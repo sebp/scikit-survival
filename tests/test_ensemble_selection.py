@@ -256,6 +256,22 @@ class TestEnsembleSelectionRegressor(TestCase):
         self.assertRaisesRegex(ValueError, "no base estimator exceeds min_score, try decreasing it",
                                meta.fit, self.x, self.y)
 
+    def test_invalid_scorer(self):
+        base_estimators = [
+            ('dummy_0', DummySurvivalRegressor(strategy="mean")),
+            ('dummy_1', DummySurvivalRegressor(strategy="median")),
+        ]
+
+        def _score(est, X_test, y_test, **predict_params):
+            return 'invalid'
+
+        meta = EnsembleSelectionRegressor(base_estimators, n_estimators=1, min_score=5, cv=5,
+                                          scorer=_score)
+
+        self.assertRaisesRegex(ValueError,
+                               r"scoring must return a number, got invalid \(<class 'str'>\) instead.",
+                               meta.fit, self.x, self.y)
+
 
 if __name__ == '__main__':
     run_module_suite()
