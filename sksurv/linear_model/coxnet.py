@@ -192,13 +192,15 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         assert numpy.isfinite(coef).all()
 
         if numpy.all(numpy.absolute(coef) < numpy.finfo(numpy.float).eps):
-            warnings.warn('all coefficients are zero, consider decreasing alpha.')
+            warnings.warn('all coefficients are zero, consider decreasing alpha.',
+                          stacklevel=2)
 
-        if n_iter == self.max_iter:
+        if n_iter >= self.max_iter:
             warnings.warn('Optimization terminated early, you might want'
-                          '  to increase the number of iterations (max_iter=%d).'
+                          ' to increase the number of iterations (max_iter=%d).'
                           % self.max_iter,
-                          ConvergenceWarning)
+                          category=ConvergenceWarning,
+                          stacklevel=2)
 
         self.alphas_ = alphas
         self.penalty_factor_ = penalty

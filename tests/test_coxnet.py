@@ -3,6 +3,9 @@ from os.path import join, dirname
 import numpy
 import pandas
 from numpy.testing import TestCase, assert_array_almost_equal, run_module_suite
+import warnings
+
+from sklearn.exceptions import ConvergenceWarning
 
 from sksurv import column
 from sksurv.datasets import load_breast_cancer, get_x_y
@@ -398,6 +401,31 @@ class TestCoxnetSurvivalAnalysis(TestCase):
         pred = numpy.column_stack([
             coxnet.predict(x.iloc[[122, 10, 22, 200], :], alpha=a) for a in [0.75, 0.25, 0.2, 0.15, 0.1, 0.075]])
         assert_array_almost_equal(pred, expected_pred)
+
+    def test_all_zero_coefs(self):
+        alphas = numpy.array([256, 128, 96, 64, 48])
+
+        with warnings.catch_warnings(record=True) as w:
+            # Cause all warnings to always be triggered.
+            warnings.simplefilter("always")
+            _, _, coxnet = self._fit_example(l1_ratio=0.9, alphas=alphas,
+                                             alpha_min_ratio=0.001)
+            self.assertEqual(len(w), 1)
+            self.assertTrue(issubclass(w[0].category, UserWarning))
+            self.assertRegex(str(w[0].message),
+                             "all coefficients are zero, consider decreasing alpha.")
+            assert_array_almost_equal(coxnet.coef_, numpy.zeros((30, 5), dtype=float))
+
+    def test_max_iter(self):
+        with warnings.catch_warnings(record=True) as w:
+            # Cause all warnings to always be triggered.
+            warnings.simplefilter("always")
+            _, _, coxnet = self._fit_example(l1_ratio=0.9, max_iter=100)
+            self.assertEqual(len(w), 1)
+            self.assertTrue(issubclass(w[0].category, ConvergenceWarning))
+            self.assertRegex(str(w[0].message),
+                             'Optimization terminated early, you might want'
+                             ' to increase the number of iterations \(max_iter=100\).')
 
     def test_invalid_l1_ratio(self):
         for val in (0, -1, -1e-6, 1 + 1e-6, 1512, numpy.nan, numpy.infty):
