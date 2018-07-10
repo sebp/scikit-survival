@@ -2,7 +2,9 @@ from nose.plugins.attrib import attr
 import numpy
 from numpy.testing import TestCase, run_module_suite, assert_array_almost_equal, assert_array_equal
 from unittest import SkipTest
+import warnings
 
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.preprocessing import scale
 
 from sksurv.svm.minlip import MinlipSurvivalAnalysis, HingeLossSurvivalSVM
@@ -479,6 +481,20 @@ class TestMinlipCvxopt(TestCase):
         self.assertEqual(47097, v[2])
         self.assertEqual(1, v[3])
         self.assertEqual(32, v[4])
+
+    def test_max_iter(self):
+        x = scale(self.x.values)
+        m = MinlipSurvivalAnalysis(solver="cvxopt", alpha=1, kernel="polynomial",
+                                   degree=2, pairs="next", max_iter=5)
+        with warnings.catch_warnings(record=True) as w:
+            # Cause all warnings to always be triggered.
+            warnings.simplefilter("always")
+            m.fit(x, self.y)
+            self.assertEqual(len(w), 1)
+            self.assertTrue(issubclass(w[0].category, ConvergenceWarning))
+            self.assertRegex(str(w[0].message),
+                             r"cvxopt solver did not converge: unknown \(duality gap = [.0-9]+\)")
+
 
 if __name__ == '__main__':
     run_module_suite()
