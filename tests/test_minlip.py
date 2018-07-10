@@ -314,12 +314,12 @@ class TestToyCvxoptExample(TestCase):
     @property
     @skip_without_cvxopt
     def minlip_model(self):
-        return MinlipSurvivalAnalysis(solver="cvxopt", alpha=1, pairs="next")
+        return MinlipSurvivalAnalysis(solver="cvxopt", alpha=1, pairs="next", max_iter=1000)
 
     @property
     @skip_without_cvxopt
     def svm_model(self):
-        return HingeLossSurvivalSVM(solver="cvxopt", alpha=1)
+        return HingeLossSurvivalSVM(solver="cvxopt", alpha=1, max_iter=1000)
 
     def test_toy_minlip_fit_cvxopt(self):
         m = self.minlip_model

@@ -175,9 +175,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         constraints = [a >= 0., -alpha <= D.T * a, D.T * a <= alpha]
 
         prob = cvxpy.Problem(obj, constraints)
-        solver_opts = dict(verbose=self.verbose)
-        if self.max_iter is not None:
-            solver_opts['max_iters'] = int(self.max_iter)
+        solver_opts = self._get_options_cvxpy()
         prob.solve(**solver_opts)
         if prob.status != 'optimal':
             s = prob.solver_stats
@@ -187,6 +185,12 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
                           stacklevel=2)
 
         return a.value.T.A, None
+
+    def _get_options_cvxpy(self):
+        solver_opts = dict(verbose=self.verbose)
+        if self.max_iter is not None:
+            solver_opts['max_iters'] = int(self.max_iter)
+        return solver_opts
 
     def _fit_cvxopt(self, K, D, time):
         cvxopt = _check_cvxopt()
@@ -204,9 +208,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         Gsp = cvxopt.matrix(G.toarray())
         # Gsp = cvxopt.spmatrix(G.data, G.row, G.col, G.shape)
 
-        cvxopt.solvers.options["show_progress"] = int(self.verbose)
-        if self.max_iter is not None:
-            cvxopt.solvers.options['maxiters'] = int(self.max_iter)
+        self._set_options_cvxopt(cvxopt)
 
         sol = cvxopt.solvers.qp(cvxopt.matrix(P), cvxopt.matrix(q), Gsp, cvxopt.matrix(h))
         if sol['status'] != 'optimal':
@@ -216,6 +218,11 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
                           stacklevel=2)
 
         return numpy.array(sol['x']).T, None
+
+    def _set_options_cvxopt(self, cvxopt):
+        cvxopt.solvers.options["show_progress"] = int(self.verbose)
+        if self.max_iter is not None:
+            cvxopt.solvers.options['maxiters'] = int(self.max_iter)
 
     def fit(self, X, y):
         """Build a MINLIP survival model from training data.
@@ -325,6 +332,10 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
         The given number of repetitions are performed. Results can be accessed from the
         ``timings_`` attribute.
 
+    max_iter : int, optional
+        Maximum number of iterations to perform. By default
+        use solver's default value.
+
     Attributes
     ----------
     X_fit_ : ndarray
@@ -351,9 +362,9 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
 
     def __init__(self, solver="cvxpy",
                  alpha=1.0, kernel="linear", gamma=None, degree=3, coef0=1, kernel_params=None,
-                 pairs="all", verbose=False, timeit=None):
+                 pairs="all", verbose=False, timeit=None, max_iter=None):
         super().__init__(solver=solver, alpha=alpha, kernel=kernel, gamma=gamma, degree=degree, coef0=coef0,
-                         kernel_params=kernel_params, pairs=pairs, verbose=verbose, timeit=timeit)
+                         kernel_params=kernel_params, pairs=pairs, verbose=verbose, timeit=timeit, max_iter=max_iter)
 
     def _fit_cvxpy(self, K, D, time):
         import cvxpy
@@ -368,7 +379,8 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
         constraints = [a >= 0., a <= alpha]
 
         prob = cvxpy.Problem(obj, constraints)
-        prob.solve(verbose=self.verbose)
+        solver_opts = self._get_options_cvxpy()
+        prob.solve(**solver_opts)
 
         coef = a.value.T.A
         sv = numpy.flatnonzero(coef > 1e-5)
@@ -385,7 +397,7 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
         G = numpy.vstack((-numpy.eye(n_pairs), numpy.eye(n_pairs)))
         h = numpy.concatenate((numpy.zeros(n_pairs), numpy.repeat(self.alpha, n_pairs)))
 
-        cvxopt.solvers.options["show_progress"] = int(self.verbose)
+        self._set_options_cvxopt(cvxopt)
         sol = cvxopt.solvers.qp(cvxopt.matrix(P), cvxopt.matrix(q), cvxopt.matrix(G), cvxopt.matrix(h))
 
         coef = numpy.array(sol['x']).T
