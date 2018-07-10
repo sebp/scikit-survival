@@ -130,6 +130,7 @@ class NaiveSurvivalSVM(LinearSVC, SurvivalAnalysisMixin):
     def fit(self, X, y, sample_weight=None):
         """Build a survival support vector machine model from training data.
 
+        Parameters
         ----------
         X : array-like, shape = (n_samples, n_features)
             Data matrix.
