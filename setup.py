@@ -1,13 +1,25 @@
 import os
 import os.path
 import sys
+from pkg_resources import parse_requirements as _parse_requirements
 
 from distutils.command.sdist import sdist
 from setuptools import find_packages
 
 
+def parse_requirements(filename):
+    with open(filename) as fin:
+        parsed_requirements = _parse_requirements(
+            fin)
+        requirements = [str(ir) for ir in parsed_requirements]
+    return requirements
+
+
 with open('README.rst') as fp:
     long_description = fp.read()
+
+
+requirements = parse_requirements('requirements/prod.txt')
 
 
 def configuration(parent_package='', top_path=None):
@@ -56,23 +68,7 @@ def setup_package():
                     include_package_data=True,
                     use_scm_version=True,
                     setup_requires=['setuptools_scm'],
-                    install_requires=[
-                        'cvxpy <1.0',
-                        'numexpr',
-                        'numpy',
-                        'pandas >=0.19, <0.24',
-                        'scipy',
-                        'scikit-learn >=0.19.0, <0.20'],
-                    extras_require={
-                        'full': [
-                            'cvxopt',
-                            'cython'],
-                        'tests': [
-                            'nose',
-                            'coverage'],
-                        'docs': [
-                            'sphinx >= 1.4',
-                            'numpydoc']},
+                    install_requires=requirements,
                     cmdclass={'sdist': sdist},
     )
 

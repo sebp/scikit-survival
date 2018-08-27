@@ -1,7 +1,1 @@
-cvxopt
-cvxpy <1.0
-numexpr
-numpy
-pandas >=0.19,<0.24
-scipy
-scikit-learn >=0.19.0,<0.20
+-r requirements/prod.txt
