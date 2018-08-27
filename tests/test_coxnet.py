@@ -417,8 +417,8 @@ class TestCoxnetSurvivalAnalysis(TestCase):
             self.assertEqual(len(w), 1)
             self.assertTrue(issubclass(w[0].category, ConvergenceWarning))
             self.assertRegex(str(w[0].message),
-                             'Optimization terminated early, you might want'
-                             ' to increase the number of iterations \(max_iter=100\).')
+                             r'Optimization terminated early, you might want'
+                             r' to increase the number of iterations \(max_iter=100\).')
 
     def test_invalid_l1_ratio(self):
         for val in (0, -1, -1e-6, 1 + 1e-6, 1512, numpy.nan, numpy.infty):
