@@ -1,6 +1,5 @@
 import argparse
 from os.path import dirname, join
-import setuptools
 from pkg_resources import parse_requirements as _parse_requirements
 
 parser = argparse.ArgumentParser()
