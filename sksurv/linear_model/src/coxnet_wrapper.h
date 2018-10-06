@@ -98,6 +98,16 @@ PyObject* fit_coxnet(
     const VectorType alphas_map(create_map<S> (alphas));
     object.fit(alphas_map, create_path, result);
 
+    switch (result.getError()) {
+        case WEIGHT_TOO_LARGE: {
+            throw std::range_error(
+                "Numerical error, because weights are too large. Consider increasing alpha.");
+            return NULL;
+        }
+        case NONE:
+            break;
+    }
+
     if (result.getNumberOfAlphas() != PyArray_DIM(alphas, 0)) {
         npy_intp vec_shape[1] = { result.getNumberOfAlphas()  };
         PyArray_Dims vec_dim;

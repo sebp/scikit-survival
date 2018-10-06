@@ -18,6 +18,7 @@
 #include <cstdint>
 #include <Eigen/Core>
 
+#include "error.h"
 #include "ordered_dict.h"
 
 
@@ -37,11 +38,13 @@ struct FitParams {
                                             xw(n_samples),
                                             eps(_eps),
                                             maybe_active_set(n_features),
-                                            n_iterations(0)
+                                            n_iterations(0),
+                                            error_type(NONE)
     {
     }
 
     void init();
+    bool has_error() const { return error_type != NONE; }
 
     VectorType coef_x;
     VectorType residuals;
@@ -53,6 +56,7 @@ struct FitParams {
     Eigen::Array<bool, Eigen::Dynamic, 1> maybe_active_set;
     ordered_dict<Index> active_set;
     std::size_t n_iterations;
+    ErrorType error_type;
 };
 
 

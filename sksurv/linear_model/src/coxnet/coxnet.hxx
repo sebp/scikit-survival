@@ -20,6 +20,9 @@
 #include "soft_threshold.h"
 
 
+#define isnan(x) ((x) != (x))
+#define isfinite(x) !isnan((x) + (-x))
+
 namespace coxnet {
 
 template <typename T, typename S, typename U>
@@ -91,6 +94,10 @@ Coxnet<T, S, U>::update ()
         v = out_risk_set[i - 1];
 
         while (k < n_samples && ti == time[k]) {
+            /* abort if values are too large */
+            if (!isfinite(exp_xw[k])) {
+                m_params.error_type = WEIGHT_TOO_LARGE;
+            }
             v += exp_xw[k] * norm_factor;
             k++;
         }
@@ -191,6 +198,11 @@ void Coxnet<T, S, U>::fit(
         update();
         update_maybe_active_set(alpha, alpha_old);
         fit_alpha(l1penalty, l2penalty);
+
+        if (m_params.has_error()) {
+            result.setError(m_params.error_type);
+            break;
+        }
 
         final_alphas[i] = alpha;
         coef_path.col(i) = m_params.coef_x;
@@ -313,6 +325,8 @@ void Coxnet<T, S, U>::fit_alpha(Scalar l1penalty, Scalar l2penalty) {
         if (!converged) {
             /* update residuals and weights */
             update();
+            if (m_params.has_error())
+                break;
 
             converged = true;
             /* check active coefficients */

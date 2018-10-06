@@ -10,6 +10,7 @@ from sklearn.exceptions import ConvergenceWarning
 from sksurv import column
 from sksurv.datasets import load_breast_cancer, get_x_y
 from sksurv.linear_model.coxnet import CoxnetSurvivalAnalysis
+from sksurv.preprocessing import OneHotEncoder
 
 BREAST_CANCER_COEFFICIENTS_FILE = join(dirname(__file__), 'data', 'breast_cancer_glmnet_coefficients.csv')
 EXAMPLE_FILE = join(dirname(__file__), 'data', 'cox-example.csv')
@@ -524,6 +525,26 @@ class TestCoxnetSurvivalAnalysis(TestCase):
         self.assertRaisesRegex(ValueError,
                                "Input contains NaN, infinity or a value too large",
                                self._fit_example, alphas=alphas)
+
+    def test_alpha_too_small(self):
+        X, y = load_breast_cancer()
+        Xt = OneHotEncoder().fit_transform(X)
+        index = numpy.array([
+            0, 1, 2, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 20, 21, 22, 23, 25, 26, 27, 28, 29, 30, 31, 33,
+            34, 36, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 51, 52, 53, 54, 56, 57, 58, 60, 61, 62, 63, 64, 65, 66,
+            68, 70, 71, 72, 75, 76, 78, 79, 80, 82, 84, 85, 86, 87, 88, 90, 91, 92, 93, 94, 95, 98, 99, 100, 102, 103,
+            104, 105, 107, 108, 109, 110, 111, 113, 114, 115, 116, 117, 118, 119, 120, 121, 124, 125, 126, 127, 128,
+            130, 131, 132, 133, 135, 136, 137, 138, 139, 140, 143, 144, 145, 147, 148, 150, 151, 153, 154, 155, 156,
+            157, 158, 160, 161, 164, 165, 166, 167, 168, 169, 170, 171, 172, 174, 175, 177, 178, 180, 181, 182, 183,
+            184, 185, 186, 187, 188, 190, 191, 192, 193, 194, 195, 196, 197
+        ])
+
+        nn = CoxnetSurvivalAnalysis(alphas=[0.007295025406624247], l1_ratio=1.0)
+        Xf, yf = Xt.iloc[index], y[index]
+
+        self.assertRaisesRegex(ArithmeticError,
+                               "Numerical error, because weights are too large. Consider increasing alpha.",
+                               nn.fit, Xf, yf)
 
     def test_breast_example(self):
         x, y = load_breast_cancer()

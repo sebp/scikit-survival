@@ -16,6 +16,7 @@
 #define GLMNET_FIT_RESULT_H
 
 #include <cstdint>
+#include "error.h"
 
 
 namespace coxnet {
@@ -32,7 +33,8 @@ public:
                                             m_alphas(alphas),
                                             m_deviance_ratio(deviance_ratio),
                                             m_iterations(0),
-                                            m_n_alphas(0)
+                                            m_n_alphas(0),
+                                            m_error(NONE)
     {}
 
     const MatrixType& getCoefficientPath() const {
@@ -70,12 +72,20 @@ public:
         m_n_alphas = value;
     }
 
+    ErrorType getError() const {
+        return m_error;
+    }
+    void setError(const ErrorType error_type) {
+        m_error = error_type;
+    }
+
 private:
     MatrixType &m_coef_path;
     VectorType &m_alphas;
     VectorType &m_deviance_ratio;
     std::size_t m_iterations;
     int m_n_alphas;
+    ErrorType m_error;
 
     // intentionally not implemented
     FitResult (const FitResult&);
