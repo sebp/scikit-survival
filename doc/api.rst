@@ -127,3 +127,13 @@ Datasets
     load_gbsg2
     load_whas500
     load_veterans_lung_cancer
+
+
+Utilities
+---------
+.. currentmodule:: sksurv.util
+
+.. autosummary::
+    :toctree: generated/
+
+    Surv
