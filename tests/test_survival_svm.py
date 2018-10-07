@@ -21,6 +21,7 @@ from sksurv.svm._prsvm import survival_constraints_simple
 from sksurv.svm.naive_survival_svm import NaiveSurvivalSVM
 from sksurv.svm.survival_svm import FastSurvivalSVM, FastKernelSurvivalSVM, SurvivalCounter, \
     OrderStatisticTreeSurvivalCounter
+from sksurv.util import Surv
 
 WHAS500_NOTIES_FILE = join(dirname(__file__), 'data', 'whas500-noties.arff')
 
@@ -28,9 +29,7 @@ WHAS500_NOTIES_FILE = join(dirname(__file__), 'data', 'whas500-noties.arff')
 class TestSurvivalSVM(TestCase):
     def test_alpha_negative(self):
         x = numpy.zeros((100, 10))
-        y = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
-        y['event'] = numpy.ones(100, dtype=bool)
-        y['time'] = numpy.arange(100, dtype=float)
+        y = Surv.from_arrays(numpy.ones(100, dtype=bool), numpy.arange(100, dtype=float))
 
         ssvm = FastSurvivalSVM(alpha=-1)
         self.assertRaisesRegex(ValueError, "alpha must be positive",
@@ -38,9 +37,7 @@ class TestSurvivalSVM(TestCase):
 
     def test_rank_ratio_out_of_bounds(self):
         x = numpy.zeros((100, 10))
-        y = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
-        y['event'] = numpy.ones(100, dtype=bool)
-        y['time'] = numpy.arange(100, dtype=float)
+        y = Surv.from_arrays(numpy.ones(100, dtype=bool), numpy.arange(100, dtype=float))
 
         ssvm = FastSurvivalSVM(rank_ratio=-1)
         self.assertRaisesRegex(ValueError, r"rank_ratio must be in \[0; 1\]",
@@ -60,9 +57,7 @@ class TestSurvivalSVM(TestCase):
 
     def test_regression_not_supported(self):
         x = numpy.zeros((100, 10))
-        y = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
-        y['event'] = numpy.ones(100, dtype=bool)
-        y['time'] = numpy.arange(100, dtype=float)
+        y = Surv.from_arrays(numpy.ones(100, dtype=bool), numpy.arange(100, dtype=float))
 
         ssvm = FastSurvivalSVM(rank_ratio=0, optimizer='simple')
         self.assertRaisesRegex(ValueError,
@@ -76,9 +71,7 @@ class TestSurvivalSVM(TestCase):
 
     def test_unknown_optimizer(self):
         x = numpy.zeros((100, 10))
-        y = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
-        y['event'] = numpy.ones(100, dtype=bool)
-        y['time'] = numpy.arange(1, 101, dtype=float)
+        y = Surv.from_arrays(numpy.ones(100, dtype=bool), numpy.arange(1, 101, dtype=float))
 
         ssvm = FastSurvivalSVM(rank_ratio=0, optimizer='random stuff')
         self.assertRaisesRegex(ValueError,
@@ -164,9 +157,7 @@ class TestSurvivalSVM(TestCase):
 
     def test_all_censored(self):
         x = numpy.arange(80).reshape(10, 8)
-        y = numpy.empty(dtype=[('event', bool), ('time', float)], shape=10)
-        y['event'] = numpy.zeros(10, dtype=bool)
-        y['time'] = numpy.array([0, 1, 2, 1, 1, 0, 1, 2, 3, 1])
+        y = Surv.from_arrays(numpy.zeros(10, dtype=bool), [0, 1, 2, 1, 1, 0, 1, 2, 3, 1])
 
         rsvm = FastSurvivalSVM()
         self.assertRaisesRegex(ValueError,
@@ -175,9 +166,7 @@ class TestSurvivalSVM(TestCase):
 
     def test_zero_time(self):
         x = numpy.arange(80).reshape(10, 8)
-        y = numpy.empty(dtype=[('event', bool), ('time', float)], shape=10)
-        y['event'] = numpy.array([0, 1, 0, 1, 1, 0, 1, 0, 0, 1], dtype=bool)
-        y['time'] = numpy.array([0, 1, 2, 1, 1, 0, 1, 2, 3, 1])
+        y = Surv.from_arrays([0, 1, 0, 1, 1, 0, 1, 0, 0, 1], [0, 1, 2, 1, 1, 0, 1, 2, 3, 1])
 
         rsvm = FastSurvivalSVM(rank_ratio=0.5)
         self.assertRaisesRegex(ValueError,
@@ -186,9 +175,7 @@ class TestSurvivalSVM(TestCase):
 
     def test_negative_time(self):
         x = numpy.arange(80).reshape(10, 8)
-        y = numpy.empty(dtype=[('event', bool), ('time', float)], shape=10)
-        y['event'] = numpy.array([0, 1, 0, 1, 1, 0, 1, 0, 0, 1], dtype=bool)
-        y['time'] = numpy.array([1, 1, -2, 1, 1, 6, 1, 2, 3, 1])
+        y = Surv.from_arrays([0, 1, 0, 1, 1, 0, 1, 0, 0, 1], [1, 1, -2, 1, 1, 6, 1, 2, 3, 1])
 
         rsvm = FastSurvivalSVM(rank_ratio=0.5)
         self.assertRaisesRegex(ValueError,
@@ -197,9 +184,7 @@ class TestSurvivalSVM(TestCase):
 
     def test_ranking_with_fit_intercept(self):
         x = numpy.zeros((100, 10))
-        y = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
-        y['event'] = numpy.ones(100, dtype=bool)
-        y['time'] = numpy.arange(1, 101, dtype=float)
+        y = Surv.from_arrays(numpy.ones(100, dtype=bool), numpy.arange(1, 101, dtype=float))
 
         ssvm = FastSurvivalSVM(rank_ratio=1.0, fit_intercept=True)
         self.assertRaisesRegex(ValueError,
@@ -438,9 +423,7 @@ class TestKernelSurvivalSVM(TestCase):
 
     def test_unknown_optimizer(self):
         x = numpy.zeros((100, 10))
-        y = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
-        y['event'] = numpy.ones(100, dtype=bool)
-        y['time'] = numpy.arange(1, 101, dtype=float)
+        y = Surv.from_arrays(numpy.ones(100, dtype=bool), numpy.arange(1, 101, dtype=float))
 
         ssvm = FastKernelSurvivalSVM(optimizer='random stuff')
         self.assertRaisesRegex(ValueError,
@@ -637,7 +620,7 @@ class TestKernelSurvivalSVM(TestCase):
     def test_fit_precomputed_kernel_invalid_shape(self):
         ssvm = FastKernelSurvivalSVM(optimizer="rbtree", kernel='precomputed', random_state=0)
         x = numpy.random.randn(100, 14)
-        y = numpy.fromiter(zip(numpy.ones(100), numpy.ones(100)), dtype=[('event', bool), ('time', float)])
+        y = Surv.from_arrays(numpy.ones(100).astype(bool), numpy.ones(100))
 
         self.assertRaisesRegex(ValueError, r"Precomputed metric requires shape \(n_queries, n_indexed\)\. "
                                            r"Got \(100, 14\) for 100 indexed\.",
@@ -648,7 +631,7 @@ class TestKernelSurvivalSVM(TestCase):
         x = numpy.random.randn(100, 100)
         x[10, 12] = -1
         x[12, 10] = 9
-        y = numpy.fromiter(zip(numpy.ones(100), numpy.ones(100)), dtype=[('event', bool), ('time', float)])
+        y = Surv.from_arrays(numpy.ones(100).astype(bool), numpy.ones(100))
 
         self.assertRaisesRegex(ValueError, "kernel matrix is not symmetric",
                                ssvm.fit, x, y)

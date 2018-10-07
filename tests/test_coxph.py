@@ -6,8 +6,8 @@ from numpy.testing import TestCase, assert_array_almost_equal, run_module_suite
 import pandas
 
 from sksurv.column import standardize
-
 from sksurv.linear_model.coxph import CoxPHSurvivalAnalysis, CoxPHOptimizer
+from sksurv.util import Surv
 
 ROSSI_FILE = join(dirname(__file__), 'data', 'rossi.csv')
 
@@ -15,9 +15,7 @@ ROSSI_FILE = join(dirname(__file__), 'data', 'rossi.csv')
 class TestCoxPH(TestCase):
     def setUp(self):
         data = pandas.read_csv(ROSSI_FILE)
-        self.y = numpy.fromiter(zip(data["arrest"] == 1, data["week"]),
-                                dtype=[('arrest', numpy.bool), ('week', numpy.float64)])
-
+        self.y = Surv.from_dataframe("arrest", "week", data)
         self.x = data.drop(["arrest", "week"], axis=1)
 
     def test_likelihood(self):

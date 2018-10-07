@@ -9,6 +9,7 @@ from sksurv.datasets import load_whas500
 from sksurv.metrics import concordance_index_censored
 from sksurv import column
 from sksurv.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis, GradientBoostingSurvivalAnalysis
+from sksurv.util import Surv
 
 
 def early_stopping_monitor(i, est, locals_):
@@ -420,9 +421,7 @@ class ExceptionCases:
         model = self.ESTIMATOR(n_estimators=0)
 
         x = numpy.arange(100).reshape(5, 20)
-        y = numpy.empty(dtype=[('event', bool), ('time', float)], shape=5)
-        y['time'] = [12, 14, 6, 9, 1]
-        y['event'] = [False, False, True, True, False]
+        y = Surv.from_arrays([False, False, True, True, False], [12, 14, 6, 9, 1])
 
         self.assertRaisesRegex(ValueError, "n_estimators must be greater than 0 but was 0",
                                model.fit, x, y)
@@ -435,9 +434,7 @@ class ExceptionCases:
         model = self.ESTIMATOR(learning_rate=0)
 
         x = numpy.arange(100).reshape(5, 20)
-        y = numpy.empty(dtype=[('event', bool), ('time', float)], shape=5)
-        y['time'] = [12, 14, 6, 9, 1]
-        y['event'] = [False, False, True, True, False]
+        y = Surv.from_arrays([False, False, True, True, False], [12, 14, 6, 9, 1])
 
         self.assertRaisesRegex(ValueError, "learning_rate must be within ]0; 1] but was 0",
                                model.fit, x, y)
@@ -450,9 +447,7 @@ class ExceptionCases:
         model = self.ESTIMATOR(subsample=0)
 
         x = numpy.arange(100).reshape(5, 20)
-        y = numpy.empty(dtype=[('event', bool), ('time', float)], shape=5)
-        y['time'] = [12, 14, 6, 9, 1]
-        y['event'] = [False, False, True, True, False]
+        y = Surv.from_arrays([False, False, True, True, False], [12, 14, 6, 9, 1])
 
         self.assertRaisesRegex(ValueError, "subsample must be in ]0; 1] but was 0",
                                model.fit, x, y)
@@ -465,9 +460,7 @@ class ExceptionCases:
         model = self.ESTIMATOR(dropout_rate=-0.1)
 
         x = numpy.arange(100).reshape(5, 20)
-        y = numpy.empty(dtype=[('event', bool), ('time', float)], shape=5)
-        y['time'] = [12, 14, 6, 9, 1]
-        y['event'] = [False, False, True, True, False]
+        y = Surv.from_arrays([False, False, True, True, False], [12, 14, 6, 9, 1])
 
         self.assertRaisesRegex(ValueError, r"dropout_rate must be within \[0; 1\[, but was -0.1",
                                model.fit, x, y)
@@ -480,9 +473,7 @@ class ExceptionCases:
         model = self.ESTIMATOR()
 
         x = numpy.arange(100).reshape(5, 20)
-        y = numpy.empty(dtype=[('event', bool), ('time', float)], shape=5)
-        y['time'] = [12, 14, 6, 9, 1]
-        y['event'] = [False, False, True, True, False]
+        y = Surv.from_arrays([False, False, True, True, False], [12, 14, 6, 9, 1])
 
         self.assertRaisesRegex(ValueError, r"Found input variables with inconsistent numbers of samples: \[5, 3\]",
                                model.fit, x, y, [2, 3, 4])

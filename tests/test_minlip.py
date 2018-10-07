@@ -12,6 +12,7 @@ from sksurv.datasets import load_gbsg2
 from sksurv.metrics import concordance_index_censored
 from sksurv.column import encode_categorical
 from sksurv.svm._minlip import create_difference_matrix
+from sksurv.util import Surv
 
 
 def create_toy_data():
@@ -22,9 +23,9 @@ def create_toy_data():
                      [45, 21],
                      [50, 36]])
 
-    y = numpy.empty(x.shape[0], dtype=[('status', bool), ('time', float)])
-    y["status"] = numpy.array([True, True, False, True, False, False])
-    y["time"] = numpy.arange(1, 7) + 2 ** numpy.arange(1, 7)
+    y = Surv.from_arrays([True, True, False, True, False, False],
+                         numpy.arange(1, 7) + 2 ** numpy.arange(1, 7),
+                         name_event='status')
     return x, y
 
 

@@ -11,6 +11,7 @@ from sksurv import column
 from sksurv.datasets import load_breast_cancer, get_x_y
 from sksurv.linear_model.coxnet import CoxnetSurvivalAnalysis
 from sksurv.preprocessing import OneHotEncoder
+from sksurv.util import Surv
 
 BREAST_CANCER_COEFFICIENTS_FILE = join(dirname(__file__), 'data', 'breast_cancer_glmnet_coefficients.csv')
 EXAMPLE_FILE = join(dirname(__file__), 'data', 'cox-example.csv')
@@ -606,9 +607,8 @@ class TestCoxnetSurvivalAnalysis(TestCase):
         assert_columns_almost_equal(coef, expected_coef, 5)
 
     def test_simple(self):
-        y = numpy.empty(dtype=[("D", numpy.bool), ("Y", numpy.float64)], shape=5)
-        y["D"] = [True, False, False, True, False]
-        y["Y"] = [7., 8., 11., 11., 23.]
+        y = Surv.from_arrays([True, False, False, True, False], [7., 8., 11., 11., 23.],
+                             name_event="D", name_time="Y")
 
         x = pandas.DataFrame({"F1": [1, 1, 1, 0, 0],
                               "F2": [23, 43, 54, 75, 67],
