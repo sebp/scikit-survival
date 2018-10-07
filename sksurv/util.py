@@ -16,7 +16,89 @@ from pandas.api.types import is_categorical_dtype
 from sklearn.utils import check_consistent_length, check_array
 
 
-__all__ = ['check_arrays_survival', 'check_y_survival', 'safe_concat']
+__all__ = ['check_arrays_survival', 'check_y_survival', 'safe_concat', 'Surv']
+
+
+class Surv:
+    """
+    Helper class to construct structured array of event indicator and observed time.
+    """
+
+    @staticmethod
+    def from_arrays(event, time, name_event=None, name_time=None):
+        """Create structured array.
+
+        Parameters
+        ----------
+        event : array-like
+            Event indicator. A boolean array or array with values 0/1.
+        time : array-like
+            Observed time.
+        name_event : str|None
+            Name of event, optional, default: 'event'
+        name_time : str|None
+            Name of observed time, optional, default: 'time'
+
+        Returns
+        -------
+        y : np.array
+            Structured array with two fields.
+        """
+        name_event = name_event or 'event'
+        name_time = name_time or 'time'
+        if name_time == name_event:
+            raise ValueError('name_time must be different from name_event')
+
+        time = numpy.asanyarray(time, dtype=numpy.float_)
+        y = numpy.empty(time.shape[0],
+                        dtype=[(name_event, numpy.bool_), (name_time, numpy.float_)])
+        y[name_time] = time
+
+        event = numpy.asanyarray(event)
+        check_consistent_length(time, event)
+
+        if numpy.issubdtype(event.dtype, numpy.bool_):
+            y[name_event] = event
+        else:
+            events = numpy.unique(event)
+            events.sort()
+            if len(events) != 2:
+                raise ValueError('event indicator must be binary')
+
+            if numpy.all(events == numpy.array([0, 1], dtype=events.dtype)):
+                y[name_event] = event.astype(numpy.bool_)
+            else:
+                raise ValueError('non-boolean event indicator must contain 0 and 1 only')
+
+        return y
+
+    @staticmethod
+    def from_dataframe(event, time, data):
+        """Create structured array from data frame.
+
+        Parameters
+        ----------
+        event : object
+            Identifier of column containing event indicator.
+        time : object
+            Identifier of column containing time.
+        data : pandas.DataFrame
+            Dataset.
+
+        Returns
+        -------
+        y : np.array
+            Structured array with two fields.
+        """
+        if not isinstance(data, pandas.DataFrame):
+            raise TypeError(
+                "exepected pandas.DataFrame, but got {!r}".format(type(data)))
+
+        return Surv.from_arrays(
+            data.loc[:, event].values,
+            data.loc[:, time].values,
+            name_event=str(event),
+            name_time=str(time))
 
 
 def check_y_survival(y_or_event, *args):
