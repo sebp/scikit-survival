@@ -61,7 +61,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'scikit-survival'
-copyright = '2015-2017, Sebastian Pölsterl'
+copyright = '2015-2018, Sebastian Pölsterl'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

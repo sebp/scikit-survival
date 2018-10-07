@@ -3,6 +3,24 @@
 Release Notes
 =============
 
+scikit-survival 0.6 (2018-10-07)
+--------------------------------
+
+This release adds support for numpy 1.14 and pandas up to 0.23.
+In addition, the new class :class:`sksurv.util.Surv` makes it easier
+to construct a structured array from numpy arrays, lists, or a pandas data frame.
+
+**Changes:**
+
+- Support numpy 1.14 and pandas 0.22, 0.23 (#36).
+- Enable support for cvxopt with Python 3.5+ on Windows (requires cvxopt >=1.1.9).
+- Add `max_iter` parameter to :class:`sksurv.svm.MinlipSurvivalAnalysis`
+  and :class:`sksurv.svm.HingeLossSurvivalSVM`.
+- Fix score function of :class:`sksurv.svm.NaiveSurvivalSVM` to use concordance index.
+- :class:`sksurv.linear_model.CoxnetSurvivalAnalysis` now throws an exception if coefficients get too large (#47).
+- Add :class:`sksurv.util.Surv` class to ease constructing a structured array (#26).
+
+
 scikit-survival 0.5 (2017-12-09)
 --------------------------------
 
