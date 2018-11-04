@@ -69,8 +69,9 @@ class TestStackingClassifier(TestCase):
         x = data["data"]
         y = data["target"]
 
-        meta = Stacking(LogisticRegression(), [('tree', DecisionTreeClassifier(max_depth=1, random_state=0)),
-                                               ('svm', SVC(probability=True, random_state=0))])
+        meta = Stacking(LogisticRegression(solver='liblinear', multi_class='ovr'),
+                [('tree', DecisionTreeClassifier(max_depth=1, random_state=0)),
+                 ('svm', SVC(probability=True, gamma='auto', random_state=0))])
         self.assertEqual(2, len(meta))
         meta.fit(x, y)
 
@@ -84,8 +85,9 @@ class TestStackingClassifier(TestCase):
         x = data["data"]
         y = data["target"]
 
-        meta = Stacking(LogisticRegression(), [('tree', DecisionTreeClassifier(max_depth=1, random_state=0)),
-                                               ('svm', SVC(probability=True, random_state=0))])
+        meta = Stacking(LogisticRegression(solver='liblinear', multi_class='ovr'),
+                [('tree', DecisionTreeClassifier(max_depth=1, random_state=0)),
+                 ('svm', SVC(probability=True, gamma='auto', random_state=0))])
 
         sample_weight = numpy.random.RandomState(0).uniform(size=x.shape[0])
         meta.fit(x, y, tree__sample_weight=sample_weight, svm__sample_weight=sample_weight)
@@ -117,7 +119,7 @@ class TestStackingClassifier(TestCase):
 
         meta = Stacking(LogisticRegression(multi_class='multinomial', solver='lbfgs'),
                         [('tree', DecisionTreeClassifier(max_depth=1, random_state=0)),
-                         ('svm', SVC(probability=True, random_state=0))])
+                         ('svm', SVC(probability=True, gamma='auto', random_state=0))])
         self.assertEqual(2, len(meta))
         meta.fit(x, y)
         p = meta.predict(x)
@@ -132,7 +134,7 @@ class TestStackingClassifier(TestCase):
 
         meta = Stacking(LogisticRegression(multi_class='multinomial', solver='lbfgs'),
                         [('tree', DecisionTreeClassifier(max_depth=1, random_state=0)),
-                         ('svm', SVC(probability=True, random_state=0))])
+                         ('svm', SVC(probability=True, gamma='auto', random_state=0))])
         meta.fit(x, y)
         p = meta.predict_proba(x)
 
@@ -149,7 +151,7 @@ class TestStackingClassifier(TestCase):
 
         meta = Stacking(LogisticRegression(multi_class='multinomial', solver='lbfgs'),
                         [('tree', DecisionTreeClassifier(max_depth=1, random_state=0)),
-                         ('svm', SVC(probability=True, random_state=0))])
+                         ('svm', SVC(probability=True, gamma='auto', random_state=0))])
         meta.fit(x, y)
         p = meta.predict_log_proba(x)
 

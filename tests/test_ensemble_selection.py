@@ -121,7 +121,7 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
     def test_min_score(self):
         base_estimators = [('gbm', ComponentwiseGradientBoostingSurvivalAnalysis()),
                            ('svm', FastSurvivalSVM())]
-        meta = EnsembleSelection(base_estimators, scorer=score_cindex, min_score=1.0)
+        meta = EnsembleSelection(base_estimators, scorer=score_cindex, min_score=1.0, cv=3)
 
         self.assertRaisesRegex(ValueError, "no base estimator exceeds min_score, try decreasing it",
                                meta.fit, self.x, self.y)
