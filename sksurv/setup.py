@@ -56,7 +56,8 @@ def maybe_cythonize_extensions(top_path, config):
             exc.args += (message,)
             raise
 
-        config.ext_modules = cythonize(config.ext_modules)
+        config.ext_modules = cythonize(config.ext_modules,
+                                       compiler_directives={'language_level': '3'})
 
 
 def configuration(parent_package='', top_path=None):
