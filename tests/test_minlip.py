@@ -392,7 +392,7 @@ class TestMinlipCvxpy(TestCase):
     def test_breast_cancer_rbf_cvxpy(self):
         x = scale(self.x.values)
         m = MinlipSurvivalAnalysis(solver="cvxpy", alpha=1, kernel="rbf",
-                                   gamma=32, pairs="next", max_iter=1000)
+                                   gamma=1./8, pairs="next", max_iter=1000)
         m.fit(x, self.y)
 
         self.assertTupleEqual((1, self.x.shape[0]), m.coef_.shape)
@@ -400,11 +400,8 @@ class TestMinlipCvxpy(TestCase):
         p = m.predict(x)
         v = concordance_index_censored(self.y['cens'], self.y['time'], p)
 
-        self.assertGreaterEqual(v[0], 0.6402849585186966)
-        self.assertGreaterEqual(v[1], 85203)
-        self.assertLessEqual(v[2], 47869)
-        self.assertEqual(0, v[3])
-        self.assertEqual(32, v[4])
+        self.assertTupleEqual(v[1:], (81252, 51820, 0, 32))
+        self.assertAlmostEqual(v[0], 0.6105867500300589)
 
     def test_unknown_solver(self):
         m = MinlipSurvivalAnalysis(solver=None)
@@ -425,7 +422,7 @@ class TestMinlipCvxpy(TestCase):
         from sklearn.utils.metaestimators import _safe_split
 
         m = MinlipSurvivalAnalysis(kernel="precomputed", solver="cvxpy")
-        K = pairwise_kernels(self.x, metric="rbf")
+        K = pairwise_kernels(self.x, metric="rbf", gamma=1./32)
 
         train_idx = numpy.arange(50, self.x.shape[0])
         test_idx = numpy.arange(50)
@@ -437,9 +434,8 @@ class TestMinlipCvxpy(TestCase):
         p = m.predict(X_test)
         v = concordance_index_censored(y_test['cens'], y_test['time'], p)
 
-        expected = numpy.array([0.508748, 378, 365, 0, 0])
-
-        assert_array_almost_equal(expected, v)
+        self.assertTupleEqual(v[1:], (466, 260, 17, 0))
+        self.assertAlmostEqual(v[0], 0.6386271870794078)
 
 
 class TestMinlipCvxopt(TestCase):
@@ -462,9 +458,8 @@ class TestMinlipCvxopt(TestCase):
         p = m.predict(self.x.values)
         v = concordance_index_censored(self.y['cens'], self.y['time'], p)
 
-        expected = numpy.array([0.59570007214139709, 79271, 53801, 0, 32])
-
-        assert_array_almost_equal(expected, v)
+        self.assertTupleEqual(v[1:], (79271, 53801, 0, 32))
+        self.assertAlmostEqual(v[0], 0.59570007214139709)
 
     def test_breast_cancer_rbf_cvxopt(self):
         x = scale(self.x.values)
@@ -477,11 +472,8 @@ class TestMinlipCvxopt(TestCase):
         p = m.predict(x)
         v = concordance_index_censored(self.y['cens'], self.y['time'], p)
 
-        self.assertAlmostEqual(0.64607505711193935, v[0])
-        self.assertEqual(85974, v[1])
-        self.assertEqual(47097, v[2])
-        self.assertEqual(1, v[3])
-        self.assertEqual(32, v[4])
+        self.assertTupleEqual(v[1:], (85974, 46387, 711, 32))
+        self.assertAlmostEqual(v[0], 0.6487427858602861)
 
     def test_max_iter(self):
         x = scale(self.x.values)

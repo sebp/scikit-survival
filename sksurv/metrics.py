@@ -17,7 +17,7 @@ import numpy
 __all__ = ['concordance_index_censored']
 
 
-def concordance_index_censored(event_indicator, event_time, estimate):
+def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1e-8):
     """Concordance index for right-censored data
 
     The concordance index is defined as the proportion of all comparable pairs
@@ -45,6 +45,11 @@ def concordance_index_censored(event_indicator, event_time, estimate):
 
     estimate : array-like, shape = (n_samples,)
         Estimated risk of experiencing an event
+
+    tied_tol : float, optional, default: 1e-8
+        The tolerance value for considering ties.
+        If the absolute difference between risk scores is smaller
+        or equal than `tied_tol`, risk scores are considered tied.
 
     Returns
     -------
@@ -130,7 +135,8 @@ def concordance_index_censored(event_indicator, event_time, estimate):
             con = (est > est_i).sum()
         concordant += con
 
-        tie = (est == est_i).sum()
+        diff = numpy.absolute(est - est_i)
+        tie = (diff <= tied_tol).sum()
         tied_risk += tie
 
         discordant += est.size - con - tie

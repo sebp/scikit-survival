@@ -35,9 +35,9 @@ class TestGradientBoosting(TestCase):
 
         p = model.predict(self.x)
 
-        expected_cindex = numpy.array([0.86272605091218779, 64826, 10309, 14, 119])
         result = concordance_index_censored(self.y['fstat'], self.y['lenfol'], p)
-        assert_array_almost_equal(expected_cindex, numpy.array(result))
+        self.assertTupleEqual(result[1:], (64826, 10309, 14, 119))
+        self.assertAlmostEqual(result[0], 0.86272605091218779)
 
         self.assertTupleEqual((100,), model.train_score_.shape)
 
@@ -60,9 +60,9 @@ class TestGradientBoosting(TestCase):
 
         p = model.predict(x_test)
 
-        expected_cindex = numpy.array([0.8592640, 62905, 10303, 0, 110])
         result = concordance_index_censored(y_test['fstat'], y_test['lenfol'], p)
-        assert_array_almost_equal(expected_cindex, numpy.array(result))
+        self.assertTupleEqual(result[1:], (62905, 10303, 0, 110))
+        self.assertAlmostEqual(result[0], 0.8592640)
 
         self.assertTupleEqual((100,), model.train_score_.shape)
         self.assertTupleEqual((100,), model.oob_improvement_.shape)
@@ -83,9 +83,9 @@ class TestGradientBoosting(TestCase):
 
         p = model.predict(self.x)
 
-        expected_cindex = numpy.array([0.9094333, 68343, 6806, 0, 119])
         result = concordance_index_censored(self.y['fstat'], self.y['lenfol'], p)
-        assert_array_almost_equal(expected_cindex, numpy.array(result))
+        self.assertTupleEqual(result[1:], (68343, 6806, 0, 119))
+        self.assertAlmostEqual(result[0], 0.9094333)
 
     def test_fit_int_param_as_float(self):
         model = GradientBoostingSurvivalAnalysis(n_estimators=100.0, max_depth=3.0, min_samples_split=10.0,
@@ -101,9 +101,9 @@ class TestGradientBoosting(TestCase):
         model.fit(self.x, self.y)
         p = model.predict(self.x)
 
-        expected_cindex = numpy.array([0.90256690042449006, 67826, 7321, 2, 119])
         result = concordance_index_censored(self.y['fstat'], self.y['lenfol'], p)
-        assert_array_almost_equal(expected_cindex, numpy.array(result))
+        self.assertTupleEqual(result[1:], (67826, 7321, 2, 119))
+        self.assertAlmostEqual(result[0], 0.90256690042449006)
 
     def test_max_features(self):
         model = GradientBoostingSurvivalAnalysis(n_estimators=10, max_features="auto", max_depth=3, random_state=0)
@@ -305,8 +305,8 @@ class TestComponentwiseGradientBoosting(TestCase):
         p = model.predict(self.x)
 
         result = concordance_index_censored(self.y['fstat'], self.y['lenfol'], p)
-        expected_cindex = numpy.array([0.7755659, 58283, 16866, 0, 119])
-        assert_array_almost_equal(expected_cindex, numpy.array(result))
+        self.assertTupleEqual(result[1:], (58283, 16866, 0, 119))
+        self.assertAlmostEqual(result[0], 0.7755659)
 
         coef_index = ['(Intercept)'] + self.columns
 
@@ -332,8 +332,8 @@ class TestComponentwiseGradientBoosting(TestCase):
         p = model.predict(self.x)
 
         result = concordance_index_censored(self.y['fstat'], self.y['lenfol'], p)
-        expected_cindex = numpy.array([0.7750602, 58245, 16904, 0, 119])
-        assert_array_almost_equal(expected_cindex, numpy.array(result))
+        self.assertTupleEqual(result[1:], (58245, 16904, 0, 119))
+        self.assertAlmostEqual(result[0], 0.7750602)
 
         coef_index = ['(Intercept)'] + self.columns
 
@@ -361,8 +361,8 @@ class TestComponentwiseGradientBoosting(TestCase):
         p = model.predict(self.x)
 
         result = concordance_index_censored(self.y['fstat'], self.y['lenfol'], p)
-        expected_cindex = numpy.array([0.7772425, 58409, 16740, 0, 119])
-        assert_array_almost_equal(expected_cindex, numpy.array(result))
+        self.assertTupleEqual(result[1:], (58409, 16740, 0, 119))
+        self.assertAlmostEqual(result[0], 0.7772425)
 
         coef_index = ['(Intercept)'] + self.columns
 
