@@ -393,12 +393,13 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         is fairly robust to over-fitting so a large number usually
         results in better performance.
 
-    max_depth : integer, optional, default: 3
-        maximum depth of the individual regression estimators. The maximum
-        depth limits the number of nodes in the tree. Tune this parameter
-        for best performance; the best value depends on the interaction
-        of the input variables.
-        Ignored if ``max_leaf_nodes`` is not None.
+    criterion : string, optional, default: 'friedman_mse'
+        The function to measure the quality of a split. Supported criteria
+        are "friedman_mse" for the mean squared error with improvement
+        score by Friedman, "mse" for mean squared error, and "mae" for
+        the mean absolute error. The default value of "friedman_mse" is
+        generally the best as it can provide a better approximation in
+        some cases.
 
     min_samples_split : integer, optional, default: 2
         The minimum number of samples required to split an internal node.
@@ -409,6 +410,37 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
     min_weight_fraction_leaf : float, optional, default: 0.
         The minimum weighted fraction of the input samples required to be at a
         leaf node.
+
+    max_depth : integer, optional, default: 3
+        maximum depth of the individual regression estimators. The maximum
+        depth limits the number of nodes in the tree. Tune this parameter
+        for best performance; the best value depends on the interaction
+        of the input variables.
+        Ignored if ``max_leaf_nodes`` is not None.
+
+    min_impurity_split : float,
+        Threshold for early stopping in tree growth. A node will split
+        if its impurity is above the threshold, otherwise it is a leaf.
+
+    min_impurity_decrease : float, optional, default: 0.
+        A node will be split if this split induces a decrease of the impurity
+        greater than or equal to this value.
+
+        The weighted impurity decrease equation is the following::
+
+            N_t / N * (impurity - N_t_R / N_t * right_impurity
+                                - N_t_L / N_t * left_impurity)
+
+        where ``N`` is the total number of samples, ``N_t`` is the number of
+        samples at the current node, ``N_t_L`` is the number of samples in the
+        left child, and ``N_t_R`` is the number of samples in the right child.
+
+        ``N``, ``N_t``, ``N_t_R`` and ``N_t_L`` all refer to the weighted sum,
+        if ``sample_weight`` is passed.
+
+    random_state : int seed, RandomState instance, or None, default: None
+        The seed of the pseudo random number generator to use when
+        shuffling the data.
 
     max_features : int, float, string or None, optional, default: None
         The number of features to consider when looking for the best split:
@@ -433,6 +465,12 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         Best nodes are defined as relative reduction in impurity.
         If None then unlimited number of leaf nodes.
 
+    presort : bool or 'auto', optional, default: 'auto'
+        Whether to presort the data to speed up the finding of best splits in
+        fitting. Auto mode by default will use presorting on dense data and
+        default to normal sorting on sparse data. Setting presort to true on
+        sparse data will raise an error.
+
     subsample : float, optional, default: 1.0
         The fraction of samples to be used for fitting the individual base
         learners. If smaller than 1.0 this results in Stochastic Gradient
@@ -447,10 +485,6 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         at least one base learner is dropped. This is an alternative regularization
         to shrinkage, i.e., setting `learning_rate < 1.0`.
 
-    random_state : int seed, RandomState instance, or None, default: None
-        The seed of the pseudo random number generator to use when
-        shuffling the data.
-
     verbose : int, default: 0
         Enable verbose output. If 1 then it prints progress and performance
         once in a while (the more trees the lower the frequency). If greater
@@ -459,6 +493,11 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
     Attributes
     ----------
+    n_estimators\_ : int
+        The number of estimators as selected by early stopping (if
+        ``n_iter_no_change`` is specified). Otherwise it is set to
+        ``n_estimators``.
+
     feature_importances\_ : ndarray, shape = (n_features,)
         The feature importances (the higher, the more important the feature).
 
@@ -483,6 +522,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                  max_depth=3, min_impurity_split=None,
                  min_impurity_decrease=0., random_state=None,
                  max_features=None, max_leaf_nodes=None,
+                 presort='auto',
                  subsample=1.0, dropout_rate=0.0,
                  verbose=0):
         super().__init__(loss=loss,
@@ -500,6 +540,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                          random_state=random_state,
                          max_features=max_features,
                          max_leaf_nodes=max_leaf_nodes,
+                         presort=presort,
                          verbose=verbose)
         self.dropout_rate = dropout_rate
 
@@ -553,6 +594,11 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         self.max_features_ = max_features
 
+        allowed_presort = ('auto', True, False)
+        if self.presort not in allowed_presort:
+            raise ValueError("'presort' should be in {}. Got {!r} instead."
+                             .format(allowed_presort, self.presort))
+
         if self.loss not in LOSS_FUNCTIONS:
             raise ValueError("Loss '{0:s}' not supported. ".format(self.loss))
 
@@ -572,27 +618,26 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
             # induce regression tree on residuals
             tree = DecisionTreeRegressor(
-                criterion='friedman_mse',
+                criterion=self.criterion,
                 splitter='best',
                 max_depth=self.max_depth,
                 min_samples_split=self.min_samples_split,
                 min_samples_leaf=self.min_samples_leaf,
                 min_weight_fraction_leaf=self.min_weight_fraction_leaf,
                 min_impurity_split=self.min_impurity_split,
+                min_impurity_decrease=self.min_impurity_decrease,
                 max_features=self.max_features,
                 max_leaf_nodes=self.max_leaf_nodes,
-                random_state=random_state)
+                random_state=random_state,
+                presort=self.presort)
 
             if self.subsample < 1.0:
                 # no inplace multiplication!
                 sample_weight = sample_weight * sample_mask.astype(numpy.float64)
 
-            if X_csc is not None:
-                tree.fit(X_csc, residual, sample_weight=sample_weight,
-                         check_input=False, X_idx_sorted=X_idx_sorted)
-            else:
-                tree.fit(X, residual, sample_weight=sample_weight,
-                         check_input=False, X_idx_sorted=X_idx_sorted)
+            X = X_csr if X_csr is not None else X
+            tree.fit(X, residual, sample_weight=sample_weight,
+                     check_input=False, X_idx_sorted=X_idx_sorted)
 
             # add tree to ensemble
             self.estimators_[i, k] = tree
@@ -615,14 +660,9 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                         y_pred[:, k] += self.learning_rate * scale[m] * self.estimators_[m, k].predict(X).ravel()
             else:
                 # update tree leaves
-                if X_csr is not None:
-                    loss.update_terminal_regions(tree.tree_, X_csr, y, residual, y_pred,
-                                                 sample_weight, sample_mask,
-                                                 self.learning_rate, k=k)
-                else:
-                    loss.update_terminal_regions(tree.tree_, X, y, residual, y_pred,
-                                                 sample_weight, sample_mask,
-                                                 self.learning_rate, k=k)
+                loss.update_terminal_regions(tree.tree_, X, y, residual, y_pred,
+                                             sample_weight, sample_mask,
+                                             self.learning_rate, k=k)
 
         return y_pred
 
@@ -749,10 +789,25 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         y_pred = self.init_.predict(X)
         begin_at_stage = 0
 
+        if self.presort is True and issparse(X):
+            raise ValueError(
+                "Presorting is not supported for sparse matrices.")
+
+        presort = self.presort
+        # Allow presort to be 'auto', which means True if the dataset is dense,
+        # otherwise it will be False.
+        if presort == 'auto':
+            presort = not issparse(X)
+
+        X_idx_sorted = None
+        if presort:
+            X_idx_sorted = numpy.asfortranarray(numpy.argsort(X, axis=0),
+                                                dtype=numpy.int32)
+
         # fit the boosting stages
         y = numpy.fromiter(zip(event, time), dtype=[('event', numpy.bool), ('time', numpy.float64)])
         n_stages = self._fit_stages(X, y, y_pred, sample_weight, random_state,
-                                    begin_at_stage, monitor)
+                                    begin_at_stage, monitor, X_idx_sorted)
         # change shape of arrays after fit (early-stopping or additional tests)
         if n_stages != self.estimators_.shape[0]:
             self.estimators_ = self.estimators_[:n_stages]
@@ -760,6 +815,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
             if hasattr(self, 'oob_improvement_'):
                 self.oob_improvement_ = self.oob_improvement_[:n_stages]
 
+        self.n_estimators_ = n_stages
         return self
 
     def _dropout_predict_stage(self, X, i, K, score):

@@ -46,8 +46,8 @@ class TestGradientBoosting(TestCase):
                                model.predict, self.x[:, :2])
 
     def test_fit_subsample(self):
-        model = GradientBoostingSurvivalAnalysis(n_estimators=100, max_features=8, subsample=0.6,
-                                                 random_state=0)
+        model = GradientBoostingSurvivalAnalysis(n_estimators=50, max_features=8, subsample=0.6,
+                                                 presort=False, random_state=0)
         model.fit(self.x, self.y)
 
         self.assertEqual(model.max_features_, 8)
@@ -61,11 +61,11 @@ class TestGradientBoosting(TestCase):
         p = model.predict(x_test)
 
         result = concordance_index_censored(y_test['fstat'], y_test['lenfol'], p)
-        self.assertTupleEqual(result[1:], (62905, 10303, 0, 110))
-        self.assertAlmostEqual(result[0], 0.8592640)
+        self.assertTupleEqual(result[1:], (60985, 12221, 2, 110))
+        self.assertAlmostEqual(result[0], 0.8330510326740247)
 
-        self.assertTupleEqual((100,), model.train_score_.shape)
-        self.assertTupleEqual((100,), model.oob_improvement_.shape)
+        self.assertTupleEqual((50,), model.train_score_.shape)
+        self.assertTupleEqual((50,), model.oob_improvement_.shape)
 
         self.assertRaisesRegex(ValueError, "Number of features of the model must match the input. "
                                            "Model n_features is 14 and input n_features is 2 ",
@@ -142,6 +142,12 @@ class TestGradientBoosting(TestCase):
                                "Invalid value for max_features: 'fail_me'. "
                                "Allowed string values are 'auto', 'sqrt' "
                                "or 'log2'",
+                               model.fit, self.x, self.y)
+
+    def test_presort(self):
+        model = GradientBoostingSurvivalAnalysis(n_estimators=10, presort=None, random_state=0)
+        self.assertRaisesRegex(ValueError,
+                               r"'presort' should be in \('auto', True, False\). Got None instead.",
                                model.fit, self.x, self.y)
 
     def test_fit_verbose(self):
@@ -289,6 +295,12 @@ class TestSparseGradientBoosting(TestCase):
             dense_predict = model.predict(self.x_dense)
 
             assert_array_almost_equal(sparse_predict, dense_predict)
+
+    def test_presort(self):
+        model = GradientBoostingSurvivalAnalysis(n_estimators=10, presort=True, random_state=0)
+        self.assertRaisesRegex(ValueError,
+                               "Presorting is not supported for sparse matrices.",
+                               model.fit, self.x_sparse, self.y)
 
 
 class TestComponentwiseGradientBoosting(TestCase):
