@@ -21,9 +21,10 @@ else
   else
       conda install gcc_linux-64
   fi
-  conda create -n sksurv-test python=$TRAVIS_PYTHON_VERSION numpy=$NUMPY_VERSION pandas=$PANDAS_VERSION mkl=2018.0.* nose coverage cython
+  conda create -n sksurv-test python=$TRAVIS_PYTHON_VERSION numpy=$NUMPY_VERSION pandas=$PANDAS_VERSION scikit-learn=$SKLEARN_VERSION mkl=2018.0.* nose coverage cython
   echo "numpy $NUMPY_VERSION.*" > "$MINICONDA_DIR/envs/sksurv-test/conda-meta/pinned"
   echo "pandas $PANDAS_VERSION.*" >> "$MINICONDA_DIR/envs/sksurv-test/conda-meta/pinned"
+  echo "scikit-learn $SKLEARN_VERSION.*" >> "$MINICONDA_DIR/envs/sksurv-test/conda-meta/pinned"
 fi
 
 # The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda

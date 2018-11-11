@@ -58,7 +58,7 @@ Requirements
 - numexpr
 - numpy 1.10 or later
 - pandas 0.19 or later
-- scikit-learn 0.19
+- scikit-learn 0.19 or 0.20
 - scipy 0.17 or later
 - C/C++ compiler
 
@@ -77,7 +77,8 @@ Installing from source
 
 First, create a new environment, named ``sksurv``::
 
-  conda create -n sksurv -c sebp python=3 --file requirements.txt
+  python ci/list-requirements.py requirements/dev.txt > /tmp/requirements.txt
+  conda create -n sksurv -c sebp python=3 --file /tmp/requirements.txt
 
 
 To work in this environment, ``activate`` it as follows::
