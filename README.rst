@@ -87,7 +87,7 @@ To work in this environment, ``activate`` it as follows::
 
 If you are on Windows, run the above command without the ``source`` in the beginning.
 
-Once you set up your build environment, install submodules into your repository:
+Once you set up your build environment, install submodules into your repository::
 
   git submodule update --init
 
