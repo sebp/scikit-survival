@@ -87,8 +87,11 @@ To work in this environment, ``activate`` it as follows::
 
 If you are on Windows, run the above command without the ``source`` in the beginning.
 
-Once you setup your build environment, you have to compile the C/C++
-extensions and install the package by running::
+Once you set up your build environment, install submodules into your repository:
+
+  git submodule update --init
+
+Then compile the C/C++ extensions and install the package by running::
 
   python setup.py install
 
