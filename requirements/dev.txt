@@ -4,6 +4,5 @@ coverage
 cython
 nose
 numpydoc ==0.8.0
-pylint
 sphinx >=1.6.7
 setuptools_scm

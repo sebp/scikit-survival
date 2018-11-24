@@ -35,14 +35,16 @@ install:
   - conda install -n sksurv-test -c sebp --file /tmp/conda-req.txt
   - conda list -n sksurv-test
   - source activate sksurv-test
-  - pip install --disable-pip-version-check --upgrade pip
+  - pip install --disable-pip-version-check --upgrade pip tox
   - pip uninstall --yes scikit-survival || exit 0  # delete any version that is already installed
   - python setup.py bdist_wheel
-  - pip install --pre --no-index --find-links dist/ scikit-survival
+  - pip install --exists-action=w --pre --no-index --find-links dist/ scikit-survival
   - rm -fr sksurv build dist
 
 # command to run tests
-script: ci/run_tests.sh
+script:
+  - tox
+  - ci/run_tests.sh
 
 after_success:
   - ci/submit_coverage.sh

@@ -62,7 +62,7 @@ install:
   - ps: "ls dist"
 
   # Install the generated wheel package to test it
-  - cmd: pip install --pre --no-index --find-links dist/ scikit-survival
+  - cmd: pip install --exists-action=w --pre --no-index --find-links dist/ scikit-survival
   - cmd: rmdir sksurv /s /q
 
 test_script:
