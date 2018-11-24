@@ -8,7 +8,7 @@ import pandas
 import pandas.util.testing as tm
 from numpy.testing import TestCase, assert_array_equal, assert_array_almost_equal, run_module_suite
 
-from sksurv.datasets import *
+import sksurv.datasets as sdata
 from sksurv.io import writearff
 
 ARFF_CATEGORICAL_INDEX_1 = """@relation arff_categorical_index
@@ -67,7 +67,7 @@ class TestGetXy(TestCase):
 
         attr_labels = ["event", "time"]
 
-        x_test, y_test = get_x_y(dataset, attr_labels, pos_label=1, survival=True)
+        x_test, y_test = sdata.get_x_y(dataset, attr_labels, pos_label=1, survival=True)
 
         self.assertTupleEqual(y_test.dtype.names, ("event", "time"))
 
@@ -85,7 +85,7 @@ class TestGetXy(TestCase):
 
         attr_labels = [None, None]
 
-        x_test, y_test = get_x_y(dataset, attr_labels, pos_label=1, survival=True)
+        x_test, y_test = sdata.get_x_y(dataset, attr_labels, pos_label=1, survival=True)
 
         self.assertEqual(y_test, None)
         assert_array_equal(x, x_test)
@@ -98,7 +98,7 @@ class TestGetXy(TestCase):
 
         attr_labels = ["event", "time", "random"]
         self.assertRaisesRegex(ValueError, "expected sequence of length two for attr_labels, but got 3",
-                               get_x_y, dataset, attr_labels, pos_label=1, survival=True)
+                               sdata.get_x_y, dataset, attr_labels, pos_label=1, survival=True)
 
     def test_get_x_y_survival_too_little_labels(self):
         x, event, time = _make_survival_data(100, 10, 0)
@@ -107,10 +107,10 @@ class TestGetXy(TestCase):
         dataset = pandas.DataFrame(numpy.column_stack((x, event, time)), columns=columns)
 
         self.assertRaisesRegex(ValueError, "expected sequence of length two for attr_labels, but got 1",
-                               get_x_y, dataset, ["event"], pos_label=1, survival=True)
+                               sdata.get_x_y, dataset, ["event"], pos_label=1, survival=True)
 
         self.assertRaisesRegex(ValueError, "expected sequence of length two for attr_labels, but got 0",
-                               get_x_y, dataset, [], pos_label=1, survival=True)
+                               sdata.get_x_y, dataset, [], pos_label=1, survival=True)
 
     def test_get_x_y_survival_no_pos_label(self):
         x, event, time = _make_survival_data(100, 10, 0)
@@ -119,7 +119,7 @@ class TestGetXy(TestCase):
         dataset = pandas.DataFrame(numpy.column_stack((x, event, time)), columns=columns)
 
         self.assertRaisesRegex(ValueError, "pos_label needs to be specified if survival=True",
-                               get_x_y, dataset, ["event", "time"], survival=True)
+                               sdata.get_x_y, dataset, ["event", "time"], survival=True)
 
     def test_get_x_y_classification(self):
         x, label = _make_classification_data(100, 10, 6, 0)
@@ -129,7 +129,7 @@ class TestGetXy(TestCase):
 
         attr_labels = ["class_label"]
 
-        x_test, y_test = get_x_y(dataset, attr_labels, survival=False)
+        x_test, y_test = sdata.get_x_y(dataset, attr_labels, survival=False)
 
         self.assertEqual(y_test.ndim, 2)
         assert_array_equal(y_test.values.ravel(), label)
@@ -141,7 +141,7 @@ class TestGetXy(TestCase):
         columns = ["V{}".format(i) for i in range(10)]
         dataset = pandas.DataFrame(x, columns=columns)
 
-        x_test, y_test = get_x_y(dataset, None, survival=False)
+        x_test, y_test = sdata.get_x_y(dataset, None, survival=False)
 
         self.assertEqual(y_test, None)
         assert_array_equal(x_test, x)
@@ -156,32 +156,32 @@ class TestLoadDatasets(TestCase):
         self.assertEqual(arr[event].sum(), num_events)
 
     def test_load_whas500(self):
-        x, y = load_whas500()
+        x, y = sdata.load_whas500()
         self.assertTupleEqual(x.shape, (500, 14))
         self.assertTupleEqual(y.shape, (500,))
         self.assert_structured_array_dtype(y, 'fstat', 'lenfol', 215)
 
     def test_load_gbsg2(self):
-        x, y = load_gbsg2()
+        x, y = sdata.load_gbsg2()
         self.assertTupleEqual(x.shape, (686, 8))
         self.assertTupleEqual(y.shape, (686,))
         self.assert_structured_array_dtype(y, 'cens', 'time', 299)
 
     def test_load_veterans_lung_cancer(self):
-        x, y = load_veterans_lung_cancer()
+        x, y = sdata.load_veterans_lung_cancer()
         self.assertTupleEqual(x.shape, (137, 6))
         self.assertTupleEqual(y.shape, (137,))
         self.assert_structured_array_dtype(y, 'Status', 'Survival_in_days', 128)
 
     def test_load_aids(self):
-        x, y = load_aids(endpoint="aids")
+        x, y = sdata.load_aids(endpoint="aids")
         self.assertTupleEqual(x.shape, (1151, 11))
         self.assertTupleEqual(y.shape, (1151,))
         self.assert_structured_array_dtype(y, 'censor', 'time', 96)
         self.assertFalse("censor_d" in x.columns)
         self.assertFalse("time_d" in x.columns)
 
-        x, y = load_aids(endpoint="death")
+        x, y = sdata.load_aids(endpoint="death")
         self.assertTupleEqual(x.shape, (1151, 11))
         self.assertTupleEqual(y.shape, (1151,))
         self.assert_structured_array_dtype(y, 'censor_d', 'time_d', 26)
@@ -189,10 +189,10 @@ class TestLoadDatasets(TestCase):
         self.assertFalse("time" in x.columns)
 
         self.assertRaisesRegex(ValueError, "endpoint must be 'aids' or 'death'",
-                               load_aids, endpoint="foobar")
+                               sdata.load_aids, endpoint="foobar")
 
     def test_load_breast_cancer(self):
-        x, y = load_breast_cancer()
+        x, y = sdata.load_breast_cancer()
         self.assertTupleEqual(x.shape, (198, 80))
         self.assertTupleEqual(y.shape, (198,))
         self.assert_structured_array_dtype(y, 'e.tdm', 't.tdm', 51)
@@ -246,7 +246,7 @@ class TestLoadArffFile(TestCase):
         try:
             dataset = _make_and_write_data(tmp, 100, 10, True, True, 0)
 
-            x_train, y_train, x_test, y_test = load_arff_files_standardized(
+            x_train, y_train, x_test, y_test = sdata.load_arff_files_standardized(
                 tmp.name, ["event", "time"], 1, survival=True,
                 standardize_numeric=False, to_numeric=False)
 
@@ -263,7 +263,7 @@ class TestLoadArffFile(TestCase):
 
     def test_load_with_categorical_index_1(self):
         fp = StringIO(ARFF_CATEGORICAL_INDEX_1)
-        x_train, y_train, x_test, y_test = load_arff_files_standardized(
+        x_train, y_train, x_test, y_test = sdata.load_arff_files_standardized(
             fp, ["label"], pos_label="yes", survival=False,
             standardize_numeric=False, to_numeric=False)
 
@@ -291,7 +291,7 @@ class TestLoadArffFile(TestCase):
 
     def test_load_with_categorical_index_2(self):
         fp = StringIO(ARFF_CATEGORICAL_INDEX_2)
-        x_train, y_train, x_test, y_test = load_arff_files_standardized(
+        x_train, y_train, x_test, y_test = sdata.load_arff_files_standardized(
             fp, ["label"], pos_label="yes", survival=False,
             standardize_numeric=False, to_numeric=False)
 
@@ -305,7 +305,8 @@ class TestLoadArffFile(TestCase):
                              name='index', dtype=object)
         tm.assert_index_equal(x_train.index, index, exact=True)
 
-        label = pandas.Series(pandas.Categorical(["no", "no", "yes", "yes", "no"], categories=["yes", "no"], ordered=False),
+        label = pandas.Series(pandas.Categorical(["no", "no", "yes", "yes", "no"],
+                                                 categories=["yes", "no"], ordered=False),
                               name="label", index=index)
         tm.assert_series_equal(y_train["label"], label, check_exact=True)
 
@@ -324,7 +325,7 @@ class TestLoadArffFile(TestCase):
             train_dataset = _make_and_write_data(tmp_train, 100, 10, True, True, 0)
             test_dataset = _make_and_write_data(tmp_test, 20, 10, True, True, 0)
 
-            x_train, y_train, x_test, y_test = load_arff_files_standardized(
+            x_train, y_train, x_test, y_test = sdata.load_arff_files_standardized(
                 tmp_train.name, ["event", "time"], 1, path_testing=tmp_test.name,
                 survival=True, standardize_numeric=False, to_numeric=False)
 
@@ -344,7 +345,7 @@ class TestLoadArffFile(TestCase):
     def test_load_train_and_test_with_categorical_index(self):
         fp_1 = StringIO(ARFF_CATEGORICAL_INDEX_1)
         fp_2 = StringIO(ARFF_CATEGORICAL_INDEX_2)
-        x_train, y_train, x_test, y_test = load_arff_files_standardized(
+        x_train, y_train, x_test, y_test = sdata.load_arff_files_standardized(
             fp_1, ["label"], pos_label="yes", path_testing=fp_2, survival=False,
             standardize_numeric=False, to_numeric=False)
 
@@ -396,7 +397,7 @@ class TestLoadArffFile(TestCase):
             train_dataset = _make_and_write_data(tmp_train, 100, 10, True, True, 0)
             test_dataset = _make_and_write_data(tmp_test, 20, 10, True, False, 0)
 
-            x_train, y_train, x_test, y_test = load_arff_files_standardized(
+            x_train, y_train, x_test, y_test = sdata.load_arff_files_standardized(
                 tmp_train.name, ["event", "time"], 1, path_testing=tmp_test.name,
                 survival=True, standardize_numeric=False, to_numeric=False)
 
@@ -422,10 +423,10 @@ class TestLoadArffFile(TestCase):
             with warnings.catch_warnings(record=True) as w:
                 warnings.simplefilter("always")
 
-                load_arff_files_standardized(tmp_train.name, ["event", "time"], 1,
-                                             path_testing=tmp_test.name,
-                                             survival=True,
-                                             standardize_numeric=False, to_numeric=False)
+                sdata.load_arff_files_standardized(tmp_train.name, ["event", "time"], 1,
+                                                   path_testing=tmp_test.name,
+                                                   survival=True,
+                                                   standardize_numeric=False, to_numeric=False)
 
                 self.assertEqual(1, len(w))
                 self.assertEqual("Restricting columns to intersection between training and testing data",
@@ -443,7 +444,7 @@ class TestLoadArffFile(TestCase):
             _make_and_write_data(tmp_test, 20, 11, True, True, 0, column_prefix="B")
 
             self.assertRaisesRegex(ValueError, "columns of training and test data do not intersect",
-                                   load_arff_files_standardized, tmp_train.name, ["event", "time"], 1,
+                                   sdata.load_arff_files_standardized, tmp_train.name, ["event", "time"], 1,
                                    path_testing=tmp_test.name,
                                    survival=True,
                                    standardize_numeric=False, to_numeric=False)

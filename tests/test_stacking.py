@@ -1,5 +1,3 @@
-from os.path import join, dirname
-
 import numpy
 from numpy.testing import TestCase, run_module_suite, assert_array_almost_equal
 from sklearn.base import BaseEstimator
@@ -70,8 +68,8 @@ class TestStackingClassifier(TestCase):
         y = data["target"]
 
         meta = Stacking(LogisticRegression(solver='liblinear', multi_class='ovr'),
-                [('tree', DecisionTreeClassifier(max_depth=1, random_state=0)),
-                 ('svm', SVC(probability=True, gamma='auto', random_state=0))])
+                        [('tree', DecisionTreeClassifier(max_depth=1, random_state=0)),
+                         ('svm', SVC(probability=True, gamma='auto', random_state=0))])
         self.assertEqual(2, len(meta))
         meta.fit(x, y)
 
@@ -86,8 +84,8 @@ class TestStackingClassifier(TestCase):
         y = data["target"]
 
         meta = Stacking(LogisticRegression(solver='liblinear', multi_class='ovr'),
-                [('tree', DecisionTreeClassifier(max_depth=1, random_state=0)),
-                 ('svm', SVC(probability=True, gamma='auto', random_state=0))])
+                        [('tree', DecisionTreeClassifier(max_depth=1, random_state=0)),
+                         ('svm', SVC(probability=True, gamma='auto', random_state=0))])
 
         sample_weight = numpy.random.RandomState(0).uniform(size=x.shape[0])
         meta.fit(x, y, tree__sample_weight=sample_weight, svm__sample_weight=sample_weight)

@@ -121,8 +121,8 @@ class IPCWLeastSquaresError(LeastSquaresError):
 
     def __call__(self, y, pred, sample_weight=None):
         sample_weight = ipc_weights(y['event'], y['time'])
-        return (1.0 / sample_weight.sum() *
-                numpy.sum(sample_weight * ((y['time'] - pred.ravel()) ** 2.0)))
+        return (1.0 / sample_weight.sum()
+                * numpy.sum(sample_weight * ((y['time'] - pred.ravel()) ** 2.0)))
 
     def negative_gradient(self, y, pred, **kwargs):
         return y['time'] - pred.ravel()

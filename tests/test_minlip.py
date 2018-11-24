@@ -301,7 +301,7 @@ class TestToyCvxpyExample(TestCase):
 def skip_without_cvxopt(func):
     def f(*args, **kwargs):
         try:
-            import cvxopt
+            import cvxopt  # noqa: F401
         except ImportError:
             raise SkipTest("cvxopt not installed")
         return func(*args, **kwargs)

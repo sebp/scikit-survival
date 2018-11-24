@@ -97,7 +97,8 @@ class TestEncodeCategorical(TestCase):
         expected_df = pandas.DataFrame.from_dict(OrderedDict(
             [("a_series=medium", numpy.array([1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0], dtype=float)),
              ("a_series=large", numpy.array([0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1], dtype=float))
-            ]))
+             ])
+        )
 
         actual_df = column.encode_categorical(input_series)
 
@@ -122,10 +123,12 @@ class TestEncodeCategorical(TestCase):
         rnd = numpy.random.RandomState(0)
         c = rnd.randn(len(a))
 
-        df = pandas.DataFrame.from_dict(OrderedDict([
-                               ("a_category", a),
-                               ("a_binary", b),
-                               ("a_number", c.copy())]))
+        df = pandas.DataFrame.from_dict(
+            OrderedDict([
+                ("a_category", a),
+                ("a_binary", b),
+                ("a_number", c.copy())])
+        )
 
         actual_df = column.encode_categorical(df)
 
@@ -142,12 +145,14 @@ class TestEncodeCategorical(TestCase):
         a_medium = numpy.zeros(31, dtype=float)
         a_medium[-3:] = 1
 
-        expected_df = pandas.DataFrame.from_dict(OrderedDict([
-                                        ("a_category=medium", a_medium),
-                                        ("a_category=small", a_small),
-                                        ("a_category=tiny", a_tiny),
-                                        ("a_binary=yes", eb),
-                                        ("a_number", c.copy())]))
+        expected_df = pandas.DataFrame.from_dict(
+            OrderedDict([
+                ("a_category=medium", a_medium),
+                ("a_category=small", a_small),
+                ("a_category=tiny", a_tiny),
+                ("a_binary=yes", eb),
+                ("a_number", c.copy())])
+        )
 
         self.assertTupleEqual(actual_df.shape, expected_df.shape)
         tm.assert_frame_equal(actual_df, expected_df, check_exact=True)
@@ -287,7 +292,7 @@ class TestEncodeCategorical(TestCase):
 
 def test_categorical_series_to_numeric():
     input_series = pandas.Series(["a", "a", "b", "b", "b", "c"], name="Thr33",
-                           index=["Alpha", "Beta", "Gamma", "Delta", "Eta", "Mu"])
+                                 index=["Alpha", "Beta", "Gamma", "Delta", "Eta", "Mu"])
     expected = pandas.Series([0, 0, 1, 1, 1, 2], name="Thr33",
                              index=["Alpha", "Beta", "Gamma", "Delta", "Eta", "Mu"],
                              dtype=numpy.int64)

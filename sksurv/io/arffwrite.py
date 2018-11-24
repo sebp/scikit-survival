@@ -107,6 +107,8 @@ def _check_str_value(x):
                 x = x[:len(x) - 1]
             x = '"' + x.replace('"', "\\\"") + '"'
     return str(x)
+
+
 _check_str_array = numpy.frompyfunc(_check_str_value, 1, 1)
 
 

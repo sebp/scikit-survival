@@ -243,9 +243,9 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
             if do_oob:
                 self.train_score_[num_iter] = self.loss_(y[sample_mask], y_pred[sample_mask],
                                                          sample_weight[sample_mask])
-                self.oob_improvement_[num_iter] = (old_oob_score -
-                                                   self.loss_(y[~sample_mask], y_pred[~sample_mask],
-                                                              sample_weight[~sample_mask]))
+                self.oob_improvement_[num_iter] = (old_oob_score
+                                                   - self.loss_(y[~sample_mask], y_pred[~sample_mask],
+                                                                sample_weight[~sample_mask]))
             else:
                 # no need to fancy index w/ no subsampling
                 self.train_score_[num_iter] = self.loss_(y, y_pred, sample_weight)

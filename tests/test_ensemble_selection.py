@@ -181,7 +181,8 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
 
         meta = EnsembleSelection(base_estimators, scorer=score_cindex, correlation="clearly wrong")
         self.assertRaisesRegex(ValueError,
-                               "correlation must be one of 'pearson', 'kendall', and 'spearman', but got 'clearly wrong'",
+                               "correlation must be one of 'pearson', 'kendall', and 'spearman', "
+                               "but got 'clearly wrong'",
                                meta.fit, self.x, self.y)
 
 

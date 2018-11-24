@@ -15,7 +15,7 @@ __all__ = ['MinlipSurvivalAnalysis', 'HingeLossSurvivalSVM']
 def _check_cvxopt():
     try:
         import cvxopt
-    except ImportError: # pragma: no cover
+    except ImportError:  # pragma: no cover
         raise ImportError("Please install cvxopt from https://github.com/cvxopt/cvxopt")
     return cvxopt
 
@@ -181,13 +181,13 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
             s = prob.solver_stats
             warnings.warn(('cvxpy solver {} did not converge after {} iterations: {}'.format(
                 s.solver_name, s.num_iters, prob.status)),
-                          category=ConvergenceWarning,
-                          stacklevel=2)
+                category=ConvergenceWarning,
+                stacklevel=2)
 
         return a.value.T.A, None
 
     def _get_options_cvxpy(self):
-        solver_opts = dict(verbose=self.verbose)
+        solver_opts = {'verbose': self.verbose}
         if self.max_iter is not None:
             solver_opts['max_iters'] = int(self.max_iter)
         return solver_opts
@@ -214,8 +214,8 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         if sol['status'] != 'optimal':
             warnings.warn(('cvxopt solver did not converge: {} (duality gap = {})'.format(
                 sol['status'], sol['gap'])),
-                          category=ConvergenceWarning,
-                          stacklevel=2)
+                category=ConvergenceWarning,
+                stacklevel=2)
 
         return numpy.array(sol['x']).T, None
 

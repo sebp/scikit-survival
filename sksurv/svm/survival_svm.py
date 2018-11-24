@@ -418,14 +418,15 @@ class LargeScaleOptimizer(RankSVMOptimizer):
         l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(wf)
         x = self._counter.x
 
-        xw = self._xw
+        xw = self._xw  # noqa: F841
         z = numexpr.evaluate('(l_plus + l_minus) * xw - xv_plus - xv_minus - l_minus + l_plus')
 
         grad = wf + self._rank_penalty * numpy.dot(x.T, z)
         if self._has_time:
             xc = x.compress(self.regr_mask, axis=0)
             xcs = numpy.dot(xc, wf)
-            grad += self._regr_penalty * (numpy.dot(xc.T, xcs) + xc.sum(axis=0) * bias - numpy.dot(xc.T, self.y_compressed))
+            grad += self._regr_penalty * (numpy.dot(xc.T, xcs) + xc.sum(axis=0) * bias
+                                          - numpy.dot(xc.T, self.y_compressed))
 
             # intercept
             if self._fit_intercept:
@@ -452,7 +453,8 @@ class LargeScaleOptimizer(RankSVMOptimizer):
             if self._fit_intercept:
                 xsum = xc.sum(axis=0)
                 hessp += self._regr_penalty * xsum * s_bias
-                hessp_intercept = self._regr_penalty * xc.shape[0] * s_bias + self._regr_penalty * numpy.dot(xsum, s_feat)
+                hessp_intercept = (self._regr_penalty * xc.shape[0] * s_bias
+                                   + self._regr_penalty * numpy.dot(xsum, s_feat))
                 hessp = numpy.concatenate(([hessp_intercept], hessp))
 
         return hessp
@@ -554,7 +556,8 @@ class NonlinearLargeScaleOptimizer(RankSVMOptimizer):
 
             # intercept
             if self._fit_intercept:
-                grad_intercept = self._regr_penalty * (K_comp_beta.sum() + K_comp.shape[0] * bias - self.y_compressed.sum())
+                grad_intercept = self._regr_penalty * (K_comp_beta.sum()
+                                                       + K_comp.shape[0] * bias - self.y_compressed.sum())
                 gradient = numpy.concatenate(([grad_intercept], gradient))
 
         return gradient
@@ -577,8 +580,8 @@ class NonlinearLargeScaleOptimizer(RankSVMOptimizer):
             if self._fit_intercept:
                 xsum = K_comp.sum(axis=0)
                 hessian += self._regr_penalty * xsum * s_bias
-                hessian_intercept = self._regr_penalty * K_comp.shape[0] * s_bias \
-                                    + self._regr_penalty * numpy.dot(xsum, s_feat)
+                hessian_intercept = (self._regr_penalty * K_comp.shape[0] * s_bias
+                                     + self._regr_penalty * numpy.dot(xsum, s_feat))
                 hessian = numpy.concatenate(([hessian_intercept], hessian))
 
         return hessian
@@ -958,13 +961,15 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         times, ranks = y
 
         if self.optimizer == 'rbtree':
-            optimizer = NonlinearLargeScaleOptimizer(self.alpha, self.rank_ratio, self.fit_intercept,
-                                                     OrderStatisticTreeSurvivalCounter(kernel_mat, ranks, status, RBTree, times),
-                                                     timeit=self.timeit)
+            optimizer = NonlinearLargeScaleOptimizer(
+                self.alpha, self.rank_ratio, self.fit_intercept,
+                OrderStatisticTreeSurvivalCounter(kernel_mat, ranks, status, RBTree, times),
+                timeit=self.timeit)
         elif self.optimizer == 'avltree':
-            optimizer = NonlinearLargeScaleOptimizer(self.alpha, self.rank_ratio, self.fit_intercept,
-                                                     OrderStatisticTreeSurvivalCounter(kernel_mat, ranks, status, AVLTree, times),
-                                                     timeit=self.timeit)
+            optimizer = NonlinearLargeScaleOptimizer(
+                self.alpha, self.rank_ratio, self.fit_intercept,
+                OrderStatisticTreeSurvivalCounter(kernel_mat, ranks, status, AVLTree, times),
+                timeit=self.timeit)
         else:
             raise ValueError('unknown optimizer: {0}'.format(self.optimizer))
 

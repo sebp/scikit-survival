@@ -43,38 +43,39 @@ def configuration(parent_package='', top_path=None):
 
 
 def setup_package():
-    metadata = dict(name='scikit-survival',
-                    url='https://github.com/sebp/scikit-survival',
-                    author='Sebastian Pölsterl',
-                    author_email='sebp@k-d-w.org',
-                    description='Survival analysis built on top of scikit-learn',
-                    long_description=long_description,
-                    license="GPLv3+",
-                    packages=find_packages(),
-                    classifiers=['Development Status :: 4 - Beta',
-                                 'Intended Audience :: Science/Research',
-                                 'Intended Audience :: Developers',
-                                 'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
-                                 'Operating System :: POSIX',
-                                 'Operating System :: Unix',
-                                 'Programming Language :: C',
-                                 'Programming Language :: Python',
-                                 'Programming Language :: Python :: 3.5',
-                                 'Programming Language :: Python :: 3.6',
-                                 'Topic :: Software Development',
-                                 'Topic :: Scientific/Engineering',
-                    ],
-                    zip_safe=False,
-                    include_package_data=True,
-                    use_scm_version=True,
-                    setup_requires=['setuptools_scm'],
-                    install_requires=requirements,
-                    cmdclass={'sdist': sdist},
+    metadata = dict(
+        name='scikit-survival',
+        url='https://github.com/sebp/scikit-survival',
+        author='Sebastian Pölsterl',
+        author_email='sebp@k-d-w.org',
+        description='Survival analysis built on top of scikit-learn',
+        long_description=long_description,
+        license="GPLv3+",
+        packages=find_packages(),
+        classifiers=['Development Status :: 4 - Beta',
+                     'Intended Audience :: Science/Research',
+                     'Intended Audience :: Developers',
+                     'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
+                     'Operating System :: POSIX',
+                     'Operating System :: Unix',
+                     'Programming Language :: C',
+                     'Programming Language :: Python',
+                     'Programming Language :: Python :: 3.5',
+                     'Programming Language :: Python :: 3.6',
+                     'Topic :: Software Development',
+                     'Topic :: Scientific/Engineering',
+                     ],
+        zip_safe=False,
+        include_package_data=True,
+        use_scm_version=True,
+        setup_requires=['setuptools_scm'],
+        install_requires=requirements,
+        cmdclass={'sdist': sdist},
     )
 
     if (len(sys.argv) >= 2
-        and ('--help' in sys.argv[1:] or sys.argv[1]
-        in ('--help-commands', 'egg_info', '--version', 'clean'))):
+            and ('--help' in sys.argv[1:] or sys.argv[1]
+                 in ('--help-commands', 'egg_info', '--version', 'clean'))):
 
         # For these actions, NumPy is not required.
         from setuptools import setup

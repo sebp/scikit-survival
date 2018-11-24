@@ -76,7 +76,7 @@ class Stacking(BaseEstimator, MetaEstimatorMixin):
             return out
 
     def _split_fit_params(self, fit_params):
-        fit_params_steps = dict((step, {}) for step, _ in self.base_estimators)
+        fit_params_steps = {step: {} for step, _ in self.base_estimators}
         for pname, pval in fit_params.items():
             step, param = pname.split('__', 1)
             fit_params_steps[step][param] = pval
