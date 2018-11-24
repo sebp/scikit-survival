@@ -85,8 +85,7 @@ def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1
             'only boolean arrays are supported as class labels for survival analysis, got {0}'.format(
                 event_indicator.dtype))
 
-    n_samples = len(event_time)
-    if n_samples < 2:
+    if len(event_time) < 2:
         raise ValueError("Need a minimum of two samples")
 
     if not event_indicator.any():
@@ -94,29 +93,7 @@ def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1
 
     order = numpy.argsort(event_time)
 
-    tied_time = 0
-    comparable = {}
-    for i in range(n_samples - 1):
-        inext = i + 1
-        j = inext
-        time_i = event_time[order[i]]
-        while j < n_samples and event_time[order[j]] == time_i:
-            j += 1
-
-        if event_indicator[order[i]]:
-            mask = numpy.zeros(n_samples, dtype=bool)
-            mask[inext:] = True
-            if j - i > 1:
-                # event times are tied, need to check for coinciding events
-                event_at_same_time = event_indicator[order[inext:j]]
-                mask[inext:j] = numpy.logical_not(event_at_same_time)
-                tied_time += event_at_same_time.sum()
-            comparable[i] = mask
-        elif j - i > 1:
-            # events at same time are comparable if at least one of them is positive
-            mask = numpy.zeros(n_samples, dtype=bool)
-            mask[inext:j] = event_indicator[order[inext:j]]
-            comparable[i] = mask
+    comparable, tied_time = _get_comparable(event_indicator, event_time, order)
 
     concordant = 0
     discordant = 0
@@ -143,3 +120,31 @@ def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1
 
     cindex = (concordant + 0.5 * tied_risk) / (concordant + discordant + tied_risk)
     return cindex, concordant, discordant, tied_risk, tied_time
+
+
+def _get_comparable(event_indicator, event_time, order):
+    n_samples = len(event_time)
+    tied_time = 0
+    comparable = {}
+    for i in range(n_samples - 1):
+        inext = i + 1
+        j = inext
+        time_i = event_time[order[i]]
+        while j < n_samples and event_time[order[j]] == time_i:
+            j += 1
+
+        if event_indicator[order[i]]:
+            mask = numpy.zeros(n_samples, dtype=bool)
+            mask[inext:] = True
+            if j - i > 1:
+                # event times are tied, need to check for coinciding events
+                event_at_same_time = event_indicator[order[inext:j]]
+                mask[inext:j] = numpy.logical_not(event_at_same_time)
+                tied_time += event_at_same_time.sum()
+            comparable[i] = mask
+        elif j - i > 1:
+            # events at same time are comparable if at least one of them is positive
+            mask = numpy.zeros(n_samples, dtype=bool)
+            mask[inext:j] = event_indicator[order[inext:j]]
+            comparable[i] = mask
+    return comparable, tied_time

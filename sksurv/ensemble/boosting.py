@@ -188,7 +188,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         if self.loss not in LOSS_FUNCTIONS:
             raise ValueError("Loss '{0:s}' not supported. ".format(self.loss))
 
-    def _fit(self, X, event, time, sample_weight, random_state):
+    def _fit(self, X, event, time, sample_weight, random_state):  # noqa: C901
         n_samples = X.shape[0]
         # account for intercept
         Xi = numpy.column_stack((numpy.ones(n_samples), X))
@@ -563,6 +563,25 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
             raise ValueError("dropout_rate must be within [0; 1[, but "
                              "was %r" % self.dropout_rate)
 
+        max_features = self._check_max_features()
+
+        self.min_samples_split = int(self.min_samples_split)
+        self.min_samples_leaf = int(self.min_samples_leaf)
+        self.max_depth = int(self.max_depth)
+        if self.max_leaf_nodes:
+            self.max_leaf_nodes = int(self.max_leaf_nodes)
+
+        self.max_features_ = max_features
+
+        allowed_presort = ('auto', True, False)
+        if self.presort not in allowed_presort:
+            raise ValueError("'presort' should be in {}. Got {!r} instead."
+                             .format(allowed_presort, self.presort))
+
+        if self.loss not in LOSS_FUNCTIONS:
+            raise ValueError("Loss '{0:s}' not supported. ".format(self.loss))
+
+    def _check_max_features(self):
         if isinstance(self.max_features, str):
             if self.max_features == "auto":
                 max_features = self.n_features_
@@ -585,22 +604,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                 max_features = max(int(self.max_features * self.n_features_), 1)
             else:
                 raise ValueError("max_features must be in (0, 1.0]")
-
-        self.min_samples_split = int(self.min_samples_split)
-        self.min_samples_leaf = int(self.min_samples_leaf)
-        self.max_depth = int(self.max_depth)
-        if self.max_leaf_nodes:
-            self.max_leaf_nodes = int(self.max_leaf_nodes)
-
-        self.max_features_ = max_features
-
-        allowed_presort = ('auto', True, False)
-        if self.presort not in allowed_presort:
-            raise ValueError("'presort' should be in {}. Got {!r} instead."
-                             .format(allowed_presort, self.presort))
-
-        if self.loss not in LOSS_FUNCTIONS:
-            raise ValueError("Loss '{0:s}' not supported. ".format(self.loss))
+        return max_features
 
     def _fit_stage(self, i, X, y, y_pred, sample_weight, sample_mask,
                    random_state, scale, X_idx_sorted, X_csc=None, X_csr=None):

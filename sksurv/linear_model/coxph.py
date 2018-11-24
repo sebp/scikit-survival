@@ -121,6 +121,30 @@ class CoxPHOptimizer:
         self.hessian = hessian
 
 
+class VerboseReporter:
+
+    def __init__(self, verbose):
+        self.verbose = verbose
+
+    def end_max_iter(self, i):
+        if self.verbose > 0:
+            print("iter {:>6d}: reached maximum number of iterations. Stopping.".format(i + 1))
+
+    def end_converged(self, i):
+        if self.verbose > 0:
+            print("iter {:>6d}: optimization converged".format(i + 1))
+
+    def update(self, i, delta, loss_new):
+        if self.verbose > 2:
+            print("iter {:>6d}: update = {}".format(i + 1, delta))
+        if self.verbose > 1:
+            print("iter {:>6d}: loss = {:.10f}".format(i + 1, loss_new))
+
+    def step_halving(self, i, loss):
+        if self.verbose > 1:
+            print("iter {:>6d}: loss increased, performing step-halving. loss = {:.10f}".format(i, loss))
+
+
 class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     """Cox proportional hazards model.
 
@@ -190,15 +214,14 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         optimizer = CoxPHOptimizer(X, event, time, self.alpha)
 
-        verbose = self.verbose
+        verbose_reporter = VerboseReporter(self.verbose)
         w = numpy.zeros(X.shape[1])
         w_prev = w
         i = 0
         loss = float('inf')
         while True:
             if i >= self.n_iter:
-                if verbose > 0:
-                    print("iter {:>6d}: reached maximum number of iterations. Stopping.".format(i + 1))
+                verbose_reporter.end_max_iter(i)
                 warnings.warn(('Optimization did not converge: Maximum number of iterations has been exceeded.'),
                               stacklevel=2, category=ConvergenceWarning)
                 break
@@ -212,16 +235,12 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
             w_new = w - delta
             loss_new = optimizer.nlog_likelihood(w_new)
-            if verbose > 2:
-                print("iter {:>6d}: update = {}".format(i + 1, delta))
-            if verbose > 1:
-                print("iter {:>6d}: loss = {:.10f}".format(i + 1, loss_new))
+            verbose_reporter.update(i, delta, loss_new)
             if loss_new > loss:
                 # perform step-halving if negative log-likelihood does not decrease
                 w = (w_prev + w) / 2
                 loss = optimizer.nlog_likelihood(w)
-                if verbose > 1:
-                    print("iter {:>6d}: loss increased, performing step-halving. loss = {:.10f}".format(i, loss))
+                verbose_reporter.step_halving(i, loss)
                 i += 1
                 continue
 
@@ -230,8 +249,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
             res = numpy.abs(1 - (loss_new / loss))
             if res < self.tol:
-                if verbose > 0:
-                    print("iter {:>6d}: optimization converged".format(i + 1))
+                verbose_reporter.end_converged(i)
                 break
 
             loss = loss_new

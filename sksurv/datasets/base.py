@@ -145,18 +145,7 @@ def load_arff_files_standardized(path_training, attr_labels, pos_label=None, pat
     x_train, y_train = get_x_y(dataset, attr_labels, pos_label, survival)
 
     if path_testing is not None:
-        test_dataset = loadarff(path_testing)
-        if "index" in test_dataset.columns:
-            test_dataset.index = test_dataset["index"].astype(object)
-            test_dataset.drop("index", axis=1, inplace=True)
-
-        has_labels = pandas.Index(attr_labels).isin(test_dataset.columns).all()
-        if not has_labels:
-            if survival:
-                attr_labels = [None, None]
-            else:
-                attr_labels = None
-        x_test, y_test = get_x_y(test_dataset, attr_labels, pos_label, survival)
+        x_test, y_test = _load_arff_testing(path_testing, attr_labels, pos_label, survival)
 
         if len(x_train.columns.symmetric_difference(x_test.columns)) > 0:
             warnings.warn("Restricting columns to intersection between training and testing data",
@@ -188,6 +177,21 @@ def load_arff_files_standardized(path_training, attr_labels, pos_label=None, pat
         y_test = None
 
     return x_train, y_train, x_test, y_test
+
+
+def _load_arff_testing(path_testing, attr_labels, pos_label, survival):
+    test_dataset = loadarff(path_testing)
+    if "index" in test_dataset.columns:
+        test_dataset.index = test_dataset["index"].astype(object)
+        test_dataset.drop("index", axis=1, inplace=True)
+
+    has_labels = pandas.Index(attr_labels).isin(test_dataset.columns).all()
+    if not has_labels:
+        if survival:
+            attr_labels = [None, None]
+        else:
+            attr_labels = None
+    return get_x_y(test_dataset, attr_labels, pos_label, survival)
 
 
 def load_whas500():
