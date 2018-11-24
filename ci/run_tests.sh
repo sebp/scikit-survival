@@ -2,8 +2,9 @@
 set -e
 export PYTHONWARNINGS="default"
 
+cd tests/
 if [[ "x$NO_SLOW" != "xtrue" ]]; then
-  nosetests -w tests --with-coverage --cover-xml --cover-package=sksurv --cover-tests
+  nosetests --with-coverage --cover-xml --cover-package=sksurv --cover-tests
 else
-  nosetests -w tests -a "!slow" --with-coverage --cover-xml --cover-package=sksurv --cover-tests
+  nosetests -a "!slow" --with-coverage --cover-xml --cover-package=sksurv --cover-tests
 fi

@@ -6,12 +6,13 @@ python:
 env:
   global:
     - NO_SLOW=true
+    - RUN_TOX=false
   matrix:
     - PANDAS_VERSION=0.19 NUMPY_VERSION=1.12 SKLEARN_VERSION=0.19 NO_SLOW=false
     - PANDAS_VERSION=0.20 NUMPY_VERSION=1.13 SKLEARN_VERSION=0.19
     - PANDAS_VERSION=0.21 NUMPY_VERSION=1.13 SKLEARN_VERSION=0.19
     - PANDAS_VERSION=0.22 NUMPY_VERSION=1.14 SKLEARN_VERSION=0.20 NO_SLOW=false
-    - PANDAS_VERSION=0.23 NUMPY_VERSION=1.14 SKLEARN_VERSION=0.20 NO_SLOW=false
+    - PANDAS_VERSION=0.23 NUMPY_VERSION=1.14 SKLEARN_VERSION=0.20 NO_SLOW=false RUN_TOX=true
 
 matrix:
   exclude:
@@ -39,11 +40,11 @@ install:
   - pip uninstall --yes scikit-survival || exit 0  # delete any version that is already installed
   - python setup.py bdist_wheel
   - pip install --exists-action=w --pre --no-index --find-links dist/ scikit-survival
-  - rm -fr sksurv build dist
+  - rm -fr build dist
 
 # command to run tests
 script:
-  - tox
+  - '[[ "x$RUN_TOX" != "xtrue" ]] || tox'
   - ci/run_tests.sh
 
 after_success:
