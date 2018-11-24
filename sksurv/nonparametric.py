@@ -188,8 +188,8 @@ def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None):
         Survival probability at each unique time point.
         If `time_enter` is provided, estimates are conditional probabilities.
 
-    Example
-    -------
+    Examples
+    --------
     Creating a Kaplan-Meier curve:
 
     >>> x, y = kaplan_meier_estimator(event, time)
@@ -199,8 +199,8 @@ def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None):
 
     References
     ----------
-    .. [1]: Kaplan, E. L. and Meier, P., "Nonparametric estimation from incomplete observations",
-            Journal of The American Statistical Association, vol. 53, pp. 457-481, 1958.
+    .. [1] Kaplan, E. L. and Meier, P., "Nonparametric estimation from incomplete observations",
+           Journal of The American Statistical Association, vol. 53, pp. 457-481, 1958.
     """
     event, time_enter, time_exit = check_y_survival(event, time_enter, time_exit)
     check_consistent_length(event, time_enter, time_exit)
