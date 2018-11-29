@@ -1,10 +1,9 @@
 from os.path import join, dirname
 
 import numpy
+from numpy.testing import assert_array_almost_equal
 import pandas
-from numpy.testing import TestCase, assert_array_almost_equal, run_module_suite
-import warnings
-
+import pytest
 from sklearn.exceptions import ConvergenceWarning
 
 from sksurv import column
@@ -17,6 +16,34 @@ BREAST_CANCER_COEFFICIENTS_FILE = join(dirname(__file__), 'data', 'breast_cancer
 EXAMPLE_FILE = join(dirname(__file__), 'data', 'cox-example.csv')
 EXAMPLE_COEF_FILE = join(dirname(__file__), 'data', 'cox-example-coef-{}.csv')
 SIMPLE_COEF_FILE = join(dirname(__file__), 'data', 'cox-simple-coef.csv')
+
+
+@pytest.fixture(params=[0, -1, -1e-6, -numpy.infty])
+def invalid_positive_int(request):
+    return request.param
+
+
+@pytest.fixture(params=[(-1, 1), (1, -1e-7), (-1e-6, 1)])
+def negative_float_array(request):
+    a, b = request.param
+    penalty = a * numpy.ones(30, dtype=float)
+    penalty[11] = b
+    return penalty
+
+
+@pytest.fixture(params=[-numpy.infty, numpy.infty, numpy.nan])
+def infinite_float_array(request):
+    penalty = numpy.zeros(30)
+    penalty[11] = request.param
+    return penalty
+
+
+@pytest.fixture
+def make_example_coef():
+    def _make_example_coef(kind):
+        return pandas.read_csv(EXAMPLE_COEF_FILE.format(kind))
+
+    return _make_example_coef
 
 
 def assert_columns_almost_equal(actual, expected, decimal=6):
@@ -35,7 +62,7 @@ def assert_predictions_equal(coxnet, x, expected_pred):
     assert_array_almost_equal(pred_last, expected_pred[-1])
 
 
-class TestCoxnetSurvivalAnalysis(TestCase):
+class TestCoxnetSurvivalAnalysis(object):
     def _fit_example(self, **kwargs):
         x, y = get_x_y(pandas.read_csv(EXAMPLE_FILE), ["status", "time"],
                        pos_label=1)
@@ -44,7 +71,7 @@ class TestCoxnetSurvivalAnalysis(TestCase):
 
         return x, y, coxnet
 
-    def test_example_1(self):
+    def test_example_1(self, make_example_coef):
         expected_alphas = numpy.array(
             [0.468899812444165, 0.427244045448662, 0.389288861984934, 0.354705512411255, 0.323194452297996,
              0.294482747917078, 0.268321712220587, 0.244484750832538, 0.222765399396784, 0.202975535281541,
@@ -61,7 +88,7 @@ class TestCoxnetSurvivalAnalysis(TestCase):
         x, y, coxnet = self._fit_example(l1_ratio=0.5)
         assert_array_almost_equal(expected_alphas, coxnet.alphas_)
 
-        expected_coef = pandas.read_csv(EXAMPLE_COEF_FILE.format(1))
+        expected_coef = make_example_coef(1)
         coef = pandas.DataFrame(coxnet.coef_, columns=expected_coef.columns, dtype=float)
         assert_columns_almost_equal(coef, expected_coef)
 
@@ -93,7 +120,7 @@ class TestCoxnetSurvivalAnalysis(TestCase):
         ])
         assert_predictions_equal(coxnet, x, expected_pred)
 
-    def test_example_1_penalty_factor_1(self):
+    def test_example_1_penalty_factor_1(self, make_example_coef):
         expected_alphas = numpy.array(
             [1.58712986523032, 1.44613362231646, 1.31766309702114, 1.20060553911345, 1.09394705202614, 0.99676381096855,
              0.908214061198282, 0.827530827144269, 0.754015269231302, 0.687030630865956, 0.625996723155588,
@@ -115,7 +142,7 @@ class TestCoxnetSurvivalAnalysis(TestCase):
 
         assert_array_almost_equal(expected_alphas, coxnet.alphas_)
 
-        expected_coef = pandas.read_csv(EXAMPLE_COEF_FILE.format("1-pf"))
+        expected_coef = make_example_coef("1-pf")
         coef = pandas.DataFrame(coxnet.coef_, columns=expected_coef.columns, dtype=float)
         assert_columns_almost_equal(coef, expected_coef)
 
@@ -136,7 +163,7 @@ class TestCoxnetSurvivalAnalysis(TestCase):
         ])
         assert_predictions_equal(coxnet, x, expected_pred)
 
-    def test_example_1_penalty_factor_2(self):
+    def test_example_1_penalty_factor_2(self, make_example_coef):
         expected_alphas = numpy.array(
             [1.58712986523032, 1.44613362231646, 1.31766309702114, 1.20060553911345, 1.09394705202614, 0.99676381096855,
              0.908214061198282, 0.827530827144269, 0.754015269231302, 0.687030630865956, 0.625996723155588,
@@ -160,7 +187,7 @@ class TestCoxnetSurvivalAnalysis(TestCase):
 
         assert_array_almost_equal(expected_alphas, coxnet.alphas_)
 
-        expected_coef = pandas.read_csv(EXAMPLE_COEF_FILE.format("1-pf2"))
+        expected_coef = make_example_coef("1-pf2")
         coef = pandas.DataFrame(coxnet.coef_, columns=expected_coef.columns, dtype=float)
         assert_columns_almost_equal(coef, expected_coef)
 
@@ -181,7 +208,7 @@ class TestCoxnetSurvivalAnalysis(TestCase):
         ])
         assert_predictions_equal(coxnet, x, expected_pred)
 
-    def test_example_1_unpenalized(self):
+    def test_example_1_unpenalized(self, make_example_coef):
         expected_alphas = numpy.array(
             [0.486489606631737, 0.443271210800114, 0.403892218139282, 0.368011546653386, 0.335318415131023,
              0.305529651307061, 0.278387239159946, 0.253656084100358, 0.231121976694345, 0.210589737283679,
@@ -202,7 +229,7 @@ class TestCoxnetSurvivalAnalysis(TestCase):
 
         assert_array_almost_equal(expected_alphas, coxnet.alphas_)
 
-        expected_coef = pandas.read_csv(EXAMPLE_COEF_FILE.format("1-unpen"))
+        expected_coef = make_example_coef("1-unpen")
         coef = pandas.DataFrame(coxnet.coef_, columns=expected_coef.columns, dtype=float)
         assert_columns_almost_equal(coef, expected_coef)
 
@@ -221,7 +248,7 @@ class TestCoxnetSurvivalAnalysis(TestCase):
         ])
         assert_predictions_equal(coxnet, x, expected_pred)
 
-    def test_example_2(self):
+    def test_example_2(self, make_example_coef):
         expected_alphas = numpy.array(
             [0.260499895802314, 0.237357803027034, 0.21627158999163, 0.197058618006253, 0.179552473498887,
              0.163601526620599, 0.149067617900326, 0.135824861573632, 0.123758555220435, 0.112764186267523,
@@ -238,7 +265,7 @@ class TestCoxnetSurvivalAnalysis(TestCase):
 
         assert_array_almost_equal(expected_alphas, coxnet.alphas_)
 
-        expected_coef = pandas.read_csv(EXAMPLE_COEF_FILE.format(2))
+        expected_coef = make_example_coef(2)
         coef = pandas.DataFrame(coxnet.coef_, columns=expected_coef.columns, dtype=float)
         assert_columns_almost_equal(coef, expected_coef)
 
@@ -270,7 +297,7 @@ class TestCoxnetSurvivalAnalysis(TestCase):
         ])
         assert_predictions_equal(coxnet, x, expected_pred)
 
-    def test_example_2_normalize(self):
+    def test_example_2_normalize(self, make_example_coef):
         expected_alphas = numpy.array(
             [0.00831887750878913, 0.00757985135869546, 0.0069064782549347, 0.00629292576181799, 0.00573387958116825,
              0.00522449752241159, 0.00476036756183909, 0.00433746962776807, 0.00395214078060438, 0.00360104348621191,
@@ -290,7 +317,7 @@ class TestCoxnetSurvivalAnalysis(TestCase):
 
         assert_array_almost_equal(expected_alphas, coxnet.alphas_)
 
-        expected_coef = pandas.read_csv(EXAMPLE_COEF_FILE.format("2-norm"))
+        expected_coef = make_example_coef("2-norm")
         coef = pandas.DataFrame(coxnet.coef_, columns=expected_coef.columns, dtype=float)
         assert_columns_almost_equal(coef, expected_coef)
 
@@ -309,7 +336,8 @@ class TestCoxnetSurvivalAnalysis(TestCase):
         ])
         assert_predictions_equal(coxnet, x, expected_pred)
 
-    def test_example_2_standardize(self):
+    @staticmethod
+    def test_example_2_standardize(make_example_coef):
         from sklearn.preprocessing import StandardScaler
         from sklearn.pipeline import Pipeline
 
@@ -335,27 +363,27 @@ class TestCoxnetSurvivalAnalysis(TestCase):
 
         assert_array_almost_equal(expected_alphas, coxnet.alphas_)
 
-        expected_coef = pandas.read_csv(EXAMPLE_COEF_FILE.format("2-std"))
+        expected_coef = make_example_coef("2-std")
         # rescale coefficients
         coef = pandas.DataFrame(coxnet.coef_ / scaler.scale_[:, numpy.newaxis],
                                 columns=expected_coef.columns, dtype=float)
         assert_columns_almost_equal(coef, expected_coef, 5)
 
-    def test_example_2_with_alpha(self):
+    def test_example_2_with_alpha(self, make_example_coef):
         expected_alphas = numpy.array([0.45, 0.4, 0.35, 0.25, 0.1, 0.05, 0.001])
 
         x, y, coxnet = self._fit_example(l1_ratio=0.9, alphas=expected_alphas, normalize=True)
 
         assert_array_almost_equal(expected_alphas, coxnet.alphas_)
 
-        expected_coef = pandas.read_csv(EXAMPLE_COEF_FILE.format("2-alpha"))
+        expected_coef = make_example_coef("2-alpha")
         coef = pandas.DataFrame(coxnet.coef_, columns=expected_coef.columns, dtype=float)
         assert_columns_almost_equal(coef, expected_coef)
 
         expected_pred = numpy.array([0, 0, 0, 0, 0, 0, -7.82043051660585])
         assert_predictions_equal(coxnet, x, expected_pred)
 
-    def test_example_2_with_n_alpha(self):
+    def test_example_2_with_n_alpha(self, make_example_coef):
         expected_alphas = numpy.array([
             0.00831887750878913, 0.00416931520551416, 0.00208960755397176, 0.00104728462934176, 0.00052488568620016,
             0.000263066005037211, 0.000131845323325978, 6.607919286444e-05, 3.31180478720517e-05, 1.65983427961291e-05,
@@ -367,7 +395,7 @@ class TestCoxnetSurvivalAnalysis(TestCase):
 
         assert_array_almost_equal(expected_alphas, coxnet.alphas_)
 
-        expected_coef = pandas.read_csv(EXAMPLE_COEF_FILE.format("2-nalpha"))
+        expected_coef = make_example_coef("2-nalpha")
         coef = pandas.DataFrame(coxnet.coef_, columns=expected_coef.columns, dtype=float)
         assert_columns_almost_equal(coef, expected_coef)
 
@@ -400,134 +428,69 @@ class TestCoxnetSurvivalAnalysis(TestCase):
     def test_all_zero_coefs(self):
         alphas = numpy.array([256, 128, 96, 64, 48])
 
-        with warnings.catch_warnings(record=True) as w:
-            # Cause all warnings to always be triggered.
-            warnings.simplefilter("always")
+        with pytest.warns(UserWarning, match="all coefficients are zero, consider decreasing alpha."):
             _, _, coxnet = self._fit_example(l1_ratio=0.9, alphas=alphas,
                                              alpha_min_ratio=0.001)
-            self.assertEqual(len(w), 1)
-            self.assertTrue(issubclass(w[0].category, UserWarning))
-            self.assertRegex(str(w[0].message),
-                             "all coefficients are zero, consider decreasing alpha.")
-            assert_array_almost_equal(coxnet.coef_, numpy.zeros((30, 5), dtype=float))
+        assert_array_almost_equal(coxnet.coef_, numpy.zeros((30, 5), dtype=float))
 
     def test_max_iter(self):
-        with warnings.catch_warnings(record=True) as w:
-            # Cause all warnings to always be triggered.
-            warnings.simplefilter("always")
+        with pytest.warns(ConvergenceWarning,
+                          match=r'Optimization terminated early, you might want'
+                                r' to increase the number of iterations \(max_iter=100\).'):
             _, _, coxnet = self._fit_example(l1_ratio=0.9, max_iter=100)
-            self.assertEqual(len(w), 1)
-            self.assertTrue(issubclass(w[0].category, ConvergenceWarning))
-            self.assertRegex(str(w[0].message),
-                             r'Optimization terminated early, you might want'
-                             r' to increase the number of iterations \(max_iter=100\).')
 
-    def test_invalid_l1_ratio(self):
-        for val in (0, -1, -1e-6, 1 + 1e-6, 1512, numpy.nan, numpy.infty):
-            self.assertRaisesRegex(ValueError,
-                                   r"l1_ratio must be in interval \]0;1\]",
-                                   self._fit_example, l1_ratio=val)
+    @pytest.mark.parametrize('val', [0, -1, -1e-6, 1 + 1e-6, 1512, numpy.nan, numpy.infty])
+    def test_invalid_l1_ratio(self, val):
+        with pytest.raises(ValueError,
+                           match=r"l1_ratio must be in interval \]0;1\]"):
+            self._fit_example(l1_ratio=val)
 
-    def test_invalid_tol(self):
-        for val in (0, -1, -1e-6, -numpy.infty):
-            self.assertRaisesRegex(ValueError,
-                                   "tolerance must be positive",
-                                   self._fit_example, tol=val)
+    def test_invalid_tol(self, invalid_positive_int):
+        with pytest.raises(ValueError,
+                           match="tolerance must be positive"):
+            self._fit_example(tol=invalid_positive_int)
 
-    def test_invalid_max_iter(self):
-        for val in (0, -1, -1e-6, -numpy.infty):
-            self.assertRaisesRegex(ValueError,
-                                   "max_iter must be a positive integer",
-                                   self._fit_example, max_iter=val)
+    def test_invalid_max_iter(self, invalid_positive_int):
+        with pytest.raises(ValueError,
+                           match="max_iter must be a positive integer"):
+            self._fit_example(max_iter=invalid_positive_int)
 
-    def test_invalid_n_alphas(self):
-        for val in (0, -1, -1e-6, -numpy.infty):
-            self.assertRaisesRegex(ValueError,
-                                   "n_alphas must be a positive integer",
-                                   self._fit_example, n_alphas=val)
+    def test_invalid_n_alphas(self, invalid_positive_int):
+        with pytest.raises(ValueError,
+                           match="n_alphas must be a positive integer"):
+            self._fit_example(n_alphas=invalid_positive_int)
 
-    def test_invalid_penalty_factor_length(self):
-        self.assertRaisesRegex(ValueError,
-                               r"penalty_factor must be array of length "
-                               r"n_features \(30\), but got 0",
-                               self._fit_example, penalty_factor=numpy.array([]))
+    @pytest.mark.parametrize('length', [0, 1, 29, 31])
+    def test_invalid_penalty_factor_length(self, length):
+        msg = r"penalty_factor must be array of length " \
+              r"n_features \(30\), but got {:d}".format(length)
 
-        self.assertRaisesRegex(ValueError,
-                               r"penalty_factor must be array of length "
-                               r"n_features \(30\), but got 1",
-                               self._fit_example, penalty_factor=numpy.ones(1))
+        array = numpy.empty(length, dtype=float)
+        with pytest.raises(ValueError, match=msg):
+            self._fit_example(penalty_factor=array)
 
-        self.assertRaisesRegex(ValueError,
-                               r"penalty_factor must be array of length "
-                               r"n_features \(30\), but got 29",
-                               self._fit_example, penalty_factor=numpy.ones(29))
+    def test_negative_penalty_factor_value(self, negative_float_array):
+        with pytest.raises(ValueError,
+                           match="Negative values in data passed to penalty_factor"):
+            self._fit_example(penalty_factor=negative_float_array)
 
-        self.assertRaisesRegex(ValueError,
-                               r"penalty_factor must be array of length "
-                               r"n_features \(30\), but got 31",
-                               self._fit_example, penalty_factor=numpy.ones(31))
+    def test_invalid_penalty_factor_value(self, infinite_float_array):
+        with pytest.raises(ValueError,
+                           match="Input contains NaN, infinity or a value too large"):
+            self._fit_example(penalty_factor=infinite_float_array)
 
-    def test_invalid_penalty_factor_value(self):
-        self.assertRaisesRegex(ValueError,
-                               "Negative values in data passed to penalty_factor",
-                               self._fit_example, penalty_factor=-numpy.ones(30))
+    def test_negative_alphas(self, negative_float_array):
+        with pytest.raises(ValueError,
+                           match="Negative values in data passed to alphas"):
+            self._fit_example(alphas=negative_float_array)
 
-        self.assertRaisesRegex(ValueError,
-                               "Negative values in data passed to penalty_factor",
-                               self._fit_example, penalty_factor=-1e-6 * numpy.ones(30))
+    def test_invalid_alphas(self, infinite_float_array):
+        with pytest.raises(ValueError,
+                           match="Input contains NaN, infinity or a value too large"):
+            self._fit_example(alphas=infinite_float_array)
 
-        penalty = numpy.zeros(30)
-        penalty[11] = -1e-7
-        self.assertRaisesRegex(ValueError,
-                               "Negative values in data passed to penalty_factor",
-                               self._fit_example, penalty_factor=penalty)
-
-        penalty[11] = -numpy.infty
-        self.assertRaisesRegex(ValueError,
-                               "Input contains NaN, infinity or a value too large",
-                               self._fit_example, penalty_factor=penalty)
-
-        penalty[11] = numpy.infty
-        self.assertRaisesRegex(ValueError,
-                               "Input contains NaN, infinity or a value too large",
-                               self._fit_example, penalty_factor=penalty)
-
-        penalty[11] = numpy.nan
-        self.assertRaisesRegex(ValueError,
-                               "Input contains NaN, infinity or a value too large",
-                               self._fit_example, penalty_factor=penalty)
-
-    def test_invalid_alphas(self):
-        self.assertRaisesRegex(ValueError,
-                               "Negative values in data passed to alphas",
-                               self._fit_example, alphas=-numpy.ones(3))
-
-        self.assertRaisesRegex(ValueError,
-                               "Negative values in data passed to alphas",
-                               self._fit_example, alphas=-1e-6 * numpy.ones(1))
-
-        alphas = numpy.zeros(14)
-        alphas[1] = -1e-7
-        self.assertRaisesRegex(ValueError,
-                               "Negative values in data passed to alphas",
-                               self._fit_example, alphas=alphas)
-
-        alphas[1] = -numpy.infty
-        self.assertRaisesRegex(ValueError,
-                               "Input contains NaN, infinity or a value too large",
-                               self._fit_example, alphas=alphas)
-
-        alphas[1] = numpy.infty
-        self.assertRaisesRegex(ValueError,
-                               "Input contains NaN, infinity or a value too large",
-                               self._fit_example, alphas=alphas)
-
-        alphas[1] = numpy.nan
-        self.assertRaisesRegex(ValueError,
-                               "Input contains NaN, infinity or a value too large",
-                               self._fit_example, alphas=alphas)
-
-    def test_alpha_too_small(self):
+    @staticmethod
+    def test_alpha_too_small():
         X, y = load_breast_cancer()
         Xt = OneHotEncoder().fit_transform(X)
         index = numpy.array([
@@ -543,11 +506,12 @@ class TestCoxnetSurvivalAnalysis(TestCase):
         nn = CoxnetSurvivalAnalysis(alphas=[0.007295025406624247], l1_ratio=1.0)
         Xf, yf = Xt.iloc[index], y[index]
 
-        self.assertRaisesRegex(ArithmeticError,
-                               "Numerical error, because weights are too large. Consider increasing alpha.",
-                               nn.fit, Xf, yf)
+        with pytest.raises(ArithmeticError,
+                           match="Numerical error, because weights are too large. Consider increasing alpha."):
+            nn.fit(Xf, yf)
 
-    def test_breast_example(self):
+    @staticmethod
+    def test_breast_example():
         x, y = load_breast_cancer()
         x = column.encode_categorical(x)
 
@@ -606,7 +570,8 @@ class TestCoxnetSurvivalAnalysis(TestCase):
 
         assert_columns_almost_equal(coef, expected_coef, 5)
 
-    def test_simple(self):
+    @staticmethod
+    def test_simple():
         y = Surv.from_arrays([True, False, False, True, False], [7., 8., 11., 11., 23.],
                              name_event="D", name_time="Y")
 
@@ -638,7 +603,3 @@ class TestCoxnetSurvivalAnalysis(TestCase):
         expected_coef = pandas.read_csv(SIMPLE_COEF_FILE, header=None, skiprows=1)
 
         assert_columns_almost_equal(coef, expected_coef)
-
-
-if __name__ == '__main__':
-    run_module_suite()

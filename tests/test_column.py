@@ -1,9 +1,11 @@
-from numpy.testing import TestCase, run_module_suite, assert_array_almost_equal, assert_array_equal
+from collections import OrderedDict
+
+import numpy
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 import pandas.util.testing as tm
 import pandas
-import numpy
+import pytest
 
-from collections import OrderedDict
 from sksurv import column
 
 NUMERIC_DATA_FRAME = pandas.DataFrame(numpy.arange(50).reshape(10, 5))
@@ -19,8 +21,9 @@ NON_NUMERIC_DATA_FRAME['q3'] = NON_NUMERIC_DATA_FRAME['q3'].astype('category')
 MIXED_DATA_FRAME['q3'] = MIXED_DATA_FRAME['q3'].astype('category')
 
 
-class TestColumn(TestCase):
-    def test_standardize_numeric(self):
+class TestColumn(object):
+    @staticmethod
+    def test_standardize_numeric():
         result = column.standardize(NUMERIC_DATA_FRAME)
 
         expected = numpy.array([[-1.486301, -1.486301, -1.486301, -1.486301, -1.486301],
@@ -34,16 +37,18 @@ class TestColumn(TestCase):
                                 [1.156012, 1.156012, 1.156012, 1.156012, 1.156012],
                                 [1.486301, 1.486301, 1.486301, 1.486301, 1.486301]])
 
-        self.assertTrue(isinstance(result, pandas.DataFrame))
+        assert isinstance(result, pandas.DataFrame)
         assert_array_almost_equal(expected, result)
 
-    def test_standardize_non_numeric(self):
+    @staticmethod
+    def test_standardize_non_numeric():
         result = column.standardize(NON_NUMERIC_DATA_FRAME)
 
-        self.assertTrue(isinstance(result, pandas.DataFrame))
+        assert isinstance(result, pandas.DataFrame)
         tm.assert_frame_equal(NON_NUMERIC_DATA_FRAME, result)
 
-    def test_standardize_mixed(self):
+    @staticmethod
+    def test_standardize_mixed():
         result = column.standardize(MIXED_DATA_FRAME)
 
         expected = numpy.array([[-1.486301, -1.486301, -1.486301, -1.486301, -1.486301],
@@ -57,12 +62,13 @@ class TestColumn(TestCase):
                                 [1.156012, 1.156012, 1.156012, 1.156012, 1.156012],
                                 [1.486301, 1.486301, 1.486301, 1.486301, 1.486301]])
 
-        self.assertTrue(isinstance(result, pandas.DataFrame))
+        assert isinstance(result, pandas.DataFrame)
         assert_array_almost_equal(expected, result.iloc[:, :NUMERIC_DATA_FRAME.shape[1]].values)
 
         tm.assert_frame_equal(NON_NUMERIC_DATA_FRAME, result.iloc[:, NUMERIC_DATA_FRAME.shape[1]:])
 
-    def test_standardize_numpy_array(self):
+    @staticmethod
+    def test_standardize_numpy_array():
         result = column.standardize(MIXED_DATA_FRAME.values)
 
         expected = numpy.array([[-1.486301, -1.486301, -1.486301, -1.486301, -1.486301],
@@ -76,7 +82,7 @@ class TestColumn(TestCase):
                                 [1.156012, 1.156012, 1.156012, 1.156012, 1.156012],
                                 [1.486301, 1.486301, 1.486301, 1.486301, 1.486301]])
 
-        self.assertTrue(isinstance(result, numpy.ndarray))
+        assert isinstance(result, numpy.ndarray)
         assert_array_almost_equal(expected, result[:, :NUMERIC_DATA_FRAME.shape[1]])
 
         assert_array_equal(pandas.isnull(NON_NUMERIC_DATA_FRAME),
@@ -88,7 +94,7 @@ class TestColumn(TestCase):
                            result[:, NUMERIC_DATA_FRAME.shape[1]:][non_nan_idx, :])
 
 
-class TestEncodeCategorical(TestCase):
+class TestEncodeCategorical(object):
     @staticmethod
     def test_series_categorical():
         input_series = pandas.Series(pandas.Categorical.from_codes([1, 1, 0, 2, 0, 1, 2, 1, 2, 0, 0, 1, 2, 2],
@@ -107,8 +113,8 @@ class TestEncodeCategorical(TestCase):
     def test_series_numeric(self):
         input_series = pandas.Series([0.5, 0.1, 10, 25, 3.8, 11, 2256, -1, -0.2, 3.14], name="a_series")
 
-        self.assertRaisesRegex(TypeError, "series must be of categorical dtype, but was float",
-                               column.encode_categorical, input_series)
+        with pytest.raises(TypeError, match="series must be of categorical dtype, but was float"):
+            column.encode_categorical(input_series)
 
     def test_case1(self):
         a = numpy.concatenate((
@@ -154,7 +160,7 @@ class TestEncodeCategorical(TestCase):
                 ("a_number", c.copy())])
         )
 
-        self.assertTupleEqual(actual_df.shape, expected_df.shape)
+        assert actual_df.shape == expected_df.shape
         tm.assert_frame_equal(actual_df, expected_df, check_exact=True)
 
     def test_duplicate_index(self):
@@ -186,7 +192,7 @@ class TestEncodeCategorical(TestCase):
 
         expected_df["a_number"] = c
 
-        self.assertTupleEqual(actual_df.shape, expected_df.shape)
+        assert actual_df.shape == expected_df.shape
         tm.assert_frame_equal(actual_df, expected_df, check_exact=True)
 
     def test_case_numeric(self):
@@ -209,7 +215,7 @@ class TestEncodeCategorical(TestCase):
             "a_four_float={}".format(1.): (c == 1.).astype(float),
         })
 
-        self.assertTupleEqual(actual_df.shape, expected_df.shape)
+        assert actual_df.shape == expected_df.shape
         tm.assert_frame_equal(actual_df, expected_df, check_exact=True)
 
     def test_with_missing(self):
@@ -236,7 +242,7 @@ class TestEncodeCategorical(TestCase):
         d['a_number'] = c.copy()
         expected_df = pandas.DataFrame(d)
 
-        self.assertTupleEqual(actual_df.shape, expected_df.shape)
+        assert actual_df.shape == expected_df.shape
         tm.assert_frame_equal(actual_df.isnull(), expected_df.isnull())
         tm.assert_frame_equal(actual_df.dropna(), expected_df.dropna(), check_exact=True)
 
@@ -260,7 +266,7 @@ class TestEncodeCategorical(TestCase):
 
         expected_df = pandas.DataFrame({"a_binary=yes": eb})
 
-        self.assertTupleEqual(actual_df.shape, expected_df.shape)
+        assert actual_df.shape == expected_df.shape
         tm.assert_frame_equal(actual_df.isnull(), expected_df.isnull())
         tm.assert_frame_equal(actual_df.dropna(), expected_df.dropna(), check_exact=True)
 
@@ -285,7 +291,7 @@ class TestEncodeCategorical(TestCase):
         expected_df = pandas.DataFrame({"a_binary=yes": eb,
                                         "bogus": all_missing.copy()})
 
-        self.assertTupleEqual(actual_df.shape, expected_df.shape)
+        assert actual_df.shape == expected_df.shape
         tm.assert_frame_equal(actual_df.isnull(), expected_df.isnull())
         tm.assert_frame_equal(actual_df.dropna(), expected_df.dropna(), check_exact=True)
 
@@ -346,7 +352,3 @@ def test_data_frame_to_numeric():
     actual = column.categorical_to_numeric(input_df)
 
     tm.assert_frame_equal(actual, expected, check_exact=True)
-
-
-if __name__ == '__main__':
-    run_module_suite()

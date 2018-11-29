@@ -1,5 +1,6 @@
 import numpy
-from numpy.testing import TestCase, run_module_suite, assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal
+import pytest
 from sklearn.base import BaseEstimator
 from sklearn.datasets import load_iris
 from sklearn.linear_model import LogisticRegression
@@ -7,12 +8,10 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score, roc_auc_score
 from sklearn.svm import SVC
 
-from sksurv.column import categorical_to_numeric
-from sksurv.datasets import load_whas500
-from sksurv.meta import Stacking, MeanEstimator
-from sksurv.metrics import concordance_index_censored
-from sksurv.svm import FastSurvivalSVM
 from sksurv.linear_model import CoxPHSurvivalAnalysis
+from sksurv.meta import Stacking, MeanEstimator
+from sksurv.testing import assert_cindex_almost_equal
+from sksurv.svm import FastSurvivalSVM
 
 
 class _NoFitEstimator(BaseEstimator):
@@ -40,29 +39,29 @@ class _PredictProbaDummy(BaseEstimator):
         pass
 
 
-class TestStackingClassifier(TestCase):
-    def test_base_no_fit(self):
-        self.assertRaisesRegex(TypeError,
-                               "All base estimators should implement fit and predict/predict_proba (.+) doesn't",
-                               Stacking, _PredictDummy, [('m1', _NoFitEstimator)])
+class TestStackingClassifier(object):
+    @staticmethod
+    @pytest.mark.parametrize('estimator', [_NoFitEstimator, _NoPredictDummy])
+    def test_base_estimator(estimator):
+        with pytest.raises(TypeError,
+                           match=r"All base estimators should implement fit and predict/predict_proba (.+) doesn't"):
+            Stacking(_PredictDummy, [('m1', estimator)])
 
-    def test_base_no_predict(self):
-        self.assertRaisesRegex(TypeError,
-                               "All base estimators should implement fit and predict/predict_proba (.+) doesn't",
-                               Stacking, _PredictDummy, [('m1', _NoPredictDummy)])
+    @staticmethod
+    def test_meta_no_fit():
+        with pytest.raises(TypeError,
+                           match=r"meta estimator should implement fit (.+) doesn't"):
+            Stacking(_NoFitEstimator, [('m1', _PredictDummy)])
 
-    def test_meta_no_fit(self):
-        self.assertRaisesRegex(TypeError,
-                               "meta estimator should implement fit (.+) doesn't",
-                               Stacking, _NoFitEstimator, [('m1', _PredictDummy)])
+    @staticmethod
+    def test_names_not_unique():
+        with pytest.raises(ValueError,
+                           match=r"Names provided are not unique: \('m1', 'm2', 'm1'\)"):
+            Stacking(_NoFitEstimator,
+                     [('m1', _PredictDummy), ('m2', _PredictDummy), ('m1', _PredictDummy)])
 
-    def test_names_not_unique(self):
-        self.assertRaisesRegex(ValueError,
-                               r"Names provided are not unique: \('m1', 'm2', 'm1'\)",
-                               Stacking, _NoFitEstimator,
-                               [('m1', _PredictDummy), ('m2', _PredictDummy), ('m1', _PredictDummy)])
-
-    def test_fit(self):
+    @staticmethod
+    def test_fit():
         data = load_iris()
         x = data["data"]
         y = data["target"]
@@ -70,15 +69,16 @@ class TestStackingClassifier(TestCase):
         meta = Stacking(LogisticRegression(solver='liblinear', multi_class='ovr'),
                         [('tree', DecisionTreeClassifier(max_depth=1, random_state=0)),
                          ('svm', SVC(probability=True, gamma='auto', random_state=0))])
-        self.assertEqual(2, len(meta))
+        assert 2 == len(meta)
         meta.fit(x, y)
 
         p = meta._predict_estimators(x)
-        self.assertTupleEqual((x.shape[0], 3 * 2), p.shape)
+        assert (x.shape[0], 3 * 2) == p.shape
 
-        self.assertTupleEqual((3, 3 * 2), meta.meta_estimator.coef_.shape)
+        assert (3, 3 * 2) == meta.meta_estimator.coef_.shape
 
-    def test_fit_sample_weights(self):
+    @staticmethod
+    def test_fit_sample_weights():
         data = load_iris()
         x = data["data"]
         y = data["target"]
@@ -90,27 +90,28 @@ class TestStackingClassifier(TestCase):
         sample_weight = numpy.random.RandomState(0).uniform(size=x.shape[0])
         meta.fit(x, y, tree__sample_weight=sample_weight, svm__sample_weight=sample_weight)
 
-    def test_set_params(self):
+    @staticmethod
+    def test_set_params():
         meta = Stacking(LogisticRegression(), [('tree', DecisionTreeClassifier(max_depth=1, random_state=0)),
                                                ('svm', SVC(probability=True, random_state=0))],
                         probabilities=True)
-        self.assertEqual(2, len(meta))
+        assert 2 == len(meta)
         meta.set_params(tree__min_samples_split=7, svm__C=0.05)
 
-        self.assertEqual(7, meta.get_params()["tree__min_samples_split"])
-        self.assertEqual(0.05, meta.get_params()["svm__C"])
-        self.assertIsInstance(meta.get_params()["meta_estimator"], LogisticRegression)
-        self.assertTrue(meta.get_params()["probabilities"])
+        assert 7 == meta.get_params()["tree__min_samples_split"]
+        assert 0.05 == meta.get_params()["svm__C"]
+        assert isinstance(meta.get_params()["meta_estimator"], LogisticRegression)
+        assert meta.get_params()["probabilities"]
 
         meta.set_params(meta_estimator=DecisionTreeClassifier(), probabilities=False)
-        self.assertIsInstance(meta.get_params()["meta_estimator"], DecisionTreeClassifier)
-        self.assertFalse(meta.get_params()["probabilities"])
+        assert isinstance(meta.get_params()["meta_estimator"], DecisionTreeClassifier)
+        assert not meta.get_params()["probabilities"]
 
         p = meta.get_params(deep=False)
-        self.assertSetEqual(set(p.keys()),
-                            {"meta_estimator", "base_estimators", "probabilities"})
+        assert set(p.keys()) == {"meta_estimator", "base_estimators", "probabilities"}
 
-    def test_predict(self):
+    @staticmethod
+    def test_predict():
         data = load_iris()
         x = data["data"]
         y = data["target"]
@@ -118,14 +119,15 @@ class TestStackingClassifier(TestCase):
         meta = Stacking(LogisticRegression(multi_class='multinomial', solver='lbfgs'),
                         [('tree', DecisionTreeClassifier(max_depth=1, random_state=0)),
                          ('svm', SVC(probability=True, gamma='auto', random_state=0))])
-        self.assertEqual(2, len(meta))
+        assert 2 == len(meta)
         meta.fit(x, y)
         p = meta.predict(x)
         acc = accuracy_score(y, p)
 
-        self.assertGreaterEqual(acc, 0.98)
+        assert acc >= 0.98
 
-    def test_predict_proba(self):
+    @staticmethod
+    def test_predict_proba():
         data = load_iris()
         x = data["data"]
         y = data["target"]
@@ -142,7 +144,8 @@ class TestStackingClassifier(TestCase):
 
         assert_array_almost_equal(numpy.array([1.0, 0.9986, 0.9986]), scores)
 
-    def test_predict_log_proba(self):
+    @staticmethod
+    def test_predict_log_proba():
         data = load_iris()
         x = data["data"]
         y = data["target"]
@@ -160,23 +163,23 @@ class TestStackingClassifier(TestCase):
         assert_array_almost_equal(numpy.array([1.0, 0.9986, 0.9986]), scores)
 
 
-class TestStackingSurvivalAnalysis(TestCase):
-    def setUp(self):
-        x, self.y = load_whas500()
-        self.x = categorical_to_numeric(x)
+class TestStackingSurvivalAnalysis(object):
+    @staticmethod
+    def test_fit(make_whas500):
+        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
 
-    def test_fit(self):
         meta = Stacking(MeanEstimator(),
                         [('coxph', CoxPHSurvivalAnalysis()),
                          ('svm', FastSurvivalSVM(random_state=0))],
                         probabilities=False)
-        self.assertEqual(2, len(meta))
-        meta.fit(self.x.values, self.y)
+        assert 2 == len(meta)
+        meta.fit(whas500.x, whas500.y)
 
-        p = meta._predict_estimators(self.x.values)
-        self.assertTupleEqual((self.x.shape[0], 2), p.shape)
+        p = meta._predict_estimators(whas500.x)
+        assert (whas500.x.shape[0], 2) == p.shape
 
-    def test_set_params(self):
+    @staticmethod
+    def test_set_params():
         meta = Stacking(_PredictDummy(),
                         [('coxph', CoxPHSurvivalAnalysis()),
                          ('svm', FastSurvivalSVM(random_state=0))],
@@ -184,34 +187,32 @@ class TestStackingSurvivalAnalysis(TestCase):
 
         meta.set_params(coxph__alpha=1.0, svm__alpha=0.4132)
 
-        self.assertEqual(1.0, meta.get_params()["coxph__alpha"])
-        self.assertEqual(0.4132, meta.get_params()["svm__alpha"])
+        assert 1.0 == meta.get_params()["coxph__alpha"]
+        assert 0.4132 == meta.get_params()["svm__alpha"]
 
-    def test_predict(self):
+    @staticmethod
+    def test_predict(make_whas500):
+        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
+
         meta = Stacking(MeanEstimator(),
                         [('coxph', CoxPHSurvivalAnalysis()),
                          ('svm', FastSurvivalSVM(random_state=0))],
                         probabilities=False)
 
-        meta.fit(self.x.values, self.y)
+        meta.fit(whas500.x, whas500.y)
 
         # result is different if randomForestSRC has not been compiled with OpenMP support
-        p = meta.predict(self.x.values)
-        actual_cindex = concordance_index_censored(self.y['fstat'], self.y['lenfol'], p)
+        p = meta.predict(whas500.x)
+        assert_cindex_almost_equal(whas500.y['fstat'], whas500.y['lenfol'], p,
+                                   (0.7848807, 58983, 16166, 0, 119))
 
-        expected_cindex = numpy.array([0.7848807, 58983, 16166, 0, 119])
-        assert_array_almost_equal(expected_cindex, actual_cindex)
-
-    def test_predict_proba(self):
+    @staticmethod
+    def test_predict_proba():
         meta = Stacking(_PredictDummy(),
                         [('coxph', CoxPHSurvivalAnalysis()),
                          ('svm', FastSurvivalSVM(random_state=0))],
                         probabilities=False)
 
-        self.assertRaisesRegex(AttributeError,
-                               "'_PredictDummy' object has no attribute 'predict_proba'",
-                               getattr, meta, "predict_proba")
-
-
-if __name__ == '__main__':
-    run_module_suite()
+        with pytest.raises(AttributeError,
+                           match="'_PredictDummy' object has no attribute 'predict_proba'"):
+            getattr(meta, "predict_proba")

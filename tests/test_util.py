@@ -1,15 +1,15 @@
-from numpy.testing import TestCase, run_module_suite
-import pandas.util.testing as tm
-import pandas
+from collections import OrderedDict
+
 import numpy
 from numpy.testing import assert_array_equal
-
-from collections import OrderedDict
+import pandas.util.testing as tm
+import pandas
+import pytest
 
 from sksurv.util import safe_concat, Surv
 
 
-class TestUtil(TestCase):
+class TestUtil(object):
     @staticmethod
     def test_concat_numeric():
         rnd = numpy.random.RandomState(14)
@@ -64,7 +64,8 @@ class TestUtil(TestCase):
 
         tm.assert_frame_equal(actual_series, expected_series)
 
-    def test_concat_categorical_mismatch(self):
+    @staticmethod
+    def test_concat_categorical_mismatch():
         rnd = numpy.random.RandomState(14)
         a = pandas.DataFrame.from_dict(OrderedDict([
             ("col_A", pandas.Series(pandas.Categorical.from_codes(
@@ -75,8 +76,8 @@ class TestUtil(TestCase):
                 rnd.binomial(3, 0.6, 100), ["C1", "C2", "C3", "C4"]), name="col_A")),
             ("col_B", rnd.randn(100))]))
 
-        self.assertRaisesRegex(ValueError, "categories for column col_A do not match",
-                               safe_concat, (a, b), axis=0)
+        with pytest.raises(ValueError, match="categories for column col_A do not match"):
+            safe_concat((a, b), axis=0)
 
     @staticmethod
     def test_concat_dataframe_numeric_categorical():
@@ -95,7 +96,8 @@ class TestUtil(TestCase):
 
         tm.assert_frame_equal(actual_df, expected_df)
 
-    def test_concat_duplicate_columns(self):
+    @staticmethod
+    def test_concat_duplicate_columns():
         rnd = numpy.random.RandomState(14)
         numeric_df = pandas.DataFrame.from_dict(OrderedDict([
             ("col_N", rnd.randn(100)), ("col_B", rnd.randn(100)),
@@ -110,26 +112,28 @@ class TestUtil(TestCase):
                 rnd.binomial(1, 0.6, 100), ["Yes", "No"]), name="col_C")),
         ]))
 
-        self.assertRaisesRegex(ValueError, "duplicate columns col_A",
-                               safe_concat, (numeric_df, cat_df), axis=1)
+        with pytest.raises(ValueError, match="duplicate columns col_A"):
+            safe_concat((numeric_df, cat_df), axis=1)
 
 
-class TestSurv(TestCase):
+@pytest.fixture
+def surv_arrays():
+    event = numpy.random.binomial(1, 0.5, size=100)
+    time = numpy.exp(numpy.random.randn(100))
+    return event, time
 
-    @property
-    def arrays(self):
-        event = numpy.random.binomial(1, 0.5, size=100)
-        time = numpy.exp(numpy.random.randn(100))
-        return event, time
 
-    @property
-    def data_frame(self):
-        df = pandas.DataFrame({'event': numpy.random.binomial(1, 0.5, size=100),
-                               'time': numpy.exp(numpy.random.randn(100))})
-        return df
+@pytest.fixture
+def surv_data_frame():
+    df = pandas.DataFrame({'event': numpy.random.binomial(1, 0.5, size=100),
+                           'time': numpy.exp(numpy.random.randn(100))})
+    return df
 
-    def test_from_list(self):
-        event, time = self.arrays
+
+class TestSurv(object):
+
+    def test_from_list(self, surv_arrays):
+        event, time = surv_arrays
 
         expected = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
         expected['event'] = event.astype(bool)
@@ -138,8 +142,8 @@ class TestSurv(TestCase):
         y = Surv.from_arrays(list(event.astype(bool)), list(time))
         assert_array_equal(y, expected)
 
-    def test_from_array_bool(self):
-        event, time = self.arrays
+    def test_from_array_bool(self, surv_arrays):
+        event, time = surv_arrays
 
         expected = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
         expected['event'] = event.astype(bool)
@@ -148,8 +152,8 @@ class TestSurv(TestCase):
         y = Surv.from_arrays(event.astype(bool), time)
         assert_array_equal(y, expected)
 
-    def test_from_array_with_names(self):
-        event, time = self.arrays
+    def test_from_array_with_names(self, surv_arrays):
+        event, time = surv_arrays
 
         expected = numpy.empty(dtype=[('death', bool), ('survival_time', float)], shape=100)
         expected['death'] = event.astype(bool)
@@ -158,8 +162,8 @@ class TestSurv(TestCase):
         y = Surv.from_arrays(event.astype(bool), time, name_time='survival_time', name_event='death')
         assert_array_equal(y, expected)
 
-    def test_from_array_with_one_name_1(self):
-        event, time = self.arrays
+    def test_from_array_with_one_name_1(self, surv_arrays):
+        event, time = surv_arrays
 
         expected = numpy.empty(dtype=[('death', bool), ('time', float)], shape=100)
         expected['death'] = event.astype(bool)
@@ -168,8 +172,8 @@ class TestSurv(TestCase):
         y = Surv.from_arrays(event.astype(bool), time, name_event='death')
         assert_array_equal(y, expected)
 
-    def test_from_array_with_one_name_2(self):
-        event, time = self.arrays
+    def test_from_array_with_one_name_2(self, surv_arrays):
+        event, time = surv_arrays
 
         expected = numpy.empty(dtype=[('event', bool), ('survival_time', float)], shape=100)
         expected['event'] = event.astype(bool)
@@ -178,8 +182,8 @@ class TestSurv(TestCase):
         y = Surv.from_arrays(event.astype(bool), time, name_time='survival_time')
         assert_array_equal(y, expected)
 
-    def test_from_array_int_event(self):
-        event, time = self.arrays
+    def test_from_array_int_event(self, surv_arrays):
+        event, time = surv_arrays
 
         expected = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
         expected['event'] = event.astype(bool)
@@ -188,8 +192,8 @@ class TestSurv(TestCase):
         y = Surv.from_arrays(event, time)
         assert_array_equal(y, expected)
 
-    def test_from_array_int_time(self):
-        event, time = self.arrays
+    def test_from_array_int_time(self, surv_arrays):
+        event, time = surv_arrays
         time += 1
         time *= time
 
@@ -200,8 +204,8 @@ class TestSurv(TestCase):
         y = Surv.from_arrays(event.astype(bool), time.astype(int))
         assert_array_equal(y, expected)
 
-    def test_from_array_float(self):
-        event, time = self.arrays
+    def test_from_array_float(self, surv_arrays):
+        event, time = surv_arrays
 
         expected = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
         expected['event'] = event.astype(bool)
@@ -210,69 +214,66 @@ class TestSurv(TestCase):
         y = Surv.from_arrays(event.astype(float), time)
         assert_array_equal(y, expected)
 
-    def test_from_array_shape_mismatch(self):
-        event, time = self.arrays
+    def test_from_array_shape_mismatch(self, surv_arrays):
+        event, time = surv_arrays
 
-        self.assertRaisesRegex(ValueError,
-                               "Found input variables with inconsistent numbers of"
-                               " samples",
-                               Surv.from_arrays, event[1:], time)
+        msg = "Found input variables with inconsistent numbers of samples"
+        with pytest.raises(ValueError, match=msg):
+            Surv.from_arrays(event[1:], time)
 
-        self.assertRaisesRegex(ValueError,
-                               "Found input variables with inconsistent numbers of"
-                               " samples",
-                               Surv.from_arrays, event, time[1:])
+        with pytest.raises(ValueError, match=msg):
+            Surv.from_arrays(event, time[1:])
 
-    def test_from_array_event_value_wrong_1(self):
-        event, time = self.arrays
+    def test_from_array_event_value_wrong_1(self, surv_arrays):
+        event, time = surv_arrays
         event += 1
 
-        self.assertRaisesRegex(ValueError,
-                               "non-boolean event indicator must contain 0 and 1 only",
-                               Surv.from_arrays, event, time)
+        with pytest.raises(ValueError,
+                           match="non-boolean event indicator must contain 0 and 1 only"):
+            Surv.from_arrays(event, time)
 
-    def test_from_array_event_value_wrong_2(self):
-        event, time = self.arrays
+    def test_from_array_event_value_wrong_2(self, surv_arrays):
+        event, time = surv_arrays
         event -= 1
 
-        self.assertRaisesRegex(ValueError,
-                               "non-boolean event indicator must contain 0 and 1 only",
-                               Surv.from_arrays, event, time)
+        with pytest.raises(ValueError,
+                           match="non-boolean event indicator must contain 0 and 1 only"):
+            Surv.from_arrays(event, time)
 
-    def test_from_array_event_value_wrong_3(self):
-        event, time = self.arrays
+    def test_from_array_event_value_wrong_3(self, surv_arrays):
+        event, time = surv_arrays
         event[event == 0] = 3
 
-        self.assertRaisesRegex(ValueError,
-                               "non-boolean event indicator must contain 0 and 1 only",
-                               Surv.from_arrays, event, time)
+        with pytest.raises(ValueError,
+                           match="non-boolean event indicator must contain 0 and 1 only"):
+            Surv.from_arrays(event, time)
 
-    def test_from_array_event_value_wrong_4(self):
-        event, time = self.arrays
+    def test_from_array_event_value_wrong_4(self, surv_arrays):
+        event, time = surv_arrays
         event[1] = 3
 
-        self.assertRaisesRegex(ValueError,
-                               "event indicator must be binary",
-                               Surv.from_arrays, event, time)
+        with pytest.raises(ValueError,
+                           match="event indicator must be binary"):
+            Surv.from_arrays(event, time)
 
-    def test_from_array_event_value_wrong_5(self):
-        event, time = self.arrays
+    def test_from_array_event_value_wrong_5(self, surv_arrays):
+        event, time = surv_arrays
         event = numpy.arange(event.shape[0])
 
-        self.assertRaisesRegex(ValueError,
-                               "event indicator must be binary",
-                               Surv.from_arrays, event, time)
+        with pytest.raises(ValueError,
+                           match="event indicator must be binary"):
+            Surv.from_arrays(event, time)
 
-    def test_from_array_names_match(self):
-        event, time = self.arrays
+    def test_from_array_names_match(self, surv_arrays):
+        event, time = surv_arrays
 
-        self.assertRaisesRegex(ValueError,
-                               "name_time must be different from name_event",
-                               Surv.from_arrays, event, time,
-                               name_event='time_and_event', name_time='time_and_event')
+        with pytest.raises(ValueError,
+                           match="name_time must be different from name_event"):
+            Surv.from_arrays(event, time,
+                             name_event='time_and_event', name_time='time_and_event')
 
-    def test_from_dataframe_bool(self):
-        data = self.data_frame
+    def test_from_dataframe_bool(self, surv_data_frame):
+        data = surv_data_frame
         data['event'] = data['event'].astype(bool)
 
         expected = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
@@ -282,8 +283,8 @@ class TestSurv(TestCase):
         y = Surv.from_dataframe('event', 'time', data)
         assert_array_equal(y, expected)
 
-    def test_from_dataframe_int(self):
-        data = self.data_frame
+    def test_from_dataframe_int(self, surv_data_frame):
+        data = surv_data_frame
 
         expected = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
         expected['event'] = data['event'].astype(bool)
@@ -292,8 +293,8 @@ class TestSurv(TestCase):
         y = Surv.from_dataframe('event', 'time', data)
         assert_array_equal(y, expected)
 
-    def test_from_dataframe_float(self):
-        data = self.data_frame
+    def test_from_dataframe_float(self, surv_data_frame):
+        data = surv_data_frame
         data['event'] = data['event'].astype(float)
 
         expected = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
@@ -303,8 +304,8 @@ class TestSurv(TestCase):
         y = Surv.from_dataframe('event', 'time', data)
         assert_array_equal(y, expected)
 
-    def test_from_dataframe_no_str_columns(self):
-        data = self.data_frame
+    def test_from_dataframe_no_str_columns(self, surv_data_frame):
+        data = surv_data_frame
         data['event'] = data['event'].astype(bool)
 
         expected = numpy.empty(dtype=[('0', bool), ('1', float)], shape=100)
@@ -314,8 +315,8 @@ class TestSurv(TestCase):
         y = Surv.from_dataframe(0, 1, data.rename(columns={'event': 0, 'time': 1}))
         assert_array_equal(y, expected)
 
-    def test_from_dataframe_column_names(self):
-        data = self.data_frame.rename(columns={'event': 'death', 'time': 'time_to_death'})
+    def test_from_dataframe_column_names(self, surv_data_frame):
+        data = surv_data_frame.rename(columns={'event': 'death', 'time': 'time_to_death'})
         data['death'] = data['death'].astype(bool)
 
         expected = numpy.empty(dtype=[('death', bool), ('time_to_death', float)], shape=100)
@@ -325,33 +326,29 @@ class TestSurv(TestCase):
         y = Surv.from_dataframe('death', 'time_to_death', data)
         assert_array_equal(y, expected)
 
-    def test_from_dataframe_no_such_column(self):
-        data = self.data_frame
+    def test_from_dataframe_no_such_column(self, surv_data_frame):
+        data = surv_data_frame
         data['event'] = data['event'].astype(bool)
 
         expected = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
         expected['event'] = data['event']
         expected['time'] = data['time']
 
-        self.assertRaisesRegex(KeyError,
-                               r'the label \[unknown\] is not in the \[columns\]',
-                               Surv.from_dataframe, 'unknown', 'time', data)
+        with pytest.raises(KeyError,
+                           match=r'the label \[unknown\] is not in the \[columns\]'):
+            Surv.from_dataframe('unknown', 'time', data)
 
-        self.assertRaisesRegex(KeyError,
-                               r'the label \[unknown\] is not in the \[columns\]',
-                               Surv.from_dataframe, 'event', 'unknown', data)
+        with pytest.raises(KeyError,
+                           match=r'the label \[unknown\] is not in the \[columns\]'):
+            Surv.from_dataframe('event', 'unknown', data)
 
-    def test_from_dataframe_wrong_class(self):
-        data = self.data_frame
+    def test_from_dataframe_wrong_class(self, surv_data_frame):
+        data = surv_data_frame
 
-        self.assertRaisesRegex(TypeError,
-                               r"exepected pandas.DataFrame, but got <class 'dict'>",
-                               Surv.from_dataframe, 'event', 'time', data.to_dict())
+        with pytest.raises(TypeError,
+                           match=r"exepected pandas.DataFrame, but got <class 'dict'>"):
+            Surv.from_dataframe('event', 'time', data.to_dict())
 
-        self.assertRaisesRegex(TypeError,
-                               r"exepected pandas.DataFrame, but got <class 'numpy.ndarray'>",
-                               Surv.from_dataframe, 'event', 'time', data.values)
-
-
-if __name__ == '__main__':
-    run_module_suite()
+        with pytest.raises(TypeError,
+                           match=r"exepected pandas.DataFrame, but got <class 'numpy.ndarray'>"):
+            Surv.from_dataframe('event', 'time', data.values)

@@ -1,8 +1,6 @@
 -r prod.txt
 
-coverage
 cython
-nose
-numpydoc ==0.8.0
-sphinx >=1.6.7
+pytest
+pytest-cov
 setuptools_scm

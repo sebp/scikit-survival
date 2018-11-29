@@ -102,7 +102,7 @@ you can compile the extensions in place by running::
 
 To check everything is setup correctly run the test suite by executing::
 
-  nosetests
+  py.test tests/
 
 ========
 Examples

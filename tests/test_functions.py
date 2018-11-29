@@ -1,44 +1,39 @@
-from numpy.testing import TestCase, run_module_suite, assert_array_equal
+from numpy.testing import assert_array_equal
 import numpy
+import pytest
 
 from sksurv.functions import StepFunction
 
 
-class TestStepFunction(TestCase):
-    def setUp(self):
-        self.x = numpy.array([0, 1, 1.2, 1.75, 2, 2.1, 3, 3.94, 5.4, 9])
-        self.y = numpy.array([11, 9, 9.12, 7.5, 7.25, 5.14, 3, 2.94, 2.4, 1.9])
-        self.f = StepFunction(self.x, self.y)
+@pytest.fixture
+def a_step_function():
+    x = numpy.array([0, 1, 1.2, 1.75, 2, 2.1, 3, 3.94, 5.4, 9])
+    y = numpy.array([11, 9, 9.12, 7.5, 7.25, 5.14, 3, 2.94, 2.4, 1.9])
+    f = StepFunction(x, y)
+    return f
 
-    def test_exact(self):
-        actual = numpy.array([self.f(v) for v in self.x])
-        assert_array_equal(actual, self.y)
 
-    def test_not_exact(self):
-        z = numpy.diff(self.x).min() / 2
-        actual = numpy.array([self.f(v + z) for v in self.x[:-1]])
-        assert_array_equal(actual, self.y[:-1])
+class TestStepFunction(object):
+    def test_exact(self, a_step_function):
+        actual = numpy.array([a_step_function(v) for v in a_step_function.x])
+        assert_array_equal(actual, a_step_function.y)
 
-    def test_out_of_bounds(self):
+    def test_not_exact(self, a_step_function):
+        z = numpy.diff(a_step_function.x).min() / 2
+        actual = numpy.array([a_step_function(v + z) for v in a_step_function.x[:-1]])
+        assert_array_equal(actual, a_step_function.y[:-1])
+
+    def test_out_of_bounds(self, a_step_function):
         eps = numpy.finfo(numpy.float_).eps * 8
-        values = [self.x[0] - 100,
-                  self.x[-1] + 100,
-                  self.x[0] - eps,
-                  self.x[-1] + eps]
+        values = [a_step_function.x[0] - 100,
+                  a_step_function.x[-1] + 100,
+                  a_step_function.x[0] - eps,
+                  a_step_function.x[-1] + eps]
 
         for v in values:
-            self.assertRaisesRegex(ValueError,
-                                   r"x must be within \[0.0+; 9.0+\], but was.+",
-                                   self.f, v)
+            with pytest.raises(ValueError, match=r"x must be within \[0.0+; 9.0+\], but was.+"):
+                a_step_function(v)
 
-    def test_not_finite(self):
-        values = [numpy.infty, -numpy.infty, numpy.nan]
-
-        for v in values:
-            self.assertRaisesRegex(ValueError,
-                                   "x must be finite",
-                                   self.f, v)
-
-
-if __name__ == '__main__':
-    run_module_suite()
+    def test_not_finite(self, a_step_function, non_finite_value):
+        with pytest.raises(ValueError, match="x must be finite"):
+            a_step_function(non_finite_value)

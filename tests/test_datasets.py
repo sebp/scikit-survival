@@ -1,12 +1,12 @@
+from io import StringIO
 import os
 import tempfile
-import warnings
-from io import StringIO
 
 import numpy
+from numpy.testing import assert_array_equal, assert_array_almost_equal
 import pandas
 import pandas.util.testing as tm
-from numpy.testing import TestCase, assert_array_equal, assert_array_almost_equal, run_module_suite
+import pytest
 
 import sksurv.datasets as sdata
 from sksurv.io import writearff
@@ -37,6 +37,27 @@ ASampleFive,3.14,no,large
 """
 
 
+@pytest.fixture
+def arff_1():
+    return StringIO(ARFF_CATEGORICAL_INDEX_1)
+
+
+@pytest.fixture
+def arff_2():
+    return StringIO(ARFF_CATEGORICAL_INDEX_2)
+
+
+@pytest.fixture
+def temp_file_pair():
+    tmp_train = tempfile.NamedTemporaryFile("w", suffix=".arff", delete=False)
+    tmp_test = tempfile.NamedTemporaryFile("w", suffix=".arff", delete=False)
+
+    yield tmp_train, tmp_test
+
+    os.unlink(tmp_train.name)
+    os.unlink(tmp_test.name)
+
+
 def _make_features(n_samples, n_features, seed):
     rnd = numpy.random.RandomState(seed)
     return rnd.randn(n_samples, n_features)
@@ -59,8 +80,9 @@ def _make_classification_data(n_samples, n_features, n_classes, seed):
     return x, y
 
 
-class TestGetXy(TestCase):
-    def test_get_x_y_survival(self):
+class TestGetXy(object):
+    @staticmethod
+    def test_get_x_y_survival():
         x, event, time = _make_survival_data(100, 10, 0)
         columns = ["V{}".format(i) for i in range(10)] + ["event", "time"]
         dataset = pandas.DataFrame(numpy.column_stack((x, event, time)), columns=columns)
@@ -69,7 +91,7 @@ class TestGetXy(TestCase):
 
         x_test, y_test = sdata.get_x_y(dataset, attr_labels, pos_label=1, survival=True)
 
-        self.assertTupleEqual(y_test.dtype.names, ("event", "time"))
+        assert y_test.dtype.names == ("event", "time")
 
         assert_array_equal(y_test["event"].astype(numpy.uint32),
                            event.astype(numpy.uint32))
@@ -77,7 +99,8 @@ class TestGetXy(TestCase):
 
         assert_array_equal(x, x_test)
 
-    def test_get_x_y_survival_no_label(self):
+    @staticmethod
+    def test_get_x_y_survival_no_label():
         x = _make_features(100, 10, 0)
 
         columns = ["V{}".format(i) for i in range(10)]
@@ -87,41 +110,49 @@ class TestGetXy(TestCase):
 
         x_test, y_test = sdata.get_x_y(dataset, attr_labels, pos_label=1, survival=True)
 
-        self.assertEqual(y_test, None)
+        assert y_test is None
         assert_array_equal(x, x_test)
 
-    def test_get_x_y_survival_too_many_labels(self):
+    @staticmethod
+    def test_get_x_y_survival_too_many_labels():
         x, event, time = _make_survival_data(100, 10, 0)
 
         columns = ["V{}".format(i) for i in range(10)] + ["event", "time"]
         dataset = pandas.DataFrame(numpy.column_stack((x, event, time)), columns=columns)
 
         attr_labels = ["event", "time", "random"]
-        self.assertRaisesRegex(ValueError, "expected sequence of length two for attr_labels, but got 3",
-                               sdata.get_x_y, dataset, attr_labels, pos_label=1, survival=True)
+        with pytest.raises(ValueError,
+                           match="expected sequence of length two for attr_labels, but got 3"):
+            sdata.get_x_y(dataset, attr_labels, pos_label=1, survival=True)
 
-    def test_get_x_y_survival_too_little_labels(self):
+    @staticmethod
+    def test_get_x_y_survival_too_little_labels():
         x, event, time = _make_survival_data(100, 10, 0)
 
         columns = ["V{}".format(i) for i in range(10)] + ["event", "time"]
         dataset = pandas.DataFrame(numpy.column_stack((x, event, time)), columns=columns)
 
-        self.assertRaisesRegex(ValueError, "expected sequence of length two for attr_labels, but got 1",
-                               sdata.get_x_y, dataset, ["event"], pos_label=1, survival=True)
+        with pytest.raises(ValueError,
+                           match="expected sequence of length two for attr_labels, but got 1"):
+            sdata.get_x_y(dataset, ["event"], pos_label=1, survival=True)
 
-        self.assertRaisesRegex(ValueError, "expected sequence of length two for attr_labels, but got 0",
-                               sdata.get_x_y, dataset, [], pos_label=1, survival=True)
+        with pytest.raises(ValueError,
+                           match="expected sequence of length two for attr_labels, but got 0"):
+            sdata.get_x_y(dataset, [], pos_label=1, survival=True)
 
-    def test_get_x_y_survival_no_pos_label(self):
+    @staticmethod
+    def test_get_x_y_survival_no_pos_label():
         x, event, time = _make_survival_data(100, 10, 0)
 
         columns = ["V{}".format(i) for i in range(10)] + ["event", "time"]
         dataset = pandas.DataFrame(numpy.column_stack((x, event, time)), columns=columns)
 
-        self.assertRaisesRegex(ValueError, "pos_label needs to be specified if survival=True",
-                               sdata.get_x_y, dataset, ["event", "time"], survival=True)
+        with pytest.raises(ValueError,
+                           match="pos_label needs to be specified if survival=True"):
+            sdata.get_x_y(dataset, ["event", "time"], survival=True)
 
-    def test_get_x_y_classification(self):
+    @staticmethod
+    def test_get_x_y_classification():
         x, label = _make_classification_data(100, 10, 6, 0)
 
         columns = ["V{}".format(i) for i in range(10)] + ["class_label"]
@@ -131,11 +162,12 @@ class TestGetXy(TestCase):
 
         x_test, y_test = sdata.get_x_y(dataset, attr_labels, survival=False)
 
-        self.assertEqual(y_test.ndim, 2)
+        assert y_test.ndim == 2
         assert_array_equal(y_test.values.ravel(), label)
         assert_array_equal(x_test, x)
 
-    def test_get_x_y_classification_no_label(self):
+    @staticmethod
+    def test_get_x_y_classification_no_label():
         x = _make_features(100, 10, 0)
 
         columns = ["V{}".format(i) for i in range(10)]
@@ -143,58 +175,58 @@ class TestGetXy(TestCase):
 
         x_test, y_test = sdata.get_x_y(dataset, None, survival=False)
 
-        self.assertEqual(y_test, None)
+        assert y_test is None
         assert_array_equal(x_test, x)
 
 
-class TestLoadDatasets(TestCase):
+class TestLoadDatasets(object):
 
     def assert_structured_array_dtype(self, arr, event, time, num_events):
-        self.assertTupleEqual(arr.dtype.names, (event, time))
-        self.assertTrue(numpy.issubdtype(arr.dtype.fields[event][0], numpy.bool_))
-        self.assertTrue(numpy.issubdtype(arr.dtype.fields[time][0], numpy.float_))
-        self.assertEqual(arr[event].sum(), num_events)
+        assert arr.dtype.names == (event, time)
+        assert numpy.issubdtype(arr.dtype.fields[event][0], numpy.bool_)
+        assert numpy.issubdtype(arr.dtype.fields[time][0], numpy.float_)
+        assert arr[event].sum() == num_events
 
     def test_load_whas500(self):
         x, y = sdata.load_whas500()
-        self.assertTupleEqual(x.shape, (500, 14))
-        self.assertTupleEqual(y.shape, (500,))
+        assert x.shape == (500, 14)
+        assert y.shape == (500,)
         self.assert_structured_array_dtype(y, 'fstat', 'lenfol', 215)
 
     def test_load_gbsg2(self):
         x, y = sdata.load_gbsg2()
-        self.assertTupleEqual(x.shape, (686, 8))
-        self.assertTupleEqual(y.shape, (686,))
+        assert x.shape == (686, 8)
+        assert y.shape == (686,)
         self.assert_structured_array_dtype(y, 'cens', 'time', 299)
 
     def test_load_veterans_lung_cancer(self):
         x, y = sdata.load_veterans_lung_cancer()
-        self.assertTupleEqual(x.shape, (137, 6))
-        self.assertTupleEqual(y.shape, (137,))
+        assert x.shape == (137, 6)
+        assert y.shape == (137,)
         self.assert_structured_array_dtype(y, 'Status', 'Survival_in_days', 128)
 
     def test_load_aids(self):
         x, y = sdata.load_aids(endpoint="aids")
-        self.assertTupleEqual(x.shape, (1151, 11))
-        self.assertTupleEqual(y.shape, (1151,))
+        assert x.shape == (1151, 11)
+        assert y.shape == (1151,)
         self.assert_structured_array_dtype(y, 'censor', 'time', 96)
-        self.assertFalse("censor_d" in x.columns)
-        self.assertFalse("time_d" in x.columns)
+        assert "censor_d" not in x.columns
+        assert "time_d" not in x.columns
 
         x, y = sdata.load_aids(endpoint="death")
-        self.assertTupleEqual(x.shape, (1151, 11))
-        self.assertTupleEqual(y.shape, (1151,))
+        assert x.shape == (1151, 11)
+        assert y.shape == (1151,)
         self.assert_structured_array_dtype(y, 'censor_d', 'time_d', 26)
-        self.assertFalse("censor" in x.columns)
-        self.assertFalse("time" in x.columns)
+        assert "censor" not in x.columns
+        assert "time" not in x.columns
 
-        self.assertRaisesRegex(ValueError, "endpoint must be 'aids' or 'death'",
-                               sdata.load_aids, endpoint="foobar")
+        with pytest.raises(ValueError, match="endpoint must be 'aids' or 'death'"):
+            sdata.load_aids(endpoint="foobar")
 
     def test_load_breast_cancer(self):
         x, y = sdata.load_breast_cancer()
-        self.assertTupleEqual(x.shape, (198, 80))
-        self.assertTupleEqual(y.shape, (198,))
+        assert x.shape == (198, 80)
+        assert y.shape == (198,)
         self.assert_structured_array_dtype(y, 'e.tdm', 't.tdm', 51)
 
 
@@ -232,46 +264,42 @@ def assert_x_equal(x_true, x_train):
                           check_less_precise=True)
 
 
-class TestLoadArffFile(TestCase):
+class TestLoadArffFile(object):
 
     def assert_y_equal(self, y_true, y_train):
-        self.assertTupleEqual(y_train.dtype.names, ("event", "time"))
+        assert y_train.dtype.names == ("event", "time")
 
         assert_array_equal(y_train["event"].astype(numpy.uint32),
                            y_true["event"].values.astype(numpy.uint32))
         assert_array_almost_equal(y_train["time"], y_true["time"].values)
 
-    def test_load_with_index(self):
-        tmp = tempfile.NamedTemporaryFile("w", suffix=".arff", delete=False)
-        try:
-            dataset = _make_and_write_data(tmp, 100, 10, True, True, 0)
+    def test_load_with_index(self, temp_file):
+        dataset = _make_and_write_data(temp_file, 100, 10, True, True, 0)
 
-            x_train, y_train, x_test, y_test = sdata.load_arff_files_standardized(
-                tmp.name, ["event", "time"], 1, survival=True,
-                standardize_numeric=False, to_numeric=False)
-
-            self.assertEqual(x_test, None)
-            self.assertEqual(y_test, None)
-
-            cols = ["event", "time"]
-            x_true = dataset.drop(cols, axis=1)
-
-            assert_x_equal(x_true, x_train)
-            self.assert_y_equal(dataset, y_train)
-        finally:
-            os.unlink(tmp.name)
-
-    def test_load_with_categorical_index_1(self):
-        fp = StringIO(ARFF_CATEGORICAL_INDEX_1)
         x_train, y_train, x_test, y_test = sdata.load_arff_files_standardized(
-            fp, ["label"], pos_label="yes", survival=False,
+            temp_file.name, ["event", "time"], 1, survival=True,
             standardize_numeric=False, to_numeric=False)
 
-        self.assertEqual(x_test, None)
-        self.assertEqual(y_test, None)
+        assert x_test is None
+        assert y_test is None
 
-        self.assertTupleEqual(x_train.shape, (4, 2))
-        self.assertTupleEqual(y_train.shape, (4, 1))
+        cols = ["event", "time"]
+        x_true = dataset.drop(cols, axis=1)
+
+        assert_x_equal(x_true, x_train)
+        self.assert_y_equal(dataset, y_train)
+
+    @staticmethod
+    def test_load_with_categorical_index_1(arff_1):
+        x_train, y_train, x_test, y_test = sdata.load_arff_files_standardized(
+            arff_1, ["label"], pos_label="yes", survival=False,
+            standardize_numeric=False, to_numeric=False)
+
+        assert x_test is None
+        assert y_test is None
+
+        assert x_train.shape == (4, 2)
+        assert y_train.shape == (4, 1)
 
         index = pandas.Index(['SampleOne', 'SampleTwo', 'SampleThree', 'SampleFour'],
                              name='index', dtype=object)
@@ -289,17 +317,17 @@ class TestLoadArffFile(TestCase):
                              name="size", index=index)
         tm.assert_series_equal(x_train["size"], size, check_exact=True)
 
-    def test_load_with_categorical_index_2(self):
-        fp = StringIO(ARFF_CATEGORICAL_INDEX_2)
+    @staticmethod
+    def test_load_with_categorical_index_2(arff_2):
         x_train, y_train, x_test, y_test = sdata.load_arff_files_standardized(
-            fp, ["label"], pos_label="yes", survival=False,
+            arff_2, ["label"], pos_label="yes", survival=False,
             standardize_numeric=False, to_numeric=False)
 
-        self.assertEqual(x_test, None)
-        self.assertEqual(y_test, None)
+        assert x_test is None
+        assert y_test is None
 
-        self.assertTupleEqual(x_train.shape, (5, 2))
-        self.assertTupleEqual(y_train.shape, (5, 1))
+        assert x_train.shape == (5, 2)
+        assert y_train.shape == (5, 1)
 
         index = pandas.Index(['ASampleOne', 'ASampleTwo', 'ASampleThree', 'ASampleFour', 'ASampleFive'],
                              name='index', dtype=object)
@@ -318,41 +346,35 @@ class TestLoadArffFile(TestCase):
                              name="size", index=index)
         tm.assert_series_equal(x_train["size"], size, check_exact=True)
 
-    def test_load_train_and_test_with_labels(self):
-        tmp_train = tempfile.NamedTemporaryFile("w", suffix=".arff", delete=False)
-        tmp_test = tempfile.NamedTemporaryFile("w", suffix=".arff", delete=False)
-        try:
-            train_dataset = _make_and_write_data(tmp_train, 100, 10, True, True, 0)
-            test_dataset = _make_and_write_data(tmp_test, 20, 10, True, True, 0)
+    def test_load_train_and_test_with_labels(self, temp_file_pair):
+        tmp_train, tmp_test = temp_file_pair
+        train_dataset = _make_and_write_data(tmp_train, 100, 10, True, True, 0)
+        test_dataset = _make_and_write_data(tmp_test, 20, 10, True, True, 0)
 
-            x_train, y_train, x_test, y_test = sdata.load_arff_files_standardized(
-                tmp_train.name, ["event", "time"], 1, path_testing=tmp_test.name,
-                survival=True, standardize_numeric=False, to_numeric=False)
-
-            cols = ["event", "time"]
-
-            x_true = train_dataset.drop(cols, axis=1)
-            assert_x_equal(x_true, x_train)
-            self.assert_y_equal(train_dataset, y_train)
-
-            x_true = test_dataset.drop(cols, axis=1)
-            assert_x_equal(x_true, x_test)
-            self.assert_y_equal(test_dataset, y_test)
-        finally:
-            os.unlink(tmp_train.name)
-            os.unlink(tmp_test.name)
-
-    def test_load_train_and_test_with_categorical_index(self):
-        fp_1 = StringIO(ARFF_CATEGORICAL_INDEX_1)
-        fp_2 = StringIO(ARFF_CATEGORICAL_INDEX_2)
         x_train, y_train, x_test, y_test = sdata.load_arff_files_standardized(
-            fp_1, ["label"], pos_label="yes", path_testing=fp_2, survival=False,
+            tmp_train.name, ["event", "time"], 1, path_testing=tmp_test.name,
+            survival=True, standardize_numeric=False, to_numeric=False)
+
+        cols = ["event", "time"]
+
+        x_true = train_dataset.drop(cols, axis=1)
+        assert_x_equal(x_true, x_train)
+        self.assert_y_equal(train_dataset, y_train)
+
+        x_true = test_dataset.drop(cols, axis=1)
+        assert_x_equal(x_true, x_test)
+        self.assert_y_equal(test_dataset, y_test)
+
+    @staticmethod
+    def test_load_train_and_test_with_categorical_index(arff_1, arff_2):
+        x_train, y_train, x_test, y_test = sdata.load_arff_files_standardized(
+            arff_1, ["label"], pos_label="yes", path_testing=arff_2, survival=False,
             standardize_numeric=False, to_numeric=False)
 
-        self.assertTupleEqual(x_train.shape, (4, 2))
-        self.assertTupleEqual(x_test.shape, (5, 2))
-        self.assertTupleEqual(y_train.shape, (4, 1))
-        self.assertTupleEqual(y_test.shape, (5, 1))
+        assert x_train.shape == (4, 2)
+        assert x_test.shape == (5, 2)
+        assert y_train.shape == (4, 1)
+        assert y_test.shape == (5, 1)
 
         # Check train data
         train_index = pandas.Index(['SampleOne', 'SampleTwo', 'SampleThree', 'SampleFour'],
@@ -390,69 +412,48 @@ class TestLoadArffFile(TestCase):
                                   name="size", index=test_index)
         tm.assert_series_equal(x_test["size"], test_size, check_exact=True)
 
-    def test_load_train_and_test_no_labels(self):
-        tmp_train = tempfile.NamedTemporaryFile("w", suffix=".arff", delete=False)
-        tmp_test = tempfile.NamedTemporaryFile("w", suffix=".arff", delete=False)
-        try:
-            train_dataset = _make_and_write_data(tmp_train, 100, 10, True, True, 0)
-            test_dataset = _make_and_write_data(tmp_test, 20, 10, True, False, 0)
+    def test_load_train_and_test_no_labels(self, temp_file_pair):
+        tmp_train, tmp_test = temp_file_pair
+        train_dataset = _make_and_write_data(tmp_train, 100, 10, True, True, 0)
+        test_dataset = _make_and_write_data(tmp_test, 20, 10, True, False, 0)
 
-            x_train, y_train, x_test, y_test = sdata.load_arff_files_standardized(
-                tmp_train.name, ["event", "time"], 1, path_testing=tmp_test.name,
-                survival=True, standardize_numeric=False, to_numeric=False)
+        x_train, y_train, x_test, y_test = sdata.load_arff_files_standardized(
+            tmp_train.name, ["event", "time"], 1, path_testing=tmp_test.name,
+            survival=True, standardize_numeric=False, to_numeric=False)
 
-            cols = ["event", "time"]
+        cols = ["event", "time"]
 
-            x_true = train_dataset.drop(cols, axis=1)
-            assert_x_equal(x_true, x_train)
-            self.assert_y_equal(train_dataset, y_train)
+        x_true = train_dataset.drop(cols, axis=1)
+        assert_x_equal(x_true, x_train)
+        self.assert_y_equal(train_dataset, y_train)
 
-            assert_x_equal(test_dataset, x_test)
-            self.assertEqual(y_test, None)
-        finally:
-            os.unlink(tmp_train.name)
-            os.unlink(tmp_test.name)
+        assert_x_equal(test_dataset, x_test)
+        assert y_test is None
 
-    def test_load_train_and_test_with_different_columns(self):
-        tmp_train = tempfile.NamedTemporaryFile("w", suffix=".arff", delete=False)
-        tmp_test = tempfile.NamedTemporaryFile("w", suffix=".arff", delete=False)
-        try:
-            _make_and_write_data(tmp_train, 100, 19, False, True, 0)
-            _make_and_write_data(tmp_test, 20, 11, False, True, 0)
+    @staticmethod
+    def test_load_train_and_test_with_different_columns(temp_file_pair):
+        tmp_train, tmp_test = temp_file_pair
+        _make_and_write_data(tmp_train, 100, 19, False, True, 0)
+        _make_and_write_data(tmp_test, 20, 11, False, True, 0)
 
-            with warnings.catch_warnings(record=True) as w:
-                warnings.simplefilter("always")
+        with pytest.warns(UserWarning,
+                          match="Restricting columns to intersection between "
+                                "training and testing data"):
+            sdata.load_arff_files_standardized(tmp_train.name, ["event", "time"], 1,
+                                               path_testing=tmp_test.name,
+                                               survival=True,
+                                               standardize_numeric=False, to_numeric=False)
 
-                sdata.load_arff_files_standardized(tmp_train.name, ["event", "time"], 1,
-                                                   path_testing=tmp_test.name,
-                                                   survival=True,
-                                                   standardize_numeric=False, to_numeric=False)
+    @staticmethod
+    def test_load_train_and_test_columns_dont_intersect(temp_file_pair):
+        tmp_train, tmp_test = temp_file_pair
+        _make_and_write_data(tmp_train, 100, 19, True, True, 0, column_prefix="A")
+        _make_and_write_data(tmp_test, 20, 11, True, True, 0, column_prefix="B")
 
-                self.assertEqual(1, len(w))
-                self.assertEqual("Restricting columns to intersection between training and testing data",
-                                 str(w[0].message))
-
-        finally:
-            os.unlink(tmp_train.name)
-            os.unlink(tmp_test.name)
-
-    def test_load_train_and_test_columns_dont_intersect(self):
-        tmp_train = tempfile.NamedTemporaryFile("w", suffix=".arff", delete=False)
-        tmp_test = tempfile.NamedTemporaryFile("w", suffix=".arff", delete=False)
-        try:
-            _make_and_write_data(tmp_train, 100, 19, True, True, 0, column_prefix="A")
-            _make_and_write_data(tmp_test, 20, 11, True, True, 0, column_prefix="B")
-
-            self.assertRaisesRegex(ValueError, "columns of training and test data do not intersect",
-                                   sdata.load_arff_files_standardized, tmp_train.name, ["event", "time"], 1,
-                                   path_testing=tmp_test.name,
-                                   survival=True,
-                                   standardize_numeric=False, to_numeric=False)
-
-        finally:
-            os.unlink(tmp_train.name)
-            os.unlink(tmp_test.name)
-
-
-if __name__ == '__main__':
-    run_module_suite()
+        with pytest.raises(ValueError,
+                           match="columns of training and test data do not intersect"):
+            sdata.load_arff_files_standardized(
+                tmp_train.name, ["event", "time"], 1,
+                path_testing=tmp_test.name,
+                survival=True,
+                standardize_numeric=False, to_numeric=False)

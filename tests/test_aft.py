@@ -1,44 +1,34 @@
 import numpy
-from numpy.testing import TestCase, run_module_suite, assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal
 
 from sksurv.linear_model import IPCRidge
-from sksurv.column import standardize
-from sksurv.datasets import load_whas500
-from sksurv.metrics import concordance_index_censored
+from sksurv.testing import assert_cindex_almost_equal
 
 
-class TestIPCRidge(TestCase):
-    def setUp(self):
-        x, self.y, =  load_whas500()
-        self.x = standardize(x)
+class TestIPCRidge(object):
 
-    def test_fit(self):
+    @staticmethod
+    def test_fit(make_whas500):
+        whas500 = make_whas500()
         model = IPCRidge()
-        model.fit(self.x, self.y)
+        model.fit(whas500.x, whas500.y)
 
-        self.assertAlmostEqual(model.intercept_, 5.8673567124629571)
+        assert round(abs(model.intercept_ - 5.8673567124629571), 7) == 0
         expected = numpy.array([0.168517, -0.249717, 2.18515, 0.536795, -0.514571, 0.091203,
                                 0.613006, 0.480385, -0.055949, 0.238529, -0.127148, -0.144134,
                                 -1.625041, -0.217469])
         assert_array_almost_equal(model.coef_, expected)
 
-    def test_predict(self):
+    @staticmethod
+    def test_predict(make_whas500):
+        whas500 = make_whas500()
         model = IPCRidge()
-        model.fit(self.x[:400], self.y[:400])
+        model.fit(whas500.x[:400], whas500.y[:400])
 
-        x_test = self.x[400:]
-        y_test = self.y[400:]
+        x_test = whas500.x[400:]
+        y_test = whas500.y[400:]
         p = model.predict(x_test)
-        ci = concordance_index_censored(y_test['fstat'], y_test['lenfol'], -p)
+        assert_cindex_almost_equal(y_test['fstat'], y_test['lenfol'], -p,
+                                   (0.66925817946226107, 2066, 1021, 0, 6))
 
-        self.assertAlmostEqual(ci[0], 0.66925817946226107)
-        self.assertEqual(ci[1], 2066)
-        self.assertEqual(ci[2], 1021)
-        self.assertEqual(ci[3], 0)
-        self.assertEqual(ci[4], 6)
-
-        self.assertEqual(model.score(x_test, y_test), 1.0 - ci[0])
-
-
-if __name__ == '__main__':
-    run_module_suite()
+        assert model.score(x_test, y_test) == 1.0 - 0.66925817946226107

@@ -1,7 +1,8 @@
-from numpy.testing import TestCase, run_module_suite, assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal
 
 import numpy
 import pandas
+import pytest
 from sklearn.base import clone
 from sklearn.metrics.pairwise import pairwise_kernels
 
@@ -50,52 +51,70 @@ def _get_expected_matrix(with_ordinal=True, with_nominal=True, with_continuous=T
     return expected
 
 
-class TestClinicalKernel(TestCase):
-    def setUp(self):
-        data = pandas.DataFrame({'age': [20, 23, 26, 54, 100],
-                                 'lymph node size': [2, 1, 3, 4, 1],
-                                 'lymph node spread': ['distant', 'none', 'distant', 'close', 'none'],
-                                 'metastasis': ['yes', 'no', 'yes', 'yes', 'no']})
-        data['lymph node size'] = pandas.Categorical(data['lymph node size'],
-                                                     categories=[1, 2, 3, 4],
-                                                     ordered=True)
-        data['lymph node spread'] = pandas.Categorical(data['lymph node spread'],
-                                                       categories=['none', 'close', 'distant'],
-                                                       ordered=True)
-        data['metastasis'] = pandas.Categorical(data['metastasis'],
-                                                categories=['no', 'yes'],
-                                                ordered=False)
-        self.data = data
+@pytest.fixture
+def make_data():
+    data = {'age': [20, 23, 26, 54, 100],
+            'lymph node size': [2, 1, 3, 4, 1],
+            'lymph node spread': ['distant', 'none', 'distant', 'close', 'none'],
+            'metastasis': ['yes', 'no', 'yes', 'yes', 'no']}
 
-    def test_clinical_kernel_1(self):
-        mat = clinical_kernel(self.data)
-        expected = _get_expected_matrix()
+    def _make_data(with_ordinal=True, with_nominal=True, with_continuous=True):
+        data_s = {}
+        if with_continuous:
+            data_s['age'] = data['age']
+
+        if with_ordinal:
+            data_s['lymph node size'] = pandas.Categorical(data['lymph node size'],
+                                                           categories=[1, 2, 3, 4],
+                                                           ordered=True)
+            data_s['lymph node spread'] = pandas.Categorical(data['lymph node spread'],
+                                                             categories=['none', 'close', 'distant'],
+                                                             ordered=True)
+        if with_nominal:
+            data_s['metastasis'] = pandas.Categorical(data['metastasis'],
+                                                      categories=['no', 'yes'],
+                                                      ordered=False)
+        expected = _get_expected_matrix(
+            with_ordinal=with_ordinal,
+            with_nominal=with_nominal,
+            with_continuous=with_continuous)
+
+        return pandas.DataFrame(data_s), expected
+
+    return _make_data
+
+
+class TestClinicalKernel(object):
+
+    def test_clinical_kernel_1(self, make_data):
+        data, expected = make_data()
+        mat = clinical_kernel(data)
 
         assert_array_almost_equal(expected, mat, 4)
 
-    def test_clinical_kernel_no_ordinal(self):
-        mat = clinical_kernel(self.data.drop(['lymph node size', 'lymph node spread'], axis=1))
-        expected = _get_expected_matrix(with_ordinal=False)
+    def test_clinical_kernel_no_ordinal(self, make_data):
+        data, expected = make_data(with_ordinal=False)
+        mat = clinical_kernel(data)
         assert_array_almost_equal(expected, mat, 4)
 
-    def test_clinical_kernel_no_nominal(self):
-        mat = clinical_kernel(self.data.drop('metastasis', axis=1))
-        expected = _get_expected_matrix(with_nominal=False)
+    def test_clinical_kernel_no_nominal(self, make_data):
+        data, expected = make_data(with_nominal=False)
+        mat = clinical_kernel(data)
         assert_array_almost_equal(expected, mat, 4)
 
-    def test_clinical_kernel_no_continuous(self):
-        mat = clinical_kernel(self.data.drop('age', axis=1))
-        expected = _get_expected_matrix(with_continuous=False)
+    def test_clinical_kernel_no_continuous(self, make_data):
+        data, expected = make_data(with_continuous=False)
+        mat = clinical_kernel(data)
         assert_array_almost_equal(expected, mat, 4)
 
-    def test_clinical_kernel_only_nominal(self):
-        mat = clinical_kernel(self.data.drop(['age', 'lymph node size', 'lymph node spread'], axis=1))
-        expected = _get_expected_matrix(with_continuous=False, with_ordinal=False)
+    def test_clinical_kernel_only_nominal(self, make_data):
+        data, expected = make_data(with_continuous=False, with_ordinal=False)
+        mat = clinical_kernel(data)
         assert_array_almost_equal(expected, mat, 4)
 
-    def test_clinical_kernel_x_and_y(self):
-        mat = clinical_kernel(self.data.iloc[:3, :], self.data.iloc[3:, :])
-        m = _get_expected_matrix()
+    def test_clinical_kernel_x_and_y(self, make_data):
+        data, m = make_data()
+        mat = clinical_kernel(data.iloc[:3, :], data.iloc[3:, :])
         expected = m[:3:, 3:]
 
         assert_array_almost_equal(expected, mat, 4)
@@ -103,130 +122,132 @@ class TestClinicalKernel(TestCase):
     def test_fit_error_ndim(self):
         t = ClinicalKernelTransform()
 
-        self.assertRaisesRegex(ValueError, "expected 2d array, but got 1",
-                               t.fit, numpy.random.randn(31))
+        with pytest.raises(ValueError, match="expected 2d array, but got 1"):
+            t.fit(numpy.random.randn(31))
 
-        self.assertRaisesRegex(ValueError, "expected 2d array, but got 3",
-                               t.fit, numpy.random.randn(31, 20, 2))
+        with pytest.raises(ValueError, match="expected 2d array, but got 3"):
+            t.fit(numpy.random.randn(31, 20, 2))
 
-    def test_kernel_transform(self):
+    def test_kernel_transform(self, make_data):
+        data, expected = make_data()
         t = ClinicalKernelTransform()
 
-        t.fit(self.data)
+        t.fit(data)
         mat = t.transform(t.X_fit_)
-
-        expected = _get_expected_matrix()
 
         assert_array_almost_equal(expected, mat, 4)
 
-    def test_kernel_transform_x_and_y(self):
+    def test_kernel_transform_x_and_y(self, make_data):
+        data, m = make_data()
         t = ClinicalKernelTransform(fit_once=True)
-        t.prepare(self.data)
+        t.prepare(data)
         x_num = t.X_fit_.copy()
 
         t.fit(x_num[:3, :])
         mat = t.transform(x_num[3:, :])
 
-        m = _get_expected_matrix()
         expected = m[:3, 3:].T
 
         assert_array_almost_equal(expected, mat, 4)
 
-    def test_kernel_transform_feature_mismatch(self):
+    def test_kernel_transform_feature_mismatch(self, make_data):
+        data, _ = make_data()
         t = ClinicalKernelTransform()
-        t.fit(self.data)
+        t.fit(data)
 
-        self.assertRaisesRegex(ValueError, 'expected array with 4 features, but got 17',
-                               t.transform, numpy.zeros((2, 17), dtype=float))
+        with pytest.raises(ValueError, match='expected array with 4 features, but got 17'):
+            t.transform(numpy.zeros((2, 17), dtype=float))
 
-    def test_pairwise(self):
+    def test_pairwise(self, make_data):
+        data, expected = make_data()
         t = ClinicalKernelTransform()
-        t.fit(self.data)
+        t.fit(data)
 
         mat = pairwise_kernels(t.X_fit_, t.X_fit_,
                                metric=t.pairwise_kernel, n_jobs=1)
 
-        expected = _get_expected_matrix()
-
         assert_array_almost_equal(expected, mat, 4)
 
-    def test_pairwise_x_and_y(self):
+    def test_pairwise_x_and_y(self, make_data):
+        data, m = make_data()
         t = ClinicalKernelTransform()
-        t.fit(self.data)
+        t.fit(data)
 
         mat = pairwise_kernels(t.X_fit_[:3, :], t.X_fit_[3:, :],
                                metric=t.pairwise_kernel, n_jobs=1)
 
-        m = _get_expected_matrix()
         expected = m[:3:, 3:]
 
         assert_array_almost_equal(expected, mat, 4)
 
-    def test_pairwise_x_and_y_error_shape(self):
+    def test_pairwise_x_and_y_error_shape(self, make_data):
+        data, _ = make_data()
         t = ClinicalKernelTransform()
-        t.fit(self.data)
+        t.fit(data)
 
-        self.assertRaisesRegex(ValueError, "X and Y have different number of features",
-                               t.pairwise_kernel, self.data.iloc[0, :], self.data.iloc[1, :2])
+        with pytest.raises(ValueError, match="X and Y have different number of features"):
+            t.pairwise_kernel(data.iloc[0, :], data.iloc[1, :2])
 
-    def test_pairwise_no_nominal(self):
+    def test_pairwise_no_nominal(self, make_data):
+        data, expected = make_data(with_nominal=False)
         t = ClinicalKernelTransform()
-        t.fit(self.data.drop('metastasis', axis=1))
+        t.fit(data)
 
         mat = pairwise_kernels(t.X_fit_[:3, :], t.X_fit_[3:, :],
                                metric=t.pairwise_kernel, n_jobs=1)
 
-        expected = _get_expected_matrix(with_nominal=False)
         assert_array_almost_equal(expected[:3:, 3:], mat, 4)
 
-    def test_call_function(self):
+    def test_call_function(self, make_data):
+        data, expected = make_data()
         t = ClinicalKernelTransform(fit_once=True)
-        t.prepare(self.data)
+        t.prepare(data)
 
         mat = t(t.X_fit_, t.X_fit_)
-        expected = _get_expected_matrix()
         assert_array_almost_equal(expected, mat, 4)
 
-    def test_call_function_x_and_y(self):
+    def test_call_function_x_and_y(self, make_data):
+        data, m = make_data()
         t = ClinicalKernelTransform(fit_once=True)
-        t.prepare(self.data)
+        t.prepare(data)
 
         mat = t(t.X_fit_[:3, :], t.X_fit_[3:, :])
-        m = _get_expected_matrix()
         expected = m[:3:, 3:]
 
         assert_array_almost_equal(expected, mat, 4)
 
-    def test_pairwise_feature_mismatch(self):
+    def test_pairwise_feature_mismatch(self, make_data):
+        data, _ = make_data()
         t = ClinicalKernelTransform()
-        t.fit(self.data)
+        t.fit(data)
 
-        self.assertRaisesRegex(ValueError, r'Incompatible dimension for X and Y matrices: '
-                                           r'X.shape\[1\] == 4 while Y.shape\[1\] == 17',
-                               pairwise_kernels, t.X_fit_, numpy.zeros((2, 17), dtype=float),
-                               metric=t.pairwise_kernel, n_jobs=1)
+        with pytest.raises(ValueError, match=r'Incompatible dimension for X and Y matrices: '
+                                             r'X.shape\[1\] == 4 while Y.shape\[1\] == 17'):
+            pairwise_kernels(t.X_fit_, numpy.zeros((2, 17), dtype=float),
+                             metric=t.pairwise_kernel, n_jobs=1)
 
-    def test_prepare(self):
+    def test_prepare(self, make_data):
+        data, expected = make_data()
         t = ClinicalKernelTransform(fit_once=True)
-        t.prepare(self.data)
+        t.prepare(data)
 
         copy = clone(t).fit(t.X_fit_)
         mat = copy.transform(t.X_fit_[:4, :])
 
-        expected = _get_expected_matrix()
         assert_array_almost_equal(expected[:4, :], mat, 4)
 
-    def test_prepare_error_fit_once(self):
+    def test_prepare_error_fit_once(self, make_data):
+        data = make_data()
         t = ClinicalKernelTransform(fit_once=False)
 
-        self.assertRaisesRegex(ValueError, "prepare can only be used if fit_once parameter is set to True",
-                               t.prepare, self.data)
+        with pytest.raises(ValueError, match="prepare can only be used if fit_once parameter is set to True"):
+            t.prepare(data)
 
     def test_prepare_error_type(self):
         t = ClinicalKernelTransform(fit_once=True)
 
-        self.assertRaisesRegex(TypeError, 'X must be a pandas DataFrame',
-                               t.prepare, [[0, 1], [1, 2], [4, 3], [6, 5]])
+        with pytest.raises(TypeError, match='X must be a pandas DataFrame'):
+            t.prepare([[0, 1], [1, 2], [4, 3], [6, 5]])
 
     def test_prepare_error_dtype(self):
         t = ClinicalKernelTransform(fit_once=True)
@@ -235,19 +256,16 @@ class TestClinicalKernel(TestCase):
                                      ["2016-01-01", "1954-06-30", "1999-03-01", "2005-02-25", "2112-12-31",
                                       "1731-09-16"], dtype='datetime64')})
 
-        self.assertRaisesRegex(TypeError, r'unsupported dtype: dtype\(.+\)',
-                               t.prepare, data)
+        with pytest.raises(TypeError, match=r'unsupported dtype: dtype\(.+\)'):
+            t.prepare(data)
 
-    def test_feature_mismatch(self):
-        x = self.data.iloc[:, :2]
-        y = self.data.iloc[:, 2:]
-        self.assertRaisesRegex(ValueError, 'columns do not match',
-                               clinical_kernel, x, y)
+    def test_feature_mismatch(self, make_data):
+        data, _ = make_data()
+        x = data.iloc[:, :2]
+        y = data.iloc[:, 2:]
+        with pytest.raises(ValueError, match='columns do not match'):
+            clinical_kernel(x, y)
 
         y = numpy.zeros((10, 17))
-        self.assertRaisesRegex(ValueError, 'x and y have different number of features',
-                               clinical_kernel, x, y)
-
-
-if __name__ == '__main__':
-    run_module_suite()
+        with pytest.raises(ValueError, match='x and y have different number of features'):
+            clinical_kernel(x, y)

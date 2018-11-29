@@ -1,25 +1,18 @@
-from os.path import join, dirname
 import warnings
 
 import numpy
-from numpy.testing import TestCase, assert_array_almost_equal, run_module_suite
+from numpy.testing import assert_array_almost_equal
 import pandas
+import pytest
+from sklearn.exceptions import ConvergenceWarning
 
 from sksurv.column import standardize
 from sksurv.linear_model.coxph import CoxPHSurvivalAnalysis, CoxPHOptimizer
-from sksurv.util import Surv
-
-ROSSI_FILE = join(dirname(__file__), 'data', 'rossi.csv')
 
 
-class TestCoxPH(TestCase):
-    def setUp(self):
-        data = pandas.read_csv(ROSSI_FILE)
-        self.y = Surv.from_dataframe("arrest", "week", data)
-        self.x = data.drop(["arrest", "week"], axis=1)
-
-    def test_likelihood(self):
-        cph = CoxPHOptimizer(self.x.values, self.y['arrest'], self.y['week'], alpha=0.)
+class TestCoxPH(object):
+    def test_likelihood(self, rossi):
+        cph = CoxPHOptimizer(rossi.x.values, rossi.y['arrest'], rossi.y['week'], alpha=0.)
 
         w = pandas.Series({"fin": -0.37902189,
                            "age": -0.05724593,
@@ -29,13 +22,13 @@ class TestCoxPH(TestCase):
                            "paro": -0.08498284,
                            "prio": 0.09111154})
 
-        actual_loss = cph.nlog_likelihood(w.loc[self.x.columns].values)
+        actual_loss = cph.nlog_likelihood(w.loc[rossi.x.columns].values)
 
-        self.assertAlmostEqual(659.1206, self.x.shape[0] * actual_loss, 4)
+        assert round(abs(659.1206 - rossi.x.shape[0] * actual_loss), 4) == 0
 
-    def test_fit(self):
+    def test_fit(self, rossi):
         cph = CoxPHSurvivalAnalysis()
-        cph.fit(self.x.values, self.y)
+        cph.fit(rossi.x.values, rossi.y)
 
         expected = pandas.Series({"fin": -0.37902189,
                                   "age": -0.05724593,
@@ -45,14 +38,14 @@ class TestCoxPH(TestCase):
                                   "paro": -0.08498284,
                                   "prio": 0.09111154})
 
-        actual = pandas.Series(cph.coef_, index=self.x.columns)
+        actual = pandas.Series(cph.coef_, index=rossi.x.columns)
         assert_array_almost_equal(expected.values,
                                   actual.loc[expected.index].values)
 
-    def test_predict(self):
+    def test_predict(self, rossi):
         cph = CoxPHSurvivalAnalysis()
-        xc = standardize(self.x, with_std=False)
-        cph.fit(xc.values, self.y)
+        xc = standardize(rossi.x, with_std=False)
+        cph.fit(xc.values, rossi.y)
 
         expected = numpy.array([-0.136002823953217, -1.13104636905577, 0.741965816026403, -0.98072115186145,
                                 -0.600098931134794, -0.997407014712788, -0.0993800739865776, -0.266761246895696,
@@ -65,11 +58,11 @@ class TestCoxPH(TestCase):
 
         assert_array_almost_equal(expected, pred)
 
-    def test_fit_ridge_1(self):
+    def test_fit_ridge_1(self, rossi):
         # coxph(Surv(week, arrest) ~ ridge(fin, age, race, wexp, mar, paro, prio,
         #     theta=1, scale=FALSE), data=rossi, ties="breslow")
         cph = CoxPHSurvivalAnalysis(alpha=1.0)
-        cph.fit(self.x.values, self.y)
+        cph.fit(rossi.x.values, rossi.y)
 
         expected = pandas.Series({'fin': -0.36366779384675196,
                                   'age': -0.057788417088377418,
@@ -79,15 +72,15 @@ class TestCoxPH(TestCase):
                                   'paro': -0.08230383874483703,
                                   'prio': 0.090951189830228568})
 
-        actual = pandas.Series(cph.coef_, index=self.x.columns)
+        actual = pandas.Series(cph.coef_, index=rossi.x.columns)
         assert_array_almost_equal(expected.values,
                                   actual.loc[expected.index].values)
 
-    def test_fit_ridge_2(self):
+    def test_fit_ridge_2(self, rossi):
         # coxph(Surv(week, arrest) ~ ridge(fin, age, race, wexp, mar, paro, prio,
         #     theta=19.67, scale=FALSE), data=rossi, ties="breslow")
         cph = CoxPHSurvivalAnalysis(alpha=19.67)
-        cph.fit(self.x.values, self.y)
+        cph.fit(rossi.x.values, rossi.y)
 
         expected = pandas.Series({'fin': -0.21145000,
                                   'age': -0.06223214,
@@ -97,44 +90,39 @@ class TestCoxPH(TestCase):
                                   'paro': -0.04929119,
                                   'prio': 0.09029133})
 
-        actual = pandas.Series(cph.coef_, index=self.x.columns)
+        actual = pandas.Series(cph.coef_, index=rossi.x.columns)
         assert_array_almost_equal(expected.values,
                                   actual.loc[expected.index].values)
 
-    def test_alpha(self):
+    def test_alpha(self, rossi):
         cph = CoxPHSurvivalAnalysis(alpha=-0.0001)
 
-        self.assertRaisesRegex(ValueError, r"alpha must be positive, but was -0\.0001",
-                               cph.fit, self.x.values, self.y)
+        with pytest.raises(ValueError, match=r"alpha must be positive, but was -0\.0001"):
+            cph.fit(rossi.x.values, rossi.y)
 
         cph.set_params(alpha=-1.25)
-        self.assertRaisesRegex(ValueError, r"alpha must be positive, but was -1\.25",
-                               cph.fit, self.x.values, self.y)
+        with pytest.raises(ValueError, match=r"alpha must be positive, but was -1\.25"):
+            cph.fit(rossi.x.values, rossi.y)
 
-    def test_convergence(self):
+    def test_convergence(self, rossi):
         cph = CoxPHSurvivalAnalysis(n_iter=1)
 
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
+        with pytest.warns(ConvergenceWarning,
+                          match="Optimization did not converge: Maximum number of iterations has been exceeded."):
+            cph.fit(rossi.x.values, rossi.y)
 
-            cph.fit(self.x.values, self.y)
-
-            self.assertEqual(1, len(w))
-            self.assertEqual("Optimization did not converge: Maximum number of iterations has been exceeded.",
-                             str(w[0].message))
-
-    def test_verbose(self):
+    def test_verbose(self, rossi):
         cph = CoxPHSurvivalAnalysis(verbose=99)
-        cph.fit(self.x.values, self.y)
+        cph.fit(rossi.x.values, rossi.y)
 
         cph.set_params(n_iter=1)
         with warnings.catch_warnings(record=True):
             warnings.simplefilter("ignore")
-            cph.fit(self.x.values, self.y)
+            cph.fit(rossi.x.values, rossi.y)
 
-    def test_cum_baseline_hazard(self):
+    def test_cum_baseline_hazard(self, rossi):
         cph = CoxPHSurvivalAnalysis()
-        cph.fit(self.x.values, self.y)
+        cph.fit(rossi.x.values, rossi.y)
 
         expected_x = numpy.array(
             [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30,
@@ -155,17 +143,17 @@ class TestCoxPH(TestCase):
 
         actual_y = [cph.cum_baseline_hazard_(v) for v in expected_x]
         # check that values increase
-        self.assertTrue((numpy.diff(actual_y) > 0).all())
+        assert (numpy.diff(actual_y) > 0).all()
         assert_array_almost_equal(actual_y, expected_y)
 
-    def test_predict_cumulative_hazard_function(self):
+    def test_predict_cumulative_hazard_function(self, rossi):
         cph = CoxPHSurvivalAnalysis()
-        xc = standardize(self.x, with_std=False)
-        cph.fit(xc, self.y)
+        xc = standardize(rossi.x, with_std=False)
+        cph.fit(xc, rossi.y)
 
         test_idx = [9, 3, 313, 122, 431]
         f = cph.predict_cumulative_hazard_function(xc.values[test_idx, :])
-        self.assertEqual(len(f), len(test_idx))
+        assert len(f) == len(test_idx)
 
         expected_x = numpy.array(
             [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30,
@@ -228,17 +216,17 @@ class TestCoxPH(TestCase):
         for i, ff in enumerate(f):
             actual_y = [ff(v) for v in expected_x]
             # check that values increase
-            self.assertTrue((numpy.diff(actual_y) > 0).all())
+            assert (numpy.diff(actual_y) > 0).all()
             assert_array_almost_equal(actual_y, expected_y[i, :])
 
-    def test_predict_survival_function(self):
+    def test_predict_survival_function(self, rossi):
         cph = CoxPHSurvivalAnalysis()
-        xc = standardize(self.x, with_std=False)
-        cph.fit(xc, self.y)
+        xc = standardize(rossi.x, with_std=False)
+        cph.fit(xc, rossi.y)
 
         test_idx = [9, 3, 313, 122, 431]
         f = cph.predict_survival_function(xc.values[test_idx, :])
-        self.assertEqual(len(f), len(test_idx))
+        assert len(f) == len(test_idx)
 
         expected_x = numpy.array(
             [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30,
@@ -301,9 +289,5 @@ class TestCoxPH(TestCase):
         for i, ff in enumerate(f):
             actual_y = [ff(v) for v in expected_x]
             # check that values decrease
-            self.assertTrue((numpy.diff(actual_y) < 0).all())
+            assert (numpy.diff(actual_y) < 0).all()
             assert_array_almost_equal(actual_y, expected_y[i, :])
-
-
-if __name__ == '__main__':
-    run_module_suite()

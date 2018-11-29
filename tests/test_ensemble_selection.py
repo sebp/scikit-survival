@@ -1,18 +1,16 @@
-from nose.plugins.attrib import attr
 import numpy
-from numpy.testing import TestCase, run_module_suite, assert_array_almost_equal
+import pytest
 from sklearn.model_selection import KFold, ParameterGrid
 from sklearn.dummy import DummyRegressor
 from sklearn.metrics import mean_squared_error
 
 from sksurv.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis
-from sksurv.datasets import load_whas500
-from sksurv.column import categorical_to_numeric
 from sksurv.kernels import ClinicalKernelTransform
 from sksurv.linear_model import IPCRidge
 from sksurv.meta import EnsembleSelection, EnsembleSelectionRegressor
 from sksurv.metrics import concordance_index_censored
 from sksurv.svm import FastSurvivalSVM, FastKernelSurvivalSVM
+from sksurv.testing import assert_cindex_almost_equal
 from sksurv.util import check_arrays_survival
 
 
@@ -23,77 +21,79 @@ def score_cindex(est, X_test, y_test, **predict_params):
     return res[0]
 
 
-class TestEnsembleSelectionSurvivalAnalysis(TestCase):
-    def setUp(self):
-        x, self.y = load_whas500()
-        self.x = categorical_to_numeric(x)
+def _create_survival_ensemble(**kwargs):
+    boosting_grid = ParameterGrid({"n_estimators": [100, 250], "subsample": [1.0, 0.75, 0.5]})
+    alphas = numpy.exp(numpy.linspace(numpy.log(0.001), numpy.log(2), 5))
+    svm_grid = ParameterGrid({"alpha": alphas})
 
-    def _create_ensemble(self, **kwargs):
-        boosting_grid = ParameterGrid({"n_estimators": [100, 250], "subsample": [1.0, 0.75, 0.5]})
-        alphas = numpy.exp(numpy.linspace(numpy.log(0.001), numpy.log(2), 5))
-        svm_grid = ParameterGrid({"alpha": alphas})
+    base_estimators = []
+    for i, params in enumerate(boosting_grid):
+        model = ComponentwiseGradientBoostingSurvivalAnalysis(random_state=0, **params)
+        base_estimators.append(("gbm_%d" % i, model))
 
-        base_estimators = []
-        for i, params in enumerate(boosting_grid):
-            model = ComponentwiseGradientBoostingSurvivalAnalysis(random_state=0, **params)
-            base_estimators.append(("gbm_%d" % i, model))
+    for i, params in enumerate(svm_grid):
+        model = FastSurvivalSVM(max_iter=100, tol=1e-6, random_state=0, **params)
+        base_estimators.append(("svm_%d" % i, model))
 
-        for i, params in enumerate(svm_grid):
-            model = FastSurvivalSVM(max_iter=100, tol=1e-6, random_state=0, **params)
-            base_estimators.append(("svm_%d" % i, model))
+    cv = KFold(n_splits=3, shuffle=True, random_state=0)
+    meta = EnsembleSelection(base_estimators, n_estimators=0.4, scorer=score_cindex, cv=cv, **kwargs)
+    return meta
 
-        cv = KFold(n_splits=3, shuffle=True, random_state=0)
-        meta = EnsembleSelection(base_estimators, n_estimators=0.4, scorer=score_cindex, cv=cv, **kwargs)
-        return meta
 
-    @attr('slow')
-    def test_fit(self):
-        meta = self._create_ensemble()
-        self.assertEqual(len(meta), 0)
+class TestEnsembleSelectionSurvivalAnalysis(object):
+    @staticmethod
+    @pytest.mark.slow
+    def test_fit(make_whas500):
+        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
+        meta = _create_survival_ensemble()
+        assert len(meta) == 0
 
-        meta.fit(self.x.values, self.y)
-        self.assertEqual(len(meta), 11)
-        self.assertTupleEqual(meta.scores_.shape, (11,))
+        meta.fit(whas500.x, whas500.y)
+        assert len(meta) == 11
+        assert meta.scores_.shape == (11,)
 
-        p = meta.predict(self.x.values)
+        p = meta.predict(whas500.x)
 
-        score = concordance_index_censored(self.y['fstat'], self.y['lenfol'], p)
-        expected_score = numpy.array([0.7863312, 59088, 16053, 8, 119])
-        assert_array_almost_equal(score, expected_score)
+        assert_cindex_almost_equal(whas500.y['fstat'], whas500.y['lenfol'], p,
+                                   (0.7863312, 59088, 16053, 8, 119))
 
-    @attr('slow')
-    def test_fit_spearman_correlation(self):
-        meta = self._create_ensemble(correlation="spearman")
-        self.assertEqual(len(meta), 0)
+    @staticmethod
+    @pytest.mark.slow
+    def test_fit_spearman_correlation(make_whas500):
+        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
+        meta = _create_survival_ensemble(correlation="spearman")
+        assert len(meta) == 0
 
-        meta.fit(self.x.values, self.y)
+        meta.fit(whas500.x, whas500.y)
 
-        p = meta.predict(self.x.values)
+        p = meta.predict(whas500.x)
 
-        score = concordance_index_censored(self.y['fstat'], self.y['lenfol'], p)
-        expected_score = numpy.array([0.7863312, 59088, 16053, 8, 119])
-        assert_array_almost_equal(score, expected_score)
+        assert_cindex_almost_equal(whas500.y['fstat'], whas500.y['lenfol'], p,
+                                   (0.7863312, 59088, 16053, 8, 119))
 
-    @attr('slow')
-    def test_fit_kendall_correlation(self):
-        meta = self._create_ensemble(correlation="kendall")
-        self.assertEqual(len(meta), 0)
+    @staticmethod
+    @pytest.mark.slow
+    def test_fit_kendall_correlation(make_whas500):
+        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
+        meta = _create_survival_ensemble(correlation="kendall")
+        assert len(meta) == 0
 
-        meta.fit(self.x.values, self.y)
+        meta.fit(whas500.x, whas500.y)
 
-        p = meta.predict(self.x.values)
+        p = meta.predict(whas500.x)
 
-        score = concordance_index_censored(self.y['fstat'], self.y['lenfol'], p)
-        expected_score = numpy.array([0.7663043, 57570, 17545, 34, 119])
-        assert_array_almost_equal(score, expected_score)
+        assert_cindex_almost_equal(whas500.y['fstat'], whas500.y['lenfol'], p,
+                                   (0.7663043, 57570, 17545, 34, 119))
 
-    @attr('slow')
-    def test_fit_custom_kernel(self):
+    @staticmethod
+    @pytest.mark.slow
+    def test_fit_custom_kernel(make_whas500):
+        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
         alphas = numpy.exp(numpy.linspace(numpy.log(0.001), numpy.log(0.5), 5))
         svm_grid = ParameterGrid({"alpha": alphas})
 
         transform = ClinicalKernelTransform(fit_once=True)
-        transform.prepare(self.x)
+        transform.prepare(whas500.x_data_frame)
 
         base_estimators = []
         for i, params in enumerate(svm_grid):
@@ -108,82 +108,99 @@ class TestEnsembleSelectionSurvivalAnalysis(TestCase):
         cv = KFold(n_splits=3, shuffle=True, random_state=0)
         meta = EnsembleSelection(base_estimators, n_estimators=0.4, scorer=score_cindex, cv=cv, n_jobs=4)
 
-        meta.fit(self.x.values, self.y)
-        self.assertEqual(len(meta), 10)
-        self.assertTupleEqual(meta.scores_.shape, (10,))
+        meta.fit(whas500.x, whas500.y)
+        assert len(meta) == 10
+        assert meta.scores_.shape == (10,)
 
-        p = meta.predict(self.x.values)
+        p = meta.predict(whas500.x)
 
-        score = concordance_index_censored(self.y['fstat'], self.y['lenfol'], p)
-        expected_score = numpy.array([0.7978084, 59938, 15178, 33, 119])
-        assert_array_almost_equal(score, expected_score)
+        assert_cindex_almost_equal(whas500.y['fstat'], whas500.y['lenfol'], p,
+                                   (0.7978084, 59938, 15178, 33, 119))
 
-    def test_min_score(self):
+    @staticmethod
+    def test_min_score(make_whas500):
+        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
         base_estimators = [('gbm', ComponentwiseGradientBoostingSurvivalAnalysis()),
                            ('svm', FastSurvivalSVM())]
         meta = EnsembleSelection(base_estimators, scorer=score_cindex, min_score=1.0, cv=3)
 
-        self.assertRaisesRegex(ValueError, "no base estimator exceeds min_score, try decreasing it",
-                               meta.fit, self.x, self.y)
+        with pytest.raises(ValueError,
+                           match="no base estimator exceeds min_score, try decreasing it"):
+            meta.fit(whas500.x, whas500.y)
 
-    def test_min_correlation(self):
+    @staticmethod
+    def test_min_correlation(make_whas500):
+        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
         base_estimators = [('gbm', ComponentwiseGradientBoostingSurvivalAnalysis()),
                            ('svm', FastSurvivalSVM())]
         meta = EnsembleSelection(base_estimators, scorer=score_cindex, min_correlation=1.2)
 
-        self.assertRaisesRegex(ValueError, r"min_correlation must be in \[-1; 1\], but was 1.2",
-                               meta.fit, self.x, self.y)
+        with pytest.raises(ValueError,
+                           match=r"min_correlation must be in \[-1; 1\], but was 1.2"):
+            meta.fit(whas500.x, whas500.y)
 
         meta.set_params(min_correlation=-2.1)
-        self.assertRaisesRegex(ValueError, r"min_correlation must be in \[-1; 1\], but was -2.1",
-                               meta.fit, self.x, self.y)
+        with pytest.raises(ValueError,
+                           match=r"min_correlation must be in \[-1; 1\], but was -2.1"):
+            meta.fit(whas500.x, whas500.y)
 
         meta.set_params(min_correlation=numpy.nan)
-        self.assertRaisesRegex(ValueError, r"min_correlation must be in \[-1; 1\], but was nan",
-                               meta.fit, self.x, self.y)
+        with pytest.raises(ValueError,
+                           match=r"min_correlation must be in \[-1; 1\], but was nan"):
+            meta.fit(whas500.x, whas500.y)
 
-    def test_scorer(self):
+    @staticmethod
+    def test_scorer(make_whas500):
+        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
         base_estimators = [('gbm', ComponentwiseGradientBoostingSurvivalAnalysis()),
                            ('svm', FastSurvivalSVM())]
         meta = EnsembleSelection(base_estimators, scorer=None)
 
-        self.assertRaisesRegex(TypeError, "scorer is not callable",
-                               meta.fit, self.x, self.y)
+        with pytest.raises(TypeError, match="scorer is not callable"):
+            meta.fit(whas500.x, whas500.y)
 
         meta.set_params(scorer=numpy.zeros(10))
-        self.assertRaisesRegex(TypeError, "scorer is not callable",
-                               meta.fit, self.x, self.y)
+        with pytest.raises(TypeError, match="scorer is not callable"):
+            meta.fit(whas500.x, whas500.y)
 
-    def test_n_estimators(self):
+    @staticmethod
+    def test_n_estimators(make_whas500):
+        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
         base_estimators = [('gbm', ComponentwiseGradientBoostingSurvivalAnalysis()),
                            ('svm', FastSurvivalSVM())]
         meta = EnsembleSelection(base_estimators, scorer=score_cindex, n_estimators=0)
 
-        self.assertRaisesRegex(ValueError, "n_estimators must not be zero or negative",
-                               meta.fit, self.x, self.y)
+        with pytest.raises(ValueError, match="n_estimators must not be zero or negative"):
+            meta.fit(whas500.x, whas500.y)
 
         meta.set_params(n_estimators=1000)
-        self.assertRaisesRegex(ValueError, r"n_estimators \(1000\) must not exceed number of base learners \(2\)",
-                               meta.fit, self.x, self.y)
+        with pytest.raises(ValueError,
+                           match=r"n_estimators \(1000\) must not exceed number "
+                                 r"of base learners \(2\)"):
+            meta.fit(whas500.x, whas500.y)
 
-    def test_correlation(self):
+    @staticmethod
+    def test_correlation(make_whas500):
+        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
         base_estimators = [('gbm', ComponentwiseGradientBoostingSurvivalAnalysis()),
                            ('svm', FastSurvivalSVM())]
         meta = EnsembleSelection(base_estimators, scorer=score_cindex, correlation=None)
-        self.assertRaisesRegex(ValueError,
-                               "correlation must be one of 'pearson', 'kendall', and 'spearman', but got None",
-                               meta.fit, self.x, self.y)
+        with pytest.raises(ValueError,
+                           match="correlation must be one of 'pearson', 'kendall', "
+                                 "and 'spearman', but got None"):
+            meta.fit(whas500.x, whas500.y)
 
         meta = EnsembleSelection(base_estimators, scorer=score_cindex, correlation=2143)
-        self.assertRaisesRegex(ValueError,
-                               "correlation must be one of 'pearson', 'kendall', and 'spearman', but got 2143",
-                               meta.fit, self.x, self.y)
+        with pytest.raises(ValueError,
+                           match="correlation must be one of 'pearson', 'kendall', "
+                                 "and 'spearman', but got 2143"):
+            meta.fit(whas500.x, whas500.y)
 
         meta = EnsembleSelection(base_estimators, scorer=score_cindex, correlation="clearly wrong")
-        self.assertRaisesRegex(ValueError,
-                               "correlation must be one of 'pearson', 'kendall', and 'spearman', "
-                               "but got 'clearly wrong'",
-                               meta.fit, self.x, self.y)
+        with pytest.raises(ValueError,
+                           match="correlation must be one of 'pearson', 'kendall', "
+                                 "and 'spearman', but got 'clearly wrong'"):
+            meta.fit(whas500.x, whas500.y)
 
 
 def _score_rmse(est, X_test, y_test, **predict_params):
@@ -203,45 +220,46 @@ class DummySurvivalRegressor(DummyRegressor):
         return super().fit(X, time)
 
 
-class TestEnsembleSelectionRegressor(TestCase):
-    def setUp(self):
-        x, self.y = load_whas500()
-        self.x = categorical_to_numeric(x)
+def _create_regression_ensemble():
+    aft_grid = ParameterGrid({"alpha": 2. ** numpy.arange(-9, 5, 2)})
+    svm_grid = ParameterGrid({"alpha": 2. ** numpy.arange(-9, 5, 2)})
 
-    def _create_ensemble(self):
-        aft_grid = ParameterGrid({"alpha": 2. ** numpy.arange(-9, 5, 2)})
-        svm_grid = ParameterGrid({"alpha": 2. ** numpy.arange(-9, 5, 2)})
+    base_estimators = []
+    for i, params in enumerate(aft_grid):
+        model = IPCRidge(max_iter=1000, **params)
+        base_estimators.append(("aft_%d" % i, model))
 
-        base_estimators = []
-        for i, params in enumerate(aft_grid):
-            model = IPCRidge(max_iter=1000, **params)
-            base_estimators.append(("aft_%d" % i, model))
+    for i, params in enumerate(svm_grid):
+        model = FastSurvivalSVM(rank_ratio=0, fit_intercept=True, max_iter=100,
+                                random_state=1, **params)
+        base_estimators.append(("svm_%d" % i, model))
 
-        for i, params in enumerate(svm_grid):
-            model = FastSurvivalSVM(rank_ratio=0, fit_intercept=True, max_iter=100,
-                                    random_state=1, **params)
-            base_estimators.append(("svm_%d" % i, model))
+    cv = KFold(n_splits=4, shuffle=True, random_state=0)
+    meta = EnsembleSelectionRegressor(base_estimators, n_estimators=0.4,
+                                      scorer=_score_rmse,
+                                      cv=cv, n_jobs=1)
+    return meta
 
-        cv = KFold(n_splits=4, shuffle=True, random_state=0)
-        meta = EnsembleSelectionRegressor(base_estimators, n_estimators=0.4,
-                                          scorer=_score_rmse,
-                                          cv=cv, n_jobs=1)
-        return meta
 
-    @attr('slow')
-    def test_fit_and_predict(self):
-        meta = self._create_ensemble()
-        self.assertEqual(len(meta), 0)
+class TestEnsembleSelectionRegressor(object):
+    @staticmethod
+    @pytest.mark.slow
+    def test_fit_and_predict(make_whas500):
+        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
+        meta = _create_regression_ensemble()
+        assert len(meta) == 0
 
-        meta.fit(self.x.iloc[:400].values, self.y[:400])
-        self.assertEqual(len(meta), 5)
-        self.assertTupleEqual(meta.scores_.shape, (14,))
+        meta.fit(whas500.x[:400], whas500.y[:400])
+        assert len(meta) == 5
+        assert meta.scores_.shape == (14,)
 
-        p = meta.predict(self.x.iloc[400:].values)
-        score = numpy.sqrt(mean_squared_error(self.y[400:]['lenfol'], p))
-        self.assertLessEqual(abs(score - 1500.01954367), 0.1)
+        p = meta.predict(whas500.x[400:])
+        score = numpy.sqrt(mean_squared_error(whas500.y[400:]['lenfol'], p))
+        assert abs(score - 1500.01954367) <= 0.1
 
-    def test_fit_dummy(self):
+    @staticmethod
+    def test_fit_dummy(make_whas500):
+        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
         base_estimators = [
             ('dummy_0', DummySurvivalRegressor(strategy="mean")),
             ('dummy_1', DummySurvivalRegressor(strategy="median")),
@@ -254,10 +272,13 @@ class TestEnsembleSelectionRegressor(TestCase):
         meta = EnsembleSelectionRegressor(base_estimators, n_estimators=1, min_score=5, cv=5,
                                           scorer=_score_rmse)
 
-        self.assertRaisesRegex(ValueError, "no base estimator exceeds min_score, try decreasing it",
-                               meta.fit, self.x, self.y)
+        with pytest.raises(ValueError,
+                           match="no base estimator exceeds min_score, try decreasing it"):
+            meta.fit(whas500.x, whas500.y)
 
-    def test_invalid_scorer(self):
+    @staticmethod
+    def test_invalid_scorer(make_whas500):
+        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
         base_estimators = [
             ('dummy_0', DummySurvivalRegressor(strategy="mean")),
             ('dummy_1', DummySurvivalRegressor(strategy="median")),
@@ -269,10 +290,7 @@ class TestEnsembleSelectionRegressor(TestCase):
         meta = EnsembleSelectionRegressor(base_estimators, n_estimators=1, min_score=5, cv=5,
                                           scorer=_score)
 
-        self.assertRaisesRegex(ValueError,
-                               r"scoring must return a number, got invalid \(<class 'str'>\) instead.",
-                               meta.fit, self.x, self.y)
-
-
-if __name__ == '__main__':
-    run_module_suite()
+        with pytest.raises(ValueError,
+                           match=r"scoring must return a number, got invalid "
+                                 r"\(<class 'str'>\) instead\."):
+            meta.fit(whas500.x, whas500.y)
