@@ -2,6 +2,7 @@
 [run]
 branch = True
 source = sksurv
+plugins = Cython.Coverage
 
 [report]
 # Regexes for lines to exclude from consideration

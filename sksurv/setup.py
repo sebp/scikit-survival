@@ -10,6 +10,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import os
 import os.path
 from distutils.version import LooseVersion
 
@@ -56,8 +57,21 @@ def maybe_cythonize_extensions(top_path, config):
             exc.args += (message,)
             raise
 
-        config.ext_modules = cythonize(config.ext_modules,
-                                       compiler_directives={'language_level': '3'})
+        # http://docs.cython.org/en/latest/src/userguide/source_files_and_compilation.html#cythonize-arguments
+        directives = {'language_level': '3'}
+        cy_cov = os.environ.get('CYTHON_COVERAGE', False)
+        if cy_cov:
+            directives['linetrace'] = True
+            macros = [('CYTHON_TRACE', '1'), ('CYTHON_TRACE_NOGIL', '1')]
+        else:
+            macros = []
+
+        config.ext_modules = cythonize(
+            config.ext_modules,
+            compiler_directives=directives)
+
+        for e in config.ext_modules:
+            e.define_macros.extend(macros)
 
 
 def configuration(parent_package='', top_path=None):
