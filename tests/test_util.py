@@ -132,7 +132,8 @@ def surv_data_frame():
 
 class TestSurv(object):
 
-    def test_from_list(self, surv_arrays):
+    @staticmethod
+    def test_from_list(surv_arrays):
         event, time = surv_arrays
 
         expected = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
@@ -142,7 +143,8 @@ class TestSurv(object):
         y = Surv.from_arrays(list(event.astype(bool)), list(time))
         assert_array_equal(y, expected)
 
-    def test_from_array_bool(self, surv_arrays):
+    @staticmethod
+    def test_from_array_bool(surv_arrays):
         event, time = surv_arrays
 
         expected = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
@@ -152,7 +154,8 @@ class TestSurv(object):
         y = Surv.from_arrays(event.astype(bool), time)
         assert_array_equal(y, expected)
 
-    def test_from_array_with_names(self, surv_arrays):
+    @staticmethod
+    def test_from_array_with_names(surv_arrays):
         event, time = surv_arrays
 
         expected = numpy.empty(dtype=[('death', bool), ('survival_time', float)], shape=100)
@@ -162,7 +165,8 @@ class TestSurv(object):
         y = Surv.from_arrays(event.astype(bool), time, name_time='survival_time', name_event='death')
         assert_array_equal(y, expected)
 
-    def test_from_array_with_one_name_1(self, surv_arrays):
+    @staticmethod
+    def test_from_array_with_one_name_1(surv_arrays):
         event, time = surv_arrays
 
         expected = numpy.empty(dtype=[('death', bool), ('time', float)], shape=100)
@@ -172,7 +176,8 @@ class TestSurv(object):
         y = Surv.from_arrays(event.astype(bool), time, name_event='death')
         assert_array_equal(y, expected)
 
-    def test_from_array_with_one_name_2(self, surv_arrays):
+    @staticmethod
+    def test_from_array_with_one_name_2(surv_arrays):
         event, time = surv_arrays
 
         expected = numpy.empty(dtype=[('event', bool), ('survival_time', float)], shape=100)
@@ -182,7 +187,8 @@ class TestSurv(object):
         y = Surv.from_arrays(event.astype(bool), time, name_time='survival_time')
         assert_array_equal(y, expected)
 
-    def test_from_array_int_event(self, surv_arrays):
+    @staticmethod
+    def test_from_array_int_event(surv_arrays):
         event, time = surv_arrays
 
         expected = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
@@ -192,7 +198,8 @@ class TestSurv(object):
         y = Surv.from_arrays(event, time)
         assert_array_equal(y, expected)
 
-    def test_from_array_int_time(self, surv_arrays):
+    @staticmethod
+    def test_from_array_int_time(surv_arrays):
         event, time = surv_arrays
         time += 1
         time *= time
@@ -204,7 +211,8 @@ class TestSurv(object):
         y = Surv.from_arrays(event.astype(bool), time.astype(int))
         assert_array_equal(y, expected)
 
-    def test_from_array_float(self, surv_arrays):
+    @staticmethod
+    def test_from_array_float(surv_arrays):
         event, time = surv_arrays
 
         expected = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
@@ -214,7 +222,8 @@ class TestSurv(object):
         y = Surv.from_arrays(event.astype(float), time)
         assert_array_equal(y, expected)
 
-    def test_from_array_shape_mismatch(self, surv_arrays):
+    @staticmethod
+    def test_from_array_shape_mismatch(surv_arrays):
         event, time = surv_arrays
 
         msg = "Found input variables with inconsistent numbers of samples"
@@ -224,7 +233,8 @@ class TestSurv(object):
         with pytest.raises(ValueError, match=msg):
             Surv.from_arrays(event, time[1:])
 
-    def test_from_array_event_value_wrong_1(self, surv_arrays):
+    @staticmethod
+    def test_from_array_event_value_wrong_1(surv_arrays):
         event, time = surv_arrays
         event += 1
 
@@ -232,7 +242,8 @@ class TestSurv(object):
                            match="non-boolean event indicator must contain 0 and 1 only"):
             Surv.from_arrays(event, time)
 
-    def test_from_array_event_value_wrong_2(self, surv_arrays):
+    @staticmethod
+    def test_from_array_event_value_wrong_2(surv_arrays):
         event, time = surv_arrays
         event -= 1
 
@@ -240,7 +251,8 @@ class TestSurv(object):
                            match="non-boolean event indicator must contain 0 and 1 only"):
             Surv.from_arrays(event, time)
 
-    def test_from_array_event_value_wrong_3(self, surv_arrays):
+    @staticmethod
+    def test_from_array_event_value_wrong_3(surv_arrays):
         event, time = surv_arrays
         event[event == 0] = 3
 
@@ -248,7 +260,8 @@ class TestSurv(object):
                            match="non-boolean event indicator must contain 0 and 1 only"):
             Surv.from_arrays(event, time)
 
-    def test_from_array_event_value_wrong_4(self, surv_arrays):
+    @staticmethod
+    def test_from_array_event_value_wrong_4(surv_arrays):
         event, time = surv_arrays
         event[1] = 3
 
@@ -256,7 +269,8 @@ class TestSurv(object):
                            match="event indicator must be binary"):
             Surv.from_arrays(event, time)
 
-    def test_from_array_event_value_wrong_5(self, surv_arrays):
+    @staticmethod
+    def test_from_array_event_value_wrong_5(surv_arrays):
         event, time = surv_arrays
         event = numpy.arange(event.shape[0])
 
@@ -264,7 +278,8 @@ class TestSurv(object):
                            match="event indicator must be binary"):
             Surv.from_arrays(event, time)
 
-    def test_from_array_names_match(self, surv_arrays):
+    @staticmethod
+    def test_from_array_names_match(surv_arrays):
         event, time = surv_arrays
 
         with pytest.raises(ValueError,
@@ -272,7 +287,8 @@ class TestSurv(object):
             Surv.from_arrays(event, time,
                              name_event='time_and_event', name_time='time_and_event')
 
-    def test_from_dataframe_bool(self, surv_data_frame):
+    @staticmethod
+    def test_from_dataframe_bool(surv_data_frame):
         data = surv_data_frame
         data['event'] = data['event'].astype(bool)
 
@@ -283,7 +299,8 @@ class TestSurv(object):
         y = Surv.from_dataframe('event', 'time', data)
         assert_array_equal(y, expected)
 
-    def test_from_dataframe_int(self, surv_data_frame):
+    @staticmethod
+    def test_from_dataframe_int(surv_data_frame):
         data = surv_data_frame
 
         expected = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
@@ -293,7 +310,8 @@ class TestSurv(object):
         y = Surv.from_dataframe('event', 'time', data)
         assert_array_equal(y, expected)
 
-    def test_from_dataframe_float(self, surv_data_frame):
+    @staticmethod
+    def test_from_dataframe_float(surv_data_frame):
         data = surv_data_frame
         data['event'] = data['event'].astype(float)
 
@@ -304,7 +322,8 @@ class TestSurv(object):
         y = Surv.from_dataframe('event', 'time', data)
         assert_array_equal(y, expected)
 
-    def test_from_dataframe_no_str_columns(self, surv_data_frame):
+    @staticmethod
+    def test_from_dataframe_no_str_columns(surv_data_frame):
         data = surv_data_frame
         data['event'] = data['event'].astype(bool)
 
@@ -315,7 +334,8 @@ class TestSurv(object):
         y = Surv.from_dataframe(0, 1, data.rename(columns={'event': 0, 'time': 1}))
         assert_array_equal(y, expected)
 
-    def test_from_dataframe_column_names(self, surv_data_frame):
+    @staticmethod
+    def test_from_dataframe_column_names(surv_data_frame):
         data = surv_data_frame.rename(columns={'event': 'death', 'time': 'time_to_death'})
         data['death'] = data['death'].astype(bool)
 
@@ -326,7 +346,8 @@ class TestSurv(object):
         y = Surv.from_dataframe('death', 'time_to_death', data)
         assert_array_equal(y, expected)
 
-    def test_from_dataframe_no_such_column(self, surv_data_frame):
+    @staticmethod
+    def test_from_dataframe_no_such_column(surv_data_frame):
         data = surv_data_frame
         data['event'] = data['event'].astype(bool)
 
@@ -342,7 +363,8 @@ class TestSurv(object):
                            match=r'the label \[unknown\] is not in the \[columns\]'):
             Surv.from_dataframe('event', 'unknown', data)
 
-    def test_from_dataframe_wrong_class(self, surv_data_frame):
+    @staticmethod
+    def test_from_dataframe_wrong_class(surv_data_frame):
         data = surv_data_frame
 
         with pytest.raises(TypeError,

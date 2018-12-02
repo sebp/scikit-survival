@@ -179,55 +179,61 @@ class TestGetXy(object):
         assert_array_equal(x_test, x)
 
 
+def assert_structured_array_dtype(arr, event, time, num_events):
+    assert arr.dtype.names == (event, time)
+    assert numpy.issubdtype(arr.dtype.fields[event][0], numpy.bool_)
+    assert numpy.issubdtype(arr.dtype.fields[time][0], numpy.float_)
+    assert arr[event].sum() == num_events
+
+
 class TestLoadDatasets(object):
 
-    def assert_structured_array_dtype(self, arr, event, time, num_events):
-        assert arr.dtype.names == (event, time)
-        assert numpy.issubdtype(arr.dtype.fields[event][0], numpy.bool_)
-        assert numpy.issubdtype(arr.dtype.fields[time][0], numpy.float_)
-        assert arr[event].sum() == num_events
-
-    def test_load_whas500(self):
+    @staticmethod
+    def test_load_whas500():
         x, y = sdata.load_whas500()
         assert x.shape == (500, 14)
         assert y.shape == (500,)
-        self.assert_structured_array_dtype(y, 'fstat', 'lenfol', 215)
+        assert_structured_array_dtype(y, 'fstat', 'lenfol', 215)
 
-    def test_load_gbsg2(self):
+    @staticmethod
+    def test_load_gbsg2():
         x, y = sdata.load_gbsg2()
         assert x.shape == (686, 8)
         assert y.shape == (686,)
-        self.assert_structured_array_dtype(y, 'cens', 'time', 299)
+        assert_structured_array_dtype(y, 'cens', 'time', 299)
 
-    def test_load_veterans_lung_cancer(self):
+    @staticmethod
+    def test_load_veterans_lung_cancer():
         x, y = sdata.load_veterans_lung_cancer()
         assert x.shape == (137, 6)
         assert y.shape == (137,)
-        self.assert_structured_array_dtype(y, 'Status', 'Survival_in_days', 128)
+        assert_structured_array_dtype(y, 'Status', 'Survival_in_days', 128)
 
-    def test_load_aids(self):
+    @staticmethod
+    def test_load_aids():
         x, y = sdata.load_aids(endpoint="aids")
         assert x.shape == (1151, 11)
         assert y.shape == (1151,)
-        self.assert_structured_array_dtype(y, 'censor', 'time', 96)
+        assert_structured_array_dtype(y, 'censor', 'time', 96)
         assert "censor_d" not in x.columns
         assert "time_d" not in x.columns
 
         x, y = sdata.load_aids(endpoint="death")
         assert x.shape == (1151, 11)
         assert y.shape == (1151,)
-        self.assert_structured_array_dtype(y, 'censor_d', 'time_d', 26)
+        assert_structured_array_dtype(y, 'censor_d', 'time_d', 26)
         assert "censor" not in x.columns
         assert "time" not in x.columns
 
         with pytest.raises(ValueError, match="endpoint must be 'aids' or 'death'"):
             sdata.load_aids(endpoint="foobar")
 
-    def test_load_breast_cancer(self):
+    @staticmethod
+    def test_load_breast_cancer():
         x, y = sdata.load_breast_cancer()
         assert x.shape == (198, 80)
         assert y.shape == (198,)
-        self.assert_structured_array_dtype(y, 'e.tdm', 't.tdm', 51)
+        assert_structured_array_dtype(y, 'e.tdm', 't.tdm', 51)
 
 
 def _make_and_write_data(fp, n_samples, n_features, with_index, with_labels, seed, column_prefix="V"):
@@ -264,16 +270,18 @@ def assert_x_equal(x_true, x_train):
                           check_less_precise=True)
 
 
+def assert_y_equal(y_true, y_train):
+    assert y_train.dtype.names == ("event", "time")
+
+    assert_array_equal(y_train["event"].astype(numpy.uint32),
+                       y_true["event"].values.astype(numpy.uint32))
+    assert_array_almost_equal(y_train["time"], y_true["time"].values)
+
+
 class TestLoadArffFile(object):
 
-    def assert_y_equal(self, y_true, y_train):
-        assert y_train.dtype.names == ("event", "time")
-
-        assert_array_equal(y_train["event"].astype(numpy.uint32),
-                           y_true["event"].values.astype(numpy.uint32))
-        assert_array_almost_equal(y_train["time"], y_true["time"].values)
-
-    def test_load_with_index(self, temp_file):
+    @staticmethod
+    def test_load_with_index(temp_file):
         dataset = _make_and_write_data(temp_file, 100, 10, True, True, 0)
 
         x_train, y_train, x_test, y_test = sdata.load_arff_files_standardized(
@@ -287,7 +295,7 @@ class TestLoadArffFile(object):
         x_true = dataset.drop(cols, axis=1)
 
         assert_x_equal(x_true, x_train)
-        self.assert_y_equal(dataset, y_train)
+        assert_y_equal(dataset, y_train)
 
     @staticmethod
     def test_load_with_categorical_index_1(arff_1):
@@ -346,7 +354,8 @@ class TestLoadArffFile(object):
                              name="size", index=index)
         tm.assert_series_equal(x_train["size"], size, check_exact=True)
 
-    def test_load_train_and_test_with_labels(self, temp_file_pair):
+    @staticmethod
+    def test_load_train_and_test_with_labels(temp_file_pair):
         tmp_train, tmp_test = temp_file_pair
         train_dataset = _make_and_write_data(tmp_train, 100, 10, True, True, 0)
         test_dataset = _make_and_write_data(tmp_test, 20, 10, True, True, 0)
@@ -359,11 +368,11 @@ class TestLoadArffFile(object):
 
         x_true = train_dataset.drop(cols, axis=1)
         assert_x_equal(x_true, x_train)
-        self.assert_y_equal(train_dataset, y_train)
+        assert_y_equal(train_dataset, y_train)
 
         x_true = test_dataset.drop(cols, axis=1)
         assert_x_equal(x_true, x_test)
-        self.assert_y_equal(test_dataset, y_test)
+        assert_y_equal(test_dataset, y_test)
 
     @staticmethod
     def test_load_train_and_test_with_categorical_index(arff_1, arff_2):
@@ -412,7 +421,8 @@ class TestLoadArffFile(object):
                                   name="size", index=test_index)
         tm.assert_series_equal(x_test["size"], test_size, check_exact=True)
 
-    def test_load_train_and_test_no_labels(self, temp_file_pair):
+    @staticmethod
+    def test_load_train_and_test_no_labels(temp_file_pair):
         tmp_train, tmp_test = temp_file_pair
         train_dataset = _make_and_write_data(tmp_train, 100, 10, True, True, 0)
         test_dataset = _make_and_write_data(tmp_test, 20, 10, True, False, 0)
@@ -425,7 +435,7 @@ class TestLoadArffFile(object):
 
         x_true = train_dataset.drop(cols, axis=1)
         assert_x_equal(x_true, x_train)
-        self.assert_y_equal(train_dataset, y_train)
+        assert_y_equal(train_dataset, y_train)
 
         assert_x_equal(test_dataset, x_test)
         assert y_test is None

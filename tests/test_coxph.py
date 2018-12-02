@@ -11,7 +11,9 @@ from sksurv.linear_model.coxph import CoxPHSurvivalAnalysis, CoxPHOptimizer
 
 
 class TestCoxPH(object):
-    def test_likelihood(self, rossi):
+
+    @staticmethod
+    def test_likelihood(rossi):
         cph = CoxPHOptimizer(rossi.x.values, rossi.y['arrest'], rossi.y['week'], alpha=0.)
 
         w = pandas.Series({"fin": -0.37902189,
@@ -26,7 +28,8 @@ class TestCoxPH(object):
 
         assert round(abs(659.1206 - rossi.x.shape[0] * actual_loss), 4) == 0
 
-    def test_fit(self, rossi):
+    @staticmethod
+    def test_fit(rossi):
         cph = CoxPHSurvivalAnalysis()
         cph.fit(rossi.x.values, rossi.y)
 
@@ -42,7 +45,8 @@ class TestCoxPH(object):
         assert_array_almost_equal(expected.values,
                                   actual.loc[expected.index].values)
 
-    def test_predict(self, rossi):
+    @staticmethod
+    def test_predict(rossi):
         cph = CoxPHSurvivalAnalysis()
         xc = standardize(rossi.x, with_std=False)
         cph.fit(xc.values, rossi.y)
@@ -58,7 +62,8 @@ class TestCoxPH(object):
 
         assert_array_almost_equal(expected, pred)
 
-    def test_fit_ridge_1(self, rossi):
+    @staticmethod
+    def test_fit_ridge_1(rossi):
         # coxph(Surv(week, arrest) ~ ridge(fin, age, race, wexp, mar, paro, prio,
         #     theta=1, scale=FALSE), data=rossi, ties="breslow")
         cph = CoxPHSurvivalAnalysis(alpha=1.0)
@@ -76,7 +81,8 @@ class TestCoxPH(object):
         assert_array_almost_equal(expected.values,
                                   actual.loc[expected.index].values)
 
-    def test_fit_ridge_2(self, rossi):
+    @staticmethod
+    def test_fit_ridge_2(rossi):
         # coxph(Surv(week, arrest) ~ ridge(fin, age, race, wexp, mar, paro, prio,
         #     theta=19.67, scale=FALSE), data=rossi, ties="breslow")
         cph = CoxPHSurvivalAnalysis(alpha=19.67)
@@ -94,7 +100,8 @@ class TestCoxPH(object):
         assert_array_almost_equal(expected.values,
                                   actual.loc[expected.index].values)
 
-    def test_alpha(self, rossi):
+    @staticmethod
+    def test_alpha(rossi):
         cph = CoxPHSurvivalAnalysis(alpha=-0.0001)
 
         with pytest.raises(ValueError, match=r"alpha must be positive, but was -0\.0001"):
@@ -104,14 +111,16 @@ class TestCoxPH(object):
         with pytest.raises(ValueError, match=r"alpha must be positive, but was -1\.25"):
             cph.fit(rossi.x.values, rossi.y)
 
-    def test_convergence(self, rossi):
+    @staticmethod
+    def test_convergence(rossi):
         cph = CoxPHSurvivalAnalysis(n_iter=1)
 
         with pytest.warns(ConvergenceWarning,
                           match="Optimization did not converge: Maximum number of iterations has been exceeded."):
             cph.fit(rossi.x.values, rossi.y)
 
-    def test_verbose(self, rossi):
+    @staticmethod
+    def test_verbose(rossi):
         cph = CoxPHSurvivalAnalysis(verbose=99)
         cph.fit(rossi.x.values, rossi.y)
 
@@ -120,7 +129,8 @@ class TestCoxPH(object):
             warnings.simplefilter("ignore")
             cph.fit(rossi.x.values, rossi.y)
 
-    def test_cum_baseline_hazard(self, rossi):
+    @staticmethod
+    def test_cum_baseline_hazard(rossi):
         cph = CoxPHSurvivalAnalysis()
         cph.fit(rossi.x.values, rossi.y)
 
@@ -146,7 +156,8 @@ class TestCoxPH(object):
         assert (numpy.diff(actual_y) > 0).all()
         assert_array_almost_equal(actual_y, expected_y)
 
-    def test_predict_cumulative_hazard_function(self, rossi):
+    @staticmethod
+    def test_predict_cumulative_hazard_function(rossi):
         cph = CoxPHSurvivalAnalysis()
         xc = standardize(rossi.x, with_std=False)
         cph.fit(xc, rossi.y)
@@ -219,7 +230,8 @@ class TestCoxPH(object):
             assert (numpy.diff(actual_y) > 0).all()
             assert_array_almost_equal(actual_y, expected_y[i, :])
 
-    def test_predict_survival_function(self, rossi):
+    @staticmethod
+    def test_predict_survival_function(rossi):
         cph = CoxPHSurvivalAnalysis()
         xc = standardize(rossi.x, with_std=False)
         cph.fit(xc, rossi.y)

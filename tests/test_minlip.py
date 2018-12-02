@@ -39,7 +39,7 @@ class TestDifferenceMatrix(object):
 
     @staticmethod
     def test_toy_create_difference_matrix_direct_neighbor_without_censoring(toy_data):
-        x, y = toy_data
+        _, y = toy_data
         status = numpy.ones(y.shape, dtype=bool)
         mat = create_difference_matrix(status.astype(numpy.uint8), y["time"], kind="next")
 
@@ -65,7 +65,7 @@ class TestDifferenceMatrix(object):
 
     @staticmethod
     def test_toy_create_difference_matrix_direct_neighbor_without_censoring_shuffled(toy_data):
-        x, y = toy_data
+        _, y = toy_data
         status = numpy.ones(y.shape, dtype=bool)
         order = [3, 2, 5, 0, 1, 4]  # = [ 20.  11.  70.   3.   6.  37.]
         time = y["time"][order]
@@ -93,7 +93,7 @@ class TestDifferenceMatrix(object):
 
     @staticmethod
     def test_toy_create_difference_matrix_direct_neighbor_with_censoring(toy_data):
-        x, y = toy_data
+        _, y = toy_data
         mat = create_difference_matrix(y["status"].astype(numpy.uint8), y["time"], kind="next")
 
         expected = numpy.zeros((3, 6), dtype=numpy.int8)
@@ -115,7 +115,7 @@ class TestDifferenceMatrix(object):
 
     @staticmethod
     def test_toy_create_difference_matrix_nearest_neighbor(toy_data):
-        x, y = toy_data
+        _, y = toy_data
         status = numpy.repeat(True, len(y))
         mat = create_difference_matrix(status.astype(numpy.uint8), y["time"], kind="nearest")
 
@@ -135,7 +135,7 @@ class TestDifferenceMatrix(object):
 
     @staticmethod
     def test_toy_create_difference_matrix_nearest_neighbor_censored(toy_data):
-        x, y = toy_data
+        _, y = toy_data
         mat = create_difference_matrix(y["status"].astype(numpy.uint8), y["time"], kind="nearest")
 
         expected = numpy.zeros((5, 6), dtype=numpy.int8)
@@ -154,7 +154,7 @@ class TestDifferenceMatrix(object):
 
     @staticmethod
     def test_toy_create_difference_matrix_full(toy_data):
-        x, y = toy_data
+        _, y = toy_data
         status = numpy.repeat(True, len(y))
         mat = create_difference_matrix(status.astype(numpy.uint8), y["time"], kind="all")
 
@@ -188,7 +188,7 @@ class TestDifferenceMatrix(object):
 
     @staticmethod
     def test_toy_create_difference_matrix_full_censored(toy_data):
-        x, y = toy_data
+        _, y = toy_data
         mat = create_difference_matrix(y["status"].astype(numpy.uint8), y["time"], kind="all")
 
         expected = numpy.zeros((11, 6), dtype=numpy.int8)

@@ -110,13 +110,15 @@ class TestEncodeCategorical(object):
 
         tm.assert_frame_equal(actual_df, expected_df, check_exact=True)
 
-    def test_series_numeric(self):
+    @staticmethod
+    def test_series_numeric():
         input_series = pandas.Series([0.5, 0.1, 10, 25, 3.8, 11, 2256, -1, -0.2, 3.14], name="a_series")
 
         with pytest.raises(TypeError, match="series must be of categorical dtype, but was float"):
             column.encode_categorical(input_series)
 
-    def test_case1(self):
+    @staticmethod
+    def test_case1():
         a = numpy.concatenate((
             numpy.repeat(["large"], 10),
             numpy.repeat(["small"], 5),
@@ -163,7 +165,8 @@ class TestEncodeCategorical(object):
         assert actual_df.shape == expected_df.shape
         tm.assert_frame_equal(actual_df, expected_df, check_exact=True)
 
-    def test_duplicate_index(self):
+    @staticmethod
+    def test_duplicate_index():
         a = numpy.concatenate((
             numpy.repeat(["large"], 10),
             numpy.repeat(["small"], 6),
@@ -195,7 +198,8 @@ class TestEncodeCategorical(object):
         assert actual_df.shape == expected_df.shape
         tm.assert_frame_equal(actual_df, expected_df, check_exact=True)
 
-    def test_case_numeric(self):
+    @staticmethod
+    def test_case_numeric():
         a = numpy.array([0, 1, 1, 0, 1, 0, 0, 1, 0, 1], dtype=object)
         b = numpy.array([1, 2, 1, 3, 2, 1, 3, 2, 3, 1], dtype=object)
         c = numpy.array([1./128, 1./32, 1., 1./8, 1./32, 1., 1./128, 1./8, 1., 1./32], dtype=object)
@@ -218,7 +222,8 @@ class TestEncodeCategorical(object):
         assert actual_df.shape == expected_df.shape
         tm.assert_frame_equal(actual_df, expected_df, check_exact=True)
 
-    def test_with_missing(self):
+    @staticmethod
+    def test_with_missing():
         b = numpy.concatenate((
             numpy.repeat(["yes"], 5),
             numpy.repeat([None], 10),
@@ -246,7 +251,8 @@ class TestEncodeCategorical(object):
         tm.assert_frame_equal(actual_df.isnull(), expected_df.isnull())
         tm.assert_frame_equal(actual_df.dropna(), expected_df.dropna(), check_exact=True)
 
-    def test_drop_all_missing(self):
+    @staticmethod
+    def test_drop_all_missing():
         b = numpy.concatenate((
             numpy.repeat(["yes"], 5),
             numpy.repeat([None], 10),
@@ -270,7 +276,8 @@ class TestEncodeCategorical(object):
         tm.assert_frame_equal(actual_df.isnull(), expected_df.isnull())
         tm.assert_frame_equal(actual_df.dropna(), expected_df.dropna(), check_exact=True)
 
-    def test_retain_all_missing(self):
+    @staticmethod
+    def test_retain_all_missing():
         b = numpy.concatenate((
             numpy.repeat(["yes"], 5),
             numpy.repeat([None], 10),

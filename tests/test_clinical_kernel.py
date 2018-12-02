@@ -86,40 +86,47 @@ def make_data():
 
 class TestClinicalKernel(object):
 
-    def test_clinical_kernel_1(self, make_data):
+    @staticmethod
+    def test_clinical_kernel_1(make_data):
         data, expected = make_data()
         mat = clinical_kernel(data)
 
         assert_array_almost_equal(expected, mat, 4)
 
-    def test_clinical_kernel_no_ordinal(self, make_data):
+    @staticmethod
+    def test_clinical_kernel_no_ordinal(make_data):
         data, expected = make_data(with_ordinal=False)
         mat = clinical_kernel(data)
         assert_array_almost_equal(expected, mat, 4)
 
-    def test_clinical_kernel_no_nominal(self, make_data):
+    @staticmethod
+    def test_clinical_kernel_no_nominal(make_data):
         data, expected = make_data(with_nominal=False)
         mat = clinical_kernel(data)
         assert_array_almost_equal(expected, mat, 4)
 
-    def test_clinical_kernel_no_continuous(self, make_data):
+    @staticmethod
+    def test_clinical_kernel_no_continuous(make_data):
         data, expected = make_data(with_continuous=False)
         mat = clinical_kernel(data)
         assert_array_almost_equal(expected, mat, 4)
 
-    def test_clinical_kernel_only_nominal(self, make_data):
+    @staticmethod
+    def test_clinical_kernel_only_nominal(make_data):
         data, expected = make_data(with_continuous=False, with_ordinal=False)
         mat = clinical_kernel(data)
         assert_array_almost_equal(expected, mat, 4)
 
-    def test_clinical_kernel_x_and_y(self, make_data):
+    @staticmethod
+    def test_clinical_kernel_x_and_y(make_data):
         data, m = make_data()
         mat = clinical_kernel(data.iloc[:3, :], data.iloc[3:, :])
         expected = m[:3:, 3:]
 
         assert_array_almost_equal(expected, mat, 4)
 
-    def test_fit_error_ndim(self):
+    @staticmethod
+    def test_fit_error_ndim():
         t = ClinicalKernelTransform()
 
         with pytest.raises(ValueError, match="expected 2d array, but got 1"):
@@ -128,7 +135,8 @@ class TestClinicalKernel(object):
         with pytest.raises(ValueError, match="expected 2d array, but got 3"):
             t.fit(numpy.random.randn(31, 20, 2))
 
-    def test_kernel_transform(self, make_data):
+    @staticmethod
+    def test_kernel_transform(make_data):
         data, expected = make_data()
         t = ClinicalKernelTransform()
 
@@ -137,7 +145,8 @@ class TestClinicalKernel(object):
 
         assert_array_almost_equal(expected, mat, 4)
 
-    def test_kernel_transform_x_and_y(self, make_data):
+    @staticmethod
+    def test_kernel_transform_x_and_y(make_data):
         data, m = make_data()
         t = ClinicalKernelTransform(fit_once=True)
         t.prepare(data)
@@ -150,7 +159,8 @@ class TestClinicalKernel(object):
 
         assert_array_almost_equal(expected, mat, 4)
 
-    def test_kernel_transform_feature_mismatch(self, make_data):
+    @staticmethod
+    def test_kernel_transform_feature_mismatch(make_data):
         data, _ = make_data()
         t = ClinicalKernelTransform()
         t.fit(data)
@@ -158,7 +168,8 @@ class TestClinicalKernel(object):
         with pytest.raises(ValueError, match='expected array with 4 features, but got 17'):
             t.transform(numpy.zeros((2, 17), dtype=float))
 
-    def test_pairwise(self, make_data):
+    @staticmethod
+    def test_pairwise(make_data):
         data, expected = make_data()
         t = ClinicalKernelTransform()
         t.fit(data)
@@ -168,7 +179,8 @@ class TestClinicalKernel(object):
 
         assert_array_almost_equal(expected, mat, 4)
 
-    def test_pairwise_x_and_y(self, make_data):
+    @staticmethod
+    def test_pairwise_x_and_y(make_data):
         data, m = make_data()
         t = ClinicalKernelTransform()
         t.fit(data)
@@ -180,7 +192,8 @@ class TestClinicalKernel(object):
 
         assert_array_almost_equal(expected, mat, 4)
 
-    def test_pairwise_x_and_y_error_shape(self, make_data):
+    @staticmethod
+    def test_pairwise_x_and_y_error_shape(make_data):
         data, _ = make_data()
         t = ClinicalKernelTransform()
         t.fit(data)
@@ -188,7 +201,8 @@ class TestClinicalKernel(object):
         with pytest.raises(ValueError, match="X and Y have different number of features"):
             t.pairwise_kernel(data.iloc[0, :], data.iloc[1, :2])
 
-    def test_pairwise_no_nominal(self, make_data):
+    @staticmethod
+    def test_pairwise_no_nominal(make_data):
         data, expected = make_data(with_nominal=False)
         t = ClinicalKernelTransform()
         t.fit(data)
@@ -198,7 +212,8 @@ class TestClinicalKernel(object):
 
         assert_array_almost_equal(expected[:3:, 3:], mat, 4)
 
-    def test_call_function(self, make_data):
+    @staticmethod
+    def test_call_function(make_data):
         data, expected = make_data()
         t = ClinicalKernelTransform(fit_once=True)
         t.prepare(data)
@@ -206,7 +221,8 @@ class TestClinicalKernel(object):
         mat = t(t.X_fit_, t.X_fit_)
         assert_array_almost_equal(expected, mat, 4)
 
-    def test_call_function_x_and_y(self, make_data):
+    @staticmethod
+    def test_call_function_x_and_y(make_data):
         data, m = make_data()
         t = ClinicalKernelTransform(fit_once=True)
         t.prepare(data)
@@ -216,7 +232,8 @@ class TestClinicalKernel(object):
 
         assert_array_almost_equal(expected, mat, 4)
 
-    def test_pairwise_feature_mismatch(self, make_data):
+    @staticmethod
+    def test_pairwise_feature_mismatch(make_data):
         data, _ = make_data()
         t = ClinicalKernelTransform()
         t.fit(data)
@@ -226,7 +243,8 @@ class TestClinicalKernel(object):
             pairwise_kernels(t.X_fit_, numpy.zeros((2, 17), dtype=float),
                              metric=t.pairwise_kernel, n_jobs=1)
 
-    def test_prepare(self, make_data):
+    @staticmethod
+    def test_prepare(make_data):
         data, expected = make_data()
         t = ClinicalKernelTransform(fit_once=True)
         t.prepare(data)
@@ -236,20 +254,23 @@ class TestClinicalKernel(object):
 
         assert_array_almost_equal(expected[:4, :], mat, 4)
 
-    def test_prepare_error_fit_once(self, make_data):
+    @staticmethod
+    def test_prepare_error_fit_once(make_data):
         data = make_data()
         t = ClinicalKernelTransform(fit_once=False)
 
         with pytest.raises(ValueError, match="prepare can only be used if fit_once parameter is set to True"):
             t.prepare(data)
 
-    def test_prepare_error_type(self):
+    @staticmethod
+    def test_prepare_error_type():
         t = ClinicalKernelTransform(fit_once=True)
 
         with pytest.raises(TypeError, match='X must be a pandas DataFrame'):
             t.prepare([[0, 1], [1, 2], [4, 3], [6, 5]])
 
-    def test_prepare_error_dtype(self):
+    @staticmethod
+    def test_prepare_error_dtype():
         t = ClinicalKernelTransform(fit_once=True)
         data = pandas.DataFrame({"age": [12, 61, 18, 21, 57, 17],
                                  "date": numpy.array(
@@ -259,7 +280,8 @@ class TestClinicalKernel(object):
         with pytest.raises(TypeError, match=r'unsupported dtype: dtype\(.+\)'):
             t.prepare(data)
 
-    def test_feature_mismatch(self, make_data):
+    @staticmethod
+    def test_feature_mismatch(make_data):
         data, _ = make_data()
         x = data.iloc[:, :2]
         y = data.iloc[:, 2:]

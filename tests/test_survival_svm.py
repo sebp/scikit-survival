@@ -761,7 +761,8 @@ class TestNaiveSurvivalSVM(object):
         assert_cindex_almost_equal(y['fstat'], y['lenfol'], pred_rsvm,
                                    expected_cindex)
 
-    def test_fit_with_ties(self, whas500_with_ties):
+    @staticmethod
+    def test_fit_with_ties(whas500_with_ties):
         x, y = whas500_with_ties
 
         nrsvm = NaiveSurvivalSVM(loss='squared_hinge', dual=False, tol=1e-8, max_iter=1000, random_state=0)

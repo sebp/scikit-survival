@@ -15,7 +15,9 @@ def early_stopping_monitor(i, est, locals_):
 
 
 class TestGradientBoosting(object):
-    def test_fit(self, make_whas500):
+
+    @staticmethod
+    def test_fit(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         model = GradientBoostingSurvivalAnalysis(n_estimators=100, max_depth=3, min_samples_split=10,
@@ -36,7 +38,8 @@ class TestGradientBoosting(object):
                                              "Model n_features is 14 and input n_features is 2 "):
             model.predict(whas500_data.x[:, :2])
 
-    def test_fit_subsample(self, make_whas500):
+    @staticmethod
+    def test_fit_subsample(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         model = GradientBoostingSurvivalAnalysis(n_estimators=50, max_features=8, subsample=0.6,
@@ -63,8 +66,9 @@ class TestGradientBoosting(object):
                                              "Model n_features is 14 and input n_features is 2 "):
             model.predict(whas500_data.x[:, :2])
 
+    @staticmethod
     @pytest.mark.slow
-    def test_fit_dropout(self, make_whas500):
+    def test_fit_dropout(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         model = GradientBoostingSurvivalAnalysis(n_estimators=100, max_features=8,
@@ -80,7 +84,8 @@ class TestGradientBoosting(object):
         assert_cindex_almost_equal(whas500_data.y['fstat'], whas500_data.y['lenfol'], p,
                                    (0.9094333, 68343, 6806, 0, 119))
 
-    def test_fit_int_param_as_float(self, make_whas500):
+    @staticmethod
+    def test_fit_int_param_as_float(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         model = GradientBoostingSurvivalAnalysis(n_estimators=100.0, max_depth=3.0, min_samples_split=10.0,
@@ -99,7 +104,8 @@ class TestGradientBoosting(object):
         assert_cindex_almost_equal(whas500_data.y['fstat'], whas500_data.y['lenfol'], p,
                                    (0.90256690042449006, 67826, 7321, 2, 119))
 
-    def test_max_features(self, make_whas500):
+    @staticmethod
+    def test_max_features(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         model = GradientBoostingSurvivalAnalysis(n_estimators=10, max_features="auto", max_depth=3, random_state=0)
@@ -140,7 +146,8 @@ class TestGradientBoosting(object):
                                  "or 'log2'"):
             model.fit(whas500_data.x, whas500_data.y)
 
-    def test_presort(self, make_whas500):
+    @staticmethod
+    def test_presort(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         model = GradientBoostingSurvivalAnalysis(n_estimators=10, presort=None, random_state=0)
@@ -148,13 +155,15 @@ class TestGradientBoosting(object):
                            match=r"'presort' should be in \('auto', True, False\). Got None instead."):
             model.fit(whas500_data.x, whas500_data.y)
 
-    def test_fit_verbose(self, make_whas500):
+    @staticmethod
+    def test_fit_verbose(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         model = GradientBoostingSurvivalAnalysis(n_estimators=10, verbose=1, random_state=0)
         model.fit(whas500_data.x, whas500_data.y)
 
-    def test_ipcwls_loss(self, make_whas500):
+    @staticmethod
+    def test_ipcwls_loss(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         model = GradientBoostingSurvivalAnalysis(loss="ipcwls", n_estimators=100, max_depth=3, random_state=0)
@@ -170,7 +179,8 @@ class TestGradientBoosting(object):
         rmse_uncensored = numpy.sqrt(mean_squared_error(time_true[event_true], time_predicted[event_true]))
         assert round(abs(rmse_uncensored - 392.97741487479743), 7) == 0
 
-    def test_squared_loss(self, make_whas500):
+    @staticmethod
+    def test_squared_loss(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         model = GradientBoostingSurvivalAnalysis(loss="squared", n_estimators=100, max_depth=3, random_state=0)
@@ -186,7 +196,8 @@ class TestGradientBoosting(object):
         rmse_uncensored = numpy.sqrt(mean_squared_error(time_true[event_true], time_predicted[event_true]))
         assert round(abs(rmse_uncensored - 383.10639243317951), 7) == 0
 
-    def test_ipcw_loss_staged_predict(self, make_whas500):
+    @staticmethod
+    def test_ipcw_loss_staged_predict(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         # Test whether staged decision function eventually gives
@@ -213,7 +224,8 @@ class TestGradientBoosting(object):
 
         assert_array_equal(y_pred, y)
 
-    def test_squared_loss_staged_predict(self, make_whas500):
+    @staticmethod
+    def test_squared_loss_staged_predict(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         # Test whether staged decision function eventually gives
@@ -240,7 +252,8 @@ class TestGradientBoosting(object):
 
         assert_array_equal(y_pred, y)
 
-    def test_monitor_early_stopping(self, make_whas500):
+    @staticmethod
+    def test_monitor_early_stopping(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         est = GradientBoostingSurvivalAnalysis(loss="ipcwls", n_estimators=50, max_depth=1,
@@ -256,8 +269,9 @@ class TestGradientBoosting(object):
 
 class TestSparseGradientBoosting(object):
 
+    @staticmethod
     @pytest.mark.parametrize('loss', ['coxph', 'squared', 'ipcwls'])
-    def test_fit(self, whas500_sparse_data, loss):
+    def test_fit(whas500_sparse_data, loss):
         model = GradientBoostingSurvivalAnalysis(loss=loss, n_estimators=100, max_depth=1, min_samples_split=10,
                                                  subsample=0.5, random_state=0)
         model.fit(whas500_sparse_data.x_sparse, whas500_sparse_data.y)
@@ -273,9 +287,10 @@ class TestSparseGradientBoosting(object):
 
         assert_array_almost_equal(sparse_predict, dense_predict)
 
+    @staticmethod
     @pytest.mark.parametrize('loss', ['coxph', 'squared', 'ipcwls'])
     @pytest.mark.slow
-    def test_dropout(self, whas500_sparse_data, loss):
+    def test_dropout(whas500_sparse_data, loss):
         model = GradientBoostingSurvivalAnalysis(loss=loss, n_estimators=100, max_depth=1, min_samples_split=10,
                                                  dropout_rate=0.03, random_state=0)
         model.fit(whas500_sparse_data.x_sparse, whas500_sparse_data.y)
@@ -290,7 +305,8 @@ class TestSparseGradientBoosting(object):
 
         assert_array_almost_equal(sparse_predict, dense_predict)
 
-    def test_presort(self, whas500_sparse_data):
+    @staticmethod
+    def test_presort(whas500_sparse_data):
         model = GradientBoostingSurvivalAnalysis(n_estimators=10, presort=True, random_state=0)
         with pytest.raises(ValueError,
                            match="Presorting is not supported for sparse matrices."):
@@ -299,7 +315,8 @@ class TestSparseGradientBoosting(object):
 
 class TestComponentwiseGradientBoosting(object):
 
-    def test_fit(self, make_whas500):
+    @staticmethod
+    def test_fit(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         model = ComponentwiseGradientBoostingSurvivalAnalysis(n_estimators=100)
@@ -325,7 +342,8 @@ class TestComponentwiseGradientBoosting(object):
                                              'expected 14 features, but got 2'):
             model.predict(whas500_data.x[:, :2])
 
-    def test_fit_subsample(self, make_whas500):
+    @staticmethod
+    def test_fit_subsample(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         model = ComponentwiseGradientBoostingSurvivalAnalysis(n_estimators=100, subsample=0.6, random_state=0)
@@ -352,7 +370,8 @@ class TestComponentwiseGradientBoosting(object):
                                              'expected 14 features, but got 2'):
             model.predict(whas500_data.x[:, :2])
 
-    def test_fit_dropout(self, make_whas500):
+    @staticmethod
+    def test_fit_dropout(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         model = ComponentwiseGradientBoostingSurvivalAnalysis(n_estimators=100, learning_rate=1.0,
@@ -374,7 +393,8 @@ class TestComponentwiseGradientBoosting(object):
 
         assert_array_almost_equal(expected_coef.values, model.coef_)
 
-    def test_feature_importances(self, make_whas500):
+    @staticmethod
+    def test_feature_importances(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         model = ComponentwiseGradientBoostingSurvivalAnalysis(n_estimators=100, random_state=0)
@@ -382,13 +402,15 @@ class TestComponentwiseGradientBoosting(object):
 
         assert whas500_data.x.shape[1] + 1 == len(model.feature_importances_)
 
-    def test_fit_verbose(self, make_whas500):
+    @staticmethod
+    def test_fit_verbose(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         model = ComponentwiseGradientBoostingSurvivalAnalysis(n_estimators=10, verbose=1, random_state=0)
         model.fit(whas500_data.x, whas500_data.y)
 
-    def test_ipcwls_loss(self, make_whas500):
+    @staticmethod
+    def test_ipcwls_loss(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         model = ComponentwiseGradientBoostingSurvivalAnalysis(loss="ipcwls", n_estimators=100, random_state=0)
@@ -404,7 +426,8 @@ class TestComponentwiseGradientBoosting(object):
         rmse_uncensored = numpy.sqrt(mean_squared_error(time_true[event_true], time_predicted[event_true]))
         assert round(abs(rmse_uncensored - 542.884585289), 7) == 0
 
-    def test_squared_loss(self, make_whas500):
+    @staticmethod
+    def test_squared_loss(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         model = ComponentwiseGradientBoostingSurvivalAnalysis(loss="squared", n_estimators=100, random_state=0)

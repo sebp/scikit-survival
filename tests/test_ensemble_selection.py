@@ -216,7 +216,7 @@ class DummySurvivalRegressor(DummyRegressor):
         super().__init__(strategy=strategy, constant=constant, quantile=quantile)
 
     def fit(self, X, y, sample_weight=None):
-        X, event, time = check_arrays_survival(X, y)
+        X, _, time = check_arrays_survival(X, y)
         return super().fit(X, time)
 
 

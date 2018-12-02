@@ -14,16 +14,20 @@ def a_step_function():
 
 
 class TestStepFunction(object):
-    def test_exact(self, a_step_function):
+
+    @staticmethod
+    def test_exact(a_step_function):
         actual = numpy.array([a_step_function(v) for v in a_step_function.x])
         assert_array_equal(actual, a_step_function.y)
 
-    def test_not_exact(self, a_step_function):
+    @staticmethod
+    def test_not_exact(a_step_function):
         z = numpy.diff(a_step_function.x).min() / 2
         actual = numpy.array([a_step_function(v + z) for v in a_step_function.x[:-1]])
         assert_array_equal(actual, a_step_function.y[:-1])
 
-    def test_out_of_bounds(self, a_step_function):
+    @staticmethod
+    def test_out_of_bounds(a_step_function):
         eps = numpy.finfo(numpy.float_).eps * 8
         values = [a_step_function.x[0] - 100,
                   a_step_function.x[-1] + 100,
@@ -34,6 +38,7 @@ class TestStepFunction(object):
             with pytest.raises(ValueError, match=r"x must be within \[0.0+; 9.0+\], but was.+"):
                 a_step_function(v)
 
-    def test_not_finite(self, a_step_function, non_finite_value):
+    @staticmethod
+    def test_not_finite(a_step_function, non_finite_value):
         with pytest.raises(ValueError, match="x must be finite"):
             a_step_function(non_finite_value)
