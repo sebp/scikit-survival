@@ -10,10 +10,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from numpy.testing import assert_array_equal, assert_almost_equal
 from sksurv.metrics import concordance_index_censored
 
 
 def assert_cindex_almost_equal(event_indicator, event_time, estimate, expected):
     result = concordance_index_censored(event_indicator, event_time, estimate)
-    assert result[1:] == expected[1:]
-    assert round(abs(result[0] - expected[0]), 7) == 0
+    assert_array_equal(result[1:], expected[1:])
+    assert_almost_equal(result[0], expected[0])
