@@ -379,6 +379,7 @@ class TestMinlipCvxpy(object):
     @staticmethod
     def test_breast_cancer_cvxpy(gbsg2):
         x, y = gbsg2
+        x = scale(x)
         m = MinlipSurvivalAnalysis(solver="cvxpy", alpha=1, pairs="next")
         m.fit(x, y)
 
@@ -386,7 +387,7 @@ class TestMinlipCvxpy(object):
 
         p = m.predict(x)
         assert_cindex_almost_equal(y['cens'], y['time'], p,
-                                   (0.59576770470121443, 79280, 53792, 0, 32))
+                                   (0.5990741854033906, 79720, 53352, 0, 32))
 
     @staticmethod
     @pytest.mark.slow
