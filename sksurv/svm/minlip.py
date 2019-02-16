@@ -176,7 +176,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         prob = cvxpy.Problem(obj, constraints)
         solver_opts = self._get_options_cvxpy()
-        prob.solve(**solver_opts)
+        prob.solve(solver=cvxpy.settings.ECOS, **solver_opts)
         if prob.status != 'optimal':
             s = prob.solver_stats
             warnings.warn(('cvxpy solver {} did not converge after {} iterations: {}'.format(
