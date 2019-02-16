@@ -463,14 +463,14 @@ class TestMinlipCvxopt(object):
         x, y = gbsg2
         x = scale(x)
         m = self.model
-        m.set_params(kernel="rbf", gamma=32)
+        m.set_params(kernel="rbf", gamma=1./8)
         m.fit(x, y)
 
         assert (1, x.shape[0]) == m.coef_.shape
 
         p = m.predict(x)
         assert_cindex_almost_equal(y['cens'], y['time'], p,
-                                   (0.6487427858602861, 85974, 46387, 711, 32))
+                                   (0.6106092942166647, 81255, 51817, 0, 32))
 
     @staticmethod
     def test_max_iter(gbsg2):
