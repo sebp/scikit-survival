@@ -1,2 +1,0 @@
--r requirements_base.txt
-pandas >=0.19,<0.23

@@ -8,22 +8,13 @@ environment:
     # https://github.com/cvxopt/cvxopt/issues/94
     - TARGET_ARCH: "x64"
       CONDA_PY: "35"
-      PY_CONDITION: "python >=3.5,<3.6"
       CONDA_INSTALL_LOCN: "C:\\Miniconda35-x64"
-      NUMPY_VERSION: 1.12
-      PANDAS_VERSION: 0.22
     - TARGET_ARCH: "x64"
       CONDA_PY: "36"
-      PY_CONDITION: "python >=3.6"
       CONDA_INSTALL_LOCN: "C:\\Miniconda36-x64"
-      NUMPY_VERSION: 1.13
-      PANDAS_VERSION: 0.23
     - TARGET_ARCH: "x64"
-      CONDA_PY: "36"
-      PY_CONDITION: "python >=3.6"
-      CONDA_INSTALL_LOCN: "C:\\Miniconda36-x64"
-      NUMPY_VERSION: 1.14
-      PANDAS_VERSION: 0.23
+      CONDA_PY: "37"
+      CONDA_INSTALL_LOCN: "C:\\Miniconda37-x64"
 
 # We always use a 64-bit machine.
 platform:
@@ -32,28 +23,18 @@ platform:
 install:
   - cmd: set "OLDPATH=%PATH%"
   - cmd: set "PATH=%CONDA_INSTALL_LOCN%\\Scripts;%CONDA_INSTALL_LOCN%\\Library\\bin;%PATH%"
+  - cmd: conda config --set always_yes yes --set changeps1 no
+  - cmd: conda config --set auto_update_conda false
   - cmd: conda update --yes --quiet conda
   - cmd: set "PATH=%OLDPATH%"
   - cmd: call %CONDA_INSTALL_LOCN%\Scripts\activate.bat
-  - cmd: conda config --set always_yes yes
-
-  # Upgrade to the latest version of pip to avoid it displaying warnings
-  # about it being out of date.
-  - cmd: python -m pip install --disable-pip-version-check --user --upgrade "pip<10.0"
+  - cmd: conda info -a
 
   # Install the build and runtime dependencies of the project.
-  - cmd: conda install "%PY_CONDITION%" "pip<10" "mkl=2018.0.*" numpy=%NUMPY_VERSION% pandas=%PANDAS_VERSION% scipy numexpr ecos cython "scikit-learn<0.21"
-
-  # Install scs from tarball
-  - cmd: pip download --no-cache-dir --no-deps scs==1.2.7
-  - cmd: python ci/appveyor/extract-archive.py scs-1.2.7.tar.gz
-  - cmd: cd scs-1.2.7
-  - cmd: python setup.py install
-  - cmd: cd ..
-  - cmd: rmdir scs-1.2.7 /s /q
-
-  # Install remaining dependencies
-  - cmd: pip install -r ci/appveyor/requirements_%CONDA_PY%.txt
+  - cmd: conda env create -n sksurv-test --file ci\appveyor\requirements_%CONDA_PY%.yaml
+  - cmd: call %CONDA_INSTALL_LOCN%\Scripts\activate.bat sksurv-test
+  # Install cvxpy via pip
+  - cmd: pip install --no-cache-dir "cvxpy>=1.0"
   - cmd: conda list
   # Initialize the submodules
   - cmd: git submodule update --init --recursive
