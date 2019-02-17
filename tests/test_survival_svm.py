@@ -644,7 +644,7 @@ class TestKernelSurvivalSVM(object):
 def make_survival_counter(request):
     def _make_survival_counter(*args, **kwargs):
         cls = request.param
-        if not issubclass(cls, SurvivalCounter):
+        if isinstance(cls, partial):
             kwargs.pop('n_relevance_levels')
 
         counter = cls(*args, **kwargs)
