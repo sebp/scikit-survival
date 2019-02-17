@@ -264,7 +264,7 @@ class TestToyCvxpyExample(object):
         m.fit(x, y)
 
         p = m.predict(numpy.array([[3, 4], [41, 29]]))
-        assert_array_almost_equal(numpy.array([-0.341626, -5.374394]), p)
+        assert_array_almost_equal(numpy.array([-0.341626, -5.374394]), p, decimal=5)
 
     def test_toy_hinge_fit(self, toy_data):
         x, y = toy_data
@@ -283,7 +283,7 @@ class TestToyCvxpyExample(object):
         m.fit(x, y)
 
         p = m.predict(numpy.array([[3, 4], [41, 29]]))
-        assert_array_almost_equal(numpy.array([-0.34162189, -5.37433203]), p)
+        assert_array_almost_equal(numpy.array([-0.34162189, -5.37433203]), p, decimal=5)
 
     def test_toy_hinge_nearest_fit(self, toy_data):
         x, y = toy_data
@@ -304,7 +304,7 @@ class TestToyCvxpyExample(object):
         m.fit(x, y)
 
         p = m.predict(numpy.array([[3, 4], [41, 29]]))
-        assert_array_almost_equal(numpy.array([-0.34161366, -5.37419721]), p)
+        assert_array_almost_equal(numpy.array([-0.3416230366, -5.3743455497]), p)
 
 
 def has_cvxopt():

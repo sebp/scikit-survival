@@ -164,14 +164,14 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         n_pairs = D.shape[0]
 
-        a = cvxpy.Variable(n_pairs)
+        a = cvxpy.Variable(shape=(n_pairs, 1))
         P = D.dot(D.dot(K).T).T
         q = D.dot(time)
 
         obj = cvxpy.Minimize(0.5 * cvxpy.quad_form(a, P) - a.T * q)
         assert obj.is_dcp()
 
-        alpha = cvxpy.Parameter(sign="positive", value=self.alpha)
+        alpha = cvxpy.Parameter(nonneg=True, value=self.alpha)
         constraints = [a >= 0., -alpha <= D.T * a, D.T * a <= alpha]
 
         prob = cvxpy.Problem(obj, constraints)
@@ -184,7 +184,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
                 category=ConvergenceWarning,
                 stacklevel=2)
 
-        return a.value.T.A, None
+        return a.value.T, None
 
     def _get_options_cvxpy(self):
         solver_opts = {'verbose': self.verbose}
@@ -371,18 +371,18 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
 
         n_pairs = D.shape[0]
 
-        a = cvxpy.Variable(n_pairs)
-        alpha = cvxpy.Parameter(sign="positive", value=self.alpha)
+        a = cvxpy.Variable(shape=(n_pairs, 1))
+        alpha = cvxpy.Parameter(nonneg=True, value=self.alpha)
         P = D.dot(D.dot(K).T).T
 
-        obj = cvxpy.Minimize(0.5 * cvxpy.quad_form(a, P) - cvxpy.sum_entries(a))
+        obj = cvxpy.Minimize(0.5 * cvxpy.quad_form(a, P) - cvxpy.sum(a))
         constraints = [a >= 0., a <= alpha]
 
         prob = cvxpy.Problem(obj, constraints)
         solver_opts = self._get_options_cvxpy()
         prob.solve(**solver_opts)
 
-        coef = a.value.T.A
+        coef = a.value.T
         sv = numpy.flatnonzero(coef > 1e-5)
         return coef, sv
 

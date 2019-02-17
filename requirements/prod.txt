@@ -1,5 +1,5 @@
 cvxopt
-cvxpy <1.0
+cvxpy >=1.0
 numexpr
 numpy
 pandas >=0.19,<0.24
