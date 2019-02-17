@@ -1,6 +1,6 @@
 -r prod.txt
 
-cython
+cython >=0.29
 pytest
 pytest-cov
 setuptools_scm
