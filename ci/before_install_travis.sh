@@ -15,18 +15,30 @@ else
   ./miniconda.sh -b -f -p "$MINICONDA_DIR"
 
   conda config --set always_yes yes --set changeps1 no
+  conda config --set auto_update_conda false
   conda update -q conda
-  if [ "x$TRAVIS_PYTHON_VERSION" = "x3.4" ]; then
-      conda install gcc
-  else
-      conda install gcc_linux-64
-  fi
-  conda create -n sksurv-test python=$TRAVIS_PYTHON_VERSION numpy=$NUMPY_VERSION pandas=$PANDAS_VERSION scikit-learn=$SKLEARN_VERSION mkl=2018.0.* cython
+
+  conda create -n sksurv-test \
+    python=$CONDA_PYTHON_VERSION \
+    gcc_linux-64 \
+    gxx_linux-64
+
+  conda install -n sksurv-test -c conda-forge \
+    numpy=$NUMPY_VERSION \
+    pandas=$PANDAS_VERSION \
+    scikit-learn=$SKLEARN_VERSION \
+    cython \
+    tox \
+    "blas=*=openblas"
   echo "numpy $NUMPY_VERSION.*" > "$MINICONDA_DIR/envs/sksurv-test/conda-meta/pinned"
   echo "pandas $PANDAS_VERSION.*" >> "$MINICONDA_DIR/envs/sksurv-test/conda-meta/pinned"
   echo "scikit-learn $SKLEARN_VERSION.*" >> "$MINICONDA_DIR/envs/sksurv-test/conda-meta/pinned"
 fi
 
-# The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda
-sudo rm -rf /dev/shm
-sudo ln -s /run/shm /dev/shm
+# Useful for debugging any issues with conda
+conda info -a
+
+source activate sksurv-test
+
+# delete any version that is already installed
+pip uninstall --yes scikit-survival || exit 0
