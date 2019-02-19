@@ -111,15 +111,15 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
         k = 0
         for xi, xj in itertools.combinations(idx, 2):
             if time[xi] > time[xj] and event[xj]:
-                x_pairs[k, :] = X[xi, :] - X[xj, :]
+                numpy.subtract(X[xi, :], X[xj, :], out=x_pairs[k, :])
                 y_pairs[k] = 1
                 k += 1
             elif time[xi] < time[xj] and event[xi]:
-                x_pairs[k, :] = X[xi, :] - X[xj, :]
+                numpy.subtract(X[xi, :], X[xj, :], out=x_pairs[k, :])
                 y_pairs[k] = -1
                 k += 1
             elif time[xi] == time[xj] and (event[xi] or event[xj]):
-                x_pairs[k, :] = X[xi, :] - X[xj, :]
+                numpy.subtract(X[xi, :], X[xj, :], out=x_pairs[k, :])
                 y_pairs[k] = 1 if event[xj] else -1
                 k += 1
 
