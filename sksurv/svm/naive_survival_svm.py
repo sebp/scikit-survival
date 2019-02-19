@@ -123,8 +123,8 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
                 y_pairs[k] = 1 if event[xj] else -1
                 k += 1
 
-        x_pairs.resize((k, X.shape[1]))
-        y_pairs.resize(k)
+        x_pairs.resize((k, X.shape[1]), refcheck=False)
+        y_pairs.resize(k, refcheck=False)
         return x_pairs, y_pairs
 
     def fit(self, X, y, sample_weight=None):
