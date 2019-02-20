@@ -33,8 +33,6 @@ install:
   # Install the build and runtime dependencies of the project.
   - cmd: conda env create -n sksurv-test --file ci\appveyor\requirements_%CONDA_PY%.yaml
   - cmd: call %CONDA_INSTALL_LOCN%\Scripts\activate.bat sksurv-test
-  # Install cvxpy via pip
-  - cmd: pip install --no-cache-dir "cvxpy>=1.0"
   - cmd: conda list
   # Initialize the submodules
   - cmd: git submodule update --init --recursive
