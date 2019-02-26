@@ -264,7 +264,7 @@ class TestToyCvxpyExample(object):
         m.fit(x, y)
 
         p = m.predict(numpy.array([[3, 4], [41, 29]]))
-        assert_array_almost_equal(numpy.array([-0.341626, -5.374394]), p)
+        assert_array_almost_equal(numpy.array([-0.341626, -5.374394]), p, decimal=5)
 
     def test_toy_hinge_fit(self, toy_data):
         x, y = toy_data
@@ -283,7 +283,7 @@ class TestToyCvxpyExample(object):
         m.fit(x, y)
 
         p = m.predict(numpy.array([[3, 4], [41, 29]]))
-        assert_array_almost_equal(numpy.array([-0.34162189, -5.37433203]), p)
+        assert_array_almost_equal(numpy.array([-0.34162189, -5.37433203]), p, decimal=5)
 
     def test_toy_hinge_nearest_fit(self, toy_data):
         x, y = toy_data
@@ -304,7 +304,7 @@ class TestToyCvxpyExample(object):
         m.fit(x, y)
 
         p = m.predict(numpy.array([[3, 4], [41, 29]]))
-        assert_array_almost_equal(numpy.array([-0.34161366, -5.37419721]), p)
+        assert_array_almost_equal(numpy.array([-0.3416230366, -5.3743455497]), p)
 
 
 def has_cvxopt():
@@ -379,6 +379,7 @@ class TestMinlipCvxpy(object):
     @staticmethod
     def test_breast_cancer_cvxpy(gbsg2):
         x, y = gbsg2
+        x = scale(x)
         m = MinlipSurvivalAnalysis(solver="cvxpy", alpha=1, pairs="next")
         m.fit(x, y)
 
@@ -386,7 +387,7 @@ class TestMinlipCvxpy(object):
 
         p = m.predict(x)
         assert_cindex_almost_equal(y['cens'], y['time'], p,
-                                   (0.59576770470121443, 79280, 53792, 0, 32))
+                                   (0.5990741854033906, 79720, 53352, 0, 32))
 
     @staticmethod
     @pytest.mark.slow
@@ -463,14 +464,14 @@ class TestMinlipCvxopt(object):
         x, y = gbsg2
         x = scale(x)
         m = self.model
-        m.set_params(kernel="rbf", gamma=32)
+        m.set_params(kernel="rbf", gamma=1./8)
         m.fit(x, y)
 
         assert (1, x.shape[0]) == m.coef_.shape
 
         p = m.predict(x)
         assert_cindex_almost_equal(y['cens'], y['time'], p,
-                                   (0.6487427858602861, 85974, 46387, 711, 32))
+                                   (0.6106092942166647, 81255, 51817, 0, 32))
 
     @staticmethod
     def test_max_iter(gbsg2):

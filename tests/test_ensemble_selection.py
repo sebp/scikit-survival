@@ -221,8 +221,8 @@ class DummySurvivalRegressor(DummyRegressor):
 
 
 def _create_regression_ensemble():
-    aft_grid = ParameterGrid({"alpha": 2. ** numpy.arange(-9, 5, 2)})
-    svm_grid = ParameterGrid({"alpha": 2. ** numpy.arange(-9, 5, 2)})
+    aft_grid = ParameterGrid({"alpha": 2. ** numpy.arange(-2, 12, 2)})
+    svm_grid = ParameterGrid({"alpha": 2. ** numpy.arange(-12, 0, 2)})
 
     base_estimators = []
     for i, params in enumerate(aft_grid):
@@ -245,17 +245,18 @@ class TestEnsembleSelectionRegressor(object):
     @staticmethod
     @pytest.mark.slow
     def test_fit_and_predict(make_whas500):
-        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
+        whas500 = make_whas500(with_mean=True, with_std=True, to_numeric=True)
         meta = _create_regression_ensemble()
         assert len(meta) == 0
 
         meta.fit(whas500.x[:400], whas500.y[:400])
+        assert meta.scores_.shape[0] >= len(meta)
         assert len(meta) == 5
-        assert meta.scores_.shape == (14,)
+        assert meta.scores_.shape[0] == 9
 
         p = meta.predict(whas500.x[400:])
         score = numpy.sqrt(mean_squared_error(whas500.y[400:]['lenfol'], p))
-        assert abs(score - 1500.01954367) <= 0.1
+        assert abs(score - 423.82894756865056) <= 0.1
 
     @staticmethod
     def test_fit_dummy(make_whas500):

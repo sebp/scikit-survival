@@ -1,0 +1,16 @@
+name: sksurv-test
+channels:
+  - defaults
+dependencies:
+  - python=3.5
+  - cython>=0.28
+  - cvxopt>=1.1.9
+  - numexpr
+  - numpy=1.14
+  - pytest
+  - pytest-cov
+  - scipy
+  - scikit-learn=0.19
+  - pandas=0.22
+  - pip:
+    - cvxpy>=1.0,<1.0.16

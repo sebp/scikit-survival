@@ -1,25 +1,19 @@
-sudo: required
+dist: xenial
 language: python
-python:
-  - 3.5
-  - 3.6
-env:
-  global:
-    - NO_SLOW=true
-    - RUN_TOX=false
-  matrix:
-    - PANDAS_VERSION=0.19 NUMPY_VERSION=1.12 SKLEARN_VERSION=0.19 NO_SLOW=false
-    - PANDAS_VERSION=0.20 NUMPY_VERSION=1.13 SKLEARN_VERSION=0.19
-    - PANDAS_VERSION=0.21 NUMPY_VERSION=1.13 SKLEARN_VERSION=0.19
-    - PANDAS_VERSION=0.22 NUMPY_VERSION=1.14 SKLEARN_VERSION=0.20 NO_SLOW=false
-    - PANDAS_VERSION=0.23 NUMPY_VERSION=1.14 SKLEARN_VERSION=0.20 NO_SLOW=false RUN_TOX=true
+python: "3.5"
 
 matrix:
+  fast_finish: true
   exclude:
-    - python: 3.6
-      env: PANDAS_VERSION=0.19 NUMPY_VERSION=1.12 SKLEARN_VERSION=0.19 NO_SLOW=false
-    - python: 3.5
-      env: PANDAS_VERSION=0.22 NUMPY_VERSION=1.14 SKLEARN_VERSION=0.20 NO_SLOW=false
+    # Exclude the default Python 3.5 build
+    - python: "3.5"
+
+  include:
+  - env: CONDA_PYTHON_VERSION="3.5" PANDAS_VERSION=0.20 NUMPY_VERSION=1.14 SKLEARN_VERSION=0.19 NO_SLOW=false
+  - env: CONDA_PYTHON_VERSION="3.6" PANDAS_VERSION=0.20 NUMPY_VERSION=1.14 SKLEARN_VERSION=0.19 NO_SLOW=true
+  - env: CONDA_PYTHON_VERSION="3.6" PANDAS_VERSION=0.21 NUMPY_VERSION=1.14 SKLEARN_VERSION=0.20 NO_SLOW=false
+  - env: CONDA_PYTHON_VERSION="3.7" PANDAS_VERSION=0.23 NUMPY_VERSION=1.14 SKLEARN_VERSION=0.20 NO_SLOW=true
+  - env: CONDA_PYTHON_VERSION="3.7" PANDAS_VERSION=0.23 NUMPY_VERSION=1.15 SKLEARN_VERSION=0.20 NO_SLOW=false RUN_TOX=true
 
 cache:
   directories:
@@ -33,11 +27,9 @@ before_install:
 # command to install dependencies
 install:
   - python ci/list-requirements.py requirements/dev.txt > /tmp/conda-req.txt
-  - conda install -n sksurv-test -c sebp --file /tmp/conda-req.txt
+  - conda install -c conda-forge -n sksurv-test --file /tmp/conda-req.txt
   - conda list -n sksurv-test
   - source activate sksurv-test
-  - pip install --disable-pip-version-check --upgrade pip tox pytest pytest-cov
-  - pip uninstall --yes scikit-survival || exit 0  # delete any version that is already installed
   - python setup.py bdist_wheel
   - pip install --exists-action=w --pre --no-index --find-links dist/ scikit-survival
   - rm -fr build dist
