@@ -380,7 +380,7 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
 
         prob = cvxpy.Problem(obj, constraints)
         solver_opts = self._get_options_cvxpy()
-        prob.solve(**solver_opts)
+        prob.solve(solver=cvxpy.settings.ECOS, **solver_opts)
 
         coef = a.value.T
         sv = numpy.flatnonzero(coef > 1e-5)
