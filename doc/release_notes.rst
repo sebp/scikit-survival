@@ -3,6 +3,22 @@
 Release Notes
 =============
 
+scikit-survival 0.7 (2019-02-27)
+--------------------------------
+
+This release adds support for Python 3.7 and sklearn 0.20.
+
+**Changes:**
+
+- Add support for sklearn 0.20 (#48).
+- Migrate to py.test (#50).
+- Explicitly request ECOS solver for :class:`sksurv.svm.MinlipSurvivalAnalysis`
+  and :class:`sksurv.svm.HingeLossSurvivalSVM`.
+- Add support for Python 3.7 (#49).
+- Add support for cvxpy >=1.0.
+- Add support for numpy 1.15.
+
+
 scikit-survival 0.6 (2018-10-07)
 --------------------------------
 
