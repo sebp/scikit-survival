@@ -22,10 +22,23 @@ def toy_data():
                      [45, 21],
                      [50, 36]])
 
+    rnd = numpy.random.RandomState(0)
+    t = rnd.exponential(scale=8, size=x.shape[0])
+    t.sort()
     y = Surv.from_arrays([True, True, False, True, False, False],
-                         numpy.arange(1, 7) + 2 ** numpy.arange(1, 7),
+                         t,
                          name_event='status')
     return x, y
+
+
+@pytest.fixture
+def toy_test_data():
+    x = numpy.array([[1., 1.],
+                     [40, 30],
+                     [50, 36]])
+    rnd = numpy.random.RandomState(136)
+    x += rnd.randn(*x.shape)
+    return x
 
 
 @pytest.fixture
@@ -224,7 +237,7 @@ class TestToyCvxpyExample(object):
 
     @property
     def svm_model(self):
-        return HingeLossSurvivalSVM(solver="cvxpy", alpha=1)
+        return HingeLossSurvivalSVM(solver="cvxpy", alpha=2.)
 
     def test_toy_minlip_fit_cvxpy(self, toy_data):
         x, y = toy_data
@@ -234,8 +247,9 @@ class TestToyCvxpyExample(object):
 
         assert (1, x.shape[0]) == m.coef_.shape
         assert 1 == m.coef0
-        expected_coef = numpy.array([[-7.18695994e-02, 7.18695994e-02, -7.51880574e-13,
-                                      -2.14618562e-01, 2.14618562e-01, 0]])
+        expected_coef = numpy.array([
+            [-0.011728003147, 0.011728002895, 0.000000000252,
+             -0.017524801335, 0.017524801335, 0.]])
         assert_array_almost_equal(m.coef_, expected_coef)
 
     def test_toy_minlip_timeit(self, toy_data):
@@ -255,56 +269,74 @@ class TestToyCvxpyExample(object):
         assert_cindex_almost_equal(y['status'], y['time'], p,
                                    (1.0, 11, 0, 0, 0))
 
-    def test_toy_minlip_predict_2_cvxpy(self, toy_data):
+    def test_toy_minlip_predict_2_cvxpy(self, toy_data, toy_test_data):
         x, y = toy_data
         m = self.minlip_model
         m.set_params(pairs="next")
         y = y.copy()
         y["time"] = numpy.arange(1, 7)
-        m.fit(x, y)
+        sd = numpy.std(x, axis=0)
+        m.fit(x / sd, y)
 
-        p = m.predict(numpy.array([[3, 4], [41, 29]]))
-        assert_array_almost_equal(numpy.array([-0.341626, -5.374394]), p, decimal=5)
+        p = m.predict(toy_test_data / sd)
+        expected = numpy.array([-0.033523879826, -1.878228488294, -2.410824233892])
+        assert_array_almost_equal(expected, p, decimal=5)
 
     def test_toy_hinge_fit(self, toy_data):
         x, y = toy_data
         m = self.svm_model
-        m.fit(x, y)
+        sd = numpy.std(x, axis=0)
+        m.fit(x / sd, y)
 
         assert (1, x.shape[0]) == m.coef_.shape
+        assert 1 == m.coef0
+        expected_coef = numpy.array([
+            [-1.893832101337, 1.083653895940, 0.810178205398,
+             -2., 2., 0.]])
+        assert_array_almost_equal(m.coef_, expected_coef)
 
-        p = m.predict(x)
+        p = m.predict(x / sd)
         assert_cindex_almost_equal(y['status'], y['time'], p,
                                    (1.0, 11, 0, 0, 0))
 
-    def test_toy_hinge_predict_cvxpy(self, toy_data):
+    def test_toy_hinge_predict_cvxpy(self, toy_data, toy_test_data):
         x, y = toy_data
         m = self.svm_model
-        m.fit(x, y)
+        sd = numpy.std(x, axis=0)
+        m.fit(x / sd, y)
 
-        p = m.predict(numpy.array([[3, 4], [41, 29]]))
-        assert_array_almost_equal(numpy.array([-0.34162189, -5.37433203]), p, decimal=5)
+        p = m.predict(toy_test_data / sd)
+        expected = numpy.array([-0.090550891252, -4.213744335308, -5.252123739017])
+        assert_array_almost_equal(expected, p, decimal=5)
 
     def test_toy_hinge_nearest_fit(self, toy_data):
         x, y = toy_data
         m = self.svm_model
         m.set_params(pairs="nearest")
-        m.fit(x, y)
+        sd = numpy.std(x, axis=0)
+        m.fit(x / sd, y)
 
         assert(1, x.shape[0]) == m.coef_.shape
+        assert 1 == m.coef0
+        expected_coef = numpy.array([
+            [-1.893832101337, 1.083653895940, 0.810178205398,
+             -2., 2., 0.]])
+        assert_array_almost_equal(m.coef_, expected_coef)
 
-        p = m.predict(x)
+        p = m.predict(x / sd)
         assert_cindex_almost_equal(y['status'], y['time'], p,
                                    (1.0, 11, 0, 0, 0))
 
-    def test_toy_hinge_nearest_predict_cvxpy(self, toy_data):
+    def test_toy_hinge_nearest_predict_cvxpy(self, toy_data, toy_test_data):
         x, y = toy_data
         m = self.svm_model
         m.set_params(pairs="nearest")
-        m.fit(x, y)
+        sd = numpy.std(x, axis=0)
+        m.fit(x / sd, y)
 
-        p = m.predict(numpy.array([[3, 4], [41, 29]]))
-        assert_array_almost_equal(numpy.array([-0.3416230366, -5.3743455497]), p)
+        p = m.predict(toy_test_data / sd)
+        expected = numpy.array([-0.090550891252, -4.213744335308, -5.252123739017])
+        assert_array_almost_equal(expected, p, decimal=5)
 
 
 def has_cvxopt():
@@ -333,8 +365,9 @@ class TestToyCvxoptExample(object):
 
         assert (1, x.shape[0]) == m.coef_.shape
         assert 1 == m.coef0
-        expected_coef = numpy.array([[-7.18695994e-02, 7.18695994e-02, -7.51880574e-13,
-                                      -2.14618562e-01, 2.14618562e-01, 0]])
+        expected_coef = numpy.array([
+            [-0.011727707619, 0.011727690349, 0.000000017270,
+             -0.017525505057, 0.017525505057, 0.]])
         assert_array_almost_equal(m.coef_, expected_coef)
 
     def test_toy_minlip_predict_1_cvxopt(self, toy_data):
