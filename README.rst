@@ -66,7 +66,7 @@ Requirements
 Installation
 ============
 
-The easiest way to get started is to install `Anaconda <https://store.continuum.io/cshop/anaconda/>`_
+The easiest way to get started is to install `Anaconda <https://www.anaconda.com/distribution/>`_
 and setup an environment::
 
   conda install -c sebp scikit-survival
