@@ -20,6 +20,7 @@ from sklearn.utils.validation import assert_all_finite, check_array, check_is_fi
 
 from ..base import SurvivalAnalysisMixin
 from ..util import check_arrays_survival
+from .coxph import BreslowEstimator
 from ._coxnet import call_fit_coxnet
 
 __all__ = ['CoxnetSurvivalAnalysis']
@@ -79,6 +80,13 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     verbose : bool, optional, default: False
         Whether to print additional information during optimization.
 
+    fit_baseline_model : bool, optional, default: False
+        Whether to estimate baseline survival function
+        and baseline cumulative hazard function for each alpha.
+        If enabled, :meth:`predict_cumulative_hazard_function` and
+        :meth:`predict_survival_function` can be used to obtain
+        predicted  cumulative hazard function and survival function.
+
     Attributes
     ----------
     alphas_ : ndarray, shape=(n_alphas,)
@@ -102,7 +110,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
     def __init__(self, n_alphas=100, alphas=None, alpha_min_ratio=0.0001, l1_ratio=0.5,
                  penalty_factor=None, normalize=False, copy_X=True,
-                 tol=1e-7, max_iter=100000, verbose=False):
+                 tol=1e-7, max_iter=100000, verbose=False, fit_baseline_model=False):
         self.n_alphas = n_alphas
         self.alphas = alphas
         self.alpha_min_ratio = alpha_min_ratio
@@ -113,6 +121,9 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         self.tol = tol
         self.max_iter = max_iter
         self.verbose = verbose
+        self.fit_baseline_model = fit_baseline_model
+
+        self._baseline_models = None
 
     def _pre_fit(self, X, y):
         X, event, time = check_arrays_survival(X, y, copy=self.copy_X)
@@ -202,6 +213,14 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
                           category=ConvergenceWarning,
                           stacklevel=2)
 
+        if self.fit_baseline_model:
+            self._baseline_models = tuple(
+                BreslowEstimator().fit(numpy.dot(X, coef[:, i]), event_num, time)
+                for i in range(coef.shape[1])
+            )
+        else:
+            self._baseline_models = None
+
         self.alphas_ = alphas
         self.penalty_factor_ = penalty
         self.coef_ = coef
@@ -264,3 +283,86 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         X = check_array(X)
         coef = self._get_coef(alpha)
         return numpy.dot(X, coef)
+
+    def _get_baseline_model(self, alpha):
+        check_is_fitted(self, "coef_")
+        if self._baseline_models is None:
+            raise ValueError('`fit` must be called with the fit_baseline_model option set to True.')
+
+        if alpha is None:
+            baseline_model = self._baseline_models[-1]
+        else:
+            is_close = numpy.isclose(alpha, self.alphas_)
+            if is_close.any():
+                idx = numpy.flatnonzero(is_close)[0]
+                baseline_model = self._baseline_models[idx]
+            else:
+                raise ValueError('alpha must be one value of alphas_: %s' % self.alphas_)
+
+        return baseline_model
+
+    def predict_cumulative_hazard_function(self, X, alpha=None):
+        """Predict cumulative hazard function.
+
+        Only available if :meth:`fit` has been called with `fit_baseline_model = True`.
+
+        The cumulative hazard function for an individual
+        with feature vector :math:`x_\\alpha` is defined as
+
+        .. math::
+
+            H(t \\mid x_\\alpha) = \\exp(x_\\alpha^\\top \\beta) H_0(t) ,
+
+        where :math:`H_0(t)` is the baseline hazard function,
+        estimated by Breslow's estimator.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            Data matrix.
+
+        alpha : float, optional
+            Constant that multiplies the penalty terms. The same alpha as used during training
+            must be specified. If set to ``None``, the last alpha in the solution path is used.
+
+        Returns
+        -------
+        cum_hazard : ndarray, shape = (n_samples,)
+            Predicted cumulative hazard functions.
+        """
+        baseline_model = self._get_baseline_model(alpha)
+
+        return baseline_model.get_cumulative_hazard_function(self.predict(X, alpha=alpha))
+
+    def predict_survival_function(self, X, alpha=None):
+        """Predict survival function.
+
+        Only available if :meth:`fit` has been called with `fit_baseline_model = True`.
+
+        The survival function for an individual
+        with feature vector :math:`x_\\alpha` is defined as
+
+        .. math::
+
+            S(t \\mid x_\\alpha) = S_0(t)^{\\exp(x_\\alpha^\\top \\beta)} ,
+
+        where :math:`S_0(t)` is the baseline survival function,
+        estimated by Breslow's estimator.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            Data matrix.
+
+        alpha : float, optional
+            Constant that multiplies the penalty terms. The same alpha as used during training
+            must be specified. If set to ``None``, the last alpha in the solution path is used.
+
+        Returns
+        -------
+        survival : ndarray, shape = (n_samples,)
+            Predicted survival functions.
+        """
+        baseline_model = self._get_baseline_model(alpha)
+
+        return baseline_model.get_survival_function(self.predict(X, alpha=alpha))

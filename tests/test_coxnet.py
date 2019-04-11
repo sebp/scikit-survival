@@ -425,6 +425,36 @@ class TestCoxnetSurvivalAnalysis(object):
             coxnet.predict(x.iloc[[122, 10, 22, 200], :], alpha=a) for a in [0.75, 0.25, 0.2, 0.15, 0.1, 0.075]])
         assert_array_almost_equal(pred, expected_pred)
 
+    def test_example_2_predict_func(self):
+        x, coxnet = self._fit_example(l1_ratio=0.9, n_alphas=11,
+                                      alpha_min_ratio=0.001,
+                                      fit_baseline_model=True)
+
+        xtest = x.iloc[[122, 10, 22, 200], :]
+        for a in [None] + list(coxnet.alphas_):
+            chf = coxnet.predict_cumulative_hazard_function(xtest, alpha=a)
+            assert len(chf) == 4
+
+            sf = coxnet.predict_survival_function(xtest, alpha=a)
+            assert len(sf) == 4
+
+    def test_predict_func_disabled(self):
+        x, coxnet = self._fit_example(l1_ratio=0.9, n_alphas=11,
+                                      alpha_min_ratio=0.001,
+                                      fit_baseline_model=False)
+        with pytest.raises(ValueError,
+                           match='`fit` must be called with the fit_baseline_model option set to True.'):
+            coxnet.predict_cumulative_hazard_function(x)
+
+    def test_predict_func_no_such_alpha(self):
+        x, coxnet = self._fit_example(l1_ratio=0.9, n_alphas=11,
+                                      alpha_min_ratio=0.001,
+                                      fit_baseline_model=True)
+        with pytest.raises(ValueError,
+                           match=r'alpha must be one value of alphas_: \[.+'):
+            for a in 1. + numpy.random.randn(100):
+                coxnet.predict_cumulative_hazard_function(x, alpha=a)
+
     def test_all_zero_coefs(self):
         alphas = numpy.array([256, 128, 96, 64, 48])
 
