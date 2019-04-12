@@ -204,7 +204,7 @@ class TestStackingSurvivalAnalysis(object):
         # result is different if randomForestSRC has not been compiled with OpenMP support
         p = meta.predict(whas500.x)
         assert_cindex_almost_equal(whas500.y['fstat'], whas500.y['lenfol'], p,
-                                   (0.7848807, 58983, 16166, 0, 119))
+                                   (0.7848807, 58983, 16166, 0, 14))
 
     @staticmethod
     def test_predict_proba():

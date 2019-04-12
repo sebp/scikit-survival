@@ -55,7 +55,7 @@ class TestEnsembleSelectionSurvivalAnalysis(object):
         p = meta.predict(whas500.x)
 
         assert_cindex_almost_equal(whas500.y['fstat'], whas500.y['lenfol'], p,
-                                   (0.7863312, 59088, 16053, 8, 119))
+                                   (0.7863312, 59088, 16053, 8, 14))
 
     @staticmethod
     @pytest.mark.slow
@@ -69,7 +69,7 @@ class TestEnsembleSelectionSurvivalAnalysis(object):
         p = meta.predict(whas500.x)
 
         assert_cindex_almost_equal(whas500.y['fstat'], whas500.y['lenfol'], p,
-                                   (0.7863312, 59088, 16053, 8, 119))
+                                   (0.7863312, 59088, 16053, 8, 14))
 
     @staticmethod
     @pytest.mark.slow
@@ -83,7 +83,7 @@ class TestEnsembleSelectionSurvivalAnalysis(object):
         p = meta.predict(whas500.x)
 
         assert_cindex_almost_equal(whas500.y['fstat'], whas500.y['lenfol'], p,
-                                   (0.7663043, 57570, 17545, 34, 119))
+                                   (0.7663043, 57570, 17545, 34, 14))
 
     @staticmethod
     @pytest.mark.slow
@@ -115,7 +115,7 @@ class TestEnsembleSelectionSurvivalAnalysis(object):
         p = meta.predict(whas500.x)
 
         assert_cindex_almost_equal(whas500.y['fstat'], whas500.y['lenfol'], p,
-                                   (0.7978084, 59938, 15178, 33, 119))
+                                   (0.7978084, 59938, 15178, 33, 14))
 
     @staticmethod
     def test_min_score(make_whas500):

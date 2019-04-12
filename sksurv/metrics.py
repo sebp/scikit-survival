@@ -17,6 +17,34 @@ import numpy
 __all__ = ['concordance_index_censored']
 
 
+def _get_comparable(event_indicator, event_time, order):
+    n_samples = len(event_time)
+    tied_time = 0
+    comparable = {}
+    i = 0
+    while i < n_samples - 1:
+        time_i = event_time[order[i]]
+        start = i + 1
+        end = start
+        while end < n_samples and event_time[order[end]] == time_i:
+            end += 1
+
+        # check for tied event times
+        event_at_same_time = event_indicator[order[i:end]]
+        censored_at_same_time = ~event_at_same_time
+        for j in range(i, end):
+            if event_indicator[order[j]]:
+                mask = numpy.zeros(n_samples, dtype=bool)
+                mask[end:] = True
+                # an event is comparable to censored samples at same time point
+                mask[i:end] = censored_at_same_time
+                comparable[j] = mask
+                tied_time += censored_at_same_time.sum()
+        i = end
+
+    return comparable, tied_time
+
+
 def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1e-8):
     """Concordance index for right-censored data
 
@@ -66,7 +94,7 @@ def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1
         Number of pairs having tied estimated risks
 
     tied_time : int
-        Number of pairs having an event at the same time
+        Number of comparable pairs sharing the same time
 
     References
     ----------
@@ -104,12 +132,9 @@ def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1
 
         est = estimate[order[mask]]
 
-        if event_i:
-            # an event should have a higher score
-            con = (est < est_i).sum()
-        else:
-            # a non-event should have a lower score
-            con = (est > est_i).sum()
+        assert event_i, 'got censored sample at index %d, but expected uncensored' % order[ind]
+        # an event should have a higher score
+        con = (est < est_i).sum()
         concordant += con
 
         diff = numpy.absolute(est - est_i)
@@ -120,31 +145,3 @@ def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1
 
     cindex = (concordant + 0.5 * tied_risk) / (concordant + discordant + tied_risk)
     return cindex, concordant, discordant, tied_risk, tied_time
-
-
-def _get_comparable(event_indicator, event_time, order):
-    n_samples = len(event_time)
-    tied_time = 0
-    comparable = {}
-    for i in range(n_samples - 1):
-        inext = i + 1
-        j = inext
-        time_i = event_time[order[i]]
-        while j < n_samples and event_time[order[j]] == time_i:
-            j += 1
-
-        if event_indicator[order[i]]:
-            mask = numpy.zeros(n_samples, dtype=bool)
-            mask[inext:] = True
-            if j - i > 1:
-                # event times are tied, need to check for coinciding events
-                event_at_same_time = event_indicator[order[inext:j]]
-                mask[inext:j] = numpy.logical_not(event_at_same_time)
-                tied_time += event_at_same_time.sum()
-            comparable[i] = mask
-        elif j - i > 1:
-            # events at same time are comparable if at least one of them is positive
-            mask = numpy.zeros(n_samples, dtype=bool)
-            mask[inext:j] = event_indicator[order[inext:j]]
-            comparable[i] = mask
-    return comparable, tied_time

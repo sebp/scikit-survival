@@ -29,6 +29,6 @@ class TestIPCRidge(object):
         y_test = whas500.y[400:]
         p = model.predict(x_test)
         assert_cindex_almost_equal(y_test['fstat'], y_test['lenfol'], -p,
-                                   (0.66925817946226107, 2066, 1021, 0, 6))
+                                   (0.66925817946226107, 2066, 1021, 0, 1))
 
         assert model.score(x_test, y_test) == 1.0 - 0.66925817946226107

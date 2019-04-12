@@ -68,7 +68,7 @@ def test_concordance_index_with_tied_time():
     assert 8 == con
     assert 12 == dis
     assert 0 == tie_r
-    assert 0 == tie_t
+    assert 2 == tie_t
     assert round(abs(0.4 - c), 6) == 0
 
 
@@ -82,7 +82,7 @@ def test_concordance_index_with_tied_time2():
     assert 3 == con
     assert 12 == dis
     assert 0 == tie_r
-    assert 0 == tie_t
+    assert 1 == tie_t
     assert round(abs(0.2 - c), 6) == 0
 
 
@@ -110,7 +110,7 @@ def test_concordance_index_with_tied_event_and_time():
     assert 12 == con
     assert 9 == dis
     assert 1 == tie_r
-    assert 1 == tie_t
+    assert 2 == tie_t
     assert round(abs(0.5681818 - c), 6) == 0
 
 
@@ -121,7 +121,7 @@ def test_concordance_index(whas500_pred):
     assert 57849 == con
     assert 17300 == dis
     assert 0 == tie_r
-    assert 119 == tie_t
+    assert 14 == tie_t
     assert round(abs(0.7697907 - c), 6) == 0
 
 
