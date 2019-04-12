@@ -472,7 +472,7 @@ class TestMinlipCvxpy(object):
 
         p = m.predict(X_test)
         assert_cindex_almost_equal(y_test['cens'], y_test['time'], p,
-                                   (0.6386271870794078, 466, 260, 17, 0))
+                                   (0.626514131897712, 457, 269, 17, 0))
 
 
 @pytest.mark.skipif(not has_cvxopt(), reason='no cvxopt installed')

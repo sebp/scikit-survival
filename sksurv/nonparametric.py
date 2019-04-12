@@ -11,11 +11,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numpy
-from sklearn.utils.validation import check_consistent_length
+from sklearn.base import BaseEstimator
+from sklearn.utils.validation import check_consistent_length, check_is_fitted
 
 from .util import check_y_survival
 
-__all__ = ['kaplan_meier_estimator', 'nelson_aalen_estimator', 'ipc_weights']
+__all__ = [
+    'CensoringDistributionEstimator',
+    'kaplan_meier_estimator',
+    'nelson_aalen_estimator',
+    'ipc_weights',
+]
 
 
 def _compute_counts(event, time, order=None):
@@ -287,3 +293,100 @@ def ipc_weights(event, time):
     weights[event] = 1.0 / Ghat
 
     return weights
+
+
+class CensoringDistributionEstimator(BaseEstimator):
+    """Kaplan–Meier estimator for the censoring distribution."""
+
+    def __init__(self):
+        pass
+
+    def fit(self, y):
+        """Estimate censoring distribution from training data.
+
+        Parameters
+        ----------
+        y : structured array, shape = (n_samples,)
+            A structured array containing the binary event indicator
+            as first field, and time of event or time of censoring as
+            second field.
+
+        Returns
+        -------
+        self
+        """
+        event, time = check_y_survival(y)
+        if event.all():
+            self.unique_time_ = numpy.unique(time)
+            self.prob_ = numpy.ones(self.unique_time_.shape[0])
+        else:
+            unique_time, prob = kaplan_meier_estimator(~event, time)
+            self.unique_time_ = numpy.concatenate(([-numpy.infty], unique_time))
+            self.prob_ = numpy.concatenate(([1.], prob))
+
+        return self
+
+    def predict_prob(self, time):
+        """Return probability of being censored after given time point.
+
+        :math:`\\hat{G}(t) = P(D > t)`
+
+        Parameters
+        ----------
+        time : array, shape = (n_samples,)
+            Time to estimate probability of censoring at.
+
+        Returns
+        -------
+        prob : array, shape = (n_samples,)
+            Probability of censoring.
+        """
+        check_is_fitted(self, "unique_time_")
+
+        # K-M is undefined if estimate at last time point is non-zero
+        extends = time > self.unique_time_[-1]
+        if self.prob_[-1] > 0 and extends.any():
+            raise ValueError("time must be smaller than largest "
+                             "observed time point: {}".format(self.unique_time_[-1]))
+
+        # beyond last time point is zero probability
+        Ghat = numpy.empty(time.shape, dtype=float)
+        Ghat[extends] = 0.0
+
+        valid = ~extends
+        time = time[valid]
+        idx = numpy.searchsorted(self.unique_time_, time)
+        # for non-exact matches, we need to shift the index to left
+        exact = numpy.absolute(self.unique_time_[idx] - time) < numpy.finfo(time.dtype).eps
+        idx[~exact] -= 1
+        Ghat[valid] = self.prob_[idx]
+
+        return Ghat
+
+    def predict_ipcw(self, y):
+        """Return inverse probability of censoring weights at given time points.
+
+        :math:`\\omega_i = \\delta_i / \\hat{G}(y_i)`
+
+        Parameters
+        ----------
+        y : structured array, shape = (n_samples,)
+            A structured array containing the binary event indicator
+            as first field, and time of event or time of censoring as
+            second field.
+
+        Returns
+        -------
+        ipcw : array, shape = (n_samples,)
+            Inverse probability of censoring weights.
+        """
+        event, time = check_y_survival(y)
+        Ghat = self.predict_prob(time[event])
+
+        if (Ghat == 0.0).any():
+            raise ValueError("censoring survival function is zero at one or more time points")
+
+        weights = numpy.zeros(time.shape[0])
+        weights[event] = 1.0 / Ghat
+
+        return weights
