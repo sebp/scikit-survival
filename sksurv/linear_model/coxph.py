@@ -27,6 +27,103 @@ from ..util import check_arrays_survival
 __all__ = ['CoxPHSurvivalAnalysis']
 
 
+class BreslowEstimator:
+    """Breslow's estimator of the cumulative hazard function.
+
+    Attributes
+    ----------
+    cum_baseline_hazard_ : :class:`sksurv.functions.StepFunction`
+        Cumulative baseline hazard function.
+
+    baseline_survival_ : :class:`sksurv.functions.StepFunction`
+        Baseline survival function.
+    """
+
+    def fit(self, linear_predictor, event, time):
+        """Compute baseline cumulative hazard function.
+
+        Parameters
+        ----------
+        linear_predictor : array-like, shape = (n_samples,)
+            Linear predictor of risk: `X @ coef`.
+
+        event : array-like, shape = (n_samples,)
+            Contains binary event indicators.
+
+        time : array-like, shape = (n_samples,)
+            Contains event/censoring times.
+
+        Returns
+        -------
+        self
+        """
+        risk_score = numpy.exp(linear_predictor)
+        order = numpy.argsort(time, kind="mergesort")
+        risk_score = risk_score[order]
+        uniq_times, n_events, n_at_risk = _compute_counts(event, time, order)
+
+        divisor = numpy.empty(n_at_risk.shape, dtype=numpy.float_)
+        value = numpy.sum(risk_score)
+        divisor[0] = value
+        k = 0
+        for i in range(1, len(n_at_risk)):
+            d = n_at_risk[i - 1] - n_at_risk[i]
+            value -= risk_score[k:(k + d)].sum()
+            k += d
+            divisor[i] = value
+
+        assert k == n_at_risk[0] - n_at_risk[-1]
+
+        y = numpy.cumsum(n_events / divisor)
+        self.cum_baseline_hazard_ = StepFunction(uniq_times, y)
+        self.baseline_survival_ = StepFunction(self.cum_baseline_hazard_.x,
+                                               numpy.exp(- self.cum_baseline_hazard_.y))
+        return self
+
+    def get_cumulative_hazard_function(self, linear_predictor):
+        """Predict cumulative hazard function.
+
+        Parameters
+        ----------
+        linear_predictor : array-like, shape = (n_samples,)
+            Linear predictor of risk: `X @ coef`.
+
+        Returns
+        -------
+        cum_hazard : ndarray, shape = (n_samples,)
+            Predicted cumulative hazard functions.
+        """
+        risk_score = numpy.exp(linear_predictor)
+        n_samples = risk_score.shape[0]
+        funcs = numpy.empty(n_samples, dtype=numpy.object_)
+        for i in range(n_samples):
+            funcs[i] = StepFunction(x=self.cum_baseline_hazard_.x,
+                                    y=self.cum_baseline_hazard_.y,
+                                    a=risk_score[i])
+        return funcs
+
+    def get_survival_function(self, linear_predictor):
+        """Predict survival function.
+
+        Parameters
+        ----------
+        linear_predictor : array-like, shape = (n_samples,)
+            Linear predictor of risk: `X @ coef`.
+
+        Returns
+        -------
+        survival : ndarray, shape = (n_samples,)
+            Predicted survival functions.
+        """
+        risk_score = numpy.exp(linear_predictor)
+        n_samples = risk_score.shape[0]
+        funcs = numpy.empty(n_samples, dtype=numpy.object_)
+        for i in range(n_samples):
+            funcs[i] = StepFunction(x=self.baseline_survival_.x,
+                                    y=numpy.power(self.baseline_survival_.y, risk_score[i]))
+        return funcs
+
+
 class CoxPHOptimizer:
     """Negative partial log-likelihood of Cox proportional hazards model"""
 
@@ -190,6 +287,8 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         self.tol = tol
         self.verbose = verbose
 
+        self._baseline_model = BreslowEstimator()
+
     def fit(self, X, y):
         """Minimize negative partial log-likelihood for provided data.
 
@@ -256,10 +355,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
             i += 1
 
         self.coef_ = w
-        self.cum_baseline_hazard_ = self._fit_baseline_hazard_function(X, event, time)
-        self.baseline_survival_ = StepFunction(self.cum_baseline_hazard_.x,
-                                               numpy.exp(- self.cum_baseline_hazard_.y))
-
+        self._baseline_model.fit(numpy.dot(X, self.coef_), event, time)
         return self
 
     def predict(self, X):
@@ -304,14 +400,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         cum_hazard : ndarray, shape = (n_samples,)
             Predicted cumulative hazard functions.
         """
-        risk_score = numpy.exp(self.predict(X))
-        n_samples = risk_score.shape[0]
-        funcs = numpy.empty(n_samples, dtype=numpy.object_)
-        for i in range(n_samples):
-            funcs[i] = StepFunction(x=self.cum_baseline_hazard_.x,
-                                    y=self.cum_baseline_hazard_.y,
-                                    a=risk_score[i])
-        return funcs
+        return self._baseline_model.get_cumulative_hazard_function(self.predict(X))
 
     def predict_survival_function(self, X):
         """Predict survival function.
@@ -336,51 +425,4 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         survival : ndarray, shape = (n_samples,)
             Predicted survival functions.
         """
-        risk_score = numpy.exp(self.predict(X))
-        n_samples = risk_score.shape[0]
-        funcs = numpy.empty(n_samples, dtype=numpy.object_)
-        for i in range(n_samples):
-            funcs[i] = StepFunction(x=self.baseline_survival_.x,
-                                    y=numpy.power(self.baseline_survival_.y, risk_score[i]))
-        return funcs
-
-    def _fit_baseline_hazard_function(self, X, event, time):
-        """Compute baseline cumulative hazard function.
-
-        Uses Breslow's estimator.
-
-        Parameters
-        ----------
-        X : array-like, shape = (n_samples, n_features)
-            Data matrix.
-
-        event : array-like, shape = (n_samples,)
-            Contains binary event indicators.
-
-        time : array-like, shape = (n_samples,)
-            Contains event/censoring times.
-
-        Returns
-        -------
-        cum_baseline_hazard: :class:`sksurv.functions.StepFunction`
-            Cumulative baseline hazard function.
-        """
-        risk_score = numpy.exp(numpy.dot(X, self.coef_))
-        order = numpy.argsort(time, kind="mergesort")
-        risk_score = risk_score[order]
-        uniq_times, n_events, n_at_risk = _compute_counts(event, time, order)
-
-        divisor = numpy.empty(n_at_risk.shape, dtype=numpy.float_)
-        value = numpy.sum(risk_score)
-        divisor[0] = value
-        k = 0
-        for i in range(1, len(n_at_risk)):
-            d = n_at_risk[i - 1] - n_at_risk[i]
-            value -= risk_score[k:(k + d)].sum()
-            k += d
-            divisor[i] = value
-
-        assert k == n_at_risk[0] - n_at_risk[-1]
-
-        y = numpy.cumsum(n_events / divisor)
-        return StepFunction(uniq_times, y)
+        return self._baseline_model.get_survival_function(self.predict(X))
