@@ -17,4 +17,7 @@ from sksurv.metrics import concordance_index_censored
 def assert_cindex_almost_equal(event_indicator, event_time, estimate, expected):
     result = concordance_index_censored(event_indicator, event_time, estimate)
     assert_array_equal(result[1:], expected[1:])
+    concordant, discordant, tied_risk = result[1:4]
+    cc = (concordant + 0.5 * tied_risk) / (concordant + discordant + tied_risk)
+    assert_almost_equal(result[0], cc)
     assert_almost_equal(result[0], expected[0])

@@ -14,7 +14,94 @@ from sklearn.utils import check_consistent_length, check_array
 
 import numpy
 
-__all__ = ['concordance_index_censored']
+from .nonparametric import CensoringDistributionEstimator
+from .util import check_y_survival
+
+__all__ = ['concordance_index_censored', 'concordance_index_ipcw']
+
+
+def _check_inputs(event_indicator, event_time, estimate):
+    check_consistent_length(event_indicator, event_time, estimate)
+    event_indicator = check_array(event_indicator, ensure_2d=False)
+    event_time = check_array(event_time, ensure_2d=False)
+    estimate = check_array(estimate, ensure_2d=False)
+
+    if not numpy.issubdtype(event_indicator.dtype, numpy.bool_):
+        raise ValueError(
+            'only boolean arrays are supported as class labels for survival analysis, got {0}'.format(
+                event_indicator.dtype))
+
+    if len(event_time) < 2:
+        raise ValueError("Need a minimum of two samples")
+
+    if not event_indicator.any():
+        raise ValueError("All samples are censored")
+
+    return event_indicator, event_time, estimate
+
+
+def _get_comparable(event_indicator, event_time, order):
+    n_samples = len(event_time)
+    tied_time = 0
+    comparable = {}
+    i = 0
+    while i < n_samples - 1:
+        time_i = event_time[order[i]]
+        start = i + 1
+        end = start
+        while end < n_samples and event_time[order[end]] == time_i:
+            end += 1
+
+        # check for tied event times
+        event_at_same_time = event_indicator[order[i:end]]
+        censored_at_same_time = ~event_at_same_time
+        for j in range(i, end):
+            if event_indicator[order[j]]:
+                mask = numpy.zeros(n_samples, dtype=bool)
+                mask[end:] = True
+                # an event is comparable to censored samples at same time point
+                mask[i:end] = censored_at_same_time
+                comparable[j] = mask
+                tied_time += censored_at_same_time.sum()
+        i = end
+
+    return comparable, tied_time
+
+
+def _estimate_concordance_index(event_indicator, event_time, estimate, weights, tied_tol=1e-8):
+    order = numpy.argsort(event_time)
+
+    comparable, tied_time = _get_comparable(event_indicator, event_time, order)
+
+    concordant = 0
+    discordant = 0
+    tied_risk = 0
+    numerator = 0.0
+    denominator = 0.0
+    for ind, mask in comparable.items():
+        est_i = estimate[order[ind]]
+        event_i = event_indicator[order[ind]]
+        w_i = weights[order[ind]]
+
+        est = estimate[order[mask]]
+
+        assert event_i, 'got censored sample at index %d, but expected uncensored' % order[ind]
+
+        ties = numpy.absolute(est - est_i) <= tied_tol
+        n_ties = ties.sum()
+        # an event should have a higher score
+        con = est < est_i
+        n_con = con[~ties].sum()
+
+        numerator += w_i * n_con + 0.5 * w_i * n_ties
+        denominator += w_i * mask.sum()
+
+        tied_risk += n_ties
+        concordant += n_con
+        discordant += est.size - n_con - n_ties
+
+    cindex = numerator / denominator
+    return cindex, concordant, discordant, tied_risk, tied_time
 
 
 def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1e-8):
@@ -66,7 +153,7 @@ def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1
         Number of pairs having tied estimated risks
 
     tied_time : int
-        Number of pairs having an event at the same time
+        Number of comparable pairs sharing the same time
 
     References
     ----------
@@ -75,76 +162,101 @@ def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1
            evaluating assumptions and adequacy, and measuring and reducing errors",
            Statistics in Medicine, 15(4), 361-87, 1996.
     """
-    check_consistent_length(event_indicator, event_time, estimate)
-    event_indicator = check_array(event_indicator, ensure_2d=False)
-    event_time = check_array(event_time, ensure_2d=False)
-    estimate = check_array(estimate, ensure_2d=False)
+    event_indicator, event_time, estimate = _check_inputs(
+        event_indicator, event_time, estimate)
 
-    if not numpy.issubdtype(event_indicator.dtype, numpy.bool_):
-        raise ValueError(
-            'only boolean arrays are supported as class labels for survival analysis, got {0}'.format(
-                event_indicator.dtype))
+    w = numpy.ones_like(estimate)
 
-    if len(event_time) < 2:
-        raise ValueError("Need a minimum of two samples")
-
-    if not event_indicator.any():
-        raise ValueError("All samples are censored")
-
-    order = numpy.argsort(event_time)
-
-    comparable, tied_time = _get_comparable(event_indicator, event_time, order)
-
-    concordant = 0
-    discordant = 0
-    tied_risk = 0
-    for ind, mask in comparable.items():
-        est_i = estimate[order[ind]]
-        event_i = event_indicator[order[ind]]
-
-        est = estimate[order[mask]]
-
-        if event_i:
-            # an event should have a higher score
-            con = (est < est_i).sum()
-        else:
-            # a non-event should have a lower score
-            con = (est > est_i).sum()
-        concordant += con
-
-        diff = numpy.absolute(est - est_i)
-        tie = (diff <= tied_tol).sum()
-        tied_risk += tie
-
-        discordant += est.size - con - tie
-
-    cindex = (concordant + 0.5 * tied_risk) / (concordant + discordant + tied_risk)
-    return cindex, concordant, discordant, tied_risk, tied_time
+    return _estimate_concordance_index(event_indicator, event_time, estimate, w, tied_tol)
 
 
-def _get_comparable(event_indicator, event_time, order):
-    n_samples = len(event_time)
-    tied_time = 0
-    comparable = {}
-    for i in range(n_samples - 1):
-        inext = i + 1
-        j = inext
-        time_i = event_time[order[i]]
-        while j < n_samples and event_time[order[j]] == time_i:
-            j += 1
+def concordance_index_ipcw(survival_train, survival_test, estimate, tau=None, tied_tol=1e-8):
+    """Concordance index for right-censored data based on inverse probability of censoring weights.
 
-        if event_indicator[order[i]]:
-            mask = numpy.zeros(n_samples, dtype=bool)
-            mask[inext:] = True
-            if j - i > 1:
-                # event times are tied, need to check for coinciding events
-                event_at_same_time = event_indicator[order[inext:j]]
-                mask[inext:j] = numpy.logical_not(event_at_same_time)
-                tied_time += event_at_same_time.sum()
-            comparable[i] = mask
-        elif j - i > 1:
-            # events at same time are comparable if at least one of them is positive
-            mask = numpy.zeros(n_samples, dtype=bool)
-            mask[inext:j] = event_indicator[order[inext:j]]
-            comparable[i] = mask
-    return comparable, tied_time
+    This is an alternative to the estimator in :func:`concordance_index_censored`
+    that does not depend on the distribution of censoring times in the test data.
+    Therefore, the estimate is unbiased and consistent for a population concordance
+    measure that is free of censoring.
+
+    It is based on inverse probability of censoring weights, thus requires
+    access to survival times from the training data to estimate the censoring
+    distribution. Note that this requires that survival times `survival_test`
+    lie within the range of survival times `survival_train`. This can be
+    achieved by specifying the truncation time `tau`.
+    The resulting `cindex` tells how well the given prediction model works in
+    predicting events that occur in the time range from 0 to `tau`.
+
+    The estimator uses the Kaplan-Meier estimator to estimate the
+    censoring survivor function. Therefore, it is restricted to
+    situations where the random censoring assumption holds and
+    censoring is independent of the features.
+
+    Parameters
+    ----------
+    survival_train : structured array, shape = (n_train_samples,)
+        Survival times for training data to estimate the censoring
+        distribution from.
+        A structured array containing the binary event indicator
+        as first field, and time of event or time of censoring as
+        second field.
+
+    survival_test : structured array, shape = (n_samples,)
+        Survival times of test data.
+        A structured array containing the binary event indicator
+        as first field, and time of event or time of censoring as
+        second field.
+
+    estimate : array-like, shape = (n_samples,)
+        Estimated risk of experiencing an event of test data.
+
+    tau : float, optional
+        Truncation time. The survival function for the underlying
+        censoring time distribution :math:`D` needs to be positive
+        at `tau`, i.e., `tau` should be chosen such that the
+        probability of being censored after time `tau` is non-zero:
+        :math:`P(D > \\tau) > 0`. If `None`, no truncation is performed.
+
+    tied_tol : float, optional, default: 1e-8
+        The tolerance value for considering ties.
+        If the absolute difference between risk scores is smaller
+        or equal than `tied_tol`, risk scores are considered tied.
+
+    Returns
+    -------
+    cindex : float
+        Concordance index
+
+    concordant : int
+        Number of concordant pairs
+
+    discordant : int
+        Number of discordant pairs
+
+    tied_risk : int
+        Number of pairs having tied estimated risks
+
+    tied_time : int
+        Number of comparable pairs sharing the same time
+
+    References
+    ----------
+    .. [1] Uno, H., Cai, T., Pencina, M. J., D’Agostino, R. B., & Wei, L. J. (2011).
+           "On the C-statistics for evaluating overall adequacy of risk prediction
+           procedures with censored survival data".
+           Statistics in Medicine, 30(10), 1105–1117.
+    """
+    test_event, test_time = check_y_survival(survival_test)
+
+    if tau is not None:
+        survival_test = survival_test[test_time < tau]
+
+    _, _, estimate = _check_inputs(
+        test_event, test_time, estimate)
+
+    cens = CensoringDistributionEstimator()
+    cens.fit(survival_train)
+    ipcw = cens.predict_ipcw(survival_test)
+
+    w = numpy.square(ipcw)
+
+    return _estimate_concordance_index(test_event, test_time, estimate, w, tied_tol)

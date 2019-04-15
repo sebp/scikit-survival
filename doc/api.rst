@@ -8,6 +8,7 @@ Non-parametric Estimators
 .. autosummary::
     :toctree: generated/
 
+    CensoringDistributionEstimator
     kaplan_meier_estimator
     nelson_aalen_estimator
     ipc_weights
@@ -81,6 +82,7 @@ Metrics
     :toctree: generated/
 
     concordance_index_censored
+    concordance_index_ipcw
 
 
 Pre-Processing

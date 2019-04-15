@@ -420,7 +420,7 @@ class TestMinlipCvxpy(object):
 
         p = m.predict(x)
         assert_cindex_almost_equal(y['cens'], y['time'], p,
-                                   (0.5990741854033906, 79720, 53352, 0, 32))
+                                   (0.5990741854033906, 79720, 53352, 0, 42))
 
     @staticmethod
     @pytest.mark.slow
@@ -435,7 +435,7 @@ class TestMinlipCvxpy(object):
 
         p = m.predict(x)
         assert_cindex_almost_equal(y['cens'], y['time'], p,
-                                   (0.6105867500300589, 81252, 51820, 0, 32))
+                                   (0.6105867500300589, 81252, 51820, 0, 42))
 
     @staticmethod
     def test_unknown_solver(gbsg2):
@@ -472,7 +472,7 @@ class TestMinlipCvxpy(object):
 
         p = m.predict(X_test)
         assert_cindex_almost_equal(y_test['cens'], y_test['time'], p,
-                                   (0.6386271870794078, 466, 260, 17, 0))
+                                   (0.626514131897712, 457, 269, 17, 0))
 
 
 @pytest.mark.skipif(not has_cvxopt(), reason='no cvxopt installed')
@@ -491,7 +491,7 @@ class TestMinlipCvxopt(object):
 
         p = m.predict(x)
         assert_cindex_almost_equal(y['cens'], y['time'], p,
-                                   (0.59570007214139709, 79271, 53801, 0, 32))
+                                   (0.59570007214139709, 79271, 53801, 0, 42))
 
     def test_breast_cancer_rbf_cvxopt(self, gbsg2):
         x, y = gbsg2
@@ -504,7 +504,7 @@ class TestMinlipCvxopt(object):
 
         p = m.predict(x)
         assert_cindex_almost_equal(y['cens'], y['time'], p,
-                                   (0.6106092942166647, 81255, 51817, 0, 32))
+                                   (0.6106092942166647, 81255, 51817, 0, 42))
 
     @staticmethod
     def test_max_iter(gbsg2):

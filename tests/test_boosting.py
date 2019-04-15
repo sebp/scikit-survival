@@ -30,7 +30,7 @@ class TestGradientBoosting(object):
         p = model.predict(whas500_data.x)
 
         assert_cindex_almost_equal(whas500_data.y['fstat'], whas500_data.y['lenfol'], p,
-                                   (0.86272605091218779, 64826, 10309, 14, 119))
+                                   (0.86272605091218779, 64826, 10309, 14, 14))
 
         assert (100,) == model.train_score_.shape
 
@@ -57,7 +57,7 @@ class TestGradientBoosting(object):
         p = model.predict(x_test)
 
         assert_cindex_almost_equal(y_test['fstat'], y_test['lenfol'], p,
-                                   (0.8330510326740247, 60985, 12221, 2, 110))
+                                   (0.8330510326740247, 60985, 12221, 2, 14))
 
         assert (50,) == model.train_score_.shape
         assert (50,) == model.oob_improvement_.shape
@@ -82,7 +82,7 @@ class TestGradientBoosting(object):
         p = model.predict(whas500_data.x)
 
         assert_cindex_almost_equal(whas500_data.y['fstat'], whas500_data.y['lenfol'], p,
-                                   (0.9094333, 68343, 6806, 0, 119))
+                                   (0.9094333, 68343, 6806, 0, 14))
 
     @staticmethod
     def test_fit_int_param_as_float(make_whas500):
@@ -102,7 +102,7 @@ class TestGradientBoosting(object):
         p = model.predict(whas500_data.x)
 
         assert_cindex_almost_equal(whas500_data.y['fstat'], whas500_data.y['lenfol'], p,
-                                   (0.90256690042449006, 67826, 7321, 2, 119))
+                                   (0.90256690042449006, 67826, 7321, 2, 14))
 
     @staticmethod
     def test_max_features(make_whas500):
@@ -324,7 +324,7 @@ class TestComponentwiseGradientBoosting(object):
         p = model.predict(whas500_data.x)
 
         assert_cindex_almost_equal(whas500_data.y['fstat'], whas500_data.y['lenfol'], p,
-                                   (0.7755659, 58283, 16866, 0, 119))
+                                   (0.7755659, 58283, 16866, 0, 14))
 
         expected_coef = pandas.Series(numpy.zeros(15, dtype=float), index=whas500_data.names)
         expected_coef['age'] = 0.040919
@@ -351,7 +351,7 @@ class TestComponentwiseGradientBoosting(object):
         p = model.predict(whas500_data.x)
 
         assert_cindex_almost_equal(whas500_data.y['fstat'], whas500_data.y['lenfol'], p,
-                                   (0.7750602, 58245, 16904, 0, 119))
+                                   (0.7750602, 58245, 16904, 0, 14))
 
         expected_coef = pandas.Series(numpy.zeros(15, dtype=float), index=whas500_data.names)
         expected_coef['age'] = 0.041299
@@ -380,7 +380,7 @@ class TestComponentwiseGradientBoosting(object):
         p = model.predict(whas500_data.x)
 
         assert_cindex_almost_equal(whas500_data.y['fstat'], whas500_data.y['lenfol'], p,
-                                   (0.7772425, 58409, 16740, 0, 119))
+                                   (0.7772425, 58409, 16740, 0, 14))
 
         expected_coef = pandas.Series(numpy.zeros(15, dtype=float), index=whas500_data.names)
         expected_coef['age'] = 0.275537
