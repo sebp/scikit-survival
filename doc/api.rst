@@ -9,6 +9,7 @@ Non-parametric Estimators
     :toctree: generated/
 
     CensoringDistributionEstimator
+    SurvivalFunctionEstimator
     kaplan_meier_estimator
     nelson_aalen_estimator
     ipc_weights
