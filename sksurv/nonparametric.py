@@ -356,7 +356,8 @@ class SurvivalFunctionEstimator(BaseEstimator):
         time = time[valid]
         idx = numpy.searchsorted(self.unique_time_, time)
         # for non-exact matches, we need to shift the index to left
-        exact = numpy.absolute(self.unique_time_[idx] - time) < numpy.finfo(time.dtype).eps
+        eps = numpy.finfo(self.unique_time_.dtype).eps
+        exact = numpy.absolute(self.unique_time_[idx] - time) < eps
         idx[~exact] -= 1
         Shat[valid] = self.prob_[idx]
 
