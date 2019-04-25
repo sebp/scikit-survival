@@ -84,6 +84,7 @@ Metrics
 
     concordance_index_censored
     concordance_index_ipcw
+    cumulative_dynamic_auc
 
 
 Pre-Processing

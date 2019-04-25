@@ -1,10 +1,10 @@
 import os.path
 
 import numpy
-from numpy.testing import assert_array_equal, assert_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_array_equal, assert_almost_equal
 import pytest
 
-from sksurv.metrics import concordance_index_censored, concordance_index_ipcw
+from sksurv.metrics import concordance_index_censored, concordance_index_ipcw, cumulative_dynamic_auc
 from sksurv.util import Surv
 
 
@@ -404,3 +404,241 @@ def test_uno_c_all_censored():
     ret_uno = concordance_index_ipcw(y_train, y_test, estimate)
     ret_harrell = concordance_index_censored(y_test['event'], y_test['time'], estimate)
     assert ret_uno == ret_harrell
+
+
+@pytest.fixture()
+def uno_auc_data_15():
+    y = Surv.from_arrays(
+        time=[10.88, 19.78, 40.92, 98.7, 70.19, 10.15, 28.95, 29.57, 17.9, 63.78, 36.22, 83.14, 13.69, 99.51, 3.19],
+        event=[1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1])
+    estimate = [-1.019, -0.016, 0.132, 0.269, -0.777, -1.077, 0.894, -1.227, -0.417, 0.072, -1.275, -0.91, -0.825,
+                -0.292, -0.045]
+    return y, estimate
+
+
+@pytest.fixture()
+def uno_auc_data_20():
+    y_train = Surv.from_arrays(
+        time=[77.6, 57.6, 66.6, 67.0, 31.5, 5.5, 67.4, 43.7, 31.7, 71.9, 81.1, 56.2, 88.1, 2.9, 62.0, 17.2, 88.0,
+              26.4, 93.5, 79.9],
+        event=[1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1]
+    )
+    y_test = Surv.from_arrays(
+        time=[10.88, 19.78, 40.92, 98.7, 70.19, 10.15, 28.95, 29.57, 17.9, 63.78, 36.22, 83.14, 13.69, 99.51, 3.19],
+        event=[1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1])
+    estimate = [-1.019, -0.016, 0.132, 0.269, -0.777, -1.077, 0.894, -1.227, -0.417, 0.072, -1.275, -0.91, -0.825,
+                -0.292, -0.045]
+    return y_train, y_test, estimate
+
+
+@pytest.fixture(params=[
+    'single_time',
+    'two_times',
+    'two_times_int',
+    'min_to_max_times',
+    'train_test',
+    'tied_test_time',
+    'whas500',
+    'whas500_unordered_time',
+])
+def uno_auc_data(request, uno_auc_data_15, uno_auc_data_20, whas500_pred):
+    p = request.param
+
+    y_test = None
+    if p == 'single_time':
+        y_train, estimate = uno_auc_data_15
+        times = 28
+        iauc = 0.362963
+        expected = numpy.array([iauc])
+    elif p == 'two_times':
+        y_train, estimate = uno_auc_data_15
+        times = [15, 66]
+        iauc = 0.3943949
+        expected = numpy.array([0.3030303, 0.4500000])
+    elif p == 'two_times_int':
+        y_train, estimate = uno_auc_data_15
+        y_train['time'] = y_train['time'] * 100.
+        y_train = y_train.astype([('event', bool), ('time', int)])
+        estimate = (numpy.array(estimate) * 1000).astype(int)
+        times = numpy.array([1500, 6600], dtype=int)
+        iauc = 0.3943949
+        expected = numpy.array([0.3030303, 0.4500000])
+    elif p == 'min_to_max_times':
+        y_train, estimate = uno_auc_data_15
+        times = (y_train['time'].min(), 15, 66, y_train['time'].max() - 1e-6)
+        iauc = 0.3999539
+        expected = numpy.array([0.6428571, 0.3030303, 0.4500000, 0.3162996])
+    elif p == 'train_test':
+        y_train, y_test, estimate = uno_auc_data_20
+        times = [15, 66]
+        iauc = 0.385509
+        expected = numpy.array([0.3030303, 0.4357061])
+    elif p == 'tied_test_time':
+        y_train, y_test, estimate = uno_auc_data_20
+        y_test['time'][0] = y_test['time'][1]
+        times = [15, 66]
+        iauc = 0.4204885
+        expected = numpy.array([0.3750000, 0.4357061])
+    elif p.startswith('whas500'):
+        event, time, estimate = whas500_pred
+        y_train = Surv.from_arrays(event=event[:300], time=time[:300])
+        y_test = Surv.from_arrays(event=event[300:], time=time[300:])
+        estimate = estimate[300:]
+        if p == 'whas500_unordered_time':
+            times = (1000, 600, 1400, 200, 400, 1200, 800, 1000, 200)
+        else:
+            times = (200, 400, 600, 800, 1000, 1200, 1400)
+        iauc = 0.8045058
+        expected = numpy.array([0.7720669, 0.7765915, 0.7962623, 0.8759295, 0.8759295, 0.8759513, 0.9147647])
+    else:
+        assert False
+
+    if y_test is None:
+        y_test = y_train
+    yield y_train, y_test, estimate, times, expected, iauc
+
+
+def test_uno_auc(uno_auc_data):
+    y_train, y_test, estimate, times, expect_auc, expect_iauc = uno_auc_data
+
+    auc, iauc = cumulative_dynamic_auc(y_train, y_test, estimate, times)
+    assert_array_almost_equal(auc, expect_auc)
+    assert_almost_equal(iauc, expect_iauc)
+
+
+@pytest.fixture(params=[
+    'test_time_too_big_1',
+    'test_time_too_big_2',
+    'ipcw_undefined_1',
+    'ipcw_undefined_2',
+    'all_censored_train',
+    'all_censored_test',
+])
+def uno_auc_censoring_failure_data(request, uno_auc_data_20):
+    p = request.param
+
+    times = 33
+    if p == 'test_time_too_big_1':
+        y_train, y_test, _ = uno_auc_data_20
+        y_test['time'][11] = 100
+        match = "time must be smaller than largest observed time point:"
+    elif p == 'test_time_too_big_2':
+        y_train, y_test, _ = uno_auc_data_20
+        idx = numpy.argmax(y_test['time'])
+        y_test['event'][idx] = True
+        match = "time must be smaller than largest observed time point:"
+    elif p == 'ipcw_undefined_1':
+        y_train, y_test, _ = uno_auc_data_20
+        idx = numpy.argmax(y_train['time'])
+        y_train['event'][idx] = 0
+        y_test['time'][0] = y_train['time'][idx]
+        match = "censoring survival function is zero at one or more time points"
+    elif p == 'ipcw_undefined_2':
+        y_train, y_test, _ = uno_auc_data_20
+        idx = numpy.argmax(y_train['time'])
+        y_train['event'][idx] = 0
+        y_test['time'][-1] = y_train['time'][idx] * 2
+        y_test['event'][-1] = True
+        match = "censoring survival function is zero at one or more time points"
+    elif p == 'all_censored_train':
+        y_train, y_test, _ = uno_auc_data_20
+        y_train['event'] = False
+        match = "all samples are censored"
+    elif p == 'all_censored_test':
+        y_train, y_test, _ = uno_auc_data_20
+        y_test['event'] = False
+        match = "all samples are censored"
+    else:
+        assert False
+
+    yield y_train, y_test, times, match
+
+
+def test_uno_auc_censoring_failure(uno_auc_censoring_failure_data):
+    y_train, y_test, times, match = uno_auc_censoring_failure_data
+
+    estimate = numpy.random.randn(y_test.shape[0])
+    with pytest.raises(ValueError,
+                       match=match):
+        cumulative_dynamic_auc(y_train, y_test, estimate, times)
+
+
+@pytest.fixture(params=[
+    'nan',
+    'infinite_1',
+    'infinite_2',
+    'too_big_1',
+    'too_big_2',
+    'too_big_3',
+    'too_small_1',
+    'too_small_2',
+    'empty',
+])
+def uno_auc_times_failure_data(request, uno_auc_data_20):
+    p = request.param
+
+    if p == 'nan':
+        y_train, y_test, _ = uno_auc_data_20
+        times = (0.2, numpy.nan)
+        match = r"Input contains NaN, infinity or a value too large for dtype\('float64'\)."
+    elif p == 'infinite_1':
+        y_train, y_test, _ = uno_auc_data_20
+        times = (0.2, numpy.infty)
+        match = r"Input contains NaN, infinity or a value too large for dtype\('float64'\)."
+    elif p == 'infinite_2':
+        y_train, y_test, _ = uno_auc_data_20
+        times = (0.2, -numpy.infty)
+        match = r"Input contains NaN, infinity or a value too large for dtype\('float64'\)."
+    elif p == 'too_big_1':
+        y_train, y_test, _ = uno_auc_data_20
+        idx = numpy.argmax(y_test['time'])
+        y_test['event'][idx] = False
+        t_max = y_test['time'][idx]
+        times = (33, t_max / 2, t_max)
+        match = r"all times must be within follow-up time of test data: \[3\.19; 99\.51\["
+    elif p == 'too_big_2':
+        y_train, y_test, _ = uno_auc_data_20
+        idx = numpy.argmax(y_test['time'])
+        y_test['event'][idx] = False
+        t_max = y_test['time'][idx]
+        times = (33, t_max / 2, t_max + 0.1)
+        match = r"all times must be within follow-up time of test data: \[3\.19; 99\.51\["
+    elif p == 'too_big_3':
+        y_train, y_test, _ = uno_auc_data_20
+        max_train = numpy.max(y_train['time'])
+        idx_test = y_test['time'] > max_train
+        y_test['event'][idx_test] = False
+        y_test['time'][idx_test] = max_train
+        times = (33, max_train)
+        match = r"all times must be within follow-up time of test data: \[3\.19; 93\.5\["
+    elif p == 'too_small_1':
+        y_train, y_test, _ = uno_auc_data_20
+        idx = numpy.argmin(y_test['time'])
+        y_test['event'][idx] = True
+        t_min = y_test['time'][idx]
+        times = (t_min - 1e-6, 33)
+        match = r"all times must be within follow-up time of test data: \[3\.19; 99\.51\["
+    elif p == 'too_small_2':
+        y_train, y_test, _ = uno_auc_data_20
+        idx = numpy.argmin(y_test['time'])
+        y_test['event'][idx] = True
+        t_min = y_test['time'][idx]
+        times = (33, t_min - 0.1, t_min / 2)
+        match = r"all times must be within follow-up time of test data: \[3\.19; 99\.51\["
+    elif p == 'empty':
+        y_train, y_test, _ = uno_auc_data_20
+        times = []
+        match = r'Found array with 0 sample\(s\)'
+    else:
+        assert False
+
+    yield y_train, y_test, times, match
+
+
+def test_uno_auc_times_failure(uno_auc_times_failure_data):
+    y_train, y_test, times, match = uno_auc_times_failure_data
+
+    estimate = numpy.random.randn(y_test.shape[0])
+    with pytest.raises(ValueError,
+                       match=match):
+        cumulative_dynamic_auc(y_train, y_test, estimate, times)
