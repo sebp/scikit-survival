@@ -101,7 +101,7 @@ class Surv:
             name_time=str(time))
 
 
-def check_y_survival(y_or_event, *args):
+def check_y_survival(y_or_event, *args, allow_all_censored=False):
     """Check that array correctly represents an outcome for survival analysis.
 
     Parameters
@@ -115,6 +115,9 @@ def check_y_survival(y_or_event, *args):
     *args : list of array-likes
         Any number of array-like objects representing time information.
         Elements that are `None` are passed along in the return value.
+
+    allow_all_censored : bool, optional, default: False
+        Whether to allow all events to be censored.
 
     Returns
     -------
@@ -143,7 +146,7 @@ def check_y_survival(y_or_event, *args):
     if not numpy.issubdtype(event.dtype, numpy.bool_):
         raise ValueError('elements of event indicator must be boolean, but found {0}'.format(event.dtype))
 
-    if not numpy.any(event):
+    if not (allow_all_censored or numpy.any(event)):
         raise ValueError('all samples are censored')
 
     return_val = [event]

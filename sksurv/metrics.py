@@ -14,10 +14,14 @@ from sklearn.utils import check_consistent_length, check_array
 
 import numpy
 
-from .nonparametric import CensoringDistributionEstimator
+from .nonparametric import CensoringDistributionEstimator, SurvivalFunctionEstimator
 from .util import check_y_survival
 
-__all__ = ['concordance_index_censored', 'concordance_index_ipcw']
+__all__ = [
+    'concordance_index_censored',
+    'concordance_index_ipcw',
+    'cumulative_dynamic_auc',
+]
 
 
 def _check_inputs(event_indicator, event_time, estimate):
@@ -250,8 +254,8 @@ def concordance_index_ipcw(survival_train, survival_test, estimate, tau=None, ti
     if tau is not None:
         survival_test = survival_test[test_time < tau]
 
-    _, _, estimate = _check_inputs(
-        test_event, test_time, estimate)
+    estimate = check_array(estimate, ensure_2d=False)
+    check_consistent_length(test_event, test_time, estimate)
 
     cens = CensoringDistributionEstimator()
     cens.fit(survival_train)
@@ -260,3 +264,150 @@ def concordance_index_ipcw(survival_train, survival_test, estimate, tau=None, ti
     w = numpy.square(ipcw)
 
     return _estimate_concordance_index(test_event, test_time, estimate, w, tied_tol)
+
+
+def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_tol=1e-8):
+    """Estimator of cumulative/dynamic AUC for right-censored time-to-event data.
+
+    The receiver operating characteristic (ROC) curve and the area under the
+    ROC curve (AUC) can be extended to survival data by defining
+    sensitivity (true positive rate) and specificity (true negative rate)
+    as time-dependent measures. *Cumulative cases* are all individuals that
+    experienced an event prior to or at time :math:`t` (:math:`t_i \\leq t`),
+    whereas *dynamic controls* are those with :math:`t_i > t`.
+    The associated cumulative/dynamic AUC quantifies how well a model can
+    distinguish subjects who fail by a given time (:math:`t_i \\leq t`) from
+    subjects who fail after this time (:math:`t_i > t`).
+
+    Given an estimator of the :math:`i`-th individual's risk score
+    :math:`\\hat{f}(\\mathbf{x}_i)`, the cumulative/dynamic AUC at time
+    :math:`t` is defined as
+
+    .. math::
+
+        \\widehat{\\mathrm{AUC}}(t) =
+        \\frac{\\sum_{i=1}^n \\sum_{j=1}^n I(y_j > t) I(y_i \\leq t) \\omega_i
+        I(\\hat{f}(\\mathbf{x}_j) \\leq \\hat{f}(\\mathbf{x}_i))}
+        {(\\sum_{i=1}^n I(y_i > t)) (\\sum_{i=1}^n I(y_i \\leq t) \\omega_i)}
+
+    where :math:`\\omega_i` are inverse probability of censoring weights (IPCW).
+
+    To estimate IPCW, access to survival times from the training data is required
+    to estimate the censoring distribution. Note that this requires that survival
+    times `survival_test` lie within the range of survival times `survival_train`.
+    This can be achieved by specifying `times` accordingly, e.g. by setting
+    `times[-1]` slightly below the maximum expected follow-up time.
+    IPCW are computed using the Kaplan-Meier estimator, which is
+    restricted to situations where the random censoring assumption holds and
+    censoring is independent of the features.
+
+    The function also provides a single summary measure that refers to the mean
+    of the :math:`\\mathrm{AUC}(t)` over the time range :math:`(\\tau_1, \\tau_2)`.
+
+    .. math::
+
+        \\overline{\\mathrm{AUC}}(\\tau_1, \\tau_2) =
+        \\frac{1}{\\hat{S}(\\tau_1) - \\hat{S}(\\tau_2)}
+        \\int_{\\tau_1}^{\\tau_2} \\widehat{\\mathrm{AUC}}(t)\\,d \\hat{S}(t)
+
+    where :math:`\\hat{S}(t)` is the Kaplan–Meier estimator of the survival function.
+
+
+    Parameters
+    ----------
+    survival_train : structured array, shape = (n_train_samples,)
+        Survival times for training data to estimate the censoring
+        distribution from.
+        A structured array containing the binary event indicator
+        as first field, and time of event or time of censoring as
+        second field.
+
+    survival_test : structured array, shape = (n_samples,)
+        Survival times of test data.
+        A structured array containing the binary event indicator
+        as first field, and time of event or time of censoring as
+        second field.
+
+    estimate : array-like, shape = (n_samples,)
+        Estimated risk of experiencing an event of test data.
+
+    times : array-like, shape = (n_times,)
+        The time points for which the area under the
+        time-dependent ROC curve is computed. Values must be
+        within the range of follow-up times of the test data
+        `survival_test`.
+
+    tied_tol : float, optional, default: 1e-8
+        The tolerance value for considering ties.
+        If the absolute difference between risk scores is smaller
+        or equal than `tied_tol`, risk scores are considered tied.
+
+    Returns
+    -------
+    auc : array, shape = (n_times,)
+        The cumulative/dynamic AUC estimates (evaluated at `times`).
+    mean_auc : float
+        Summary measure referring to the mean cumulative/dynamic AUC
+        over the specified time range `(times[0], times[-1])`.
+
+    References
+    ----------
+    .. [1] H. Uno, T. Cai, L. Tian, and L. J. Wei,
+           "Evaluating prediction rules for t-year survivors with censored regression models,"
+           Journal of the American Statistical Association, vol. 102, pp. 527–537, 2007.
+    .. [2] H. Hung and C. T. Chiang,
+           "Estimation methods for time-dependent AUC models with survival data,"
+           Canadian Journal of Statistics, vol. 38, no. 1, pp. 8–26, 2010.
+    .. [3] J. Lambert and S. Chevret,
+           "Summary measure of discrimination in survival models based on cumulative/dynamic time-dependent ROC curves,"
+           Statistical Methods in Medical Research, 2014.
+    """
+    test_event, test_time = check_y_survival(survival_test)
+
+    estimate = check_array(estimate, ensure_2d=False)
+    check_consistent_length(test_event, test_time, estimate)
+
+    times = check_array(numpy.atleast_1d(times), ensure_2d=False, dtype=test_time.dtype)
+    times = numpy.unique(times)
+
+    if times.max() >= test_time.max() or times.min() < test_time.min():
+        raise ValueError(
+            'all times must be within follow-up time of test data: [{}; {}['.format(
+                test_time.min(), test_time.max()))
+
+    cens = CensoringDistributionEstimator()
+    cens.fit(survival_train)
+    ipcw = cens.predict_ipcw(survival_test)
+
+    scores = numpy.empty(times.shape[0], dtype=float)
+    for k, t in enumerate(times):
+        cases = numpy.flatnonzero((test_time <= t) & test_event)
+        controls = numpy.flatnonzero(test_time > t)
+        denominator = ipcw[cases].sum() * controls.shape[0]
+        assert denominator > 0.
+
+        rj = estimate[controls]
+        numerator = 0.0
+        for ri, wi in zip(estimate[cases], ipcw[cases]):
+            ties = numpy.absolute(rj - ri) <= tied_tol
+            n_ties = ties.sum()
+            # an event should have a higher score
+            con = rj < ri
+            n_con = con[~ties].sum()
+
+            numerator += wi * n_con + 0.5 * wi * n_ties
+
+        scores[k] = numerator / denominator
+
+    if times.shape[0] == 1:
+        mean_auc = scores[0]
+    else:
+        surv = SurvivalFunctionEstimator()
+        surv.fit(survival_test)
+        s_times = surv.predict_proba(times)
+        # compute integral of AUC over survival function
+        d = -numpy.diff(numpy.concatenate(([1.0], s_times)))
+        integral = (scores * d).sum()
+        mean_auc = integral / (1.0 - s_times[-1])
+
+    return scores, mean_auc

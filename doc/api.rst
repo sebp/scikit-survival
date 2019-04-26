@@ -9,6 +9,7 @@ Non-parametric Estimators
     :toctree: generated/
 
     CensoringDistributionEstimator
+    SurvivalFunctionEstimator
     kaplan_meier_estimator
     nelson_aalen_estimator
     ipc_weights
@@ -83,6 +84,7 @@ Metrics
 
     concordance_index_censored
     concordance_index_ipcw
+    cumulative_dynamic_auc
 
 
 Pre-Processing

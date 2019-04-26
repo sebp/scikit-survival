@@ -5,20 +5,30 @@ from numpy.testing import assert_array_equal, assert_array_almost_equal
 import pandas
 import pytest
 
-from sksurv.nonparametric import kaplan_meier_estimator, nelson_aalen_estimator
+from sksurv.nonparametric import kaplan_meier_estimator, nelson_aalen_estimator, SurvivalFunctionEstimator
+from sksurv.util import Surv
 
 CHANNING_FILE = join(dirname(__file__), 'data', 'channing.csv')
 AIDS_CHILDREN_FILE = join(dirname(__file__), 'data', 'Lagakos_AIDS_children.csv')
 AIDS_ADULTS_FILE = join(dirname(__file__), 'data', 'Lagakos_AIDS_adults.csv')
 
 
-@pytest.fixture(params=['all_uncensored', 'first_censored', 'last_censored', 'first_and_last_censored'])
+@pytest.fixture(params=[
+    'all_uncensored',
+    'all_censored',
+    'first_censored',
+    'last_censored',
+    'first_and_last_censored',
+])
 def simple_data_km(request):
     time = [1, 2, 2, 3, 7, 6, 5, 5, 3, 9, 11, 13, 17, 13, 6, 23]
     true_x = numpy.array([1, 2, 3, 5, 6, 7, 9, 11, 13, 17, 23])
     if request.param == 'all_uncensored':
         event = numpy.repeat(True, len(time))
         true_y = numpy.array([0.9375, 0.8125, 0.6875, 0.5625, 0.4375, 0.375, 0.3125, 0.25, 0.125, 0.0625, 0])
+    elif request.param == 'all_censored':
+        event = numpy.repeat(False, len(time))
+        true_y = numpy.ones(true_x.shape[0])
     elif request.param == 'first_censored':
         event = numpy.repeat(True, len(time))
         event[0] = False
@@ -114,6 +124,13 @@ class TestKaplanMeier(object):
 
         assert_array_equal(x, true_x)
         assert_array_almost_equal(y, true_y)
+
+        ys = Surv.from_arrays(event, time)
+        est = SurvivalFunctionEstimator().fit(ys)
+        assert_array_equal(est.unique_time_[1:], true_x)
+        assert_array_almost_equal(est.prob_[1:], true_y)
+        prob = est.predict_proba(true_x)
+        assert_array_almost_equal(prob, true_y)
 
     @staticmethod
     def test_truncated_enter_larger_exit_error():

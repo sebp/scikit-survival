@@ -3,6 +3,36 @@
 Release Notes
 =============
 
+scikit-survival 0.8 (2019-0X-XX)
+--------------------------------
+
+Enhancements
+^^^^^^^^^^^^
+
+- Add :meth:`sksurv.linear_model.CoxnetSurvivalAnalysis.predict_survival_function`
+  and :meth:`sksurv.linear_model.CoxnetSurvivalAnalysis.predict_cumulative_hazard_function`
+  (#46).
+- Add :class:`sksurv.nonparametric.SurvivalFunctionEstimator`
+  and :class:`sksurv.nonparametric.CensoringDistributionEstimator` that
+  wrap :func:`sksurv.nonparametric.kaplan_meier_estimator` and provide
+  a `predict_proba` method for evaluating the estimated function on
+  test data.
+- Implement censoring-adjusted C-statistic proposed by Uno et al. (2011)
+  in :func:`sksurv.metrics.concordance_index_ipcw`.
+- Add estimator of cumulative/dynamic AUC of Uno et al. (2007)
+  in :func:`sksurv.metrics.cumulative_dynamic_auc`.
+
+Bug fixes
+^^^^^^^^^
+
+- The `tied_time` return value of :func:`sksurv.metrics.concordance_index_censored`
+  now correctly reflects the number of comparable pairs that share the same time
+  and that are used in computing the concordance index.
+- Fix a bug in :func:`sksurv.metrics.concordance_index_censored` where a
+  pair with risk estimates within tolerance was counted both as
+  concordant and tied.
+
+
 scikit-survival 0.7 (2019-02-27)
 --------------------------------
 
