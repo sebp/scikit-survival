@@ -438,10 +438,9 @@ def uno_auc_data_20():
     'min_to_max_times',
     'train_test',
     'tied_test_time',
-    'whas500',
-    'whas500_unordered_time',
+    'tied_test_score',
 ])
-def uno_auc_data(request, uno_auc_data_15, uno_auc_data_20, whas500_pred):
+def uno_auc_data(request, uno_auc_data_15, uno_auc_data_20):
     p = request.param
 
     y_test = None
@@ -479,17 +478,12 @@ def uno_auc_data(request, uno_auc_data_15, uno_auc_data_20, whas500_pred):
         times = [15, 66]
         iauc = 0.4204885
         expected = numpy.array([0.3750000, 0.4357061])
-    elif p.startswith('whas500'):
-        event, time, estimate = whas500_pred
-        y_train = Surv.from_arrays(event=event[:300], time=time[:300])
-        y_test = Surv.from_arrays(event=event[300:], time=time[300:])
-        estimate = estimate[300:]
-        if p == 'whas500_unordered_time':
-            times = (1000, 600, 1400, 200, 400, 1200, 800, 1000, 200)
-        else:
-            times = (200, 400, 600, 800, 1000, 1200, 1400)
-        iauc = 0.8045058
-        expected = numpy.array([0.7720669, 0.7765915, 0.7962623, 0.8759295, 0.8759295, 0.8759513, 0.9147647])
+    elif p == 'tied_test_score':
+        y_train, y_test, estimate = uno_auc_data_20
+        estimate[0] = estimate[-1]
+        times = [15, 66]
+        iauc = 0.495604291
+        expected = numpy.array([0.4242424, 0.539036])
     else:
         assert False
 
@@ -500,6 +494,36 @@ def uno_auc_data(request, uno_auc_data_15, uno_auc_data_20, whas500_pred):
 
 def test_uno_auc(uno_auc_data):
     y_train, y_test, estimate, times, expect_auc, expect_iauc = uno_auc_data
+
+    auc, iauc = cumulative_dynamic_auc(y_train, y_test, estimate, times)
+    assert_array_almost_equal(auc, expect_auc)
+    assert_almost_equal(iauc, expect_iauc)
+
+
+@pytest.fixture(params=[
+    'whas500',
+    'whas500_unordered_time',
+])
+def uno_auc_whas500_data(request, whas500_pred):
+    p = request.param
+
+    event, time, estimate = whas500_pred
+    y_train = Surv.from_arrays(event=event[:300], time=time[:300])
+    y_test = Surv.from_arrays(event=event[300:], time=time[300:])
+    estimate = estimate[300:]
+    if p == 'whas500_unordered_time':
+        times = (1000, 600, 1400, 200, 400, 1200, 800, 1000, 200)
+    elif p == 'whas500':
+        times = (200, 400, 600, 800, 1000, 1200, 1400)
+    else:
+        assert False
+    iauc = 0.8045058
+    expected = numpy.array([0.7720669, 0.7765915, 0.7962623, 0.8759295, 0.8759295, 0.8759513, 0.9147647])
+    yield y_train, y_test, estimate, times, expected, iauc
+
+
+def test_uno_auc_whas500(uno_auc_whas500_data):
+    y_train, y_test, estimate, times, expect_auc, expect_iauc = uno_auc_whas500_data
 
     auc, iauc = cumulative_dynamic_auc(y_train, y_test, estimate, times)
     assert_array_almost_equal(auc, expect_auc)

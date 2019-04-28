@@ -10,9 +10,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from sklearn.utils import check_consistent_length, check_array
-
 import numpy
+from scipy.integrate import trapz
+from sklearn.utils import check_consistent_length, check_array
 
 from .nonparametric import CensoringDistributionEstimator, SurvivalFunctionEstimator
 from .util import check_y_survival
@@ -375,29 +375,46 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
             'all times must be within follow-up time of test data: [{}; {}['.format(
                 test_time.min(), test_time.max()))
 
+    # sort by risk score (descending)
+    o = numpy.argsort(-estimate)
+    test_time = test_time[o]
+    test_event = test_event[o]
+    estimate = estimate[o]
+    survival_test = survival_test[o]
+
     cens = CensoringDistributionEstimator()
     cens.fit(survival_train)
     ipcw = cens.predict_ipcw(survival_test)
 
+    n_samples = test_time.shape[0]
     scores = numpy.empty(times.shape[0], dtype=float)
     for k, t in enumerate(times):
-        cases = numpy.flatnonzero((test_time <= t) & test_event)
-        controls = numpy.flatnonzero(test_time > t)
-        denominator = ipcw[cases].sum() * controls.shape[0]
-        assert denominator > 0.
+        is_case = (test_time <= t) & test_event
+        is_control = test_time > t
+        n_controls = is_control.sum()
 
-        rj = estimate[controls]
-        numerator = 0.0
-        for ri, wi in zip(estimate[cases], ipcw[cases]):
-            ties = numpy.absolute(rj - ri) <= tied_tol
-            n_ties = ties.sum()
-            # an event should have a higher score
-            con = rj < ri
-            n_con = con[~ties].sum()
+        true_pos = []
+        false_pos = []
+        tp_value = 0.0
+        fp_value = 0.0
+        est_prev = numpy.infty
 
-            numerator += wi * n_con + 0.5 * wi * n_ties
+        for i in range(n_samples):
+            est = estimate[i]
+            if numpy.absolute(est - est_prev) > tied_tol:
+                true_pos.append(tp_value)
+                false_pos.append(fp_value)
+                est_prev = est
+            if is_case[i]:
+                tp_value += ipcw[i]
+            elif is_control[i]:
+                fp_value += 1
+        true_pos.append(tp_value)
+        false_pos.append(fp_value)
 
-        scores[k] = numerator / denominator
+        sens = numpy.array(true_pos) / ipcw[is_case].sum()
+        fpr = numpy.array(false_pos) / n_controls
+        scores[k] = trapz(sens, fpr)
 
     if times.shape[0] == 1:
         mean_auc = scores[0]
