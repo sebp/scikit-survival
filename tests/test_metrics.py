@@ -238,7 +238,8 @@ def assert_uno_c_almost_equal(y_train, y_test, estimate, expected, tau=None):
     'no_ties',
     'tied_risk_1',
     'tied_risk_2',
-    'truncated',
+    'truncated_1',
+    'truncated_2',
     'last_time_censored',
     'tied_event',
     'tied_event_and_time',
@@ -272,7 +273,7 @@ def uno_c_data(request, whas500_pred):
             event=numpy.array((0, 1, 1, 0, 1, 0, 1, 0, 0, 1), dtype=bool))
         estimate = (5, 8, 11, 11, 34, 12, 11, 9, 12, 20)
         expected = (0.387865723332956, 7, 14, 2, 0)
-    elif p == 'truncated':
+    elif p == 'truncated_1':
         y_train = Surv.from_arrays(
             time=(2, 4, 6, 8, 10, 11, 15, 19),
             event=(False, True, False, True, False, False, False, False))
@@ -282,6 +283,13 @@ def uno_c_data(request, whas500_pred):
         estimate = (5, 8, 13, 11, 9, 4)
         expected = (0.7543736528146774, 4, 4, 0, 0)
         tau = 19
+    elif p == 'truncated_2':
+        y = Surv.from_arrays(
+            time=(1, 5, 6, 10, 11, 34, 45, 46, 50, 56),
+            event=numpy.array((0, 1, 1, 0, 1, 0, 1, 1, 1, 1), dtype=bool))
+        estimate = (5, 8, 11, 19, 34, 12, 3, 9, 12, 18)
+        expected = (0.347890361949191, 8, 18, 0, 0)
+        tau = 45.25
     elif p == 'last_time_censored':
         y_train = Surv.from_arrays(
             time=(2, 4, 6, 8, 10, 11, 15, 19),

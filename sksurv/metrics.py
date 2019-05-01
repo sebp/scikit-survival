@@ -252,14 +252,21 @@ def concordance_index_ipcw(survival_train, survival_test, estimate, tau=None, ti
     test_event, test_time = check_y_survival(survival_test)
 
     if tau is not None:
-        survival_test = survival_test[test_time < tau]
+        mask = test_time < tau
+        survival_test = survival_test[mask]
 
     estimate = check_array(estimate, ensure_2d=False)
     check_consistent_length(test_event, test_time, estimate)
 
     cens = CensoringDistributionEstimator()
     cens.fit(survival_train)
-    ipcw = cens.predict_ipcw(survival_test)
+    ipcw_test = cens.predict_ipcw(survival_test)
+    if tau is None:
+        ipcw = ipcw_test
+    else:
+        ipcw = numpy.empty(estimate.shape[0], dtype=ipcw_test.dtype)
+        ipcw[mask] = ipcw_test
+        ipcw[~mask] = 0
 
     w = numpy.square(ipcw)
 
