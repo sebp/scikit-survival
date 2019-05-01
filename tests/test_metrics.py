@@ -539,6 +539,8 @@ def test_uno_auc_whas500(uno_auc_whas500_data):
 
 
 @pytest.fixture(params=[
+    'estimate_2d',
+    'estimate_3d',
     'test_time_too_big_1',
     'test_time_too_big_2',
     'ipcw_undefined_1',
@@ -549,8 +551,17 @@ def test_uno_auc_whas500(uno_auc_whas500_data):
 def uno_auc_censoring_failure_data(request, uno_auc_data_20):
     p = request.param
 
+    estimate = None
     times = 33
-    if p == 'test_time_too_big_1':
+    if p == 'estimate_2d':
+        y_train, y_test, estimate = uno_auc_data_20
+        estimate = numpy.atleast_2d(estimate)
+        match = "Expected 1D array, got 2D array instead"
+    elif p == 'estimate_3d':
+        y_train, y_test, estimate = uno_auc_data_20
+        estimate = numpy.atleast_3d(estimate)
+        match = r"Found array with dim 3\. Estimator expected <= 2\."
+    elif p == 'test_time_too_big_1':
         y_train, y_test, _ = uno_auc_data_20
         y_test['time'][11] = 100
         match = "time must be smaller than largest observed time point:"
@@ -583,13 +594,14 @@ def uno_auc_censoring_failure_data(request, uno_auc_data_20):
     else:
         assert False
 
-    yield y_train, y_test, times, match
+    if estimate is None:
+        estimate = numpy.random.randn(y_test.shape[0])
+    yield y_train, y_test, times, estimate, match
 
 
 def test_uno_auc_censoring_failure(uno_auc_censoring_failure_data):
-    y_train, y_test, times, match = uno_auc_censoring_failure_data
+    y_train, y_test, times, estimate, match = uno_auc_censoring_failure_data
 
-    estimate = numpy.random.randn(y_test.shape[0])
     with pytest.raises(ValueError,
                        match=match):
         cumulative_dynamic_auc(y_train, y_test, estimate, times)

@@ -24,11 +24,21 @@ __all__ = [
 ]
 
 
+def _check_estimate(estimate, test_time):
+    estimate = check_array(estimate, ensure_2d=False)
+    if estimate.ndim != 1:
+        raise ValueError(
+            'Expected 1D array, got {:d}D array instead:\narray={}.\n'.format(
+                estimate.ndim, estimate))
+    check_consistent_length(test_time, estimate)
+    return estimate
+
+
 def _check_inputs(event_indicator, event_time, estimate):
     check_consistent_length(event_indicator, event_time, estimate)
     event_indicator = check_array(event_indicator, ensure_2d=False)
     event_time = check_array(event_time, ensure_2d=False)
-    estimate = check_array(estimate, ensure_2d=False)
+    estimate = _check_estimate(estimate, event_time)
 
     if not numpy.issubdtype(event_indicator.dtype, numpy.bool_):
         raise ValueError(
@@ -255,8 +265,7 @@ def concordance_index_ipcw(survival_train, survival_test, estimate, tau=None, ti
         mask = test_time < tau
         survival_test = survival_test[mask]
 
-    estimate = check_array(estimate, ensure_2d=False)
-    check_consistent_length(test_event, test_time, estimate)
+    estimate = _check_estimate(estimate, test_time)
 
     cens = CensoringDistributionEstimator()
     cens.fit(survival_train)
@@ -371,8 +380,7 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
     """
     test_event, test_time = check_y_survival(survival_test)
 
-    estimate = check_array(estimate, ensure_2d=False)
-    check_consistent_length(test_event, test_time, estimate)
+    estimate = _check_estimate(estimate, test_time)
 
     times = check_array(numpy.atleast_1d(times), ensure_2d=False, dtype=test_time.dtype)
     times = numpy.unique(times)
