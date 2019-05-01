@@ -235,6 +235,13 @@ class TestLoadDatasets(object):
         assert y.shape == (198,)
         assert_structured_array_dtype(y, 'e.tdm', 't.tdm', 51)
 
+    @staticmethod
+    def test_load_flchain():
+        x, y = sdata.load_flchain()
+        assert x.shape == (7874, 9)
+        assert y.shape == (7874,)
+        assert_structured_array_dtype(y, 'death', 'futime', 2169)
+
 
 def _make_and_write_data(fp, n_samples, n_features, with_index, with_labels, seed, column_prefix="V"):
     x, event, time = _make_survival_data(n_samples, n_features, seed)

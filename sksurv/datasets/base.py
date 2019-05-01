@@ -12,6 +12,7 @@ __all__ = ["get_x_y",
            "load_arff_files_standardized",
            "load_aids",
            "load_breast_cancer",
+           "load_flchain",
            "load_gbsg2",
            "load_whas500",
            "load_veterans_lung_cancer"]
@@ -361,3 +362,33 @@ def load_breast_cancer():
     """
     fn = resource_filename(__name__, 'data/breast_cancer_GSE7390-metastasis.arff')
     return get_x_y(loadarff(fn), attr_labels=['e.tdm', 't.tdm'], pos_label="1")
+
+
+def load_flchain():
+    """Load and return assay of serum free light chain for 7874 subjects.
+
+    The dataset has 7874 samples and 9 features.
+    The endpoint is death, which occurred for 2169 subjects (27.5%).
+
+    Returns
+    -------
+    x : pandas.DataFrame
+        The measurements for each patient.
+
+    y : structured array with 2 fields
+        *death*: boolean indicating whether the subject died
+        or the event time is right censored.
+
+        *futime*: total length of follow-up or time of death.
+
+    References
+    ----------
+    .. [1] https://doi.org/10.1016/j.mayocp.2012.03.009
+
+    .. [2] Dispenzieri, A., Katzmann, J., Kyle, R., Larson, D., Therneau, T., Colby, C., Clark, R.,
+           Mead, G., Kumar, S., Melton III, LJ. and Rajkumar, SV.
+           Use of monclonal serum immunoglobulin free light chains to predict overall survival in
+           the general population, Mayo Clinic Proceedings 87:512-523. (2012)
+    """
+    fn = resource_filename(__name__, 'data/flchain.arff')
+    return get_x_y(loadarff(fn), attr_labels=['death', 'futime'], pos_label='dead')

@@ -128,6 +128,7 @@ Datasets
     load_arff_files_standardized
     load_aids
     load_breast_cancer
+    load_flchain
     load_gbsg2
     load_whas500
     load_veterans_lung_cancer
