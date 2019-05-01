@@ -3,7 +3,7 @@
 Release Notes
 =============
 
-scikit-survival 0.8 (2019-0X-XX)
+scikit-survival 0.8 (2019-05-01)
 --------------------------------
 
 Enhancements
@@ -21,6 +21,7 @@ Enhancements
   in :func:`sksurv.metrics.concordance_index_ipcw`.
 - Add estimator of cumulative/dynamic AUC of Uno et al. (2007)
   in :func:`sksurv.metrics.cumulative_dynamic_auc`.
+- Add flchain dataset (see :func:`sksurv.datasets.load_flchain`).
 
 Bug fixes
 ^^^^^^^^^
