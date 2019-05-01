@@ -367,7 +367,19 @@ def load_breast_cancer():
 def load_flchain():
     """Load and return assay of serum free light chain for 7874 subjects.
 
-    The dataset has 7874 samples and 9 features.
+    The dataset has 7874 samples and 9 features:
+
+        1. age: age in years
+        2. sex: F=female, M=male
+        3. sample.yr: the calendar year in which a blood sample was obtained
+        4. kappa: serum free light chain, kappa portion
+        5. lambda: serum free light chain, lambda portion
+        6. flc.grp: the serum free light chain group for the subject, as used in the original analysis
+        7. creatinine: serum creatinine
+        8. mgus: whether the subject had been diagnosed with monoclonal gammapothy (MGUS)
+        9. chapter: for those who died, a grouping of their primary cause of death by chapter headings
+           of the International Code of Diseases ICD-9
+
     The endpoint is death, which occurred for 2169 subjects (27.5%).
 
     Returns
