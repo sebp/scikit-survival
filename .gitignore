@@ -46,8 +46,8 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
-*,cover
-cover/
+*.cover
+.pytest_cache/
 
 # Translations
 *.mo
@@ -55,9 +55,6 @@ cover/
 
 # Django stuff:
 *.log
-
-# Sphinx documentation
-docs/_build/
 
 # PyBuilder
 target/
