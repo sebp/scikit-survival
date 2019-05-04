@@ -108,8 +108,11 @@ To check everything is setup correctly run the test suite by executing::
 Examples
 ========
 
-An `Introduction to Survival Analysis with scikit-survival <https://nbviewer.jupyter.org/github/sebp/scikit-survival/blob/master/examples/00-introduction.ipynb>`_
-is available as `Jupyter notebook <https://jupyter.org/>`_.
+The following examples are available as `Jupyter notebook <https://jupyter.org/>`_:
+
+* `Introduction to Survival Analysis with scikit-survival <https://nbviewer.jupyter.org/github/sebp/scikit-survival/blob/master/examples/00-introduction.ipynb>`_
+* `Pitfalls when Evaluating Survival Models <https://nbviewer.jupyter.org/github/sebp/scikit-survival/blob/master/examples/evaluating-survival-models.ipynb>`_
+* `Introduction to Kernel Survival Support Vector Machines <https://nbviewer.jupyter.org/github/sebp/scikit-survival/blob/master/examples/survival-svm.ipynb>`_
 
 =============
 Documentation
