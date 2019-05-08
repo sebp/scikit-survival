@@ -84,6 +84,42 @@ std::ostream& operator<< (std::ostream& os, const Data<_M, _V, _I> &obj) {
     return os;
 }
 
+
+template <
+    typename DerivedMatrix,
+    typename DerivedFloatVector,
+    typename DerivedIntVector >
+class DataWithGroups : public Data<DerivedMatrix, DerivedFloatVector, DerivedIntVector>
+{
+public:
+    typedef Data<DerivedMatrix, DerivedFloatVector, DerivedIntVector> Base;
+    using typename Base::Matrix;
+    using typename Base::FloatVector;
+    using typename Base::IntVector;
+    typedef Eigen::Matrix<std::int32_t, Eigen::Dynamic, 1> SizeVector;
+
+    EIGEN_STATIC_ASSERT_VECTOR_ONLY(DerivedFloatVector);
+    EIGEN_STATIC_ASSERT_VECTOR_ONLY(DerivedIntVector);
+    EIGEN_STATIC_ASSERT(Eigen::NumTraits<typename DerivedIntVector::Scalar>::IsInteger,
+                        FLOATING_POINT_ARGUMENT_PASSED__INTEGER_WAS_EXPECTED);
+
+    DataWithGroups(
+         const Matrix &x,
+         const FloatVector &time,
+         const IntVector &event,
+         const FloatVector &penalty_factor,
+         const SizeVector &groups) : Base(x, time, event, penalty_factor), m_groups(groups)
+    {
+        eigen_assert (groups.size() <= x.cols() + 1);
+    }
+
+    const SizeVector& groups() const { return m_groups; }
+
+private:
+    const SizeVector &m_groups;
+};
+
+
 }
 
 #endif

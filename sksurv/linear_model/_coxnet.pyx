@@ -20,6 +20,9 @@ cdef extern from "coxnet_wrapper.h":
     cdef object fit_coxnet[T, S, U] (cnp.ndarray, cnp.ndarray, cnp.ndarray, cnp.ndarray,
         cnp.ndarray, bool, cnp.npy_float64, cnp.npy_float64, int, double, bool) except +
 
+    cdef object fit_group_penalty[T, S, U] (cnp.ndarray, cnp.ndarray, cnp.ndarray, cnp.ndarray,
+        cnp.ndarray, cnp.ndarray, bool, cnp.npy_float64, cnp.npy_float64, int, double, bool) except +
+
 
 cdef extern from "coxnet_wrapper.h" namespace "Eigen":
 
@@ -67,5 +70,23 @@ def call_fit_coxnet(cnp.ndarray[cnp.npy_float64, ndim=2, mode='fortran'] X,
                     bool verbose):
     cdef object result = fit_coxnet[MatrixXd, VectorXd, VectorXuint8] (
         X, time, event, penalty_factor, alphas, create_path,
+        alpha_min_ratio, l1_ratio, max_iter, eps, verbose)
+    return result
+
+
+def call_fit_group_penalty(cnp.ndarray[cnp.npy_float64, ndim=2, mode='fortran'] X,
+                           cnp.ndarray[cnp.npy_float64, ndim=1] time,
+                           cnp.ndarray[cnp.npy_uint8, ndim=1] event,
+                           cnp.ndarray[cnp.npy_int32, ndim=1] groups,
+                           cnp.ndarray[cnp.npy_float64, ndim=1] penalty_factor,
+                           cnp.ndarray[cnp.npy_float64, ndim=1] alphas,
+                           bool create_path,
+                           cnp.npy_float64 alpha_min_ratio,
+                           cnp.npy_float64 l1_ratio,
+                           int max_iter,
+                           cnp.npy_float64 eps,
+                           bool verbose):
+    cdef object result = fit_group_penalty[MatrixXd, VectorXd, VectorXuint8] (
+        X, time, event, groups, penalty_factor, alphas, create_path,
         alpha_min_ratio, l1_ratio, max_iter, eps, verbose)
     return result

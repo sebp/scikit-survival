@@ -66,4 +66,13 @@ float soft_threshold(float z, float t) {
     return 0.0f;
 }
 
+inline
+double soft_threshold_norm(double z_norm, double t) {
+    eigen_assert (z_norm >= 0);
+
+    if (z_norm > t)
+        return 1.0 - t / z_norm;
+    return 0.0;
+}
+
 #endif //GLMNET_SOFT_THRESHOLD_H
