@@ -42,6 +42,12 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
     ----------
     coef_ : ndarray, shape = (n_features,)
         Weight vector.
+
+    References
+    ----------
+    .. [1] W. Stute, "Consistent estimation under random censorship when covariables are
+           present", Journal of Multivariate Analysis, vol. 45, no. 1, pp. 89-103, 1993.
+           doi:10.1006/jmva.1993.1028.
     """
     def __init__(self, alpha=1.0, fit_intercept=True, normalize=False,
                  copy_X=True, max_iter=None, tol=1e-3, solver="auto"):
