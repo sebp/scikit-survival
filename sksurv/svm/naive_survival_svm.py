@@ -13,7 +13,7 @@
 import itertools
 
 import numpy
-from scipy.misc import comb
+from scipy.special import comb
 from sklearn.svm import LinearSVC
 from sklearn.utils import check_random_state
 

@@ -59,7 +59,7 @@ Requirements
 - numpy 1.10 or later
 - pandas 0.19 or later
 - scikit-learn 0.19 or 0.20
-- scipy 0.17 or later
+- scipy 1.0 or later
 - C/C++ compiler
 
 ============

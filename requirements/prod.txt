@@ -3,5 +3,5 @@ cvxpy >=1.0
 numexpr
 numpy
 pandas >=0.20,<0.24
-scipy
+scipy >=1.0
 scikit-learn >=0.19.0,<0.21
