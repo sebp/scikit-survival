@@ -10,7 +10,7 @@ dependencies:
   - numpy=1.14
   - pytest
   - pytest-cov
-  - scipy
+  - scipy<1.3.0
   - scikit-learn=0.20
   - pandas=0.23
   - cvxpy>=1.0,<1.0.16
