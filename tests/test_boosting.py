@@ -4,6 +4,7 @@ import pandas
 import pytest
 from sklearn.metrics import mean_squared_error
 
+from sksurv.base import _sklearn_version_under_0p21
 from sksurv.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis, GradientBoostingSurvivalAnalysis
 from sksurv.testing import assert_cindex_almost_equal
 from sksurv.util import Surv
@@ -88,11 +89,20 @@ class TestGradientBoosting(object):
     def test_fit_int_param_as_float(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
-        model = GradientBoostingSurvivalAnalysis(n_estimators=100.0, max_depth=3.0, min_samples_split=10.0,
-                                                 random_state=0)
+        if _sklearn_version_under_0p21:
+            max_depth = 3
+        else:
+            # Account for https://github.com/scikit-learn/scikit-learn/pull/12344
+            max_depth = 4
+
+        model = GradientBoostingSurvivalAnalysis(
+            n_estimators=100.0,
+            max_depth=float(max_depth),
+            min_samples_split=10.0,
+            random_state=0)
         params = model.get_params()
         assert 100 == params["n_estimators"]
-        assert 3 == params["max_depth"]
+        assert max_depth == params["max_depth"]
         assert 10 == params["min_samples_split"]
 
         model.set_params(max_leaf_nodes=15.0)
@@ -510,3 +520,19 @@ def test_param_sample_weight(sample_gb_class):
     model.set_params(dropout_rate=1.2)
     with pytest.raises(ValueError, match=r"Found input variables with inconsistent numbers of samples: \[5, 8\]"):
         model.fit(x, y, [2, 4, 5, 6, 7, 1, 2, 7])
+
+
+def test_param_loss(sample_gb_class):
+    est_cls, x, y = sample_gb_class
+    model = est_cls(loss="")
+
+    with pytest.raises(ValueError, match="Loss '' not supported"):
+        model.fit(x, y)
+
+    model.set_params(loss="unknown")
+    with pytest.raises(ValueError, match="Loss 'unknown' not supported"):
+        model.fit(x, y)
+
+    model.set_params(loss=None)
+    with pytest.raises(ValueError, match="Loss None not supported"):
+        model.fit(x, y)

@@ -56,9 +56,9 @@ Requirements
 - cvxpy
 - cvxopt
 - numexpr
-- numpy 1.10 or later
-- pandas 0.19 or later
-- scikit-learn 0.19 or 0.20
+- numpy 1.12 or later
+- pandas 0.21 or later
+- scikit-learn 0.20 or 0.21
 - scipy 1.0 or later
 - C/C++ compiler
 
