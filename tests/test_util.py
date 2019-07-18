@@ -347,7 +347,7 @@ class TestSurv(object):
         assert_array_equal(y, expected)
 
     @staticmethod
-    def test_from_dataframe_no_such_column(surv_data_frame):
+    def test_from_dataframe_no_such_column(surv_data_frame, pandas_version_under_0p24):
         data = surv_data_frame
         data['event'] = data['event'].astype(bool)
 
@@ -355,12 +355,17 @@ class TestSurv(object):
         expected['event'] = data['event']
         expected['time'] = data['time']
 
+        if pandas_version_under_0p24:
+            match = r'the label \[unknown\] is not in the \[columns\]'
+        else:
+            match = 'unknown'
+
         with pytest.raises(KeyError,
-                           match=r'the label \[unknown\] is not in the \[columns\]'):
+                           match=match):
             Surv.from_dataframe('unknown', 'time', data)
 
         with pytest.raises(KeyError,
-                           match=r'the label \[unknown\] is not in the \[columns\]'):
+                           match=match):
             Surv.from_dataframe('event', 'unknown', data)
 
     @staticmethod
