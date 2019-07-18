@@ -1,5 +1,6 @@
 from collections import namedtuple
 from pathlib import Path
+from pkg_resources import parse_version
 import tempfile
 
 import numpy
@@ -14,6 +15,11 @@ from sksurv.util import Surv
 DataSet = namedtuple('DataSet', ['x', 'y'])
 DataSetWithNames = namedtuple('DataSetWithNames', ['x', 'y', 'names', 'x_data_frame'])
 SparseDataSet = namedtuple('SparseDataSet', ['x_dense', 'x_sparse', 'y'])
+
+
+@pytest.fixture
+def pandas_version_under_0p24():
+    return parse_version(pandas.__version__) < parse_version('0.24.0')
 
 
 @pytest.fixture
