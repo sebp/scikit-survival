@@ -389,7 +389,7 @@ class LargeScaleOptimizer(RankSVMOptimizer):
     def _objective_func(self, w):
         bias, wf = self._split_coefficents(w)
 
-        l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(wf)
+        l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(wf)  # pylint: disable=unused-variable
 
         xw = self._xw
         val = 0.5 * squared_norm(wf)
@@ -415,7 +415,7 @@ class LargeScaleOptimizer(RankSVMOptimizer):
     def _gradient_func(self, w):
         bias, wf = self._split_coefficents(w)
 
-        l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(wf)
+        l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(wf)  # pylint: disable=unused-variable
         x = self._counter.x
 
         xw = self._xw  # noqa: F841
@@ -438,10 +438,10 @@ class LargeScaleOptimizer(RankSVMOptimizer):
     def _hessian_func(self, w, s):
         s_bias, s_feat = self._split_coefficents(s)
 
-        l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(s_feat)
+        l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(s_feat)  # pylint: disable=unused-variable
         x = self._counter.x
 
-        xs = numpy.dot(x, s_feat)
+        xs = numpy.dot(x, s_feat)  # pylint: disable=unused-variable
         xs = numexpr.evaluate('(l_plus + l_minus) * xs - xv_plus - xv_minus')
 
         hessp = s_feat + self._rank_penalty * numpy.dot(x.T, xs)
@@ -532,7 +532,7 @@ class NonlinearLargeScaleOptimizer(RankSVMOptimizer):
             val += 0.5 * self._regr_penalty * squared_norm(self.y_compressed - bias
                                                            - Kw.compress(self.regr_mask, axis=0))
 
-        l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(beta)
+        l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(beta)  # pylint: disable=unused-variable
         val += 0.5 * self._rank_penalty * numexpr.evaluate(
             'sum(Kw * ((l_plus + l_minus) * Kw - xv_plus - xv_minus - 2 * (l_minus - l_plus)) + l_minus)')
 
@@ -544,7 +544,7 @@ class NonlinearLargeScaleOptimizer(RankSVMOptimizer):
         K = self._counter.x
         Kw = self._Kw
 
-        l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(beta)
+        l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(beta)  # pylint: disable=unused-variable
         z = numexpr.evaluate('(l_plus + l_minus) * Kw - xv_plus - xv_minus - l_minus + l_plus')
 
         gradient = Kw + self._rank_penalty * numpy.dot(K, z)
@@ -568,7 +568,7 @@ class NonlinearLargeScaleOptimizer(RankSVMOptimizer):
         K = self._counter.x
         Ks = numpy.dot(K, s_feat)
 
-        l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(s_feat)
+        l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(s_feat)  # pylint: disable=unused-variable
         xs = numexpr.evaluate('(l_plus + l_minus) * Ks - xv_plus - xv_minus')
 
         hessian = Ks + self._rank_penalty * numpy.dot(K, xs)
