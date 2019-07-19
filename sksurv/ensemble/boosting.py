@@ -128,8 +128,9 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
     Attributes
     ----------
-    coef\_ : array, shape = (n_features,)
-        The aggregated coefficients.
+    coef\_ : array, shape = (n_features + 1,)
+        The aggregated coefficients. The first element `coef\_[0]` corresponds
+        to the intercept. If loss is `coxph`, the intercept will always be zero.
 
     loss_ : LossFunction
         The concrete ``LossFunction`` object.
