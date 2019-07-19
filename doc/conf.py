@@ -285,8 +285,8 @@ if on_rtd:
         'pandas',
         'pandas.api.types',
         'scipy',
-        'scipy.io.arff',
         'scipy.integrate',
+        'scipy.io.arff',
         'scipy.linalg',
         'scipy.optimize',
         'scipy.sparse',
@@ -324,6 +324,7 @@ if on_rtd:
 
     MOCK_VERSIONS = {
         'pandas': '0.22.0',
+        'sklearn': '0.21.0',
     }
 
     from unittest.mock import Mock
