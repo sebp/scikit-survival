@@ -1,5 +1,4 @@
 # This file purposely does not contain libraries that depend on C modules.
 # See https://docs.readthedocs.io/en/latest/faq.html#i-get-import-errors-on-libraries-that-depend-on-c-modules
 setuptools_scm
-sphinx <1.8
-numpydoc ==0.9.1
+sphinx <2

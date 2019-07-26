@@ -201,6 +201,8 @@ def load_whas500():
     The dataset has 500 samples and 14 features.
     The endpoint is death, which occurred for 215 patients (43.0%).
 
+    See [1]_, [2]_ for further description.
+
     Returns
     -------
     x : pandas.DataFrame
@@ -215,7 +217,7 @@ def load_whas500():
 
     References
     ----------
-    .. [1] http://www.umass.edu/statdata/statdata/data/
+    .. [1] https://web.archive.org/web/20170114043458/http://www.umass.edu/statdata/statdata/data/
 
     .. [2] Hosmer, D., Lemeshow, S., May, S.:
         "Applied Survival Analysis: Regression Modeling of Time to Event Data."
@@ -230,6 +232,8 @@ def load_gbsg2():
 
     The dataset has 686 samples and 8 features.
     The endpoint is recurrence free survival, which occurred for 299 patients (43.6%).
+
+    See [1]_, [2]_ for further description.
 
     Returns
     -------
@@ -262,6 +266,8 @@ def load_veterans_lung_cancer():
     The dataset has 137 samples and 6 features.
     The endpoint is death, which occurred for 128 patients (93.4%).
 
+    See [1]_ for further description.
+
     Returns
     -------
     x : pandas.DataFrame
@@ -291,6 +297,8 @@ def load_aids(endpoint="aids"):
     1. AIDS defining event, which occurred for 96 patients (8.3%)
     2. Death, which occurred for 26 patients (2.3%)
 
+    See [1]_, [2]_ for further description.
+
     Parameters
     ----------
     endpoint : aids|death
@@ -311,7 +319,7 @@ def load_aids(endpoint="aids"):
 
     References
     ----------
-    .. [1] http://www.umass.edu/statdata/statdata/data/
+    .. [1] https://web.archive.org/web/20170114043458/http://www.umass.edu/statdata/statdata/data/
 
     .. [2] Hosmer, D., Lemeshow, S., May, S.:
         "Applied Survival Analysis: Regression Modeling of Time to Event Data."
@@ -339,6 +347,8 @@ def load_breast_cancer():
 
     The dataset has 198 samples and 80 features.
     The endpoint is the presence of distance metastases, which occurred for 51 patients (25.8%).
+
+    See [1]_, [2]_ for further description.
 
     Returns
     -------
@@ -381,6 +391,8 @@ def load_flchain():
            of the International Code of Diseases ICD-9
 
     The endpoint is death, which occurred for 2169 subjects (27.5%).
+
+    See [1]_, [2]_ for further description.
 
     Returns
     -------

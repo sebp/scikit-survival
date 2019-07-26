@@ -42,6 +42,8 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
 
           \\mathcal{P} = \\{ (i, j) \\mid y_i > y_j \\land \\delta_j = 1 \\}_{i,j=1,\\dots,n}.
 
+    See [1]_, [2]_ for further description.
+
     Parameters
     ----------
     alpha : float, positive, default: 1.0

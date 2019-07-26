@@ -136,6 +136,8 @@ def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1
     time or an event occurred for one of them but the time of censoring is
     smaller than the time of event of the first one.
 
+    See [1]_ for further description.
+
     Parameters
     ----------
     event_indicator : array-like, shape = (n_samples,)
@@ -204,6 +206,8 @@ def concordance_index_ipcw(survival_train, survival_test, estimate, tau=None, ti
     censoring survivor function. Therefore, it is restricted to
     situations where the random censoring assumption holds and
     censoring is independent of the features.
+
+    See [1]_ for further description.
 
     Parameters
     ----------
@@ -328,6 +332,7 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
 
     where :math:`\\hat{S}(t)` is the Kaplan–Meier estimator of the survival function.
 
+    See [1]_, [2]_, [3]_ for further description.
 
     Parameters
     ----------

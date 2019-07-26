@@ -37,6 +37,8 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
           \\mathcal{P}_\\text{1-NN} = \\{ (i, j) \\mid y_i > y_j \\land \\delta_j = 1
           \\land \\nexists k : y_i > y_k > y_j \\land \\delta_k = 1 \\}_{i,j=1}^n.
 
+    See [1]_ for further description.
+
     Parameters
     ----------
     solver : "cvxpy" | "cvxopt", optional, default: cvxpy
@@ -287,6 +289,8 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
           \\xi_i \\geq 0,\\quad \\forall (i, j) \\in \\mathcal{P}.
 
           \\mathcal{P} = \\{ (i, j) \\mid y_i > y_j \\land \\delta_j = 1 \\}_{i,j=1,\\dots,n}.
+
+    See [1]_, [2]_, [3]_ for further description.
 
     Parameters
     ----------

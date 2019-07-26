@@ -305,6 +305,8 @@ class EnsembleSelection(BaseEnsembleSelection):
 
     The hillclimbing is based on cross-validation to avoid having to create a separate validation set.
 
+    See [1]_, [2]_, [3]_ for further description.
+
     Parameters
     ----------
     base_estimators : list
@@ -433,6 +435,8 @@ class EnsembleSelectionRegressor(BaseEnsembleSelection):
     of residuals exceeds `min_correlation`.
 
     The hillclimbing is based on cross-validation to avoid having to create a separate validation set.
+
+    See [1]_, [2]_, [3]_ for further description.
 
     Parameters
     ----------

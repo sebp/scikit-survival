@@ -170,6 +170,8 @@ def _compute_counts_truncated(event, time_enter, time_exit):
 def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None):
     """Kaplan-Meier estimator of survival function.
 
+    See [1]_ for further description.
+
     Parameters
     ----------
     event : array-like, shape = (n_samples,)
@@ -230,6 +232,8 @@ def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None):
 
 def nelson_aalen_estimator(event, time):
     """Nelson-Aalen estimator of cumulative hazard function.
+
+    See [1]_, [2]_ for further description.
 
     Parameters
     ----------

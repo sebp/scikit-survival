@@ -247,6 +247,8 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
     Uses the Breslow method to handle ties and Newton-Raphson optimization.
 
+    See [1]_ for further description.
+
     Parameters
     ----------
     alpha : float, optional, default: 0

@@ -754,6 +754,8 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     See :class:`sksurv.svm.FastKernelSurvivalSVM` for an efficient implementation
     of kernel Survival Support Vector Machine.
 
+    See [1]_ for further description.
+
     Parameters
     ----------
     alpha : float, positive, default: 1
@@ -853,6 +855,8 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
 
 class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     """Efficient Training of kernel Survival Support Vector Machine.
+
+    See [1]_ for further description.
 
     Parameters
     ----------

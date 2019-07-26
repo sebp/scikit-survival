@@ -86,6 +86,8 @@ def _fit_stage_componentwise(X, residuals, sample_weight, **fit_params):
 class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalysisMixin):
     r"""Gradient boosting with component-wise least squares as base learner.
 
+    See [1]_ for further description.
+
     Parameters
     ----------
     loss : {'coxph', 'squared', 'ipcwls'}, optional, default: 'coxph'

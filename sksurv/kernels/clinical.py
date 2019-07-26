@@ -64,6 +64,8 @@ def clinical_kernel(x, y=None):
     The clinical kernel distinguishes between continuous
     ordinal,and nominal variables.
 
+    See [1]_ for further description.
+
     Parameters
     ----------
     x : pandas.DataFrame, shape = (n_samples_x, n_features)
@@ -112,6 +114,8 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
     The clinical kernel distinguishes between continuous
     ordinal,and nominal variables.
+
+    See [1]_ for further description.
 
     Parameters
     ----------

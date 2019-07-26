@@ -32,6 +32,8 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
     to account for right censoring (under the assumption that
     censoring is independent of the features, i.e., random censoring).
 
+    See [1]_ for further description.
+
     Parameters
     ----------
     alpha : float, optional, default: 1.0
