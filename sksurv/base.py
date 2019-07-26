@@ -20,6 +20,23 @@ _sklearn_version_under_0p21 = \
 class SurvivalAnalysisMixin(object):
 
     def score(self, X, y):
+        """Returns the concordance index of the prediction.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            Test samples.
+
+        y : structured array, shape = (n_samples,)
+            A structured array containing the binary event indicator
+            as first field, and time of event or time of censoring as
+            second field.
+
+        Returns
+        -------
+        cindex : float
+            Estimated concordance index.
+        """
         from .metrics import concordance_index_censored
         name_event, name_time = y.dtype.names
 
