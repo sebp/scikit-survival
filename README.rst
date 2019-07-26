@@ -26,6 +26,10 @@ scikit-survival
   :target: https://scikit-survival.readthedocs.io/en/latest/
   :alt: readthedocs.org
 
+.. image:: https://zenodo.org/badge/77409504.svg
+   :target: https://zenodo.org/badge/latestdoi/77409504
+   :alt: Digital Object Identifier (DOI)
+
 scikit-survival is a Python module for `survival analysis`_
 built on top of `scikit-learn <http://scikit-learn.org/>`_. It allows doing survival analysis
 while utilizing the power of scikit-learn, e.g., for pre-processing or doing cross-validation.
