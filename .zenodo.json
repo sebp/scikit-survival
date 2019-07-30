@@ -1,0 +1,17 @@
+{
+    "license": "GPL-3.0",
+    "title": "scikit-survival",
+    "upload_type": "software",
+    "creators": [
+        {
+            "name": "Sebastian P\u00f6lsterl"
+        },
+    ],
+    "access_right": "open",
+    "keywords": [
+        "survival-analysis",
+        "machine-learning",
+        "python",
+        "scikit-learn"
+    ]
+}
