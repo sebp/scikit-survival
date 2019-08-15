@@ -305,6 +305,11 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
     def predict(self, X):
         """Predict risk scores.
 
+        If `loss='coxph'`, predictions can be interpreted as log hazard ratio
+        corresponding to the linear predictor of a Cox proportional hazards
+        model. If `loss='squared'` or `loss='ipcwls'`, predictions are the
+        time to event.
+
         Parameters
         ----------
         X : array-like, shape = (n_samples, n_features)
@@ -328,10 +333,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         for estimator in self.estimators_:
             pred += self.learning_rate * estimator.predict(Xi)
 
-        if isinstance(self.loss_, (CensoredSquaredLoss, IPCWLeastSquaresError)):
-            numpy.exp(pred, out=pred)
-
-        return pred
+        return self.loss_._scale_raw_prediction(pred)
 
     @property
     def coef_(self):
@@ -898,6 +900,11 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
     def predict(self, X):
         """Predict risk scores.
 
+        If `loss='coxph'`, predictions can be interpreted as log hazard ratio
+        similar to the linear predictor of a Cox proportional hazards
+        model. If `loss='squared'` or `loss='ipcwls'`, predictions are the
+        time to event.
+
         Parameters
         ----------
         X : array-like, shape = (n_samples, n_features)
@@ -918,10 +925,15 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         return self.loss_._scale_raw_prediction(score)
 
     def staged_predict(self, X):
-        """Predict hazard at each stage for X.
+        """Predict risk scores at each stage for X.
 
         This method allows monitoring (i.e. determine error on testing set)
         after each stage.
+
+        If `loss='coxph'`, predictions can be interpreted as log hazard ratio
+        similar to the linear predictor of a Cox proportional hazards
+        model. If `loss='squared'` or `loss='ipcwls'`, predictions are the
+        time to event.
 
         Parameters
         ----------
