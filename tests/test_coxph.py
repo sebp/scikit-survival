@@ -137,7 +137,7 @@ class TestCoxPH(object):
         expected_x = numpy.array(
             [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30,
              31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 42, 43, 44, 45, 46, 47, 48, 49, 50, 52])
-        assert_array_almost_equal(cph._baseline_model.cum_baseline_hazard_.x, expected_x)
+        assert_array_almost_equal(cph.cum_baseline_hazard_.x, expected_x)
 
         expected_y = numpy.array(
             [0.00678640369024364, 0.0135929334270716, 0.0204043079886091, 0.0272294776707967, 0.0340761479284598,
@@ -151,7 +151,7 @@ class TestCoxPH(object):
              0.72608698374096, 0.744888154417096, 0.763829951751727, 0.802133842428817, 0.811813515937835,
              0.831261170527727, 0.880363253205648, 0.910240767958261, 0.950727380604515])
 
-        actual_y = [cph._baseline_model.cum_baseline_hazard_(v) for v in expected_x]
+        actual_y = [cph.cum_baseline_hazard_(v) for v in expected_x]
         # check that values increase
         assert (numpy.diff(actual_y) > 0).all()
         assert_array_almost_equal(actual_y, expected_y)
