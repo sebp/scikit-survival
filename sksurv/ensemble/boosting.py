@@ -375,7 +375,8 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
 class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMixin):
     r"""Gradient-boosted Cox proportional hazard loss with
-    regression trees as base learner.
+    regression trees as base learner.  In each stage, ``n_classes_`` regression trees 
+    are fit on the negative gradient of the loss function.
 
     Parameters
     ----------
@@ -390,7 +391,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         There is a trade-off between learning_rate and n_estimators.
 
     n_estimators : int, default: 100
-        The number of boosting stages to perform. Gradient boosting
+        The number of regression trees to create. Gradient boosting
         is fairly robust to over-fitting so a large number usually
         results in better performance.
 
@@ -473,11 +474,12 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         sparse data will raise an error.
 
     subsample : float, optional, default: 1.0
-        The fraction of samples to be used for fitting the individual base
-        learners. If smaller than 1.0 this results in Stochastic Gradient
+        The fraction of rows to be used for fitting the individual regression
+        trees. If smaller than 1.0, this results in Stochastic Gradient
         Boosting. `subsample` interacts with the parameter `n_estimators`.
         Choosing `subsample < 1.0` leads to a reduction of variance
-        and an increase in bias.
+        and an increase in bias. Lower values improve performance on large 
+        datasets.
 
     dropout_rate : float, optional, default: 0.0
         If larger than zero, the residuals at each iteration are only computed
