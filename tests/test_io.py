@@ -23,6 +23,21 @@ EXPECTED_1 = ["@relation test_nominal\n",
               "water,mate\n"]
 
 
+EXPECTED_NO_QUOTES = [
+    "@relation test_nominal\n",
+    "\n",
+    "@attribute attr_nominal\t{beer,water,wine}\n",
+    "@attribute attr_nominal_spaces\t{hard liquor,mate,red wine}\n",
+    "\n",
+    "@data\n",
+    "water,red wine\n",
+    "wine,hard liquor\n",
+    "beer,?\n",
+    "?,mate\n",
+    "wine,hard liquor\n",
+    "water,mate\n"]
+
+
 EXPECTED_DATETIME = ["@relation test_datetime\n",
                      "\n",
                      "@attribute attr_datetime\tdate 'yyyy-MM-dd HH:mm:ss'\n",
@@ -34,7 +49,7 @@ EXPECTED_DATETIME = ["@relation test_datetime\n",
 
 
 def test_loadarff_dataframe():
-    contents = "".join(EXPECTED_1)
+    contents = "".join(EXPECTED_NO_QUOTES)
     with StringIO(contents) as fp:
         actual_df = loadarff(fp)
 
@@ -46,7 +61,7 @@ def test_loadarff_dataframe():
          ("attr_nominal_spaces",
           pandas.Series(pandas.Categorical.from_codes(
               [2, 0, -1, 1, 0, 1],
-              ['"hard liquor"', 'mate', '"red wine"'])))
+              ['hard liquor', 'mate', 'red wine'])))
          ]
     ))
 
