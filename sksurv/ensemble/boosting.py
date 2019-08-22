@@ -376,10 +376,10 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMixin):
     r"""Gradient-boosted Cox proportional hazard loss with
     regression trees as base learner.
-    
-    In each stage, a regression tree is fit on the negative gradient 
+
+    In each stage, a regression tree is fit on the negative gradient
     of the loss function.
-    
+
     Parameters
     ----------
     loss : {'coxph', 'squared', 'ipcwls'}, optional, default: 'coxph'
@@ -481,7 +481,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         Boosting. `subsample` interacts with the parameter `n_estimators`.
         Choosing `subsample < 1.0` leads to a reduction of variance
         and an increase in bias.
-        
+
         dropout_rate : float, optional, default: 0.0
         If larger than zero, the residuals at each iteration are only computed
         from a random subset of base learners. The value corresponds to the
