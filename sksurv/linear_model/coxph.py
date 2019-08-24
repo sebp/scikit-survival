@@ -155,14 +155,19 @@ class CoxPHOptimizer:
         loss = 0
         risk_set = 0
         k = 0
-        for i in range(n_samples):
-            ti = time[i]
+        while k < n_samples:
+            ti = time[k]
+            numerator = 0
+            n_events = 0
             while k < n_samples and ti == time[k]:
                 risk_set += numpy.exp(xw[k])
+                if self.event[k]:
+                    numerator += xw[k]
+                    n_events += 1
                 k += 1
 
-            if self.event[i]:
-                loss -= (xw[i] - numpy.log(risk_set)) / n_samples
+            if n_events > 0:
+                loss -= (numerator - n_events * numpy.log(risk_set)) / n_samples
 
         # add regularization term to log-likelihood
         return loss + self.alpha * squared_norm(w) / (2. * n_samples)
@@ -174,17 +179,19 @@ class CoxPHOptimizer:
         exp_xw = numpy.exp(offset + numpy.dot(x, w))
         n_samples, n_features = x.shape
 
-        gradient = numpy.zeros((1, n_features), dtype=float)
-        hessian = numpy.zeros((n_features, n_features), dtype=float)
+        gradient = numpy.zeros((1, n_features), dtype=w.dtype)
+        hessian = numpy.zeros((n_features, n_features), dtype=w.dtype)
 
         inv_n_samples = 1. / n_samples
         risk_set = 0
-        risk_set_x = 0
-        risk_set_xx = 0
+        risk_set_x = numpy.zeros((1, n_features), dtype=w.dtype)
+        risk_set_xx = numpy.zeros((n_features, n_features), dtype=w.dtype)
         k = 0
         # iterate time in descending order
-        for i in range(n_samples):
-            ti = time[i]
+        while k < n_samples:
+            ti = time[k]
+            n_events = 0
+            numerator = 0
             while k < n_samples and ti == time[k]:
                 risk_set += exp_xw[k]
 
@@ -196,17 +203,20 @@ class CoxPHOptimizer:
                 xx = numpy.dot(xk.T, xk)
                 risk_set_xx += exp_xw[k] * xx
 
+                if self.event[k]:
+                    n_events += 1
+                    numerator += xk
                 k += 1
 
-            if self.event[i]:
-                gradient -= (x[i:i + 1] - risk_set_x / risk_set) * inv_n_samples
+            if n_events > 0:
+                gradient -= (numerator - n_events * risk_set_x / risk_set) * inv_n_samples
 
                 a = risk_set_xx / risk_set
                 z = risk_set_x / risk_set
                 # outer product
                 b = numpy.dot(z.T, z)
 
-                hessian += (a - b) * inv_n_samples
+                hessian += n_events * (a - b) * inv_n_samples
 
         if self.alpha > 0:
             gradient += self.alpha * inv_n_samples * w
