@@ -4,46 +4,105 @@ import numpy
 from numpy.testing import assert_array_almost_equal
 import pandas
 import pytest
+from scipy.optimize import check_grad
 from sklearn.exceptions import ConvergenceWarning
 
 from sksurv.column import standardize
 from sksurv.linear_model.coxph import CoxPHSurvivalAnalysis, CoxPHOptimizer
 
 
+@pytest.fixture
+def coef_rossi_coxph_breslow():
+    return pandas.Series({"fin": -0.37902189,
+                          "age": -0.05724593,
+                          "race": 0.31412977,
+                          "wexp": -0.15111460,
+                          "mar": -0.43278257,
+                          "paro": -0.08498284,
+                          "prio": 0.09111154})
+
+
+@pytest.fixture
+def coef_rossi_coxph_efron():
+    return pandas.Series({"fin": -0.379422166485887,
+                          "age": -0.0574377426840626,
+                          "race": 0.313899787842507,
+                          "wexp": -0.149795697666534,
+                          "mar": -0.433703877937307,
+                          "paro": -0.0848710825003959,
+                          "prio": 0.0914970809852961})
+
+
+def assert_gradient_correctness(cph):
+    def grad(x):
+        cph.update(x)
+        return cph.gradient
+
+    rnd = numpy.random.RandomState(9)
+    coef = rnd.randn(cph.x.shape[1])
+
+    err = check_grad(cph.nlog_likelihood,
+                     grad,
+                     coef)
+
+    assert round(err, 4) == 0
+
+
 class TestCoxPH(object):
 
     @staticmethod
-    def test_likelihood(rossi):
-        cph = CoxPHOptimizer(rossi.x.values, rossi.y['arrest'], rossi.y['week'], alpha=0.)
+    def test_likelihood_breslow(rossi, coef_rossi_coxph_breslow):
+        cph = CoxPHOptimizer(rossi.x.values, rossi.y['arrest'], rossi.y['week'], alpha=0.,
+                             ties="breslow")
 
-        w = pandas.Series({"fin": -0.37902189,
-                           "age": -0.05724593,
-                           "race": 0.31412977,
-                           "wexp": -0.15111460,
-                           "mar": -0.43278257,
-                           "paro": -0.08498284,
-                           "prio": 0.09111154})
+        w = coef_rossi_coxph_breslow.loc[rossi.x.columns].values
 
-        actual_loss = cph.nlog_likelihood(w.loc[rossi.x.columns].values)
+        actual_loss = cph.nlog_likelihood(w)
 
         assert round(abs(659.1206 - rossi.x.shape[0] * actual_loss), 4) == 0
 
     @staticmethod
-    def test_fit(rossi):
+    def test_gradient_breslow(rossi):
+        cph = CoxPHOptimizer(rossi.x.values, rossi.y['arrest'], rossi.y['week'], alpha=0.,
+                             ties="breslow")
+
+        assert_gradient_correctness(cph)
+
+    @staticmethod
+    def test_fit_breslow(rossi, coef_rossi_coxph_breslow):
         cph = CoxPHSurvivalAnalysis()
         cph.fit(rossi.x.values, rossi.y)
 
-        expected = pandas.Series({"fin": -0.37902189,
-                                  "age": -0.05724593,
-                                  "race": 0.31412977,
-                                  "wexp": -0.15111460,
-                                  "mar": -0.43278257,
-                                  "paro": -0.08498284,
-                                  "prio": 0.09111154})
+        actual = pandas.Series(cph.coef_, index=rossi.x.columns)
+        assert_array_almost_equal(coef_rossi_coxph_breslow.values,
+                                  actual.loc[coef_rossi_coxph_breslow.index].values)
+
+    @staticmethod
+    def test_likelihood_efron(rossi, coef_rossi_coxph_efron):
+        cph = CoxPHOptimizer(rossi.x.values, rossi.y['arrest'], rossi.y['week'], alpha=0.,
+                             ties="efron")
+
+        w = coef_rossi_coxph_efron.loc[rossi.x.columns].values
+
+        actual_loss = cph.nlog_likelihood(w)
+
+        assert round(abs(658.7477 - rossi.x.shape[0] * actual_loss), 4) == 0
+
+    @staticmethod
+    def test_gradient_efron(rossi):
+        cph = CoxPHOptimizer(rossi.x.values.astype(float), rossi.y['arrest'], rossi.y['week'],
+                             alpha=0., ties="efron")
+
+        assert_gradient_correctness(cph)
+
+    @staticmethod
+    def test_fit_efron(rossi, coef_rossi_coxph_efron):
+        cph = CoxPHSurvivalAnalysis(ties="efron")
+        cph.fit(rossi.x.values, rossi.y)
 
         actual = pandas.Series(cph.coef_, index=rossi.x.columns)
-        assert_array_almost_equal(expected.values,
-                                  actual.loc[expected.index].values)
+        assert_array_almost_equal(coef_rossi_coxph_efron.values,
+                                  actual.loc[coef_rossi_coxph_efron.index].values)
 
     @staticmethod
     def test_predict(rossi):
@@ -109,6 +168,12 @@ class TestCoxPH(object):
 
         cph.set_params(alpha=-1.25)
         with pytest.raises(ValueError, match=r"alpha must be positive, but was -1\.25"):
+            cph.fit(rossi.x.values, rossi.y)
+
+    @staticmethod
+    def test_ties(rossi):
+        cph = CoxPHSurvivalAnalysis(ties="xyz")
+        with pytest.raises(ValueError, match="ties must be one of 'breslow', 'efron'"):
             cph.fit(rossi.x.values, rossi.y)
 
     @staticmethod
