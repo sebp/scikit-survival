@@ -14,3 +14,4 @@ dependencies:
   - pandas=0.22
   - pip:
     - cvxpy>=1.0,<1.0.16
+    - osqp!=0.6.0
