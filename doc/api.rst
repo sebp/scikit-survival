@@ -15,6 +15,16 @@ Non-parametric Estimators
     ipc_weights
 
 
+Hypothesis testing
+------------------
+.. currentmodule:: sksurv.compare
+
+.. autosummary::
+    :toctree: generated/
+
+    compare_survival
+
+
 Linear Models
 -------------
 .. currentmodule:: sksurv.linear_model
