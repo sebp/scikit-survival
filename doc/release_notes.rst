@@ -3,6 +3,30 @@
 Release Notes
 =============
 
+scikit-survival 0.10 (2019-09-02)
+---------------------------------
+
+This release adds the `ties` argument to :class:`sksurv.linear_model.CoxPHSurvivalAnalysis`
+to choose between Breslow's and Efron's likelihood in the presence of tied event times.
+Moreover, :func:`sksurv.compare.compare_survival` has been added, which implements
+the log-rank hypothesis test for comparing the survival function of 2 or more groups.
+
+Enhancements
+^^^^^^^^^^^^
+
+- Update API doc of predict function of boosting estimators (#75).
+- Clarify documentation for GradientBoostingSurvivalAnalysis (#78).
+- Implement Efron's likelihood for handling tied event times.
+- Implement log-rank test for comparing survival curves.
+- Add support for scipy 1.3.1 (#66).
+
+Bug fixes
+^^^^^^^^^
+
+- Re-add `baseline_survival_` and `cum_baseline_hazard_` attributes
+  to :class:`sksurv.linear_model.CoxPHSurvivalAnalysis` (#76).
+
+
 scikit-survival 0.9 (2019-07-26)
 --------------------------------
 
