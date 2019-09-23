@@ -174,7 +174,8 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         assert obj.is_dcp()
 
         alpha = cvxpy.Parameter(nonneg=True, value=self.alpha)
-        constraints = [a >= 0., -alpha <= D.T * a, D.T * a <= alpha]
+        Dta = D.T.astype(P.dtype) * a  # cast constraints to correct type
+        constraints = [a >= 0., -alpha <= Dta, Dta <= alpha]
 
         prob = cvxpy.Problem(obj, constraints)
         solver_opts = self._get_options_cvxpy()
