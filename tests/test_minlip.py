@@ -229,6 +229,116 @@ class TestDifferenceMatrix(object):
         assert_array_equal(expected, mat.toarray())
 
 
+class TestToyOsqpExample(object):
+
+    @property
+    def minlip_model(self):
+        return MinlipSurvivalAnalysis(solver="osqp", alpha=1, pairs="next")
+
+    @property
+    def svm_model(self):
+        return HingeLossSurvivalSVM(solver="osqp", alpha=2.)
+
+    def test_toy_minlip_fit_osqp(self, toy_data):
+        x, y = toy_data
+        m = self.minlip_model
+        m.set_params(alpha=2)
+        m.fit(x, y)
+
+        assert (1, x.shape[0]) == m.coef_.shape
+        assert 1 == m.coef0
+        expected_coef = numpy.array([
+            [-0.011728003147, 0.011728002895, 0.000000000252,
+             -0.017524801335, 0.017524801335, 0.]])
+        assert_array_almost_equal(m.coef_, expected_coef)
+
+    def test_toy_minlip_timeit(self, toy_data):
+        x, y = toy_data
+        m = self.minlip_model
+        m.set_params(timeit=7)
+        m.fit(x, y)
+
+        assert 7 == len(m.timings_)
+
+    def test_toy_minlip_predict_1_osqp(self, toy_data):
+        x, y = toy_data
+        m = self.minlip_model
+        m.fit(x, y)
+
+        p = m.predict(x)
+        assert_cindex_almost_equal(y['status'], y['time'], p,
+                                   (1.0, 11, 0, 0, 0))
+
+    def test_toy_minlip_predict_2_osqp(self, toy_data, toy_test_data):
+        x, y = toy_data
+        m = self.minlip_model
+        m.set_params(pairs="next")
+        y = y.copy()
+        y["time"] = numpy.arange(1, 7)
+        sd = numpy.std(x, axis=0)
+        m.fit(x / sd, y)
+
+        p = m.predict(toy_test_data / sd)
+        expected = numpy.array([-0.033523879826, -1.878228488294, -2.410824233892])
+        assert_array_almost_equal(expected, p, decimal=5)
+
+    def test_toy_hinge_fit(self, toy_data):
+        x, y = toy_data
+        m = self.svm_model
+        sd = numpy.std(x, axis=0)
+        m.fit(x / sd, y)
+
+        assert (1, x.shape[0]) == m.coef_.shape
+        assert 1 == m.coef0
+        expected_coef = numpy.array([
+            [-1.893832101337, 1.083653895940, 0.810178205398,
+             -2., 2., 0.]])
+        assert_array_almost_equal(m.coef_, expected_coef)
+
+        p = m.predict(x / sd)
+        assert_cindex_almost_equal(y['status'], y['time'], p,
+                                   (1.0, 11, 0, 0, 0))
+
+    def test_toy_hinge_predict_osqp(self, toy_data, toy_test_data):
+        x, y = toy_data
+        m = self.svm_model
+        sd = numpy.std(x, axis=0)
+        m.fit(x / sd, y)
+
+        p = m.predict(toy_test_data / sd)
+        expected = numpy.array([-0.090550891252, -4.213744335308, -5.252123739017])
+        assert_array_almost_equal(expected, p, decimal=5)
+
+    def test_toy_hinge_nearest_fit(self, toy_data):
+        x, y = toy_data
+        m = self.svm_model
+        m.set_params(pairs="nearest")
+        sd = numpy.std(x, axis=0)
+        m.fit(x / sd, y)
+
+        assert(1, x.shape[0]) == m.coef_.shape
+        assert 1 == m.coef0
+        expected_coef = numpy.array([
+            [-1.893832101337, 1.083653895940, 0.810178205398,
+             -2., 2., 0.]])
+        assert_array_almost_equal(m.coef_, expected_coef)
+
+        p = m.predict(x / sd)
+        assert_cindex_almost_equal(y['status'], y['time'], p,
+                                   (1.0, 11, 0, 0, 0))
+
+    def test_toy_hinge_nearest_predict_osqp(self, toy_data, toy_test_data):
+        x, y = toy_data
+        m = self.svm_model
+        m.set_params(pairs="nearest")
+        sd = numpy.std(x, axis=0)
+        m.fit(x / sd, y)
+
+        p = m.predict(toy_test_data / sd)
+        expected = numpy.array([-0.090550891252, -4.213744335308, -5.252123739017])
+        assert_array_almost_equal(expected, p, decimal=5)
+
+
 class TestToyCvxpyExample(object):
 
     @property
@@ -405,6 +515,70 @@ class TestToyCvxoptExample(object):
 
         p = m.predict(numpy.array([[3, 4], [41, 29]]))
         assert_array_almost_equal(numpy.array([-0.341623, -5.374339]), p)
+
+
+class TestMinlipOsqp(object):
+
+    @staticmethod
+    def test_breast_cancer_osqp(gbsg2):
+        x, y = gbsg2
+        x = scale(x)
+        m = MinlipSurvivalAnalysis(solver="osqp", alpha=1, pairs="next")
+        m.fit(x, y)
+
+        assert (1, x.shape[0]) == m.coef_.shape
+
+        p = m.predict(x)
+        assert_cindex_almost_equal(y['cens'], y['time'], p,
+                                   (0.599066670674522, 79719, 53353, 0, 42))
+
+    @staticmethod
+    @pytest.mark.slow
+    def test_breast_cancer_rbf_osqp(gbsg2):
+        x, y = gbsg2
+        x = scale(x)
+        m = MinlipSurvivalAnalysis(solver="osqp", alpha=1, kernel="rbf",
+                                   gamma=1./8, pairs="next", max_iter=1000)
+        m.fit(x, y)
+
+        assert (1, x.shape[0]) == m.coef_.shape
+
+        p = m.predict(x)
+        assert_cindex_almost_equal(y['cens'], y['time'], p,
+                                   (0.6106168089455333, 81256, 51816, 0, 42))
+
+    @staticmethod
+    @pytest.mark.slow
+    def test_kernel_precomputed(gbsg2):
+        x, y = gbsg2
+        from sklearn.metrics.pairwise import pairwise_kernels
+        from sklearn.utils.metaestimators import _safe_split
+
+        m = MinlipSurvivalAnalysis(kernel="precomputed", solver="osqp", max_iter=25000)
+        xt = scale(x)
+        K = pairwise_kernels(xt, metric="rbf", gamma=0.1)
+
+        train_idx = numpy.arange(200, x.shape[0])
+        test_idx = numpy.arange(200)
+        X_fit, y_fit = _safe_split(m, K, y, train_idx)
+        X_test, y_test = _safe_split(m, K, y, test_idx, train_idx)
+
+        m.fit(X_fit, y_fit)
+
+        p = m.predict(X_test)
+        assert_cindex_almost_equal(y_test['cens'], y_test['time'], p,
+                                   (0.6518928901200369, 8472, 4524, 0, 3))
+
+    @staticmethod
+    def test_max_iter(gbsg2):
+        x, y = gbsg2
+        x = scale(x)
+        m = MinlipSurvivalAnalysis(solver="osqp", alpha=1, kernel="polynomial",
+                                   degree=2, pairs="next", max_iter=5)
+
+        with pytest.warns(ConvergenceWarning,
+                          match=r"OSQP solver did not converge: maximum iterations reached"):
+            m.fit(x, y)
 
 
 class TestMinlipCvxpy(object):

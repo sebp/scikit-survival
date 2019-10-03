@@ -41,7 +41,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
     Parameters
     ----------
-    solver : "cvxpy" | "cvxopt", optional, default: cvxpy
+    solver : "cvxpy" | "cvxopt" | "osqp", optional, default: cvxpy
         Which quadratic program solver to use.
 
     alpha : float, positive, default: 1
@@ -141,8 +141,15 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
             fit_func = self._fit_cvxpy
         elif self.solver == "cvxopt":
             fit_func = self._fit_cvxopt
+        elif self.solver == "osqp":
+            fit_func = self._fit_osqp
         else:
             raise ValueError("unknown solver: {}".format(self.solver))
+
+        if self.solver != "osqp":
+            warnings.warn(("solver={!r} is deprecated and will be removed in future versions, "
+                           "please use solver='osqp'.".format(self.solver)),
+                          category=DeprecationWarning, stacklevel=2)
 
         if self.timeit is not None:
             import timeit
@@ -160,6 +167,51 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         else:
             self.coef_ = coef[:, sv] * D[sv, :]
         self.X_fit_ = x
+
+    def _get_options_osqp(self):
+        solver_opts = {
+            'eps_abs': 1e-5,
+            'eps_rel': 1e-5,
+            'max_iter': self.max_iter or 10000,
+            'polish': True,
+            'verbose': self.verbose,
+        }
+        return solver_opts
+
+    def _fit_osqp(self, K, D, time):
+        import osqp
+
+        n_pairs = D.shape[0]
+        n_samples = time.shape[0]
+
+        P = D.dot(D.dot(K).T).T
+        q = numpy.negative(D.dot(time))
+        Dt = D.T.astype(P.dtype)  # cast constraints to correct type
+        A = sparse.vstack((Dt, sparse.eye(n_pairs, dtype=P.dtype)), format="csc")
+        lower = numpy.empty(A.shape[0], dtype=P.dtype)
+
+        lower[:n_samples] = -self.alpha
+        lower[n_samples:] = 0.
+        upper = numpy.empty(A.shape[0], dtype=P.dtype)
+        upper[:n_samples] = self.alpha
+        upper[n_samples:] = numpy.inf
+
+        solver_opts = self._get_options_osqp()
+        m = osqp.OSQP()
+        m.setup(P=sparse.csc_matrix(P), q=q, A=A, l=lower, u=upper, **solver_opts)  # noqa: E741
+        results = m.solve()
+
+        if results.info.status_val == -2:  # max iter reached
+            warnings.warn(('OSQP solver did not converge: {}'.format(
+                results.info.status)),
+                category=ConvergenceWarning,
+                stacklevel=4)
+        elif results.info.status_val not in (1, 2):  # pragma: no cover
+            # non of solved, solved inaccurate
+            raise RuntimeError("OSQP solver failed: {}".format(results.info.status))
+
+        coef = results.x[numpy.newaxis, :]
+        return coef, None
 
     def _fit_cvxpy(self, K, D, time):
         import cvxpy
@@ -185,7 +237,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
             warnings.warn(('cvxpy solver {} did not converge after {} iterations: {}'.format(
                 s.solver_name, s.num_iters, prob.status)),
                 category=ConvergenceWarning,
-                stacklevel=2)
+                stacklevel=4)
 
         return a.value.T, None
 
@@ -218,7 +270,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
             warnings.warn(('cvxopt solver did not converge: {} (duality gap = {})'.format(
                 sol['status'], sol['gap'])),
                 category=ConvergenceWarning,
-                stacklevel=2)
+                stacklevel=4)
 
         return numpy.array(sol['x']).T, None
 
@@ -295,7 +347,7 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
 
     Parameters
     ----------
-    solver : "cvxpy" | "cvxopt", optional, default: cvxpy
+    solver : "cvxpy" | "cvxopt" | "osqp", optional, default: cvxpy
         Which quadratic program solver to use.
 
     alpha : float, positive, default: 1
@@ -370,6 +422,27 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
                  pairs="all", verbose=False, timeit=None, max_iter=None):
         super().__init__(solver=solver, alpha=alpha, kernel=kernel, gamma=gamma, degree=degree, coef0=coef0,
                          kernel_params=kernel_params, pairs=pairs, verbose=verbose, timeit=timeit, max_iter=max_iter)
+
+    def _fit_osqp(self, K, D, time):
+        import osqp
+
+        n_pairs = D.shape[0]
+
+        P = D.dot(D.dot(K).T).T
+        q = numpy.negative(numpy.ones(n_pairs, dtype=P.dtype))
+        lower = numpy.zeros(n_pairs, dtype=P.dtype)
+        upper = numpy.empty(n_pairs, dtype=P.dtype)
+        upper[:] = self.alpha
+        A = sparse.eye(n_pairs, dtype=P.dtype, format="csc")
+
+        solver_opts = self._get_options_osqp()
+        m = osqp.OSQP()
+        m.setup(P=sparse.csc_matrix(P), q=q, A=A, l=lower, u=upper, **solver_opts)  # noqa: E741
+        results = m.solve()
+
+        coef = results.x[numpy.newaxis, :]
+        sv = numpy.flatnonzero(coef > 1e-5)
+        return coef, sv
 
     def _fit_cvxpy(self, K, D, time):
         import cvxpy
