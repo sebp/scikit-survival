@@ -17,6 +17,12 @@ DataSetWithNames = namedtuple('DataSetWithNames', ['x', 'y', 'names', 'x_data_fr
 SparseDataSet = namedtuple('SparseDataSet', ['x_dense', 'x_sparse', 'y'])
 
 
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers", "slow: marks test as slow (deselect with '-m \"not slow\"')"
+    )
+
+
 @pytest.fixture
 def pandas_version_under_0p24():
     return parse_version(pandas.__version__) < parse_version('0.24.0')
