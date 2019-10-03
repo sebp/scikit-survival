@@ -431,7 +431,7 @@ class TestToyCvxpyExample(object):
         expected_coef = numpy.array([
             [-1.893832101337, 1.083653895940, 0.810178205398,
              -2., 2., 0.]])
-        assert_array_almost_equal(m.coef_, expected_coef)
+        assert_array_almost_equal(m.coef_, expected_coef, decimal=5)
 
         p = m.predict(x / sd)
         assert_cindex_almost_equal(y['status'], y['time'], p,
@@ -441,11 +441,14 @@ class TestToyCvxpyExample(object):
         x, y = toy_data
         m = self.svm_model
         m.set_params(pairs="nearest")
-        sd = numpy.std(x, axis=0)
-        m.fit(x / sd, y)
+        xm = numpy.mean(x, axis=0, keepdims=True)
+        xsd = numpy.std(x, axis=0, keepdims=True)
+        xt = (x - xm) / xsd
+        m.fit(xt, y)
 
-        p = m.predict(toy_test_data / sd)
-        expected = numpy.array([-0.090550891252, -4.213744335308, -5.252123739017])
+        p = m.predict((toy_test_data - xm) / xsd)
+        expected = numpy.array([2.8571060045, -1.2661069033, -2.3044907774])
+
         assert_array_almost_equal(expected, p, decimal=5)
 
 
