@@ -62,7 +62,7 @@ Requirements
 - numexpr
 - numpy 1.12 or later
 - pandas 0.21 or later
-- scikit-learn 0.20 or 0.21
+- scikit-learn 0.21
 - scipy 1.0 or later
 - C/C++ compiler
 
