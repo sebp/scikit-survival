@@ -15,7 +15,7 @@ def parse_requirements(filename):
     return requirements
 
 
-with open('README.rst') as fp:
+with open('README.rst', encoding="utf-8") as fp:
     long_description = fp.read()
 
 
