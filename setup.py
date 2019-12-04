@@ -69,6 +69,7 @@ def setup_package():
         zip_safe=False,
         include_package_data=True,
         use_scm_version=True,
+        python_requires='>=3.5',
         setup_requires=['setuptools_scm'],
         install_requires=requirements,
         cmdclass={'sdist': sdist},
@@ -89,8 +90,4 @@ def setup_package():
 
 
 if __name__ == "__main__":
-    py_version = sys.version_info[:2]
-    if py_version < (3, 5):
-        raise RuntimeError('Python 3.5 or later is required')
-
     setup_package()
