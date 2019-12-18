@@ -556,14 +556,15 @@ class TestKernelSurvivalSVM(object):
         x = normalize(whas500.x)
 
         rsvm = FastKernelSurvivalSVM(optimizer='rbtree', kernel="polynomial",
-                                     gamma=0.5, degree=2,
-                                     tol=1e-8, max_iter=100, random_state=0xf38)
+                                     gamma=0.5, degree=2, coef0=0,
+                                     tol=2.5e-8, max_iter=100, random_state=0xf38)
         rsvm.fit(x, whas500.y)
         pred_rsvm = rsvm.predict(x)
 
-        kpca = KernelPCA(kernel="polynomial", copy_X=True, gamma=0.5, degree=2, random_state=0xf38)
+        kpca = KernelPCA(kernel="polynomial", copy_X=True, gamma=0.5, degree=2, coef0=0,
+                         random_state=0xf38)
         xt = kpca.fit_transform(x)
-        nrsvm = FastSurvivalSVM(optimizer='rbtree', tol=1e-8, max_iter=100, random_state=0xf38)
+        nrsvm = FastSurvivalSVM(optimizer='rbtree', tol=2.5e-8, max_iter=100, random_state=0xf38)
         nrsvm.fit(xt, whas500.y)
         pred_nrsvm = nrsvm.predict(xt)
 
