@@ -311,6 +311,7 @@ if on_rtd:
         'sklearn.preprocessing',
         'sklearn.svm',
         'sklearn.tree',
+        'sklearn.tree._splitter',
         'sklearn.tree._tree',
         'sklearn.utils',
         'sklearn.utils.extmath',
@@ -322,7 +323,8 @@ if on_rtd:
         'sksurv.kernels._clinical_kernel',
         'sksurv.linear_model._coxnet',
         'sksurv.svm._minlip',
-        'sksurv.svm._prsvm']
+        'sksurv.svm._prsvm',
+        'sksurv.tree._criterion']
 
     MOCK_VERSIONS = {
         'pandas': '0.22.0',

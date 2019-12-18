@@ -26,13 +26,6 @@ from sksurv.testing import assert_cindex_almost_equal
 WHAS500_NOTIES_FILE = join(dirname(__file__), 'data', 'whas500-noties.arff')
 
 
-@pytest.fixture
-def fake_data():
-    x = numpy.random.randn(100, 11)
-    y = Surv.from_arrays(numpy.ones(100, dtype=bool), numpy.arange(1, 101, dtype=float))
-    return x, y
-
-
 @pytest.fixture(params=[
     'simple',
     'PRSVM',

@@ -29,6 +29,13 @@ def pandas_version_under_0p24():
 
 
 @pytest.fixture
+def fake_data():
+    x = numpy.random.randn(100, 11)
+    y = Surv.from_arrays(numpy.ones(100, dtype=bool), numpy.arange(1, 101, dtype=float))
+    return x, y
+
+
+@pytest.fixture
 def make_whas500():
     """Load and standardize WHAS500 data."""
     def _make_whas500(with_mean=True, with_std=True, to_numeric=False):

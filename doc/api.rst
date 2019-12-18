@@ -73,6 +73,16 @@ Kernels
     ClinicalKernelTransform
 
 
+Survival Tree
+-------------
+.. currentmodule:: sksurv.tree
+
+.. autosummary::
+    :toctree: generated/
+
+    SurvivalTree
+
+
 Meta Models
 -----------
 .. currentmodule:: sksurv.meta

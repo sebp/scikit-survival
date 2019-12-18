@@ -68,6 +68,7 @@ def configuration(parent_package='', top_path=None):
     config.add_subpackage('linear_model')
     config.add_subpackage('meta')
     config.add_subpackage('svm')
+    config.add_subpackage('tree')
 
     # Skip cythonization as we do not want to include the generated
     # C/C++ files in the release tarballs as they are not necessarily
