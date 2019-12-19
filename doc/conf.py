@@ -301,6 +301,7 @@ if on_rtd:
         'sklearn.ensemble._gb_losses',
         'sklearn.ensemble._gradient_boosting',
         'sklearn.ensemble.base',
+        'sklearn.ensemble.forest',
         'sklearn.ensemble.gradient_boosting',
         'sklearn.exceptions',
         'sklearn.externals.joblib',
@@ -314,7 +315,9 @@ if on_rtd:
         'sklearn.tree._splitter',
         'sklearn.tree._tree',
         'sklearn.utils',
+        'sklearn.utils._joblib',
         'sklearn.utils.extmath',
+        'sklearn.utils.fixes',
         'sklearn.utils.metaestimators',
         'sklearn.utils.validation',
         # our C modules

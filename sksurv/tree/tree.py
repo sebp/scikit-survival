@@ -37,7 +37,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         all leaves are pure or until all leaves contain less than
         min_samples_split samples.
 
-    min_samples_split : int, float, optional, default: 5
+    min_samples_split : int, float, optional, default: 6
         The minimum number of samples required to split an internal node:
 
         - If int, then consider `min_samples_split` as the minimum number.
@@ -98,7 +98,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
     Attributes
     ----------
-    event_times_ : array of shape = [n_event_times]
+    event_times_ : array of shape = (n_event_times,)
         Unique time points where events occurred.
 
     max_features_ : int,
@@ -352,15 +352,14 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         The risk score is the total number of events, which can
         be estimated by the sum of the estimated cumulative
-        hazard function.
+        hazard function :math:`\\hat{H}_h` in terminal node :math:`h`.
 
         .. math::
 
-            \\sum_{i=1}^{n(h)} \\hat{H}_h(T_{i} \\mid x) ,
+            \\sum_{j=1}^{n(h)} \\hat{H}_h(T_{j} \\mid x) ,
 
-        where :math:`n(h)` denotes the number of samples in
-        the training data belonging to the same terminal
-        node as :math:`x`.
+        where :math:`n(h)` denotes the number of distinct event times
+        of samples belonging to the same terminal node as :math:`x`.
 
         Parameters
         ----------

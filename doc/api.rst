@@ -46,6 +46,7 @@ Ensemble Models
 
     ComponentwiseGradientBoostingSurvivalAnalysis
     GradientBoostingSurvivalAnalysis
+    RandomSurvivalForest
 
 
 Survival Support Vector Machine
@@ -73,8 +74,8 @@ Kernels
     ClinicalKernelTransform
 
 
-Survival Tree
--------------
+Survival Trees
+--------------
 .. currentmodule:: sksurv.tree
 
 .. autosummary::
