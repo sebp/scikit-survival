@@ -28,7 +28,6 @@ else
     pandas=$PANDAS_VERSION \
     scikit-learn=$SKLEARN_VERSION \
     cython \
-    tox \
     "blas=*=openblas"
   echo "numpy $NUMPY_VERSION.*" > "$MINICONDA_DIR/envs/sksurv-test/conda-meta/pinned"
   echo "pandas $PANDAS_VERSION.*" >> "$MINICONDA_DIR/envs/sksurv-test/conda-meta/pinned"
