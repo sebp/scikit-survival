@@ -4,11 +4,6 @@
 environment:
   # see https://www.appveyor.com/docs/build-environment/#python
   matrix:
-    # cvxopt is only available for python <3.5
-    # https://github.com/cvxopt/cvxopt/issues/94
-    - TARGET_ARCH: "x64"
-      CONDA_PY: "35"
-      CONDA_INSTALL_LOCN: "C:\\Miniconda35-x64"
     - TARGET_ARCH: "x64"
       CONDA_PY: "36"
       CONDA_INSTALL_LOCN: "C:\\Miniconda36-x64"

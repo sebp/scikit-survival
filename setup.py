@@ -77,7 +77,7 @@ def setup_package():
 
     if (len(sys.argv) >= 2
             and ('--help' in sys.argv[1:] or sys.argv[1]
-                 in ('--help-commands', 'egg_info', '--version', 'clean'))):
+                 in ('--help-commands', 'dist_info', 'egg_info', '--version', 'clean'))):
 
         # For these actions, NumPy is not required.
         from setuptools import setup

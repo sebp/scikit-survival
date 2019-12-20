@@ -13,65 +13,47 @@
 import os
 import os.path
 from distutils.version import LooseVersion
+import sys
 
-CYTHON_MIN_VERSION = '0.23'
-
-
-def build_from_c_and_cpp_files(extensions):
-    """Modify the extensions to build from the .c and .cpp files.
-    This is useful for releases, this way cython is not required to
-    run python setup.py install.
-    """
-    for extension in extensions:
-        sources = []
-        for sfile in extension.sources:
-            path, ext = os.path.splitext(sfile)
-            if ext in ('.pyx', '.py'):
-                if extension.language == 'c++':
-                    ext = '.cpp'
-                else:
-                    ext = '.c'
-                sfile = path + ext
-            sources.append(sfile)
-        extension.sources = sources
+CYTHON_MIN_VERSION = '0.29'
 
 
-def maybe_cythonize_extensions(top_path, config):
-    """Tweaks for building extensions between release and development mode."""
-    is_release = os.path.exists(os.path.join(top_path, 'PKG-INFO'))
+def _check_cython_version():
+    message = ("Please install Cython with a version >= {0} in order "
+               "to build a scikit-learn from source.").format(
+                   CYTHON_MIN_VERSION)
+    try:
+        import Cython
+    except ModuleNotFoundError:
+        # Re-raise with more informative error message instead:
+        raise ModuleNotFoundError(message)
 
-    if is_release:
-        build_from_c_and_cpp_files(config.ext_modules)
+    if LooseVersion(Cython.__version__) < CYTHON_MIN_VERSION:
+        message += (" The current version of Cython is {} installed in {}."
+                    .format(Cython.__version__, Cython.__path__))
+        raise ValueError(message)
+
+
+def cythonize_extensions(top_path, config):
+    """Check that a recent Cython is available and cythonize extensions"""
+    _check_cython_version()
+    from Cython.Build import cythonize
+
+    # http://docs.cython.org/en/latest/src/userguide/source_files_and_compilation.html#cythonize-arguments
+    directives = {'language_level': '3'}
+    cy_cov = os.environ.get('CYTHON_COVERAGE', False)
+    if cy_cov:
+        directives['linetrace'] = True
+        macros = [('CYTHON_TRACE', '1'), ('CYTHON_TRACE_NOGIL', '1')]
     else:
-        message = ('Please install cython with a version >= {0} in order '
-                   'to build a scikit-survival development version.').format(
-                       CYTHON_MIN_VERSION)
-        try:
-            import Cython
-            if LooseVersion(Cython.__version__) < CYTHON_MIN_VERSION:
-                message += ' Your version of Cython was {0}.'.format(
-                    Cython.__version__)
-                raise ValueError(message)
-            from Cython.Build import cythonize
-        except ImportError as exc:
-            exc.args += (message,)
-            raise
+        macros = []
 
-        # http://docs.cython.org/en/latest/src/userguide/source_files_and_compilation.html#cythonize-arguments
-        directives = {'language_level': '3'}
-        cy_cov = os.environ.get('CYTHON_COVERAGE', False)
-        if cy_cov:
-            directives['linetrace'] = True
-            macros = [('CYTHON_TRACE', '1'), ('CYTHON_TRACE_NOGIL', '1')]
-        else:
-            macros = []
+    config.ext_modules = cythonize(
+        config.ext_modules,
+        compiler_directives=directives)
 
-        config.ext_modules = cythonize(
-            config.ext_modules,
-            compiler_directives=directives)
-
-        for e in config.ext_modules:
-            e.define_macros.extend(macros)
+    for e in config.ext_modules:
+        e.define_macros.extend(macros)
 
 
 def configuration(parent_package='', top_path=None):
@@ -87,7 +69,11 @@ def configuration(parent_package='', top_path=None):
     config.add_subpackage('meta')
     config.add_subpackage('svm')
 
-    maybe_cythonize_extensions(top_path, config)
+    # Skip cythonization as we do not want to include the generated
+    # C/C++ files in the release tarballs as they are not necessarily
+    # forward compatible with future versions of Python for instance.
+    if 'sdist' not in sys.argv:
+        cythonize_extensions(top_path, config)
 
     return config
 
