@@ -23,3 +23,8 @@ jobs:
           pip install --upgrade tox numpy
       - name: Run Tox
         run: tox
+      - name: Archive documentation
+        uses: actions/upload-artifact@v1
+        with:
+          name: documentation
+          path: doc/_build/html
