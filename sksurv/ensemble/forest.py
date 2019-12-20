@@ -32,7 +32,7 @@ class RandomSurvivalForest(BaseForest, SurvivalAnalysisMixin):
     In each survival tree, the quality of a split is measured by the
     log-rank splitting rule.
 
-    See [1]_ for further description.
+    See [1]_ and [2]_ for further description.
 
     Parameters
     ----------
@@ -159,6 +159,9 @@ class RandomSurvivalForest(BaseForest, SurvivalAnalysisMixin):
     ----------
     .. [1] Ishwaran, H., Kogalur, U. B., Blackstone, E. H., & Lauer, M. S. (2008).
            Random survival forests. The Annals of Applied Statistics, 2(3), 841–860.
+
+    .. [2] Ishwaran, H., Kogalur, U. B. (2007). Random survival forests for R.
+           R News, 7(2), 25–31. https://cran.r-project.org/doc/Rnews/Rnews_2007-2.pdf.
     """
 
     def __init__(self,
