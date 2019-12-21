@@ -284,6 +284,7 @@ if on_rtd:
         'cvxpy',
         'numexpr',
         'numpy',
+        'osqp',
         'pandas',
         'pandas.api.types',
         'scipy',
@@ -314,6 +315,7 @@ if on_rtd:
         'sklearn.tree',
         'sklearn.tree._splitter',
         'sklearn.tree._tree',
+        'sklearn.tree.tree',
         'sklearn.utils',
         'sklearn.utils._joblib',
         'sklearn.utils.extmath',
@@ -343,7 +345,7 @@ if on_rtd:
         def __getattr__(cls, name):
             if name in ('__file__', '__path__'):
                 return '/dev/null'
-            elif name[0] == name[0].upper():
+            elif name[0] == name[0].upper() and name[0] != "_":
                 # Not very good, we assume Uppercase names are classes...
                 mocktype = type(name, (), {})
                 mocktype.__module__ = __name__
