@@ -25,6 +25,7 @@ Notebooks
 * `Introduction to Survival Analysis with scikit-survival <https://nbviewer.jupyter.org/github/sebp/scikit-survival/blob/master/examples/00-introduction.ipynb>`_
 * `Pitfalls when Evaluating Survival Models <https://nbviewer.jupyter.org/github/sebp/scikit-survival/blob/master/examples/evaluating-survival-models.ipynb>`_
 * `Introduction to Kernel Survival Support Vector Machines <https://nbviewer.jupyter.org/github/sebp/scikit-survival/blob/master/examples/survival-svm.ipynb>`_
+* `Using Random Survival Forests <https://nbviewer.jupyter.org/github/sebp/scikit-survival/blob/master/examples/random-survival-forest.ipynb>`_
 
 
 Indices and tables
