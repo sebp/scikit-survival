@@ -3,6 +3,41 @@
 Release Notes
 =============
 
+scikit-survival 0.11 (2019-12-21)
+---------------------------------
+
+This release adds :class:`sksurv.tree.SurvivalTree` and :class:`sksurv.ensemble.RandomSurvivalForest`,
+which are based on the log-rank split criterion.
+It also adds the OSQP solver as options to :class:`sksurv.svm.MinlipSurvivalAnalysis`
+and :class:`sksurv.svm.HingeLossSurvivalSVM`, which will replace the now deprecated
+`cvxpy` and `cvxopt` options in a future release.
+
+This release removes support for sklearn 0.20 and requires sklearn 0.21.
+
+Deprecations
+^^^^^^^^^^^^
+
+- The `cvxpy` and `cvxopt` options for `solver` in :class:`sksurv.svm.MinlipSurvivalAnalysis`
+  :class:`sksurv.svm.HingeLossSurvivalSVM` are deprecated and will be removed in a future
+  version. Choosing `osqp` is the preferred option now.
+
+Enhancements
+^^^^^^^^^^^^
+
+- Add support for pandas 0.25.
+- Add OSQP solver option to :class:`sksurv.svm.MinlipSurvivalAnalysis`.
+  :class:`sksurv.svm.HingeLossSurvivalSVM` which has no additional dependencies.
+- Fix issue when using cvxpy 1.0.16 or later.
+- Explicitly specify utf-8 encoding when reading README.rst (#89).
+- Add :class:`sksurv.tree.SurvivalTree` and :class:`sksurv.ensemble.RandomSurvivalForest` (#90).
+
+Bug fixes
+^^^^^^^^^
+
+- Exclude Cython-generated files from source distribution because
+  they are not forward compatible.
+
+
 scikit-survival 0.10 (2019-09-02)
 ---------------------------------
 
