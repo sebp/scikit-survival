@@ -380,6 +380,10 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
     In each stage, a regression tree is fit on the negative gradient
     of the loss function.
 
+    For more details on gradient boosting see [1]_ and [2]_, for gradient
+    boosting of the proportional hazards model see [3]_. When using a non-zero
+    `dropout_rate`, regularization is applied during training following [4]_.
+
     Parameters
     ----------
     loss : {'coxph', 'squared', 'ipcwls'}, optional, default: 'coxph'
@@ -518,6 +522,19 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         relative to the previous iteration.
         ``oob_improvement_[0]`` is the improvement in
         loss of the first stage over the ``init`` estimator.
+
+    References
+    ----------
+    .. [1] J. H. Friedman, "Greedy function approximation: A gradient boosting machine,"
+           The Annals of Statistics, 29(5), 1189–1232, 2001.
+    .. [2] J. H. Friedman, "Stochastic gradient boosting,"
+           Computational Statistics & Data Analysis, 38(4), 367–378, 2002.
+    .. [3] G. Ridgeway, "The state of boosting,"
+           Computing Science and Statistics, 172–181, 1999.
+    .. [4] K. V. Rashmi and R. Gilad-Bachrach,
+           "DART: Dropouts meet multiple additive regression trees,"
+           in 18th International Conference on Artificial Intelligence and Statistics,
+           2015, 489–497.
     """
     def __init__(self, loss="coxph", learning_rate=0.1, n_estimators=100,
                  criterion='friedman_mse',
