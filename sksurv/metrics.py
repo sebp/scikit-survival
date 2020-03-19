@@ -22,6 +22,9 @@ __all__ = [
     'concordance_index_censored',
     'concordance_index_ipcw',
     'cumulative_dynamic_auc',
+    'brier_score',
+    'integrated_brier_score',
+    'calibration_curve',
 ]
 
 
@@ -955,4 +958,3 @@ def calibration_curve(survival_train,survival_test, estimate, times,
         globmax_y=max(actual.max(),pred.max())+0.02
 
     return (globmin_x,globmax_x,globmin_y, globmax_y,)
-
