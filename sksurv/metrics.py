@@ -784,12 +784,68 @@ def brier_score(survival_train,survival_test, estimate, times,
     
     return times[times<=t_max],numpy.array(brierlist)
 
-def integrated_brier_score(ev_dictlist, times, t_max=None):
+def integrated_brier_score(survival_train,survival_test, estimate, times,
+                     t_max=None,
+                     use_mean_point=False,
+                     internal_validation=True,
+                     **kwargs):
     """ The Integrated Brier Score (IBS) provides an overall calculation of 
-        the model performance at all available times.
+        the model performance at all available times t<=t_max. 
+        If t_max == None overall model performance will be integrated over
+        all available times.
+    Parameters:
+    -----------
+    survival_train : structured array, shape = (n_train_samples,)
+        Survival times for training data to estimate if training
+        and testing data are drawn from same sample.
+        Set internal_validation to True in this case.
+        Otherwise, use surival_test again as input.
+        A structured array containing the binary event indicator
+        as first field, and time of event or time of censoring as
+        second field.
+
+    survival_test : structured array, shape = (n_samples,)
+        Survival times of test data.
+        A structured array containing the binary event indicator
+        as first field, and time of event or time of censoring as
+        second field.
+
+    estimate : array-like, shape = (n_samples,n_times)
+        Estimated risk of experiencing an event for test data at `times`.
+
+    times : array-like, shape = (n_times,)
+        The time points for which the predicted Survival function
+        is calculated and interpolation for a specific follow-up-time
+        will be calculated from. Values must be
+        within the range of follow-up times of the test data
+        `survival_test`.
+    
+        
+    * t_max: float 
+        Maximal time for estimating the prediction error curves. 
+        If missing the largest value of the response variable is used.
+        
+    * t_max: use_mean_point 
+        not necessary at the moment. 
+        Predicted survival will be calculated at the mean of a time bucket (between 2 breaks)
+    Returns:
+    --------
+        * times : array, shape = (n_times*)
+            represents the time axis (length n_times* = n_times[times <= t_max] at which the brier scores were 
+            computed
+        * brier_scores : array , shape = (n_times*)
+            values of the brier scores
+                    
+    Example:
+    --------
+        
     """
      # Computing the brier scores
-    times, brier_scores = brier_score(ev_dictlist, times, t_max=t_max)
+    times, brier_scores = brier_score(survival_train,survival_test, estimate, times,
+                     t_max=t_max,
+                     use_mean_point=False,
+                     internal_validation=True,
+                     )
 
     # Getting the proper value of t_max
     if t_max is None:
