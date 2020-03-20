@@ -147,18 +147,18 @@ def _calib_plot(fu_time, n_bins, pred_surv, time, dead, color, label, error_bars
     import matplotlib.pyplot as plt
 #    cuts = numpy.concatenate((numpy.array([-1e6]),numpy.percentile(pred_surv, numpy.arange(100/n_bins,100,100/n_bins)),numpy.array([1e6])))
 #    bin = pd.cut(pred_surv,cuts,labels=False)
-    bin = pd.qcut(pred_surv,n_bins,labels=None)
+    bins = pd.qcut(pred_surv,n_bins,labels=None)
     kmf = KaplanMeierFitter()
     est = []
     ci_upper = []
     ci_lower = []
     mean_pred_surv = []
-    for which_bin in range(max(bin)+1):
-        kmf.fit(time[bin==which_bin], event_observed=dead[bin==which_bin])
+    for which_bin in range(max(bins)+1):
+        kmf.fit(time[bins==which_bin], event_observed=dead[bins==which_bin])
         est.append(numpy.interp(fu_time, kmf.survival_function_.index.values, kmf.survival_function_.KM_estimate))
         ci_upper.append(numpy.interp(fu_time, kmf.survival_function_.index.values, kmf.confidence_interval_.loc[:,'KM_estimate_upper_0.95']))
         ci_lower.append(numpy.interp(fu_time, kmf.survival_function_.index.values, kmf.confidence_interval_.loc[:,'KM_estimate_lower_0.95']))
-        mean_pred_surv.append(numpy.mean(pred_surv[bin==which_bin]))
+        mean_pred_surv.append(numpy.mean(pred_surv[bins==which_bin]))
     est = numpy.array(est)
     ci_upper = numpy.array(ci_upper)
     ci_lower = numpy.array(ci_lower)
@@ -975,7 +975,6 @@ def calibration_curve(survival_train,survival_test, estimate, times,
     --------
 
     """
-    import matplotlib.pyplot as plt
     
     # check survival arrays for test_data
     test_event, test_time = check_y_survival(survival_test)
