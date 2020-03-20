@@ -121,6 +121,20 @@ def _estimate_concordance_index(event_indicator, event_time, estimate, weights, 
     cindex = numerator / denominator
     return cindex, concordant, discordant, tied_risk, tied_time
 
+def _interp_pred_surv(SurvivalFunction, times, fu_time):
+    """
+    Interpolated survival probability at time fu_time
+    Inputs are Numpy arrays.
+    y_pred: Rectangular array, each individual's conditional probability of surviving each time interval
+    times: times for which survival probability is calculated.
+    fu_time: Follow-up time point at which predictions are needed
+    Returns: predicted survival probability for each individual at specified follow-up time
+    """
+    pred_surv = []
+    for i in range(SurvivalFunction.shape[0]):
+        pred_surv.append(numpy.interp(fu_time,times,SurvivalFunction[i,:]))
+    return numpy.array(pred_surv)
+
 def _calib_plot(fu_time, n_bins, pred_surv, time, dead, color, label, error_bars=0,alpha=1., markersize=1., markertype='o'):
     """
     Kaplan Meier Estimates for `n_bins` of predicted survival `pred_surv` at `fu_time` 
@@ -256,10 +270,13 @@ def _calib_plot_loess(fu_time,
         est[cond]=est_kfold[cond_kfold].mean()
         
     # hacky protection against memory overload, if samples are large
-    pred_surv_split,_,est_split,_=train_test_split(pred_surv,est,train_size=30000,shuffle=True)
-    order=numpy.argsort(pred_surv_split)
-    pred_surv_split=pred_surv_split[order]
-    est_split=est_split[order]
+    if pred_surv.shape[0] >= 30000:
+        pred_surv_split,_,est_split,_=train_test_split(pred_surv,est,train_size=30000,shuffle=True)
+        order=numpy.argsort(pred_surv_split)
+        pred_surv_split=pred_surv_split[order]
+        est_split=est_split[order]
+    else:
+        pred_surv_split,est_split = (pred_surv,est)
     
     if loess:
         loessfitter=loess(pred_surv_split,est_split)
@@ -765,7 +782,7 @@ def brier_score(survival_train,survival_test, estimate, times,
         is_control = (T > t)
         
         # get survival function S(t) by interpolating the Survival function
-        S=numpy.interp(Survival,times,t)
+        S=_interp_pred_surv(Survival,times,t)
         S2=numpy.multiply(S,S)
         omS2=numpy.multiply(1 - S,1 - S)
         
@@ -966,13 +983,13 @@ def calibration_curve(survival_train,survival_test, estimate, times,
     times = check_array(numpy.atleast_1d(times), ensure_2d=False, dtype=test_time.dtype)
     
     if internal_validation:
-        test_time_traintest=numpy.concatenate(test_time,train_time)
-        test_event_traintest=numpy.concatenate(test_event,train_event)
+        test_time_traintest=numpy.concatenate([test_time,train_time])
+        test_event_traintest=numpy.concatenate([test_event,train_event])
     else:
         test_time_traintest=test_time
         test_event_traintest=test_event
     # interpolate predicted survival at fu_time.
-    pred_surv = numpy.interp(estimate, times, fu_time)
+    pred_surv = _interp_pred_surv(estimate, times, fu_time)
     
     # sort by pred_surv in ascending order
     order=numpy.argsort(pred_surv)
