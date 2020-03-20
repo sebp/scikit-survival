@@ -733,8 +733,6 @@ def brier_score(survival_train,survival_test, estimate, times,
     --------
     """
     # check inputs
-    test_event, test_time = check_y_survival(survival_test)
-
     
     times = check_array(numpy.atleast_1d(times), ensure_2d=False, dtype=test_time.dtype)
     times = numpy.unique(times)
