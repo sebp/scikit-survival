@@ -765,7 +765,7 @@ def brier_score(survival_train,survival_test, estimate, times,
         is_control = (T > t)
         
         # get survival function S(t) by interpolating the Survival function
-        S=numpy.interpolate(Survival,times,t)
+        S=numpy.interp(Survival,times,t)
         S2=numpy.multiply(S,S)
         omS2=numpy.multiply(1 - S,1 - S)
         
@@ -972,7 +972,7 @@ def calibration_curve(survival_train,survival_test, estimate, times,
         test_time_traintest=test_time
         test_event_traintest=test_event
     # interpolate predicted survival at fu_time.
-    pred_surv = numpy.interpolate(estimate, times, fu_time)
+    pred_surv = numpy.interp(estimate, times, fu_time)
     
     # sort by pred_surv in ascending order
     order=numpy.argsort(pred_surv)
