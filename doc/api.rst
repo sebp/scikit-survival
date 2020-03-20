@@ -106,6 +106,8 @@ Metrics
     concordance_index_censored
     concordance_index_ipcw
     cumulative_dynamic_auc
+    brier_score
+    integrated_brier_score
 
 
 Pre-Processing
