@@ -323,7 +323,7 @@ def _jacknife(fu_time,time,dead,verbose=True):
     kmfi = KaplanMeierFitter()
     pseudovals=[]
     k=0
-    for train_index, test_index in llo.split(time):
+    for train_index, _ in llo.split(time):
         kmfi.fit(time[train_index], event_observed=dead[train_index])
         kmei=numpy.interp(fu_time, kmfi.survival_function_.index.values, kmfi.survival_function_.KM_estimate) # linear interpolation
         pseudovali=(time.shape[0] * kme) - ((time.shape[0] - 1) * kmei)
