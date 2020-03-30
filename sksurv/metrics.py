@@ -762,7 +762,13 @@ def brier_score(survival_train,survival_test, estimate, times,
     cens=CensoringDistributionEstimator()
     if internal_validation: cens.fit(survival_train)
     else: cens.fit(survival_test)
-    
+
+    #calculate inverse probability of censoring weights at observation T[i] from survival_train
+    struct_event_times=numpy.zeros((T.shape[0],),dtype=[('event','bool'),('time','int64')])
+    struct_event_times['time'][:]=T
+    struct_event_times['event'][:]=E
+    ipcw=cens.predict_ipcw(struct_event_times)
+        
     #setting time to last time observed, if not t_max set
     if t_max is None or t_max <= 0.:
         t_max = max(T)
@@ -787,11 +793,9 @@ def brier_score(survival_train,survival_test, estimate, times,
         #calculate inverse probability of censoring weight at current timepoint t.
         struct_arr=numpy.zeros((T.shape[0],),dtype=[('event','bool'),('time','int64')])
         struct_arr['time'][:]=t
-        struct_arr['event'][:]=E
+        struct_arr['event'][:]=numpy.ones((E.shape[0],))
         ipcw_t=cens.predict_ipcw(struct_arr)
         
-        #calculate inverse probability of censoring weights at observation T from survival_train
-        ipcw=cens.predict_ipcw(survival_test)
 
         bs[is_case]= numpy.multiply(S2[is_case],ipcw[is_case]) # multiplicative IPCW at T[i]
         bs[is_control] = numpy.multiply(omS2[is_control],ipcw_t[is_control]) # multiplicative IPCW at current t
