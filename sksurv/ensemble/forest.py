@@ -1,9 +1,9 @@
 import threading
 import warnings
 import numpy as np
-from sklearn.ensemble.base import _partition_estimators
-from sklearn.ensemble.forest import BaseForest, _accumulate_prediction, \
-    _generate_unsampled_indices, _parallel_build_trees
+from sklearn.ensemble._base import _partition_estimators
+from sklearn.ensemble._forest import BaseForest, _accumulate_prediction, \
+    _generate_unsampled_indices, _get_n_samples_bootstrap, _parallel_build_trees
 from sklearn.tree._tree import DTYPE
 from sklearn.utils._joblib import Parallel, delayed
 from sklearn.utils.fixes import _joblib_parallel_args
@@ -177,7 +177,8 @@ class RandomSurvivalForest(BaseForest, SurvivalAnalysisMixin):
                  n_jobs=None,
                  random_state=None,
                  verbose=0,
-                 warm_start=False):
+                 warm_start=False,
+                 max_samples=None):
         super().__init__(
             base_estimator=SurvivalTree(),
             n_estimators=n_estimators,
@@ -193,7 +194,8 @@ class RandomSurvivalForest(BaseForest, SurvivalAnalysisMixin):
             n_jobs=n_jobs,
             random_state=random_state,
             verbose=verbose,
-            warm_start=warm_start)
+            warm_start=warm_start,
+            max_samples=max_samples)
 
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
@@ -233,6 +235,12 @@ class RandomSurvivalForest(BaseForest, SurvivalAnalysisMixin):
         y_numeric = np.empty((X.shape[0], 2), dtype=np.float64)
         y_numeric[:, 0] = time.astype(np.float64)
         y_numeric[:, 1] = event.astype(np.float64)
+
+        # Get bootstrap sample size
+        n_samples_bootstrap = _get_n_samples_bootstrap(
+            n_samples=X.shape[0],
+            max_samples=self.max_samples
+        )
 
         # Check parameters
         self._validate_estimator()
@@ -277,7 +285,8 @@ class RandomSurvivalForest(BaseForest, SurvivalAnalysisMixin):
                              **_joblib_parallel_args(prefer='threads'))(
                 delayed(_parallel_build_trees)(
                     t, self, X, (y_numeric, self.event_times_), sample_weight, i, len(trees),
-                    verbose=self.verbose)
+                    verbose=self.verbose,
+                    n_samples_bootstrap=n_samples_bootstrap)
                 for i, t in enumerate(trees))
 
             # Collect newly grown trees
@@ -298,9 +307,13 @@ class RandomSurvivalForest(BaseForest, SurvivalAnalysisMixin):
         predictions = np.zeros(n_samples)
         n_predictions = np.zeros(n_samples)
 
+        n_samples_bootstrap = _get_n_samples_bootstrap(
+            n_samples, self.max_samples
+        )
+
         for estimator in self.estimators_:
             unsampled_indices = _generate_unsampled_indices(
-                estimator.random_state, n_samples)
+                estimator.random_state, n_samples, n_samples_bootstrap)
             p_estimator = estimator.predict(
                 X[unsampled_indices, :], check_input=False)
 

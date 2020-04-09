@@ -191,7 +191,7 @@ def test_tree_two_split(veterans):
     X, y = veterans
     X = X.loc[:, "Karnofsky_score"].values[:, numpy.newaxis]
 
-    tree = SurvivalTree(max_depth=2, max_features=1, presort=True)
+    tree = SurvivalTree(max_depth=2, max_features=1)
     tree.fit(X, y)
 
     assert tree.tree_.capacity == 7
@@ -225,7 +225,7 @@ def test_tree_split_all_censored(veterans):
     X = X.loc[:, "Karnofsky_score"].values[:, numpy.newaxis]
     y["Status"][X[:, 0] > 45.] = False
 
-    tree = SurvivalTree(max_depth=2, max_features=1, presort=True)
+    tree = SurvivalTree(max_depth=2, max_features=1)
     tree.fit(X, y)
 
     assert tree.tree_.capacity == 5
@@ -416,6 +416,6 @@ def test_presort(fake_data, val):
     X, y = fake_data
     tree = SurvivalTree(presort=val)
 
-    with pytest.raises(ValueError,
-                       match=r"'presort' should be in \('auto', True, False\)"):
+    with pytest.warns(DeprecationWarning,
+                      match="The parameter 'presort' is deprecated "):
         tree.fit(X, y)

@@ -1,11 +1,12 @@
 from math import ceil
 import numbers
+import warnings
 import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.tree import _tree
 from sklearn.tree._splitter import Splitter
 from sklearn.tree._tree import BestFirstTreeBuilder, DepthFirstTreeBuilder, Tree
-from sklearn.tree.tree import DENSE_SPLITTERS
+from sklearn.tree._classes import DENSE_SPLITTERS
 from sklearn.utils.validation import check_array, check_is_fitted, check_random_state
 
 from ..base import SurvivalAnalysisMixin
@@ -89,12 +90,8 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         Best nodes are defined as relative reduction in impurity.
         If None then unlimited number of leaf nodes.
 
-    presort : bool, optional, default: False
-        Whether to presort the data to speed up the finding of best splits in
-        fitting. For the default settings of a decision tree on large
-        datasets, setting this to true may slow down the training process.
-        When using either a smaller dataset or a restricted depth, this may
-        speed up the training.
+    presort : deprecated, optional, default: 'deprecated'
+        This parameter is deprecated and will be removed in a future version.
 
     Attributes
     ----------
@@ -132,7 +129,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
                  max_features=None,
                  random_state=None,
                  max_leaf_nodes=None,
-                 presort=False):
+                 presort='deprecated'):
         self.splitter = splitter
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
@@ -186,10 +183,6 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         n_samples, self.n_features_ = X.shape
         params = self._check_params(n_samples)
 
-        if params["presort"]:
-            X_idx_sorted = np.asfortranarray(np.argsort(X, axis=0),
-                                             dtype=np.int32)
-
         self.n_outputs_ = self.event_times_.shape[0]
         # one "class" for CHF, one for survival function
         self.n_classes_ = np.ones(self.n_outputs_, dtype=np.intp) * 2
@@ -204,8 +197,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
                 self.max_features_,
                 params["min_samples_leaf"],
                 params["min_weight_leaf"],
-                random_state,
-                self.presort)
+                random_state)
 
         self.tree_ = Tree(self.n_features_, self.n_classes_, self.n_outputs_)
 
@@ -252,11 +244,11 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         min_weight_leaf = self.min_weight_fraction_leaf * n_samples
         min_impurity_split = 1e-7
 
-        allowed_presort = ('auto', True, False)
-        if self.presort not in allowed_presort:
-            raise ValueError("'presort' should be in {}. Got {!r} instead."
-                             .format(allowed_presort, self.presort))
-        presort = True if self.presort == 'auto' else self.presort
+        if self.presort != 'deprecated':
+            warnings.warn("The parameter 'presort' is deprecated and has no "
+                          "effect. It will be removed in v0.24. You can "
+                          "suppress this warning by not passing any value "
+                          "to the 'presort' parameter.", DeprecationWarning)
 
         return {
             "max_depth": max_depth,
@@ -265,7 +257,6 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             "min_samples_split": min_samples_split,
             "min_impurity_split": min_impurity_split,
             "min_weight_leaf": min_weight_leaf,
-            "presort": presort,
         }
 
     def _check_max_leaf_nodes(self):
