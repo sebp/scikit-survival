@@ -1,0 +1,59 @@
+name: Linux
+on: [push]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    name: Build and check
+    strategy:
+      matrix:
+        config: ["py36_pandas021_numpy114_sklearn022", "py36_pandas022_numpy114_sklearn022", "py37_pandas024_numpy116_sklearn022", "py38_pandas025_numpy118_sklearn022"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Fetch all history for all tags and branches
+        run: git fetch --prune --unshallow
+      - name: Checkout submodules
+        shell: bash
+        run: |
+          auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+          git submodule sync --recursive
+          git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+      - name: Adding conda to PATH
+        run: echo "::add-path::${CONDA}/bin:${PATH}"
+      - name: Set dependencies
+        run: |
+          source ci/deps/${{ matrix.config }}.sh
+          echo "::set-env name=CONDA_PYTHON_VERSION::${CONDA_PYTHON_VERSION}"
+          echo "::set-env name=PANDAS_VERSION::${PANDAS_VERSION}"
+          echo "::set-env name=NUMPY_VERSION::${NUMPY_VERSION}"
+          echo "::set-env name=SKLEARN_VERSION::${SKLEARN_VERSION}"
+          echo "::set-env name=NO_SLOW::${NO_SLOW}"
+      - name: Create Conda Environment
+        run: |
+          sudo chown -R $USER $CONDA
+          conda config --set always_yes yes --set changeps1 no
+          conda update -q conda
+          ci/setup_env.sh
+      - name: Install Dependencies
+        run: |
+          python3 ci/list-requirements.py requirements/dev.txt > /tmp/conda-req.txt
+          conda install -c sebp -n sksurv-test --file /tmp/conda-req.txt
+          conda list -n sksurv-test
+      - name: Build package
+        run: |
+          source activate sksurv-test
+          python3 setup.py bdist_wheel
+          pip install --exists-action=w --pre --no-index --find-links dist/ scikit-survival
+          rm -fr build dist
+      - name: Run Tests
+        run: |
+          source activate sksurv-test
+          ci/run_tests.sh
+      - name: Submit Coverage
+        shell: bash
+        env:
+          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+        run: |
+          source activate sksurv-test
+          ci/submit_coverage.sh
