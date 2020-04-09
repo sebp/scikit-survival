@@ -6,13 +6,13 @@ scikit-survival
   :target: COPYING
   :alt: License
 
-.. image:: https://travis-ci.org/sebp/scikit-survival.svg?branch=master
-  :target: https://travis-ci.org/sebp/scikit-survival
-  :alt: Travis CI Build Status
+.. image:: https://github.com/sebp/scikit-survival/workflows/Linux/badge.svg?branch=master
+  :target: https://github.com/sebp/scikit-survival/actions?query=workflow%3ALinux+branch%3Amaster+
+  :alt: Linux Build Status
 
 .. image:: https://ci.appveyor.com/api/projects/status/github/sebp/scikit-survival?branch=master&svg=true
    :target: https://ci.appveyor.com/project/sebp/scikit-survival
-   :alt: AppVeyor Build Status
+   :alt: Windows Build Status on AppVeyor
 
 .. image:: https://codecov.io/gh/sebp/scikit-survival/branch/master/graph/badge.svg
   :target: https://codecov.io/gh/sebp/scikit-survival

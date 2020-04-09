@@ -2,8 +2,9 @@ name: Tox
 on: [push]
 
 jobs:
-  build:
+  linting_and_docs:
     runs-on: ubuntu-latest
+    name: Linting and Docs
     steps:
       - name: Checkout
         uses: actions/checkout@v2
