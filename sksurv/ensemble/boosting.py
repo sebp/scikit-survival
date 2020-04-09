@@ -11,13 +11,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numbers
+import warnings
 
 import numpy
 
 from sklearn.base import BaseEstimator
 from sklearn.ensemble._gradient_boosting import _random_sample_mask
-from sklearn.ensemble.base import BaseEnsemble
-from sklearn.ensemble.gradient_boosting import BaseGradientBoosting, VerboseReporter
+from sklearn.ensemble._base import BaseEnsemble
+from sklearn.ensemble._gb import BaseGradientBoosting, VerboseReporter
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.tree._tree import DTYPE
 from sklearn.utils import check_consistent_length, check_random_state, column_or_1d, check_array
@@ -473,11 +474,8 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         Best nodes are defined as relative reduction in impurity.
         If None then unlimited number of leaf nodes.
 
-    presort : bool or 'auto', optional, default: 'auto'
-        Whether to presort the data to speed up the finding of best splits in
-        fitting. Auto mode by default will use presorting on dense data and
-        default to normal sorting on sparse data. Setting presort to true on
-        sparse data will raise an error.
+    presort : deprecated, optional, default: 'deprecated'
+        This parameter is deprecated and will be removed in a future version.
 
     subsample : float, optional, default: 1.0
         The fraction of samples to be used for fitting the individual regression
@@ -498,6 +496,10 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         once in a while (the more trees the lower the frequency). If greater
         than 1 then it prints progress and performance for every tree.
 
+    ccp_alpha : non-negative float, optional, default: 0.0.
+        Complexity parameter used for Minimal Cost-Complexity Pruning. The
+        subtree with the largest cost complexity that is smaller than
+        ``ccp_alpha`` will be chosen. By default, no pruning is performed.
 
     Attributes
     ----------
@@ -543,9 +545,10 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                  max_depth=3, min_impurity_split=None,
                  min_impurity_decrease=0., random_state=None,
                  max_features=None, max_leaf_nodes=None,
-                 presort='auto',
+                 presort='deprecated',
                  subsample=1.0, dropout_rate=0.0,
-                 verbose=0):
+                 verbose=0,
+                 ccp_alpha=0.0):
         super().__init__(loss=loss,
                          learning_rate=learning_rate,
                          n_estimators=n_estimators,
@@ -562,7 +565,8 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                          max_features=max_features,
                          max_leaf_nodes=max_leaf_nodes,
                          presort=presort,
-                         verbose=verbose)
+                         verbose=verbose,
+                         ccp_alpha=ccp_alpha)
         self.dropout_rate = dropout_rate
 
     def _check_params(self):
@@ -594,10 +598,11 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         self.max_features_ = max_features
 
-        allowed_presort = ('auto', True, False)
-        if self.presort not in allowed_presort:
-            raise ValueError("'presort' should be in {}. Got {!r} instead."
-                             .format(allowed_presort, self.presort))
+        if self.presort != 'deprecated':
+            warnings.warn("The parameter 'presort' is deprecated and has no "
+                          "effect. It will be removed in v0.24. You can "
+                          "suppress this warning by not passing any value "
+                          "to the 'presort' parameter.", DeprecationWarning)
 
         if self.loss not in LOSS_FUNCTIONS:
             raise ValueError("Loss {!r} not supported.".format(self.loss))
@@ -666,7 +671,8 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                 max_features=self.max_features,
                 max_leaf_nodes=self.max_leaf_nodes,
                 random_state=random_state,
-                presort=self.presort)
+                presort=self.presort,
+                ccp_alpha=self.ccp_alpha)
 
             if self.subsample < 1.0:
                 # no inplace multiplication!
@@ -835,20 +841,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         # The rng state must be preserved if warm_start is True
         self._rng = check_random_state(self.random_state)
 
-        if self.presort is True and issparse(X):
-            raise ValueError(
-                "Presorting is not supported for sparse matrices.")
-
-        presort = self.presort
-        # Allow presort to be 'auto', which means True if the dataset is dense,
-        # otherwise it will be False.
-        if presort == 'auto':
-            presort = not issparse(X)
-
         X_idx_sorted = None
-        if presort:
-            X_idx_sorted = numpy.asfortranarray(numpy.argsort(X, axis=0),
-                                                dtype=numpy.int32)
 
         # fit the boosting stages
         y = numpy.fromiter(zip(event, time), dtype=[('event', numpy.bool), ('time', numpy.float64)])

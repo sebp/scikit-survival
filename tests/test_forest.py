@@ -129,3 +129,58 @@ def test_fit_warm_start(make_whas500):
 
     assert len(forest.estimators_) == 23
     assert all((e.max_depth == 2 for e in forest.estimators_))
+
+
+def test_fit_with_small_max_samples(make_whas500):
+    whas500 = make_whas500(to_numeric=True)
+
+    # First fit with no restriction on max samples
+    est1 = RandomSurvivalForest(
+        n_estimators=1,
+        random_state=1,
+        max_samples=None,
+    )
+
+    # Second fit with max samples restricted to just 2
+    est2 = RandomSurvivalForest(
+        n_estimators=1,
+        random_state=1,
+        max_samples=2,
+    )
+
+    est1.fit(whas500.x, whas500.y)
+    est2.fit(whas500.x, whas500.y)
+
+    tree1 = est1.estimators_[0].tree_
+    tree2 = est2.estimators_[0].tree_
+
+    msg = "Tree without `max_samples` restriction should have more nodes"
+    assert tree1.node_count > tree2.node_count, msg
+
+
+@pytest.mark.parametrize(
+    'max_samples, exc_type, exc_msg',
+    [(int(1e9), ValueError,
+      "`max_samples` must be in range 1 to 500 but got value 1000000000"),
+     (1.0, ValueError,
+      r"`max_samples` must be in range \(0, 1\) but got value 1.0"),
+     (2.0, ValueError,
+      r"`max_samples` must be in range \(0, 1\) but got value 2.0"),
+     (0.0, ValueError,
+      r"`max_samples` must be in range \(0, 1\) but got value 0.0"),
+     (numpy.nan, ValueError,
+      r"`max_samples` must be in range \(0, 1\) but got value nan"),
+     (numpy.inf, ValueError,
+      r"`max_samples` must be in range \(0, 1\) but got value inf"),
+     ('str max_samples?!', TypeError,
+      r"`max_samples` should be int or float, but got "
+      r"type '\<class 'str'\>'"),
+     (numpy.ones(2), TypeError,
+      r"`max_samples` should be int or float, but got type "
+      r"'\<class 'numpy.ndarray'\>'")]
+)
+def test_fit_max_samples(make_whas500, max_samples, exc_type, exc_msg):
+    whas500 = make_whas500(to_numeric=True)
+    forest = RandomSurvivalForest(max_samples=max_samples)
+    with pytest.raises(exc_type, match=exc_msg):
+        forest.fit(whas500.x, whas500.y)

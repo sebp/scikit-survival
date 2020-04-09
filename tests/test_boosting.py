@@ -44,7 +44,7 @@ class TestGradientBoosting(object):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         model = GradientBoostingSurvivalAnalysis(n_estimators=50, max_features=8, subsample=0.6,
-                                                 presort=False, random_state=0)
+                                                 random_state=0)
         model.fit(whas500_data.x, whas500_data.y)
 
         assert model.max_features_ == 8
@@ -157,13 +157,48 @@ class TestGradientBoosting(object):
             model.fit(whas500_data.x, whas500_data.y)
 
     @staticmethod
-    def test_presort(make_whas500):
+    @pytest.mark.parametrize('presort', ['auto', True, False, None])
+    def test_presort(make_whas500, presort):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
-        model = GradientBoostingSurvivalAnalysis(n_estimators=10, presort=None, random_state=0)
-        with pytest.raises(ValueError,
-                           match=r"'presort' should be in \('auto', True, False\). Got None instead."):
+        model = GradientBoostingSurvivalAnalysis(n_estimators=10, presort=presort, random_state=0)
+
+        with pytest.warns(DeprecationWarning,
+                          match="The parameter 'presort' is deprecated "):
             model.fit(whas500_data.x, whas500_data.y)
+
+    @staticmethod
+    def test_ccp_alpha(make_whas500):
+        whas500_data = make_whas500(with_std=False, to_numeric=True)
+
+        est_full = GradientBoostingSurvivalAnalysis(
+            n_estimators=10,
+            max_leaf_nodes=20,
+            random_state=1)
+        est_full.fit(whas500_data.x, whas500_data.y)
+
+        est_pruned = GradientBoostingSurvivalAnalysis(
+            n_estimators=10,
+            max_leaf_nodes=20,
+            ccp_alpha=10.0,
+            random_state=1)
+        est_pruned.fit(whas500_data.x, whas500_data.y)
+
+        tree = est_full.estimators_[0, 0].tree_
+        subtree = est_pruned.estimators_[0, 0].tree_
+        assert tree.node_count > subtree.node_count
+        assert tree.max_depth > subtree.max_depth
+
+    @staticmethod
+    def test_negative_ccp_alpha(make_whas500):
+        whas500_data = make_whas500(with_std=False, to_numeric=True)
+
+        clf = GradientBoostingSurvivalAnalysis()
+        msg = "ccp_alpha must be greater than or equal to 0"
+
+        with pytest.raises(ValueError, match=msg):
+            clf.set_params(ccp_alpha=-1.0)
+            clf.fit(whas500_data.x, whas500_data.y)
 
     @staticmethod
     def test_fit_verbose(make_whas500):
@@ -314,13 +349,6 @@ class TestSparseGradientBoosting(object):
         dense_predict = model.predict(whas500_sparse_data.x_dense)
 
         assert_array_almost_equal(sparse_predict, dense_predict)
-
-    @staticmethod
-    def test_presort(whas500_sparse_data):
-        model = GradientBoostingSurvivalAnalysis(n_estimators=10, presort=True, random_state=0)
-        with pytest.raises(ValueError,
-                           match="Presorting is not supported for sparse matrices."):
-            model.fit(whas500_sparse_data.x_sparse, whas500_sparse_data.y)
 
 
 class TestComponentwiseGradientBoosting(object):

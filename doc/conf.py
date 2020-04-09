@@ -299,6 +299,9 @@ if on_rtd:
         'sklearn.base',
         'sklearn.dummy',
         'sklearn.ensemble',
+        'sklearn.ensemble._base',
+        'sklearn.ensemble._forest',
+        'sklearn.ensemble._gb',
         'sklearn.ensemble._gb_losses',
         'sklearn.ensemble._gradient_boosting',
         'sklearn.ensemble.base',
@@ -313,6 +316,7 @@ if on_rtd:
         'sklearn.preprocessing',
         'sklearn.svm',
         'sklearn.tree',
+        'sklearn.tree._classes',
         'sklearn.tree._splitter',
         'sklearn.tree._tree',
         'sklearn.tree.tree',
@@ -333,7 +337,7 @@ if on_rtd:
 
     MOCK_VERSIONS = {
         'pandas': '0.22.0',
-        'sklearn': '0.21.0',
+        'sklearn': '0.22.0',
     }
 
     from unittest.mock import Mock
