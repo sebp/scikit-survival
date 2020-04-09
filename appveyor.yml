@@ -1,5 +1,6 @@
 # AppVeyor.com is a Continuous Integration service to build and run tests under
 # Windows
+image: Visual Studio 2019
 
 environment:
   # see https://www.appveyor.com/docs/build-environment/#python
