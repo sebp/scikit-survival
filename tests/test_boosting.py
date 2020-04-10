@@ -4,7 +4,6 @@ import pandas
 import pytest
 from sklearn.metrics import mean_squared_error
 
-from sksurv.base import _sklearn_version_under_0p21
 from sksurv.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis, GradientBoostingSurvivalAnalysis
 from sksurv.testing import assert_cindex_almost_equal
 from sksurv.util import Surv
@@ -89,11 +88,8 @@ class TestGradientBoosting(object):
     def test_fit_int_param_as_float(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
-        if _sklearn_version_under_0p21:
-            max_depth = 3
-        else:
-            # Account for https://github.com/scikit-learn/scikit-learn/pull/12344
-            max_depth = 4
+        # Account for https://github.com/scikit-learn/scikit-learn/pull/12344
+        max_depth = 4
 
         model = GradientBoostingSurvivalAnalysis(
             n_estimators=100.0,

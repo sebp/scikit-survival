@@ -27,9 +27,9 @@ from sklearn.utils.extmath import squared_norm
 
 from scipy.sparse import csc_matrix, csr_matrix, issparse
 
-from ..base import SurvivalAnalysisMixin, _sklearn_version_under_0p21
+from ..base import SurvivalAnalysisMixin
 from ..util import check_arrays_survival
-from .survival_loss import LOSS_FUNCTIONS, CensoredSquaredLoss, DummySurvivalEstimator, \
+from .survival_loss import LOSS_FUNCTIONS, CensoredSquaredLoss, \
     IPCWLeastSquaresError
 
 
@@ -609,10 +609,6 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         self.loss_ = LOSS_FUNCTIONS[self.loss](1)
 
-        # usually set in self._init_state
-        if _sklearn_version_under_0p21 and self.init is None:
-            self.init_ = DummySurvivalEstimator(strategy='constant', constant=0.)
-
     def _check_max_features(self):
         if isinstance(self.max_features, str):
             if self.max_features == "auto":
@@ -881,26 +877,11 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
             self._dropout_predict_stage(X, i, K, raw_predictions)
             yield raw_predictions.copy()
 
-    def _raw_predict_init(self, X):
-        if _sklearn_version_under_0p21:  # pragma: no cover
-            return self._init_decision_function(X)
-        else:
-            return super()._raw_predict_init(X)
-
-    def _staged_raw_predict(self, X):
-        if _sklearn_version_under_0p21:  # pragma: no cover
-            return self._staged_decision_function(X)
-        else:
-            return super()._staged_raw_predict(X)
-
     def _raw_predict(self, X):
         # if dropout wasn't used during training, proceed as usual,
         # otherwise consider scaling factor of individual trees
         if not hasattr(self, "scale_"):
-            if _sklearn_version_under_0p21:  # pragma: no cover
-                return super()._decision_function(X)
-            else:
-                return super()._raw_predict(X)
+            return super()._raw_predict(X)
         else:
             return self._dropout_raw_predict(X)
 
