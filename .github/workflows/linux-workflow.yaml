@@ -50,10 +50,18 @@ jobs:
         run: |
           source activate sksurv-test
           ci/run_tests.sh
-      - name: Submit Coverage
+      - name: Submit Coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          file: tests/coverage.xml
+          fail_ci_if_error: true
+        if: env.NO_SLOW == 'false'
+      - name: Submit Coverage to Codacy
         shell: bash
         env:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
         run: |
           source activate sksurv-test
-          ci/submit_coverage.sh
+          pip install codacy-coverage
+          python-codacy-coverage -r tests/coverage.xml
+        if: env.NO_SLOW == 'false'
