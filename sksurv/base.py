@@ -10,11 +10,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import sklearn
-from pkg_resources import parse_version
-
-_sklearn_version_under_0p21 = \
-    parse_version(sklearn.__version__) < parse_version('0.21.0')
 
 
 class SurvivalAnalysisMixin(object):

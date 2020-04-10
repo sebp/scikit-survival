@@ -14,23 +14,11 @@ from abc import ABCMeta
 import numpy
 
 from sklearn.dummy import DummyRegressor
+from sklearn.ensemble._gb_losses import RegressionLossFunction
 from sklearn.utils.extmath import squared_norm
 
-from ..base import _sklearn_version_under_0p21
 from ..nonparametric import ipc_weights
 from ._coxph_loss import coxph_loss, coxph_negative_gradient
-
-if not _sklearn_version_under_0p21:
-    from sklearn.ensemble._gb_losses import RegressionLossFunction
-else:  # pragma: no cover
-    from sklearn.ensemble.gradient_boosting import RegressionLossFunction as _RegressionLossFunction
-
-    class RegressionLossFunction(_RegressionLossFunction, metaclass=ABCMeta):
-        # pylint: disable=abstract-method,no-self-use
-        def get_init_raw_predictions(self, X, estimator):
-            """Return the initial raw predictions."""
-            predictions = estimator.predict(X)
-            return predictions.reshape(-1, 1).astype(numpy.float64)
 
 
 class DummySurvivalEstimator(DummyRegressor):
