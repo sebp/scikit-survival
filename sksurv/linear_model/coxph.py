@@ -10,14 +10,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import numbers
 import warnings
 
 import numpy
 from scipy.linalg import solve
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
-from sklearn.utils.extmath import squared_norm
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.validation import check_array, check_is_fitted
 
 from ..base import SurvivalAnalysisMixin
 from ..functions import StepFunction
@@ -134,6 +134,7 @@ class CoxPHOptimizer:
         self.event = event[o]
         self.time = time[o]
         self.alpha = alpha
+        self.no_alpha = numpy.all(self.alpha < numpy.finfo(self.alpha.dtype).eps)
         if ties not in ("breslow", "efron"):
             raise ValueError("ties must be one of 'breslow', 'efron'")
         self._is_breslow = ties == "breslow"
@@ -184,7 +185,7 @@ class CoxPHOptimizer:
                         loss -= (numerator - numpy.log(risk_set)) / n_samples
 
         # add regularization term to log-likelihood
-        return loss + self.alpha * squared_norm(w) / (2. * n_samples)
+        return loss + numpy.sum(self.alpha * numpy.square(w)) / (2. * n_samples)
 
     def update(self, w, offset=0):
         """Compute gradient and Hessian matrix with respect to `w`."""
@@ -259,7 +260,7 @@ class CoxPHOptimizer:
 
                         hessian += (a - b) * inv_n_samples
 
-        if self.alpha > 0:
+        if not self.no_alpha:
             gradient += self.alpha * inv_n_samples * w
 
             diag_idx = numpy.diag_indices(n_features)
@@ -307,8 +308,12 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
     Parameters
     ----------
-    alpha : float, optional, default: 0
+    alpha : float, ndarray of shape (n_features,), optional, default: 0
         Regularization parameter for ridge regression penalty.
+        If a single float, the same penalty is used for all features.
+        If an array, there must be one penalty for each feature.
+        If you want to include a subset of features without penalization,
+        set the corresponding entries to 0.
 
     ties : "breslow" | "efron", optional, default: "breslow"
         The method to handle tied event times. If there are
@@ -383,10 +388,21 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         """
         X, event, time = check_arrays_survival(X, y)
 
-        if self.alpha < 0:
-            raise ValueError("alpha must be positive, but was %r" % self.alpha)
+        if isinstance(self.alpha, (numbers.Real, numbers.Integral)):
+            alphas = numpy.empty(X.shape[1], dtype=numpy.float_)
+            alphas[:] = self.alpha
+        else:
+            alphas = self.alpha
 
-        optimizer = CoxPHOptimizer(X, event, time, self.alpha, self.ties)
+        alphas = check_array(alphas, ensure_2d=False, ensure_min_samples=0)
+        if numpy.any(alphas < 0):
+            raise ValueError("alpha must be positive, but was %r" % self.alpha)
+        if alphas.shape[0] != X.shape[1]:
+            raise ValueError(
+                "Length alphas ({}) must match number of features ({}).".format(
+                    alphas.shape[0], X.shape[1]))
+
+        optimizer = CoxPHOptimizer(X, event, time, alphas, self.ties)
 
         verbose_reporter = VerboseReporter(self.verbose)
         w = numpy.zeros(X.shape[1])
