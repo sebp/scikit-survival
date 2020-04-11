@@ -313,6 +313,7 @@ if on_rtd:
         'sklearn.metrics',
         'sklearn.metrics.pairwise',
         'sklearn.model_selection',
+        'sklearn.pipeline',
         'sklearn.preprocessing',
         'sklearn.svm',
         'sklearn.tree',
