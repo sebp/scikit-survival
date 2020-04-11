@@ -635,20 +635,23 @@ class TestCoxnetSurvivalAnalysis(object):
 
         assert_columns_almost_equal(coef, expected_coef)
 
-    @pytest.mark.parametrize("func", ("predict_survival_function", "predict_cumulative_hazard_function"))
-    @staticmethod
-    def test_pipeline_predict(func):
-        X_str, y = load_breast_cancer()
-        X_num = column.encode_categorical(X_str)
 
-        est = CoxnetSurvivalAnalysis(l1_ratio=1.0)
+@pytest.mark.parametrize("func", ("predict_survival_function", "predict_cumulative_hazard_function"))
+def test_pipeline_predict(func):
+    X_str, y = load_breast_cancer()
+    X_num = column.encode_categorical(X_str)
 
-        pipe = make_pipeline(OneHotEncoder(), CoxnetSurvivalAnalysis(l1_ratio=1.0))
-        pipe.fit(X_str[10:], y[10:])
+    est = CoxnetSurvivalAnalysis(alpha_min_ratio=0.0001, l1_ratio=1.0, fit_baseline_model=True)
+    est.fit(X_num[10:], y[10:])
 
-        tree_pred = getattr(est, func)(X_num[:10])
-        pipe_pred = getattr(pipe, func)(X_str[:10])
+    pipe = make_pipeline(OneHotEncoder(), CoxnetSurvivalAnalysis(alpha_min_ratio=0.0001,
+                                                                 l1_ratio=1.0,
+                                                                 fit_baseline_model=True))
+    pipe.fit(X_str[10:], y[10:])
 
-        for s1, s2 in zip(tree_pred, pipe_pred):
-            assert_array_almost_equal(s1.x, s2.x)
-            assert_array_almost_equal(s1.y, s2.y)
+    tree_pred = getattr(est, func)(X_num[:10])
+    pipe_pred = getattr(pipe, func)(X_str[:10])
+
+    for s1, s2 in zip(tree_pred, pipe_pred):
+        assert_array_almost_equal(s1.x, s2.x)
+        assert_array_almost_equal(s1.y, s2.y)
