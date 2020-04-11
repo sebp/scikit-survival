@@ -29,7 +29,7 @@ def predict_cumulative_hazard_function(self, X):
         Predicted cumulative hazard functions.
     """
     Xt = X
-    for _, name, transform in self._iter(with_final=False):
+    for _, _, transform in self._iter(with_final=False):
         Xt = transform.transform(Xt)
     return self.steps[-1][-1].predict_cumulative_hazard_function(Xt)
 
@@ -59,7 +59,7 @@ def predict_survival_function(self, X):
         Predicted survival functions.
     """
     Xt = X
-    for _, name, transform in self._iter(with_final=False):
+    for _, _, transform in self._iter(with_final=False):
         Xt = transform.transform(Xt)
     return self.steps[-1][-1].predict_survival_function(Xt)
 
