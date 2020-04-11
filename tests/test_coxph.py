@@ -5,12 +5,14 @@ from numpy.testing import assert_array_almost_equal
 import pandas
 import pytest
 from scipy.optimize import check_grad
+from sksurv.datasets import load_breast_cancer
 from sklearn.exceptions import ConvergenceWarning
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
 
 from sksurv.column import standardize
 from sksurv.linear_model.coxph import CoxPHSurvivalAnalysis, CoxPHOptimizer
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
+from sksurv.preprocessing import OneHotEncoder
 
 
 @pytest.fixture
@@ -54,7 +56,8 @@ class TestCoxPH(object):
 
     @staticmethod
     def test_likelihood_breslow(rossi, coef_rossi_coxph_breslow):
-        cph = CoxPHOptimizer(rossi.x.values, rossi.y['arrest'], rossi.y['week'], alpha=0.,
+        cph = CoxPHOptimizer(rossi.x.values, rossi.y['arrest'], rossi.y['week'],
+                             alpha=numpy.zeros(rossi.x.shape[1]),
                              ties="breslow")
 
         w = coef_rossi_coxph_breslow.loc[rossi.x.columns].values
@@ -65,7 +68,8 @@ class TestCoxPH(object):
 
     @staticmethod
     def test_gradient_breslow(rossi):
-        cph = CoxPHOptimizer(rossi.x.values, rossi.y['arrest'], rossi.y['week'], alpha=0.,
+        cph = CoxPHOptimizer(rossi.x.values, rossi.y['arrest'], rossi.y['week'],
+                             alpha=numpy.zeros(rossi.x.shape[1]),
                              ties="breslow")
 
         assert_gradient_correctness(cph)
@@ -81,7 +85,8 @@ class TestCoxPH(object):
 
     @staticmethod
     def test_likelihood_efron(rossi, coef_rossi_coxph_efron):
-        cph = CoxPHOptimizer(rossi.x.values, rossi.y['arrest'], rossi.y['week'], alpha=0.,
+        cph = CoxPHOptimizer(rossi.x.values, rossi.y['arrest'], rossi.y['week'],
+                             alpha=numpy.zeros(rossi.x.shape[1]),
                              ties="efron")
 
         w = coef_rossi_coxph_efron.loc[rossi.x.columns].values
@@ -93,7 +98,7 @@ class TestCoxPH(object):
     @staticmethod
     def test_gradient_efron(rossi):
         cph = CoxPHOptimizer(rossi.x.values.astype(float), rossi.y['arrest'], rossi.y['week'],
-                             alpha=0., ties="efron")
+                             alpha=numpy.zeros(rossi.x.shape[1]), ties="efron")
 
         assert_gradient_correctness(cph)
 
@@ -162,6 +167,58 @@ class TestCoxPH(object):
                                   actual.loc[expected.index].values)
 
     @staticmethod
+    def test_fit_unpenalized():
+        X, y = load_breast_cancer()
+        included = X["grade"] != "unkown"
+        X = X.loc[included, :]
+        y = y[included.values]
+
+        X["grade"] = pandas.Series(pandas.Categorical(
+            X["grade"].astype(object),
+            categories=["intermediate", "poorly differentiated",
+                        "well differentiated"]),
+            index=X.index, name="grade")
+
+        enc = OneHotEncoder()
+        X = enc.fit_transform(X)
+
+        cols_unpen = ['age', 'size', 'grade=poorly differentiated',
+                      'grade=well differentiated', 'er=positive']
+        X = pandas.concat((
+            X.loc[:, cols_unpen],
+            X.drop(cols_unpen, axis=1)),
+            axis=1)
+
+        alphas = numpy.ones(X.shape[1])
+        alphas[:len(cols_unpen)] = 0.0
+
+        cph = CoxPHSurvivalAnalysis(alpha=alphas)
+        cph.fit(X, y)
+
+        coef = numpy.array([
+            -0.0228825990482334, 0.635554486750423, -0.242079636336473,
+            -1.30197563647684, -2.27790151300312,
+            0.291950212930807, 0.210861165049552, -0.612456645638769, -0.453414844486013, -0.1239424190253,
+            0.196855946938761, 1.08724198521351, -0.313645443818603, -0.660016141198812, 1.07104977404073,
+            0.559632480471393, -0.47740746012516, -1.26199769642326, -1.40486191330444, -0.418517018253652,
+            0.284936091689505, -0.215531076378674, -0.200889269720281, 0.341231176941461, 0.0307350667648337,
+            -0.212527052910377, -0.3019678509188, 0.54491723178866, -0.286914381308269, 0.370374100647823,
+            -0.496258248067704, 0.624528657777646, 0.287884026214139, 0.022095151910937, 0.910293732936019,
+            -0.13076488639207, 0.0857209529827562, -0.0922302696963889, 0.498136631416287, 0.937133644376614,
+            0.395090607856869, -1.04727952099579, -0.54974694800345, 0.442372971174454, -0.745558450753062,
+            -0.0920496108021893, 0.75549238586293, 0.562496351046743, 0.259183349320614, 0.405816113039412,
+            -0.0969485695700491, -0.507388915258978, -0.474246597197329, -0.209335517183595, 0.187390427612498,
+            -0.0522568530719332, 0.0806559868641646, -0.0397654339013217, -0.269582356665396, 0.791793553908743,
+            0.344208857844796, -0.180165785909583, -0.7927695046551, 0.0311635012097026, -0.579429950080662,
+            -0.264770995160963, 0.869512689697827, 0.765479119494175, -0.173588059680979, -0.199781736503338,
+            -0.58712767650975, -0.457389854855, 0.3891865514653, 0.707309743580534, -0.121997864690072,
+            0.0447174402649954, 0.0319336975869795, 0.0117988435665652, -0.593691059339064, -0.838107176656365,
+            -0.247955128152877
+        ])
+
+        assert_array_almost_equal(cph.coef_, coef)
+
+    @staticmethod
     def test_alpha(rossi):
         cph = CoxPHSurvivalAnalysis(alpha=-0.0001)
 
@@ -170,6 +227,25 @@ class TestCoxPH(object):
 
         cph.set_params(alpha=-1.25)
         with pytest.raises(ValueError, match=r"alpha must be positive, but was -1\.25"):
+            cph.fit(rossi.x.values, rossi.y)
+
+    @staticmethod
+    def test_alpha_array(rossi):
+        cph = CoxPHSurvivalAnalysis(alpha=numpy.array([], dtype=float))
+
+        with pytest.raises(ValueError,
+                           match=r"Length alphas \(0\) must match number of features \(7\)"):
+            cph.fit(rossi.x.values, rossi.y)
+
+        alphas = numpy.ones(rossi.x.shape[1])
+        alphas[-2] = -1e-4
+        cph.set_params(alpha=alphas)
+        with pytest.raises(ValueError, match=r"alpha must be positive, but was"):
+            cph.fit(rossi.x.values, rossi.y)
+
+        cph.set_params(alpha=alphas[:-2])
+        with pytest.raises(ValueError,
+                           match=r"Length alphas \(5\) must match number of features \(7\)"):
             cph.fit(rossi.x.values, rossi.y)
 
     @staticmethod
