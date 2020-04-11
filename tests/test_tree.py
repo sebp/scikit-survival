@@ -3,17 +3,32 @@ import numpy
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 import pandas
 import pytest
-
-from sksurv.datasets import load_veterans_lung_cancer, load_breast_cancer
-from sksurv.tree import SurvivalTree
-from sksurv.compare import compare_survival
-from sksurv.nonparametric import kaplan_meier_estimator, nelson_aalen_estimator
 from sklearn.tree._tree import TREE_UNDEFINED
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import OrdinalEncoder
+
+from sksurv.compare import compare_survival
+from sksurv.datasets import load_veterans_lung_cancer, load_breast_cancer
+from sksurv.nonparametric import kaplan_meier_estimator, nelson_aalen_estimator
+from sksurv.tree import SurvivalTree
 
 
 @pytest.fixture()
 def veterans():
     return load_veterans_lung_cancer()
+
+
+@pytest.fixture()
+def breast_cancer():
+    X, y = load_breast_cancer()
+    X.loc[:, "er"] = X.loc[:, "er"].replace({"negative": 0, "positive": 1})
+    X.loc[:, "grade"] = X.loc[:, "grade"].replace(
+        {"intermediate": 0,
+         "poorly differentiated": 1,
+         "unkown": 2,
+         "well differentiated": 3}
+    )
+    return X, y
 
 
 @pytest.fixture()
@@ -250,15 +265,8 @@ def test_toy_data(toy_data):
     assert_array_almost_equal(tree.tree_.threshold, stats.loc[:, "threshold"].values, 5)
 
 
-def test_breast_cancer_1():
-    X, y = load_breast_cancer()
-    X.loc[:, "er"] = X.loc[:, "er"].replace({"negative": 0, "positive": 1})
-    X.loc[:, "grade"] = X.loc[:, "grade"].replace(
-        {"poorly differentiated": 0,
-         "intermediate": 1,
-         "well differentiated": 2,
-         "unkown": 3}
-    )
+def test_breast_cancer_1(breast_cancer):
+    X, y = breast_cancer
 
     tree = SurvivalTree(max_features="auto",
                         max_depth=5,
@@ -283,15 +291,8 @@ def test_breast_cancer_1():
          TREE_UNDEFINED, 11.01874, TREE_UNDEFINED, TREE_UNDEFINED]), 5)
 
 
-def test_breast_cancer_2():
-    X, y = load_breast_cancer()
-    X.loc[:, "er"] = X.loc[:, "er"].replace({"negative": 0, "positive": 1})
-    X.loc[:, "grade"] = X.loc[:, "grade"].replace(
-        {"poorly differentiated": 0,
-         "intermediate": 1,
-         "well differentiated": 2,
-         "unkown": 3}
-    )
+def test_breast_cancer_2(breast_cancer):
+    X, y = breast_cancer
 
     tree = SurvivalTree(max_features="log2",
                         splitter="random",
@@ -311,6 +312,25 @@ def test_breast_cancer_2():
         [11.3019, 9.0768, TREE_UNDEFINED, 8.6903, 6.83564, TREE_UNDEFINED,
          TREE_UNDEFINED, 10.66262, TREE_UNDEFINED, TREE_UNDEFINED,
          TREE_UNDEFINED]), 5)
+
+
+@pytest.mark.parametrize("func", ("predict_survival_function", "predict_cumulative_hazard_function"))
+def test_pipeline_predict(breast_cancer, func):
+    X_num, y = breast_cancer
+    X_num = X_num.loc[:, ["er", "grade"]].values
+
+    tree = SurvivalTree().fit(X_num[10:], y[10:])
+
+    X_str, _ = load_breast_cancer()
+    X_str = X_str.loc[:, ["er", "grade"]].values
+
+    pipe = make_pipeline(OrdinalEncoder(), SurvivalTree())
+    pipe.fit(X_str[10:], y[10:])
+
+    tree_pred = getattr(tree, func)(X_num[:10])
+    pipe_pred = getattr(pipe, func)(X_str[:10])
+
+    assert_array_almost_equal(tree_pred, pipe_pred)
 
 
 @pytest.mark.parametrize("n_features", [1, 3, 5, 10])

@@ -5,6 +5,7 @@ from numpy.testing import assert_array_almost_equal
 import pandas
 import pytest
 from sklearn.exceptions import ConvergenceWarning
+from sklearn.pipeline import make_pipeline
 
 from sksurv import column
 from sksurv.datasets import load_breast_cancer, get_x_y
@@ -633,3 +634,21 @@ class TestCoxnetSurvivalAnalysis(object):
         expected_coef = pandas.read_csv(SIMPLE_COEF_FILE, header=None, skiprows=1)
 
         assert_columns_almost_equal(coef, expected_coef)
+
+    @pytest.mark.parametrize("func", ("predict_survival_function", "predict_cumulative_hazard_function"))
+    @staticmethod
+    def test_pipeline_predict(func):
+        X_str, y = load_breast_cancer()
+        X_num = column.encode_categorical(X_str)
+
+        est = CoxnetSurvivalAnalysis(l1_ratio=1.0)
+
+        pipe = make_pipeline(OneHotEncoder(), CoxnetSurvivalAnalysis(l1_ratio=1.0))
+        pipe.fit(X_str[10:], y[10:])
+
+        tree_pred = getattr(est, func)(X_num[:10])
+        pipe_pred = getattr(pipe, func)(X_str[:10])
+
+        for s1, s2 in zip(tree_pred, pipe_pred):
+            assert_array_almost_equal(s1.x, s2.x)
+            assert_array_almost_equal(s1.y, s2.y)

@@ -1,6 +1,11 @@
 import numpy
+from numpy.testing import assert_array_almost_equal
 import pytest
+from sklearn.pipeline import make_pipeline
 
+from sksurv.column import encode_categorical
+from sksurv.datasets import load_breast_cancer
+from sksurv.preprocessing import OneHotEncoder
 from sksurv.ensemble import RandomSurvivalForest
 from sksurv.testing import assert_cindex_almost_equal
 
@@ -156,6 +161,23 @@ def test_fit_with_small_max_samples(make_whas500):
 
     msg = "Tree without `max_samples` restriction should have more nodes"
     assert tree1.node_count > tree2.node_count, msg
+
+
+@pytest.mark.parametrize("func", ("predict_survival_function", "predict_cumulative_hazard_function"))
+def test_pipeline_predict(func):
+    X_str, y = load_breast_cancer()
+    X_num = encode_categorical(X_str)
+
+    est = RandomSurvivalForest(n_estimators=10, random_state=1)
+    est.fit(X_num[10:], y[10:])
+
+    pipe = make_pipeline(OneHotEncoder(), RandomSurvivalForest(n_estimators=10, random_state=1))
+    pipe.fit(X_str[10:], y[10:])
+
+    tree_pred = getattr(est, func)(X_num[:10])
+    pipe_pred = getattr(pipe, func)(X_str[:10])
+
+    assert_array_almost_equal(tree_pred, pipe_pred)
 
 
 @pytest.mark.parametrize(

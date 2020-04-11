@@ -9,6 +9,8 @@ from sklearn.exceptions import ConvergenceWarning
 
 from sksurv.column import standardize
 from sksurv.linear_model.coxph import CoxPHSurvivalAnalysis, CoxPHOptimizer
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
 
 
 @pytest.fixture
@@ -295,6 +297,17 @@ class TestCoxPH(object):
             assert (numpy.diff(actual_y) > 0).all()
             assert_array_almost_equal(actual_y, expected_y[i, :])
 
+        pipe = make_pipeline(StandardScaler(with_std=False), CoxPHSurvivalAnalysis())
+        pipe.fit(rossi.x, rossi.y)
+        f = pipe.predict_cumulative_hazard_function(xc.values[test_idx, :])
+        assert len(f) == len(test_idx)
+
+        for i, ff in enumerate(f):
+            actual_y = [ff(v) for v in expected_x]
+            # check that values increase
+            assert (numpy.diff(actual_y) > 0).all()
+            assert_array_almost_equal(actual_y, expected_y[i, :])
+
     @staticmethod
     def test_predict_survival_function(rossi):
         cph = CoxPHSurvivalAnalysis()
@@ -362,6 +375,17 @@ class TestCoxPH(object):
              0.861576393621591, 0.85825886866239, 0.854929447472668, 0.848236143873358, 0.846553007760733,
              0.84318146930209, 0.834728527145727, 0.82962662516592, 0.822762829346384]
         ])
+
+        for i, ff in enumerate(f):
+            actual_y = [ff(v) for v in expected_x]
+            # check that values decrease
+            assert (numpy.diff(actual_y) < 0).all()
+            assert_array_almost_equal(actual_y, expected_y[i, :])
+
+        pipe = make_pipeline(StandardScaler(with_std=False), CoxPHSurvivalAnalysis())
+        pipe.fit(rossi.x, rossi.y)
+        f = pipe.predict_survival_function(xc.values[test_idx, :])
+        assert len(f) == len(test_idx)
 
         for i, ff in enumerate(f):
             actual_y = [ff(v) for v in expected_x]
