@@ -86,7 +86,7 @@ class TestCoxnetSurvivalAnalysis(object):
              0.00712686021728439, 0.00649372959803068, 0.00591684455801036, 0.00539120839498366, 0.00491226829996627,
              0.00447587592297602])
 
-        x, coxnet = self._fit_example(l1_ratio=0.5)
+        x, coxnet = self._fit_example(alpha_min_ratio=0.0001, l1_ratio=0.5)
         assert_array_almost_equal(expected_alphas, coxnet.alphas_)
 
         expected_coef = make_example_coef(1)
@@ -139,7 +139,7 @@ class TestCoxnetSurvivalAnalysis(object):
 
         pf = numpy.ones(30)
         pf[4] = 0.125
-        x, coxnet = self._fit_example(l1_ratio=0.5, penalty_factor=pf)
+        x, coxnet = self._fit_example(alpha_min_ratio=0.0001, l1_ratio=0.5, penalty_factor=pf)
 
         assert_array_almost_equal(expected_alphas, coxnet.alphas_)
 
@@ -184,7 +184,7 @@ class TestCoxnetSurvivalAnalysis(object):
         pf[4] = 0.125
         pf[10] = 1.25
         pf[12] = 0.75
-        x, coxnet = self._fit_example(l1_ratio=0.5, penalty_factor=pf)
+        x, coxnet = self._fit_example(alpha_min_ratio=0.0001, l1_ratio=0.5, penalty_factor=pf)
 
         assert_array_almost_equal(expected_alphas, coxnet.alphas_)
 
@@ -226,7 +226,7 @@ class TestCoxnetSurvivalAnalysis(object):
         pf = numpy.ones(30)
         pf[0] = 0
         pf[29] = 0
-        x, coxnet = self._fit_example(l1_ratio=0.5, penalty_factor=pf)
+        x, coxnet = self._fit_example(alpha_min_ratio=0.0001, l1_ratio=0.5, penalty_factor=pf)
 
         assert_array_almost_equal(expected_alphas, coxnet.alphas_)
 
@@ -262,7 +262,7 @@ class TestCoxnetSurvivalAnalysis(object):
              0.00630443160807172, 0.00574436327975223, 0.00523404987810766, 0.00476907131258251, 0.004345400161284,
              0.00395936678738022, 0.00360762755446149, 0.00328713586556131, 0.00299511577499092])
 
-        x, coxnet = self._fit_example(l1_ratio=0.9)
+        x, coxnet = self._fit_example(alpha_min_ratio=0.0001, l1_ratio=0.9)
 
         assert_array_almost_equal(expected_alphas, coxnet.alphas_)
 
@@ -314,7 +314,7 @@ class TestCoxnetSurvivalAnalysis(object):
              8.71498712373515e-05, 7.94077168717352e-05, 7.23533541616886e-05, 6.59256815921643e-05,
              6.00690257383086e-05, 5.47326590488896e-05])
 
-        x, coxnet = self._fit_example(l1_ratio=0.9, normalize=True)
+        x, coxnet = self._fit_example(alpha_min_ratio=0.0001, l1_ratio=0.9, normalize=True)
 
         assert_array_almost_equal(expected_alphas, coxnet.alphas_)
 
@@ -357,7 +357,7 @@ class TestCoxnetSurvivalAnalysis(object):
              0.0039983693660421, 0.00364316525153066, 0.00331951649156886, 0.0030246197954287])
 
         scaler = StandardScaler()
-        coxnet = CoxnetSurvivalAnalysis(l1_ratio=0.9)
+        coxnet = CoxnetSurvivalAnalysis(alpha_min_ratio=0.0001, l1_ratio=0.9)
         pipe = Pipeline([("standardize", scaler),
                          ("coxnet", coxnet)])
         pipe.fit(x.values, y)
@@ -373,7 +373,7 @@ class TestCoxnetSurvivalAnalysis(object):
     def test_example_2_with_alpha(self, make_example_coef):
         expected_alphas = numpy.array([0.45, 0.4, 0.35, 0.25, 0.1, 0.05, 0.001])
 
-        x, coxnet = self._fit_example(l1_ratio=0.9, alphas=expected_alphas, normalize=True)
+        x, coxnet = self._fit_example(alpha_min_ratio=0.0001, l1_ratio=0.9, alphas=expected_alphas, normalize=True)
 
         assert_array_almost_equal(expected_alphas, coxnet.alphas_)
 
@@ -468,28 +468,28 @@ class TestCoxnetSurvivalAnalysis(object):
         with pytest.warns(ConvergenceWarning,
                           match=r'Optimization terminated early, you might want'
                                 r' to increase the number of iterations \(max_iter=100\).'):
-            self._fit_example(l1_ratio=0.9, max_iter=100)
+            self._fit_example(alpha_min_ratio=0.0001, l1_ratio=0.9, max_iter=100)
 
     @pytest.mark.parametrize('val', [0, -1, -1e-6, 1 + 1e-6, 1512, numpy.nan, numpy.infty])
     def test_invalid_l1_ratio(self, val):
         with pytest.raises(ValueError,
                            match=r"l1_ratio must be in interval \]0;1\]"):
-            self._fit_example(l1_ratio=val)
+            self._fit_example(alpha_min_ratio=0.0001, l1_ratio=val)
 
     def test_invalid_tol(self, invalid_positive_int):
         with pytest.raises(ValueError,
                            match="tolerance must be positive"):
-            self._fit_example(tol=invalid_positive_int)
+            self._fit_example(alpha_min_ratio=0.0001, tol=invalid_positive_int)
 
     def test_invalid_max_iter(self, invalid_positive_int):
         with pytest.raises(ValueError,
                            match="max_iter must be a positive integer"):
-            self._fit_example(max_iter=invalid_positive_int)
+            self._fit_example(alpha_min_ratio=0.0001, max_iter=invalid_positive_int)
 
     def test_invalid_n_alphas(self, invalid_positive_int):
         with pytest.raises(ValueError,
                            match="n_alphas must be a positive integer"):
-            self._fit_example(n_alphas=invalid_positive_int)
+            self._fit_example(alpha_min_ratio=0.0001, n_alphas=invalid_positive_int)
 
     @pytest.mark.parametrize('length', [0, 1, 29, 31])
     def test_invalid_penalty_factor_length(self, length):
@@ -498,27 +498,32 @@ class TestCoxnetSurvivalAnalysis(object):
 
         array = numpy.empty(length, dtype=float)
         with pytest.raises(ValueError, match=msg):
-            self._fit_example(penalty_factor=array)
+            self._fit_example(alpha_min_ratio=0.0001, penalty_factor=array)
 
     def test_negative_penalty_factor_value(self, negative_float_array):
         with pytest.raises(ValueError,
                            match="Negative values in data passed to penalty_factor"):
-            self._fit_example(penalty_factor=negative_float_array)
+            self._fit_example(alpha_min_ratio=0.0001, penalty_factor=negative_float_array)
 
     def test_invalid_penalty_factor_value(self, infinite_float_array):
         with pytest.raises(ValueError,
                            match="Input contains NaN, infinity or a value too large"):
-            self._fit_example(penalty_factor=infinite_float_array)
+            self._fit_example(alpha_min_ratio=0.0001, penalty_factor=infinite_float_array)
 
     def test_negative_alphas(self, negative_float_array):
         with pytest.raises(ValueError,
                            match="Negative values in data passed to alphas"):
-            self._fit_example(alphas=negative_float_array)
+            self._fit_example(alpha_min_ratio=0.0001, alphas=negative_float_array)
 
     def test_invalid_alphas(self, infinite_float_array):
         with pytest.raises(ValueError,
                            match="Input contains NaN, infinity or a value too large"):
-            self._fit_example(alphas=infinite_float_array)
+            self._fit_example(alpha_min_ratio=0.0001, alphas=infinite_float_array)
+
+    def test_alpha_min_ratio_future_warning(self):
+        with pytest.warns(FutureWarning,
+                          match="The default value of alpha_min_ratio will depend "):
+            self._fit_example()
 
     @staticmethod
     def test_alpha_too_small():
@@ -534,7 +539,7 @@ class TestCoxnetSurvivalAnalysis(object):
             184, 185, 186, 187, 188, 190, 191, 192, 193, 194, 195, 196, 197
         ])
 
-        nn = CoxnetSurvivalAnalysis(alphas=[0.007295025406624247], l1_ratio=1.0)
+        nn = CoxnetSurvivalAnalysis(alphas=[0.007295025406624247], alpha_min_ratio=0.0001, l1_ratio=1.0)
         Xf, yf = Xt.iloc[index], y[index]
 
         with pytest.raises(ArithmeticError,
@@ -546,7 +551,7 @@ class TestCoxnetSurvivalAnalysis(object):
         x, y = load_breast_cancer()
         x = column.encode_categorical(x)
 
-        coxnet = CoxnetSurvivalAnalysis(l1_ratio=1.0)
+        coxnet = CoxnetSurvivalAnalysis(alpha_min_ratio=0.0001, l1_ratio=1.0)
         coxnet.fit(x.values, y)
 
         expected_alphas = numpy.array([
@@ -611,7 +616,7 @@ class TestCoxnetSurvivalAnalysis(object):
                               "F3": [120, 98, 78, 91, 79],
                               "F4": [0.123, 0.541, 0.784, 0.846, 0.331]})
 
-        coxnet = CoxnetSurvivalAnalysis(l1_ratio=1.0)
+        coxnet = CoxnetSurvivalAnalysis(alpha_min_ratio=0.0001, l1_ratio=1.0)
         coxnet.fit(x.values, y)
 
         expected_alphas = numpy.array(

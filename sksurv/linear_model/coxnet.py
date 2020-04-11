@@ -47,6 +47,11 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         alpha (i.e. the smallest value for which all
         coefficients are zero).
 
+        The default value of alpha_min_ratio will depend on the
+        sample size relative to the number of features in 0.13.
+        If `n_samples > n_features`, the current default value 0.0001
+        will be used. If `n_samples < n_features`, 0.01 will be used instead.
+
     l1_ratio : float, optional, default: 0.5
         The ElasticNet mixing parameter, with ``0 < l1_ratio <= 1``.
         For ``l1_ratio = 0`` the penalty is an L2 penalty.
@@ -110,7 +115,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
            Journal of statistical software. 2011 Mar;39(5):1.
     """
 
-    def __init__(self, n_alphas=100, alphas=None, alpha_min_ratio=0.0001, l1_ratio=0.5,
+    def __init__(self, n_alphas=100, alphas=None, alpha_min_ratio="warn", l1_ratio=0.5,
                  penalty_factor=None, normalize=False, copy_X=True,
                  tol=1e-7, max_iter=100000, verbose=False, fit_baseline_model=False):
         self.n_alphas = n_alphas
@@ -197,6 +202,14 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         """
         X, event_num, time = self._pre_fit(X, y)
         create_path, alphas, penalty = self._check_params(X.shape[1])
+
+        if self.alpha_min_ratio == 'warn':
+            warnings.warn("The default value of alpha_min_ratio will depend on the "
+                          "sample size relative to the number of features in 0.13. "
+                          "If n_samples > n_features, the current default value 0.0001 "
+                          "will be used. If n_samples < n_features, 0.01 will be used instead.",
+                          FutureWarning)
+            self.alpha_min_ratio = 0.0001
 
         coef, alphas, deviance_ratio, n_iter = call_fit_coxnet(
             X, time, event_num, penalty, alphas, create_path,
