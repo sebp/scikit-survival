@@ -124,17 +124,16 @@ def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1
     The concordance index is defined as the proportion of all comparable pairs
     in which the predictions and outcomes are concordant.
 
-    Samples are comparable if for at least one of them an event occurred.
-    If the estimated risk is larger for the sample with a higher time of
-    event/censoring, the predictions of that pair are said to be concordant.
-    If an event occurred for one sample and the other is known to be
-    event-free at least until the time of event of the first, the second
-    sample is assumed to *outlive* the first.
-    When predicted risks are identical for a pair, 0.5 rather than 1 is added
-    to the count of concordant pairs.
-    A pair is not comparable if an event occurred for both of them at the same
-    time or an event occurred for one of them but the time of censoring is
-    smaller than the time of event of the first one.
+    Two samples are comparable if (i) both of them experienced an event (at different times),
+    or (ii) the one with a shorter observed survival time experienced an event, in which case
+    the event-free subject "outlived" the other. A pair is not comparable if they experienced
+    events at the same time.
+
+    Concordance intuitively means that two samples were ordered correctly by the model.
+    More specifically, two samples are concordant, if the one with a higher estimated
+    risk score has a shorter actual survival time.
+    When predicted risks are identical for a pair, 0.5 rather than 1 is added to the count
+    of concordant pairs.
 
     See [1]_ for further description.
 
