@@ -29,7 +29,8 @@ Enhancements
 
 - Add references to API doc of :class:`sksurv.ensemble.GradientBoostingSurvivalAnalysis` (#91).
 - Add support for pandas 1.0 (#100).
-- Add `ccp_alpha` parameter for Minimal Cost-Complexity Pruning
+- Add `ccp_alpha` parameter for
+  `Minimal Cost-Complexity Pruning <https://scikit-learn.org/stable/modules/tree.html#minimal-cost-complexity-pruning>`_
   to :class:`sksurv.ensemble.GradientBoostingSurvivalAnalysis`.
 - Patch :class:`sklearn.pipeline.Pipeline` to add support for
   `predict_cumulative_hazard_function` and `predict_survival_function`
