@@ -3,6 +3,41 @@
 Release Notes
 =============
 
+scikit-survival 0.12 (2020-04-15)
+---------------------------------
+
+This release adds support for scikit-learn 0.22, thereby dropping support for
+older versions. Moreover, the regularization strength of the ridge penalty
+in :class:`sksurv.linear_model.CoxPHSurvivalAnalysis` can now be set per
+feature. If you want one or more features to enter the model unpenalized,
+set the corresponding penalty weights to zero.
+Finally, :class:`sklearn.pipeline.Pipeline` will now be automatically patched
+to add support for `predict_cumulative_hazard_function` and `predict_survival_function`
+if the underlying estimator supports it.
+
+Deprecations
+^^^^^^^^^^^^
+
+- Add scikit-learn's deprecation of `presort` in :class:`sksurv.tree.SurvivalTree` and
+  :class:`sksurv.ensemble.GradientBoostingSurvivalAnalysis`.
+- Add warning that default `alpha_min_ratio` in :class:`sksurv.linear_model.CoxnetSurvivalAnalysis`
+  will depend on the ratio of the number of samples to the number of features
+  in the future (#41).
+
+Enhancements
+^^^^^^^^^^^^
+
+- Add references to API doc of :class:`sksurv.ensemble.GradientBoostingSurvivalAnalysis` (#91).
+- Add support for pandas 1.0 (#100).
+- Add `ccp_alpha` parameter for Minimal Cost-Complexity Pruning
+  to :class:`sksurv.ensemble.GradientBoostingSurvivalAnalysis`.
+- Patch :class:`sklearn.pipeline.Pipeline` to add support for
+  `predict_cumulative_hazard_function` and `predict_survival_function`
+  if the underlying estimator supports it.
+- Allow per-feature regularization for :class:`sksurv.linear_model.CoxPHSurvivalAnalysis` (#102).
+- Clarify API docs of :func:`sksurv.metrics.concordance_index_censored` (#96).
+
+
 scikit-survival 0.11 (2019-12-21)
 ---------------------------------
 
