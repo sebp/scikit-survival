@@ -46,6 +46,11 @@ def setup_package():
     metadata = dict(
         name='scikit-survival',
         url='https://github.com/sebp/scikit-survival',
+        project_urls={
+            "Bug Tracker": "https://github.com/sebp/scikit-survival/issues",
+            "Documentation": "https://scikit-survival.readthedocs.io/en/latest/",
+            "Source Code": "https://github.com/sebp/scikit-survival",
+        },
         author='Sebastian Pölsterl',
         author_email='sebp@k-d-w.org',
         description='Survival analysis built on top of scikit-learn',
