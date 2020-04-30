@@ -282,6 +282,7 @@ if on_rtd:
         # external dependencies
         'cvxopt',
         'cvxpy',
+        'joblib',
         'numexpr',
         'numpy',
         'osqp',
