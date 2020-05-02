@@ -37,7 +37,7 @@ install:
   # Initialize the submodules
   - cmd: git submodule update --init --recursive
   # Create binary packages for the project.
-  - cmd: python setup.py bdist_wheel bdist_wininst
+  - cmd: pip wheel --wheel-dir dist/ --no-binary scikit-survival --no-deps -e .
   - ps: "ls dist"
 
   # Install the generated wheel package to test it

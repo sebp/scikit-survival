@@ -1,4 +1,4 @@
-include README.rst COPYING MANIFEST.in requirements.txt
+include README.rst COPYING MANIFEST.in pyproject.toml requirements.txt
 recursive-include doc *.py *.rst Makefile
 recursive-include examples *.py *.ipynb
 recursive-include sksurv *.pyx *.pxd
