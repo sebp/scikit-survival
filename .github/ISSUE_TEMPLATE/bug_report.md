@@ -37,6 +37,7 @@ Please execute the following snippet and paste the output below.
 
 ```python
 import sklearn; sklearn.show_versions()
+import sksurv; print("sksurv:", sksurv.__version__)
 import cvxopt; print("cvxopt:", cvxopt.__version__)
 import cvxpy; print("cvxpy:", cvxpy.__version__)
 import numexpr; print("numexpr:", numexpr.__version__)
