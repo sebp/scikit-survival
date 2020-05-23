@@ -16,6 +16,7 @@ Documentation
 
    understanding_predictions
    api
+   contributing
    release_notes
 
 
