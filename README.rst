@@ -70,43 +70,14 @@ Requirements
 Installation
 ============
 
-The easiest way to get started is to install `Anaconda <https://www.anaconda.com/distribution/>`_
-and setup an environment::
+The easiest way to install scikit-survival is to use
+`Anaconda <https://www.anaconda.com/distribution/>`_ by running::
 
   conda install -c sebp scikit-survival
 
-----------------------
-Installing from source
-----------------------
+Alternatively, you can install scikit-survival from source by running::
 
-First, create a new environment, named ``sksurv``::
-
-  python ci/list-requirements.py requirements/dev.txt > /tmp/requirements.txt
-  conda create -n sksurv -c sebp python=3 --file /tmp/requirements.txt
-
-
-To work in this environment, ``activate`` it as follows::
-
-  source activate sksurv
-
-If you are on Windows, run the above command without the ``source`` in the beginning.
-
-Once you set up your build environment, install submodules into your local repository::
-
-  git submodule update --init
-
-Then compile the C/C++ extensions and install the package by running::
-
-  python setup.py install
-
-Alternatively, if you want to use the package without installing it,
-you can compile the extensions in place by running::
-
-  python setup.py build_ext --inplace
-
-To check everything is setup correctly run the test suite by executing::
-
-  py.test tests/
+  pip install scikit-survival
 
 ========
 Examples
@@ -119,18 +90,33 @@ The following examples are available as `Jupyter notebook <https://jupyter.org/>
 * `Introduction to Kernel Survival Support Vector Machines <https://nbviewer.jupyter.org/github/sebp/scikit-survival/blob/master/examples/survival-svm.ipynb>`_
 * `Using Random Survival Forests <https://nbviewer.jupyter.org/github/sebp/scikit-survival/blob/master/examples/random-survival-forest.ipynb>`_
 
-=============
-Documentation
-=============
+================
+Help and Support
+================
 
-The source code is thoroughly documented and a HTML version of the API documentation
-is available at https://scikit-survival.readthedocs.io/en/latest/.
+**Documentation**
 
-You can generate the documentation yourself using `Sphinx <http://sphinx-doc.org/>`_ 1.4 or later::
+- HTML documentation for the latest release: https://scikit-survival.readthedocs.io/en/stable/
+- HTML documentation for the development version (master branch): https://scikit-survival.readthedocs.io/en/latest/
+- For a list of notable changes, see the `release notes <https://scikit-survival.readthedocs.io/en/stable/release_notes.html>`_.
 
-  cd doc
-  make html
-  xdg-open _build/html/index.html
+**Bug reports**
+
+- If you encountered a problem, please submit a
+  `bug report <https://github.com/sebp/scikit-survival/issues/new?template=bug_report.md>`_.
+
+**Questions**
+
+- For general theoretical or methodological questions on survival analysis, please use
+  `Cross Validated <https://stats.stackexchange.com/questions/tagged/survival>`_.
+
+============
+Contributing
+============
+
+New contributors are always welcome. Please have a look at the
+`contributing guidelines <https://scikit-survival.readthedocs.io/en/latest/contributing.html>`_
+on how to get started and to make sure your code complies with our guidelines.
 
 ==========
 References
