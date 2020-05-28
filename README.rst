@@ -59,8 +59,10 @@ Requirements
 - Python 3.5 or later
 - cvxpy
 - cvxopt
+- joblib
 - numexpr
 - numpy 1.12 or later
+- osqp
 - pandas 0.21 or later
 - scikit-learn 0.22
 - scipy 1.0 or later
@@ -75,9 +77,8 @@ The easiest way to install scikit-survival is to use
 
   conda install -c sebp scikit-survival
 
-Alternatively, you can install scikit-survival from source by running::
-
-  pip install scikit-survival
+Alternatively, you can install scikit-survival from source
+following `this guide <https://scikit-survival.readthedocs.io/en/latest/install.html#from-source>`_.
 
 ========
 Examples

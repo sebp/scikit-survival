@@ -14,6 +14,7 @@ Documentation
 .. toctree::
    :maxdepth: 1
 
+   install
    understanding_predictions
    api
    contributing
