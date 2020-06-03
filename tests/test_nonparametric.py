@@ -5,7 +5,11 @@ from numpy.testing import assert_array_equal, assert_array_almost_equal
 import pandas
 import pytest
 
-from sksurv.nonparametric import kaplan_meier_estimator, nelson_aalen_estimator, SurvivalFunctionEstimator
+from sksurv.nonparametric import (
+    CensoringDistributionEstimator,
+    kaplan_meier_estimator,
+    nelson_aalen_estimator,
+    SurvivalFunctionEstimator)
 from sksurv.util import Surv
 
 CHANNING_FILE = join(dirname(__file__), 'data', 'channing.csv')
@@ -446,6 +450,29 @@ class TestKaplanMeier(object):
 
         assert_array_almost_equal(-x[::-1], true_x, 2)
         assert_array_almost_equal(y[::-1], true_y, 2)
+
+    @staticmethod
+    def test_censoring_distribution():
+        y = Surv.from_arrays(numpy.array([1, 0, 0, 1, 0, 1, 0, 1, 1, 0], dtype=bool),
+                             numpy.array([1, 2, 3, 3, 3, 4, 5, 5, 6, 7]))
+
+        cens = CensoringDistributionEstimator().fit(y)
+
+        probs = cens.predict_proba(numpy.arange(1, 8))
+        expected = numpy.array([1.0, 0.8888889, 0.6349206, 0.6349206, 0.4232804, 0.4232804, 0.0000000])
+
+        assert_array_almost_equal(expected, probs)
+
+    @staticmethod
+    def test_truncated_reverse_error():
+        rnd = numpy.random.RandomState(2016)
+        time_exit = rnd.uniform(1, 100, size=25)
+        time_enter = time_exit + 1
+        event = rnd.binomial(1, 0.6, size=25).astype(bool)
+
+        with pytest.raises(ValueError,
+                           match="The censoring distribution cannot be estimated from left truncated data"):
+            kaplan_meier_estimator(event, time_exit, time_enter, reverse=True)
 
 
 class TestNelsonAalen(object):

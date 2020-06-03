@@ -49,7 +49,10 @@ def _compute_counts(event, time, order=None):
         Number of events at each time point.
 
     n_at_risk : array
-        Number of samples that are censored or have an event at each time point.
+        Number of samples that have not been censored or have not had an event at each time point.
+
+    n_censored : array
+        Number of censored samples at each time point.
     """
     n_samples = event.shape[0]
 
@@ -86,12 +89,13 @@ def _compute_counts(event, time, order=None):
     times = numpy.resize(uniq_times, j)
     n_events = numpy.resize(uniq_events, j)
     total_count = numpy.resize(uniq_counts, j)
+    n_censored = total_count - n_events
 
     # offset cumulative sum by one
     total_count = numpy.concatenate(([0], total_count))
     n_at_risk = n_samples - numpy.cumsum(total_count)
 
-    return times, n_events, n_at_risk[:-1]
+    return times, n_events, n_at_risk[:-1], n_censored
 
 
 def _compute_counts_truncated(event, time_enter, time_exit):
@@ -167,7 +171,7 @@ def _compute_counts_truncated(event, time_enter, time_exit):
     return uniq_times, event_counts, total_counts
 
 
-def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None):
+def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None, reverse=False):
     """Kaplan-Meier estimator of survival function.
 
     See [1]_ for further description.
@@ -187,6 +191,13 @@ def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None):
     time_min : float, optional
         Compute estimator conditional on survival at least up to
         the specified time.
+
+    reverse : bool, optional, default: False
+        Whether to estimate the censoring distribution.
+        When there are ties between times at which events are observed,
+        then events come first and are subtracted from the denominator.
+        Only available for right-censored data, i.e. `time_enter` must
+        be None.
 
     Returns
     -------
@@ -215,11 +226,19 @@ def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None):
     check_consistent_length(event, time_enter, time_exit)
 
     if time_enter is None:
-        uniq_times, n_events, n_at_risk = _compute_counts(event, time_exit)
+        uniq_times, n_events, n_at_risk, n_censored = _compute_counts(event, time_exit)
+
+        if reverse:
+            n_at_risk -= n_events
+            n_events = n_censored
     else:
+        if reverse:
+            raise ValueError("The censoring distribution cannot be estimated from left truncated data")
+
         uniq_times, n_events, n_at_risk = _compute_counts_truncated(event, time_enter, time_exit)
 
     values = 1 - n_events / n_at_risk
+    values[n_events == 0] = 1.0  # in case of 0/0 = nan
 
     if time_min is not None:
         mask = uniq_times >= time_min
@@ -261,7 +280,7 @@ def nelson_aalen_estimator(event, time):
     """
     event, time = check_y_survival(event, time)
     check_consistent_length(event, time)
-    uniq_times, n_events, n_at_risk = _compute_counts(event, time)
+    uniq_times, n_events, n_at_risk, _ = _compute_counts(event, time)
 
     y = numpy.cumsum(n_events / n_at_risk)
 
@@ -287,7 +306,7 @@ def ipc_weights(event, time):
     if event.all():
         return numpy.ones(time.shape[0])
 
-    unique_time, p = kaplan_meier_estimator(~event, time)
+    unique_time, p = kaplan_meier_estimator(event, time, reverse=True)
 
     idx = numpy.searchsorted(unique_time, time[event])
     Ghat = p[idx]
@@ -390,7 +409,7 @@ class CensoringDistributionEstimator(SurvivalFunctionEstimator):
             self.unique_time_ = numpy.unique(time)
             self.prob_ = numpy.ones(self.unique_time_.shape[0])
         else:
-            unique_time, prob = kaplan_meier_estimator(~event, time)
+            unique_time, prob = kaplan_meier_estimator(event, time, reverse=True)
             self.unique_time_ = numpy.concatenate(([-numpy.infty], unique_time))
             self.prob_ = numpy.concatenate(([1.], prob))
 

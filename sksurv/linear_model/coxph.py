@@ -60,7 +60,7 @@ class BreslowEstimator:
         risk_score = numpy.exp(linear_predictor)
         order = numpy.argsort(time, kind="mergesort")
         risk_score = risk_score[order]
-        uniq_times, n_events, n_at_risk = _compute_counts(event, time, order)
+        uniq_times, n_events, n_at_risk, _ = _compute_counts(event, time, order)
 
         divisor = numpy.empty(n_at_risk.shape, dtype=numpy.float_)
         value = numpy.sum(risk_score)

@@ -13,10 +13,10 @@ class TestIPCRidge(object):
         model = IPCRidge()
         model.fit(whas500.x, whas500.y)
 
-        assert round(abs(model.intercept_ - 5.8673567124629571), 7) == 0
-        expected = numpy.array([0.168517, -0.249717, 2.18515, 0.536795, -0.514571, 0.091203,
-                                0.613006, 0.480385, -0.055949, 0.238529, -0.127148, -0.144134,
-                                -1.625041, -0.217469])
+        assert round(abs(model.intercept_ - 5.867520370855396), 7) == 0
+        expected = numpy.array([0.168481, -0.24962, 2.185086, 0.53682, -0.514611, 0.09124,
+                                0.613114, 0.480357, -0.055972, 0.238472, -0.127209, -0.144063,
+                                -1.625081, -0.217591])
         assert_array_almost_equal(model.coef_, expected)
 
     @staticmethod

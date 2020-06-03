@@ -304,17 +304,17 @@ def uno_c_data(request, whas500_pred):
             event=[False, True, False, True, True, False, True, False, False, True],
             time=[1, 5, 6, 11, 11, 34, 45, 45, 50, 55])
         estimate = (5, 8, 11, 19, 34, 12, 3, 9, 12, 18)
-        expected = (0.4401618580, 11, 10, 0, 1)
+        expected = (0.4036321031048623, 11, 10, 0, 1)
     elif p == 'tied_event_and_time':
         y = Surv.from_arrays(
             event=[True, False, False, False, True, False, True, True, False, False, False, True, True],
             time=[34, 11, 11, 5, 1, 89, 13, 45, 7, 13, 9, 13, 90])
         estimate = (1, 19, 13, 13, 15, 14, 19, 23, 11, 10, 11, 1, 18)
-        expected = (0.4722222222, 14, 12, 1, 2)
+        expected = (0.46795357052737824, 14, 12, 1, 2)
     elif p == 'whas500':
         event, time, estimate = whas500_pred
         y = Surv.from_arrays(event, time)
-        expected = (0.7929001679258981, 57849, 17300, 0, 14)
+        expected = (0.7929275009049014, 57849, 17300, 0, 14)
 
     y_train = y if y_train is None else y_train
     y_test = y if y_test is None else y_test
