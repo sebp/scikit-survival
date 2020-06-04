@@ -4,7 +4,16 @@ import numpy
 from numpy.testing import assert_array_almost_equal, assert_array_equal, assert_almost_equal
 import pytest
 
-from sksurv.metrics import concordance_index_censored, concordance_index_ipcw, cumulative_dynamic_auc
+from sksurv.datasets import load_gbsg2
+from sksurv.functions import StepFunction
+from sksurv.nonparametric import kaplan_meier_estimator
+from sksurv.metrics import (
+    brier_score,
+    concordance_index_censored,
+    concordance_index_ipcw,
+    cumulative_dynamic_auc,
+    integrated_brier_score,
+)
 from sksurv.util import Surv
 
 
@@ -686,3 +695,135 @@ def test_uno_auc_times_failure(uno_auc_times_failure_data):
     with pytest.raises(ValueError,
                        match=match):
         cumulative_dynamic_auc(y_train, y_test, estimate, times)
+
+
+@pytest.fixture
+def nottingham_prognostic_index():
+    def _get_npi(times):
+        X, y = load_gbsg2()
+
+        grade = X.loc[:, "tgrade"].map({"I": 1, "II": 2, "III": 3}).astype(int)
+        NPI = 0.2 * X.loc[:, "tsize"] / 10 + 1 + grade
+        NPI[NPI < 3.4] = 1.0
+        NPI[(NPI >= 3.4) & (NPI <= 5.4)] = 2.0
+        NPI[NPI > 5.4] = 3.0
+
+        preds = numpy.empty((X.shape[0], len(times)), dtype=float)
+        for j, ts in enumerate(times):
+            survs = {}
+            for i in NPI.unique():
+                idx = numpy.flatnonzero(NPI == i)
+                yi = y[idx]
+                t, s = kaplan_meier_estimator(yi["cens"], yi["time"])
+                if t[-1] < ts and s[-1] == 0.0:
+                    survs[i] = 0.0
+                else:
+                    fn = StepFunction(t, s)
+                    survs[i] = fn(ts)
+
+            preds[:, j] = NPI.map(survs).values
+
+        return preds, y
+
+    return _get_npi
+
+
+@pytest.fixture(params=[365, 730, 1095, 1460, 1825])
+def brier_npi_data(request, nottingham_prognostic_index):
+    t = request.param
+
+    pred, y = nottingham_prognostic_index([t])
+
+    if t == 365:
+        bs = 0.0762922458520448
+    elif t == 730:
+        bs = 0.182536421174199
+    elif t == 1095:
+        bs = 0.220017747254941
+    elif t == 1460:
+        bs = 0.234133800146671
+    elif t == 1825:
+        bs = 0.233822955042198
+    else:
+        assert False
+
+    yield pred, y, t, bs
+
+
+def test_brier_nottingham(brier_npi_data):
+    pred, y, times, expected_score = brier_npi_data
+
+    _, score = brier_score(y, y, pred.squeeze(), times=times)
+    assert round(abs(score[0] - expected_score), 6) == 0
+
+
+def test_brier_nottingham_many(nottingham_prognostic_index):
+    times = [365, 730, 1095, 1460, 1825]
+    pred, y = nottingham_prognostic_index(times)
+
+    expected_score = numpy.array([
+        0.0762922458520448,
+        0.182536421174199,
+        0.220017747254941,
+        0.234133800146671,
+        0.233822955042198,
+    ])
+
+    t1, score = brier_score(y, y, pred.squeeze(), times=times)
+    assert_array_almost_equal(score, expected_score)
+
+    t2, score = brier_score(y, y, pred.squeeze(), times=times[::-1])
+    assert_array_almost_equal(score, expected_score)
+    assert_array_equal(t1, t2)
+
+
+def test_brier_times_too_large(nottingham_prognostic_index):
+    pred, y = nottingham_prognostic_index([1825])
+
+    with pytest.raises(ValueError,
+                       match="all times must be within follow-up time of test data:"):
+        brier_score(y, y, pred, times=9999)
+
+
+def test_brier_wrong_estimate_shape(nottingham_prognostic_index):
+    pred, y = nottingham_prognostic_index([720, 1825])
+
+    with pytest.raises(ValueError,
+                       match="expected estimate with 2 columns, but got 1"):
+        brier_score(y, y, pred[:, :1], times=[720, 1825])
+
+    with pytest.raises(ValueError,
+                       match="expected estimate with 3 columns, but got 2"):
+        brier_score(y, y, pred, times=[720, 960, 1825])
+
+    with pytest.raises(ValueError,
+                       match="expected estimate with 686 samples, but got 10"):
+        brier_score(y, y, pred[:10], times=[720, 1825])
+
+
+def test_ibs_nottingham_1(nottingham_prognostic_index):
+    times = numpy.linspace(365, 1825, 5)  # t=1..5 years
+    preds, y = nottingham_prognostic_index(times)
+
+    score = integrated_brier_score(y, y, preds, times=times)
+    assert round(abs(score - 0.197936392255733), 6) == 0
+
+    score = integrated_brier_score(y, y, preds[:, :4], times=times[:4])
+    assert round(abs(score - 0.185922397142833), 6) == 0
+
+
+def test_ibs_nottingham_2(nottingham_prognostic_index):
+    times = numpy.arange(1095, 1826)  # t=3..5 years
+    preds, y = nottingham_prognostic_index(times)
+
+    score = integrated_brier_score(y, y, preds, times=times)
+
+    assert round(abs(score - 0.231553687189643), 6) == 0
+
+
+def test_ibs_single_time_point(nottingham_prognostic_index):
+    pred, y = nottingham_prognostic_index([1825])
+
+    with pytest.raises(ValueError,
+                       match="At least two time points must be given"):
+        integrated_brier_score(y, y, pred, times=1825)

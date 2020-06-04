@@ -56,6 +56,18 @@ def _check_inputs(event_indicator, event_time, estimate):
     return event_indicator, event_time, estimate
 
 
+def _check_times(test_time, times):
+    times = check_array(numpy.atleast_1d(times), ensure_2d=False, dtype=test_time.dtype)
+    times = numpy.unique(times)
+
+    if times.max() >= test_time.max() or times.min() < test_time.min():
+        raise ValueError(
+            'all times must be within follow-up time of test data: [{}; {}['.format(
+                test_time.min(), test_time.max()))
+
+    return times
+
+
 def _get_comparable(event_indicator, event_time, order):
     n_samples = len(event_time)
     tied_time = 0
@@ -118,29 +130,6 @@ def _estimate_concordance_index(event_indicator, event_time, estimate, weights, 
 
     cindex = numerator / denominator
     return cindex, concordant, discordant, tied_risk, tied_time
-
-
-def _interp_pred_surv(y_pred, times, fu_time):
-    """Interpolated survival probability at time fu_time
-
-    Parameters
-    ----------
-    y_pred : array
-        Rectangular array, each individual's conditional probability of surviving each time interval
-    times : array
-        times for which survival probability is calculated.
-    fu_time: array
-        Follow-up time point at which predictions are needed
-
-    Returns
-    -------
-    pred_surv_prob : array
-        predicted survival probability for each individual at specified follow-up time
-    """
-    pred_surv = []
-    for i in range(y_pred.shape[0]):
-        pred_surv.append(numpy.interp(fu_time, times, y_pred[i, :]))
-    return numpy.array(pred_surv)
 
 
 def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1e-8):
@@ -411,13 +400,7 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
 
     estimate = _check_estimate(estimate, test_time)
 
-    times = check_array(numpy.atleast_1d(times), ensure_2d=False, dtype=test_time.dtype)
-    times = numpy.unique(times)
-
-    if times.max() >= test_time.max() or times.min() < test_time.min():
-        raise ValueError(
-            'all times must be within follow-up time of test data: [{}; {}['.format(
-                test_time.min(), test_time.max()))
+    times = _check_times(test_time, times)
 
     # sort by risk score (descending)
     o = numpy.argsort(-estimate)
@@ -474,40 +457,29 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
     return scores, mean_auc
 
 
-def brier_score(survival_train, survival_test, estimate, times,
-                t_max=None,
-                use_mean_point=False,
-                internal_validation=True,
-                **kwargs):
-    """
-    Modification of the implementation in PySurvival by Stephane Fotso et al.
-    TODO: NEED TO SHIP WITH AN APACHE LICENSE
-    Computing the Brier score at all times t such that t <= t_max;
-    it represents the average squared distances between
-    the observed survival status and the predicted
-    survival probability.
-    In the case of right censoring, it is necessary to adjust
-    the score by weighting the squared distances to
-    avoid bias. It can be achieved by using
-    the inverse probability of censoring weights method (IPCW),
-    (proposed by Graf et al. 1999; Gerds and Schumacher 2006)
-    by using the estimator of the conditional survival function
-    of the censoring times calculated using the Kaplan-Meier method,
-    such that::
+def brier_score(survival_train, survival_test, estimate, times):
+    """Estimate the time-dependent Brier score for right censored data.
 
-      BS(t) = 1/N*( W_1(t)*(Y_1(t) - S_1(t))^2 + ... + W_N(t)*(Y_N(t) - S_N(t))^2)
+    The time-dependent Brier score is the mean squared error at time point :math:`t`:
 
-    In terms of benchmarks, a useful model will have a Brier score below
-    0.25. Indeed, it is easy to see that if for all i in [1,N],
-    if `S(t, xi) = 0.5`, then `BS(t) = 0.25`.
+    .. math::
+
+        \\mathrm{BS}(t) = \\frac{1}{n} \\sum_{i=1}^n I(y_i \\leq t \\land \\delta_i = 1)
+        \\frac{(0 - \\hat{\\pi}(t | \\mathbf{x}_i))^2}{\\hat{G}(y_i)} + I(y_i > t)
+        \\frac{(1 - \\hat{\\pi}(t | \\mathbf{x}_i))^2}{\\hat{G}(t)} ,
+
+    where :math:`\\hat{\\pi}(t | \\mathbf{x})` is the predicted probability of
+    remaining event-free up to time point :math:`t` for a feature vector :math:`\\mathbf{x}`,
+    and :math:`1/\\hat{G}(t)` is a inverse probability of censoring weight, estimated by
+    the Kaplan-Meier estimator.
+
+    See [1]_ for details.
 
     Parameters
     ----------
     survival_train : structured array, shape = (n_train_samples,)
-        Survival times for training data to estimate if training
-        and testing data are drawn from same sample.
-        Set internal_validation to True in this case.
-        Otherwise, use surival_test again as input.
+        Survival times for training data to estimate the censoring
+        distribution from.
         A structured array containing the binary event indicator
         as first field, and time of event or time of censoring as
         second field.
@@ -518,121 +490,89 @@ def brier_score(survival_train, survival_test, estimate, times,
         as first field, and time of event or time of censoring as
         second field.
 
-    estimate : array-like, shape = (n_samples,n_times)
+    estimate : array-like, shape = (n_samples, n_times)
         Estimated risk of experiencing an event for test data at `times`.
+        The i-th column must contain the estimated probability of
+        remaining event-free up to the i-th time point.
 
     times : array-like, shape = (n_times,)
-        The time points for which the predicted Survival function
-        is calculated and interpolation for a specific follow-up-time
-        will be calculated from. Values must be
-        within the range of follow-up times of the test data
-        `survival_test`.
-
-    t_max : float
-        Maximal time for estimating the prediction error curves.
-        If missing the largest value of the response variable is used.
-
-    use_mean_point : bool
-        not necessary at the moment.
-        Predicted survival will be calculated at the mean of a time bucket (between 2 breaks)
+        The time points for which to estimate the Brier score.
+        Values must be within the range of follow-up times of
+        the test data `survival_test`.
 
     Returns
     -------
-    times : array, shape = (n_times*)
-        represents the time axis (length `n_times* = n_times[times <= t_max]` at which the brier scores were
+    times : array, shape = (n_times,)
+        Unique time points at which the brier scores was estimated.
 
-    brier_scores : array , shape = (n_times*)
-        values of the brier scores
+    brier_scores : array , shape = (n_times,)
+        Values of the brier score.
 
-    Examples
-    --------
+    References
+    ----------
+    .. [1] E. Graf, C. Schmoor, W. Sauerbrei, and M. Schumacher,
+           "Assessment and comparison of prognostic classification schemes for survival data,"
+           Statistics in Medicine, vol. 18, no. 17-18, pp. 2529–2545, 1999.
     """
-    # check inputs
-    times = check_array(numpy.atleast_1d(times), ensure_2d=False, dtype=test_time.dtype)
-    times = numpy.unique(times)
+    test_event, test_time = check_y_survival(survival_test)
+    times = _check_times(test_time, times)
 
-    #    if times.max() >= test_time.max() or times.min() < test_time.min():
-    #        raise ValueError(
-    #            'all times must be within follow-up time of test data: [{}; {}['.format(
-    #                test_time.min(), test_time.max()))
-    #
+    estimate = check_array(estimate, ensure_2d=False)
+    if estimate.ndim == 1 and times.shape[0] == 1:
+        estimate = estimate.reshape(-1, 1)
 
-    # Checking the format of the data
-    E, T = check_y_survival(survival_test)
+    if estimate.shape[0] != test_time.shape[0]:
+        raise ValueError("expected estimate with {} samples, but got {}".format(
+            test_time.shape[0], estimate.shape[0]
+        ))
 
-    # computing the Survival function at times
-    Survival = estimate
+    if estimate.shape[1] != times.shape[0]:
+        raise ValueError("expected estimate with {} columns, but got {}".format(
+            times.shape[0], estimate.shape[1]))
 
-    # Ordering Survival, T and E in descending order according to T
-    order = numpy.argsort(-T)
-    Survival = Survival[order, :]
-    T = T[order]
-    E = E[order]
-    survival_test = survival_test[order]
+    # fit IPCW estimator
+    cens = CensoringDistributionEstimator().fit(survival_train)
+    # calculate inverse probability of censoring weight at current time point t.
+    prob_cens_t = cens.predict_proba(times)
+    prob_cens_t[prob_cens_t == 0] = numpy.inf
+    # calculate inverse probability of censoring weights at observed time point
+    prob_cens_y = cens.predict_proba(test_time)
+    prob_cens_y[prob_cens_y == 0] = numpy.inf
 
-    # fit IPCW estimator for estimation of IPCW at time t*
-    cens = CensoringDistributionEstimator()
-    if internal_validation:
-        cens.fit(survival_train)
-    else:
-        cens.fit(survival_test)
+    # Calculating the brier scores at each time point
+    brier_scores = numpy.empty(times.shape[0], dtype=float)
+    for i, t in enumerate(times):
+        est = estimate[:, i]
+        is_case = (test_time <= t) & test_event
+        is_control = test_time > t
 
-    # calculate inverse probability of censoring weights at observation T[i] from survival_train
-    struct_event_times = numpy.zeros((T.shape[0],), dtype=[('event', 'bool'), ('time', 'int64')])
-    struct_event_times['time'][:] = T
-    struct_event_times['event'][:] = E
-    ipcw = cens.predict_ipcw(struct_event_times)
+        brier_scores[i] = numpy.mean(numpy.square(est) * is_case.astype(int) / prob_cens_y
+                                     + numpy.square(1.0 - est) * is_control.astype(int) / prob_cens_t[i])
 
-    # setting time to last time observed, if not t_max set
-    if t_max is None or t_max <= 0.:
-        t_max = max(T)
-
-    # Calculating the brier scores at each t <= t_max
-    brierlist = []
-    for t in times[times <= t_max]:
-        # init bs
-        bs = numpy.zeros((T.shape[0]))
-        if use_mean_point:  # in case of time buckets (breaks), use mean probability in the bucket
-            Survival = (numpy.add(Survival, numpy.roll(Survival, 1, axis=-1))) / 2.
-
-        is_case = (T <= t) & E
-        is_control = (T > t)
-
-        # get survival function S(t) by interpolating the Survival function
-        S = _interp_pred_surv(Survival, times, t)
-        S2 = numpy.multiply(S, S)
-        omS2 = numpy.multiply(1 - S, 1 - S)
-
-        # calculate inverse probability of censoring weight at current timepoint t.
-        struct_arr = numpy.zeros((T.shape[0],), dtype=[('event', 'bool'), ('time', 'int64')])
-        struct_arr['time'][:] = t
-        struct_arr['event'][:] = numpy.ones((E.shape[0],))
-        ipcw_t = cens.predict_ipcw(struct_arr)
-
-        bs[is_case] = numpy.multiply(S2[is_case], ipcw[is_case])  # multiplicative IPCW at T[i]
-        bs[is_control] = numpy.multiply(omS2[is_control], ipcw_t[is_control])  # multiplicative IPCW at current t
-        brierlist.append(numpy.mean(bs))
-
-    return times[times <= t_max], numpy.array(brierlist)
+    return times, brier_scores
 
 
-def integrated_brier_score(survival_train, survival_test, estimate, times,
-                           t_max=None,
-                           use_mean_point=False,
-                           internal_validation=True,
-                           **kwargs):
+def integrated_brier_score(survival_train, survival_test, estimate, times):
     """The Integrated Brier Score (IBS) provides an overall calculation of
-    the model performance at all available times `t<=t_max`.
-    If `t_max` is `None` overall model performance will be integrated over
-    all available times.
+    the model performance at all available times :math:`t_1 \\leq t \\leq t_\\text{max}`.
+
+    The integrated time-dependent Brier score over the interval
+    :math:`[t_1; t_\\text{max}]` is defined as
+
+    .. math::
+
+        \\mathrm{IBS} = \\int_{t_1}^{t_\\text{max}} \\mathrm{BS}(t) d w(t)
+
+    where the weighting function is :math:`w(t) = t / t_\\text{max}`.
+    The integral is estimated via the trapezoidal rule.
+
+    See [1]_ for further details.
 
     Parameters
     ----------
     survival_train : structured array, shape = (n_train_samples,)
-        Survival times for training data to estimate if training
-        and testing data are drawn from same sample.
-        Set internal_validation to True in this case.
-        Otherwise, use surival_test again as input.
+        Survival times for training data to estimate the censoring
+        distribution from.
         A structured array containing the binary event indicator
         as first field, and time of event or time of censoring as
         second field.
@@ -643,51 +583,34 @@ def integrated_brier_score(survival_train, survival_test, estimate, times,
         as first field, and time of event or time of censoring as
         second field.
 
-    estimate : array-like, shape = (n_samples,n_times)
+    estimate : array-like, shape = (n_samples, n_times)
         Estimated risk of experiencing an event for test data at `times`.
+        The i-th column must contain the estimated probability of
+        remaining event-free up to the i-th time point.
 
     times : array-like, shape = (n_times,)
-        The time points for which the predicted Survival function
-        is calculated and interpolation for a specific follow-up-time
-        will be calculated from. Values must be
-        within the range of follow-up times of the test data
-        `survival_test`.
-
-    t_max : float
-        Maximal time for estimating the prediction error curves.
-        If missing the largest value of the response variable is used.
-
-    use_mean_point : bool
-        not necessary at the moment.
-        Predicted survival will be calculated at the mean of a time bucket (between 2 breaks)
+        The time points for which to estimate the Brier score.
+        Values must be within the range of follow-up times of
+        the test data `survival_test`.
 
     Returns
     -------
-    times : array, shape = (n_times*)
-        represents the time axis (length `n_times* = n_times[times <= t_max]` at which the brier scores were
-        computed
+    ibs : float
+        The integrated Brier score.
 
-    brier_scores : array , shape = (n_times*)
-        values of the brier scores
-
-    Examples
-    --------
-
+    References
+    ----------
+    .. [1] E. Graf, C. Schmoor, W. Sauerbrei, and M. Schumacher,
+           "Assessment and comparison of prognostic classification schemes for survival data,"
+           Statistics in Medicine, vol. 18, no. 17-18, pp. 2529–2545, 1999.
     """
     # Computing the brier scores
-    times, brier_scores = brier_score(survival_train, survival_test, estimate, times,
-                                      t_max=t_max,
-                                      use_mean_point=False,
-                                      internal_validation=True,
-                                      )
+    times, brier_scores = brier_score(survival_train, survival_test, estimate, times)
 
-    # Getting the proper value of t_max
-    if t_max is None:
-        t_max = max(times)
-    else:
-        t_max = min(t_max, max(times))
+    if times.shape[0] < 2:
+        raise ValueError("At least two time points must be given")
 
     # Computing the IBS
-    ibs_value = numpy.trapz(brier_scores, times) / t_max
+    ibs_value = trapz(brier_scores, times) / (times[-1] - times[0])
 
     return ibs_value
