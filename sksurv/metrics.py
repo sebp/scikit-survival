@@ -11,6 +11,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numpy
+import pandas as pd
 from scipy.integrate import trapz
 from sklearn.utils import check_consistent_length, check_array
 
@@ -21,6 +22,9 @@ __all__ = [
     'concordance_index_censored',
     'concordance_index_ipcw',
     'cumulative_dynamic_auc',
+    'brier_score',
+    'integrated_brier_score',
+    'calibration_curve',
 ]
 
 
@@ -117,6 +121,219 @@ def _estimate_concordance_index(event_indicator, event_time, estimate, weights, 
     cindex = numerator / denominator
     return cindex, concordant, discordant, tied_risk, tied_time
 
+def _interp_pred_surv(SurvivalFunction, times, fu_time):
+    """
+    Interpolated survival probability at time fu_time
+    Inputs are Numpy arrays.
+    y_pred: Rectangular array, each individual's conditional probability of surviving each time interval
+    times: times for which survival probability is calculated.
+    fu_time: Follow-up time point at which predictions are needed
+    Returns: predicted survival probability for each individual at specified follow-up time
+    """
+    pred_surv = []
+    for i in range(SurvivalFunction.shape[0]):
+        pred_surv.append(numpy.interp(fu_time,times,SurvivalFunction[i,:]))
+    return numpy.array(pred_surv)
+
+def _calib_plot(fu_time, n_bins, pred_surv, time, dead, color, label, error_bars=0,alpha=1., markersize=1., markertype='o'):
+    """
+    Kaplan Meier Estimates for `n_bins` of predicted survival `pred_surv` at `fu_time` 
+    plotted against mean `pred_surv` in the bin
+    Typically deciles are used, despite arbitrary choice.
+    Deprecated --> better use loess based/nearest neighbor estimated plot
+    """
+        # TODO: exchange lifelines KaplanMeierFitter with sksurv.nonparametric.SurvivalFunctionEstimator. Confidence interval estimation needed in advance.
+    from lifelines import KaplanMeierFitter
+    import matplotlib.pyplot as plt
+#    cuts = numpy.concatenate((numpy.array([-1e6]),numpy.percentile(pred_surv, numpy.arange(100/n_bins,100,100/n_bins)),numpy.array([1e6])))
+#    bin = pd.cut(pred_surv,cuts,labels=False)
+    bins = pd.qcut(pred_surv,n_bins,labels=None)
+    kmf = KaplanMeierFitter()
+    est = []
+    ci_upper = []
+    ci_lower = []
+    mean_pred_surv = []
+    for which_bin in range(max(bins)+1):
+        kmf.fit(time[bins==which_bin], event_observed=dead[bins==which_bin])
+        est.append(numpy.interp(fu_time, kmf.survival_function_.index.values, kmf.survival_function_.KM_estimate))
+        ci_upper.append(numpy.interp(fu_time, kmf.survival_function_.index.values, kmf.confidence_interval_.loc[:,'KM_estimate_upper_0.95']))
+        ci_lower.append(numpy.interp(fu_time, kmf.survival_function_.index.values, kmf.confidence_interval_.loc[:,'KM_estimate_lower_0.95']))
+        mean_pred_surv.append(numpy.mean(pred_surv[bins==which_bin]))
+    est = numpy.array(est)
+    ci_upper = numpy.array(ci_upper)
+    ci_lower = numpy.array(ci_lower)
+    if error_bars:
+        plt.errorbar(mean_pred_surv, est, yerr = numpy.transpose(numpy.column_stack((est-ci_lower,ci_upper-est))), fmt='o',
+                 c=color,label=label)
+    else:
+        plt.plot(mean_pred_surv, est, markertype, c=color,label=label, alpha=alpha, markersize=markersize)
+    return (numpy.array(mean_pred_surv), est, ci_upper,ci_lower)
+
+
+def _calib_plot_loess(fu_time,
+                      pred_surv, time, dead,
+                      time_kfold,dead_kfold,
+                      color, label,
+                      ci=False, ci_alpha=.05, trunc =(1,99),
+                      alpha=1., markersize=1., markertype='-',
+                      loess=True):
+    """
+    plot calibration curve based on pseudovalues: est_i(t) = n * (prodlim(t)) - (n-1) * prodlim_i(t)
+    see r package prodlim https://rdrr.io/cran/prodlim/man/jackknife.html
+    see also    Gerds et al.,Calibration plots for risk prediction models in the presence of competing risks., https://doi.org/10.1002/sim.6152
+                Graw et al., https://doi.org/10.1007/s10985-008-9107-z
+    
+    We combined the pseudovalues approach with skmisc.loess.loess smoothing (https://dx.doi.org/10.1002%2Fsim.5941)
+    span = 0.75 (default) works good according to https://dx.doi.org/10.1002%2Fsim.5941
+    
+    Parameters:
+    -----------
+    * fu_time : int / float
+        time for which cumulative calibration should be calculated
+        
+    * pred_surv : array, shape = (n_samples,)
+        array with predicted survival probability at time t
+        
+    * time: array, shape = (n_samples,)
+        array with time of event or censoring time
+        
+    * dead: array, shape = (n_samples,)
+        event indicator array, True = event, False = no event
+        
+    * time_kfold: array, shape = (n_samples,)
+        in case of cross validation 1 full data-set for KM estimation is necessary
+        in case of internal validation, training data can also be used for KM Estimation
+        array with time of event or censoring time
+        
+    * dead_kfold: array, shape = (n_samples,)
+            in case of cross validation 1 full data-set for KM estimation is necessary    
+            in case of internal validation, training data can also be used for KM Estimation
+            event indicator array, True = event, False = no event
+    * color: str
+        color for the plot
+        
+    * label: str
+        label of the plot
+        
+    * ci: bool
+        controls, whether confidence intervals should be calculated
+        
+    * ci_alpha: float
+        confidence niveau, default 0.05
+        
+    * trunc: tuple, type int / float
+        truncate pred_surv at `trunc[0/1]`'th percentiles.
+        
+    * alpha: float
+        alpha transluicency for plot
+        
+    * markersize: float
+        markersize for pyplot
+        
+    * markertype: str
+        type of marker used by matplotlib.pyplot, default '-' = line
+        
+    * loess: bool
+        use loess smoother, if false (not recommended, as not tested) use k nearest neighbors.
+        
+    Returns:
+    --------
+    
+    * s_pred_surv: array, shape = (n_samples*)
+        random subsample (only if n_samples >30000) of predicted survival probability array at fu_time
+    * actual: array, shape = (n_samples*)
+        loess smoothed actual survival probability for each reduced sample
+    * ci_lower:array, array, shape = (n_samples*)
+        lower confidence limit if ci= True, otherwise ci_lower equals actual
+    * ci_upper:array, array, shape = (n_samples*)
+        upper confidence limit if ci= True, otherwise ci_lower equals actual
+                    
+    Example:
+    --------
+
+    """
+    from sklearn.neighbors import KNeighborsRegressor
+    import matplotlib.pyplot as plt
+    from sklearn.model_selection import train_test_split
+    from skmisc.loess import loess
+    
+    est=numpy.zeros(pred_surv.shape)
+    
+    # get jacknife pseudovals for whole population if internal validation
+    # get jacknife pseudovals for one complete sample in case of repeated CV.
+    est_kfold=_jacknife(fu_time,time_kfold,dead_kfold) 
+    
+    # fill pseudovals for testing population/ whole cv population
+    for t,e in zip(time_kfold,dead_kfold):
+        cond= (time==t) & (dead == e)
+        cond_kfold = (time_kfold==t) & (dead_kfold == e)
+        est[cond]=est_kfold[cond_kfold].mean()
+        
+    # hacky protection against memory overload, if samples are large
+    if pred_surv.shape[0] >= 30000:
+        pred_surv_split,_,est_split,_=train_test_split(pred_surv,est,train_size=30000,shuffle=True)
+        order=numpy.argsort(pred_surv_split)
+        pred_surv_split=pred_surv_split[order]
+        est_split=est_split[order]
+    else:
+        pred_surv_split,est_split = (pred_surv,est)
+    
+    if loess:
+        loessfitter=loess(pred_surv_split,est_split)
+        loessfitter.fit()
+    else:
+        n_neighbors=4
+        loessfitter=KNeighborsRegressor(n_neighbors, weights='minkowski')
+        loessfitter.fit(pred_surv,est)
+
+    # truncate predicted survival at trunc, (e.g. 1 / 99 th percentile)
+    s_pred_surv=pred_surv_split # to lazy for renaming the rest :-)
+    s_pred_surv=s_pred_surv[numpy.logical_and(s_pred_surv>=numpy.percentile(s_pred_surv,trunc[0]),s_pred_surv<=numpy.percentile(s_pred_surv,trunc[1]))]
+
+    if ci:
+        prediction=loessfitter.predict(s_pred_surv,stderror=True) # max 30000 to avoid out of memory error
+        confint=prediction.confidence(alpha=ci_alpha)
+        actual = prediction.values
+        ci_upper = confint.upper
+        ci_lower = confint.lower
+        plt.plot(s_pred_surv,actual,markertype, c=color,label=label, alpha=alpha, markersize=markersize)
+        plt.fill_between(s_pred_surv,ci_lower,ci_upper, edgecolor=color,facecolor=color, alpha=0.5*alpha,antialiased=True)
+    else:
+        prediction=loessfitter.predict(s_pred_surv)
+        actual = prediction.values
+        ci_upper=actual
+        ci_lower=actual
+        plt.plot(s_pred_surv,actual,markertype, c=color,label=label, alpha=alpha, markersize=markersize)
+    return (s_pred_surv, numpy.array(actual), numpy.array(ci_upper), numpy.array(ci_lower))
+
+def _jacknife(fu_time,time,dead,verbose=True):
+    """
+    calc pseudovalues according to TA Gerds et al. 
+    https://rdrr.io/cran/prodlim/man/jackknife.html
+    """
+    # TODO: exchange lifelines KaplanMeierFitter with sksurv.nonparametric kaplan meier estimator. 
+    from sklearn.model_selection import LeaveOneOut
+    from lifelines import KaplanMeierFitter
+    import sys
+    #generate pseudovalues
+    llo=LeaveOneOut()
+    kmf = KaplanMeierFitter()
+    kmf.fit(time,event_observed=dead)
+    kme=numpy.interp(fu_time, kmf.survival_function_.index.values, kmf.survival_function_.KM_estimate) # linear interpolation
+    kmfi = KaplanMeierFitter()
+    pseudovals=[]
+    k=0
+    for train_index, _ in llo.split(time):
+        kmfi.fit(time[train_index], event_observed=dead[train_index])
+        kmei=numpy.interp(fu_time, kmfi.survival_function_.index.values, kmfi.survival_function_.KM_estimate) # linear interpolation
+        pseudovali=(time.shape[0] * kme) - ((time.shape[0] - 1) * kmei)
+        pseudovals.append(pseudovali)
+        k+=1
+        sys.stdout.write("\rStep: %i/%i.  " % (k,time.shape[0]))
+        sys.stdout.flush()
+
+    return numpy.array(pseudovals)
+
 
 def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1e-8):
     """Concordance index for right-censored data
@@ -134,8 +351,6 @@ def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1
     risk score has a shorter actual survival time.
     When predicted risks are identical for a pair, 0.5 rather than 1 is added to the count
     of concordant pairs.
-
-    See [1]_ for further description.
 
     Parameters
     ----------
@@ -205,8 +420,6 @@ def concordance_index_ipcw(survival_train, survival_test, estimate, tau=None, ti
     censoring survivor function. Therefore, it is restricted to
     situations where the random censoring assumption holds and
     censoring is independent of the features.
-
-    See [1]_ for further description.
 
     Parameters
     ----------
@@ -331,7 +544,6 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
 
     where :math:`\\hat{S}(t)` is the Kaplan–Meier estimator of the survival function.
 
-    See [1]_, [2]_, [3]_ for further description.
 
     Parameters
     ----------
@@ -447,3 +659,375 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
         mean_auc = integral / (1.0 - s_times[-1])
 
     return scores, mean_auc
+
+def brier_score(survival_train,survival_test, estimate, times,
+                     t_max=None,
+                     use_mean_point=False,
+                     internal_validation=True,
+                     **kwargs):
+    """ 
+    Modification of the implementation in PySurvival by Stephane Fotso et al.
+    TODO: NEED TO SHIP WITH AN APACHE LICENSE
+    Computing the Brier score at all times t such that t <= t_max;
+    it represents the average squared distances between 
+    the observed survival status and the predicted
+    survival probability.
+    In the case of right censoring, it is necessary to adjust
+    the score by weighting the squared distances to 
+    avoid bias. It can be achieved by using 
+    the inverse probability of censoring weights method (IPCW),
+    (proposed by Graf et al. 1999; Gerds and Schumacher 2006)
+    by using the estimator of the conditional survival function
+    of the censoring times calculated using the Kaplan-Meier method,
+    such that :
+    BS(t) = 1/N*( W_1(t)*(Y_1(t) - S_1(t))^2 + ... + 
+                  W_N(t)*(Y_N(t) - S_N(t))^2)
+    In terms of benchmarks, a useful model will have a Brier score below 
+    0.25. Indeed, it is easy to see that if for all i in [1,N], 
+    if S(t, xi) = 0.5, then BS(t) = 0.25.
+    Parameters:
+    -----------
+    survival_train : structured array, shape = (n_train_samples,)
+        Survival times for training data to estimate if training
+        and testing data are drawn from same sample.
+        Set internal_validation to True in this case.
+        Otherwise, use surival_test again as input.
+        A structured array containing the binary event indicator
+        as first field, and time of event or time of censoring as
+        second field.
+
+    survival_test : structured array, shape = (n_samples,)
+        Survival times of test data.
+        A structured array containing the binary event indicator
+        as first field, and time of event or time of censoring as
+        second field.
+
+    estimate : array-like, shape = (n_samples,n_times)
+        Estimated risk of experiencing an event for test data at `times`.
+
+    times : array-like, shape = (n_times,)
+        The time points for which the predicted Survival function
+        is calculated and interpolation for a specific follow-up-time
+        will be calculated from. Values must be
+        within the range of follow-up times of the test data
+        `survival_test`.
+    
+        
+    * t_max: float 
+        Maximal time for estimating the prediction error curves. 
+        If missing the largest value of the response variable is used.
+        
+    * t_max: use_mean_point 
+        not necessary at the moment. 
+        Predicted survival will be calculated at the mean of a time bucket (between 2 breaks)
+    Returns:
+    --------
+        * times : array, shape = (n_times*)
+            represents the time axis (length n_times* = n_times[times <= t_max] at which the brier scores were 
+            computed
+        * brier_scores : array , shape = (n_times*)
+            values of the brier scores
+                    
+    Example:
+    --------
+    """
+    # check inputs
+    
+    times = check_array(numpy.atleast_1d(times), ensure_2d=False, dtype=test_time.dtype)
+    times = numpy.unique(times)
+
+#    if times.max() >= test_time.max() or times.min() < test_time.min():
+#        raise ValueError(
+#            'all times must be within follow-up time of test data: [{}; {}['.format(
+#                test_time.min(), test_time.max()))
+#
+
+
+    # Checking the format of the data 
+    E,T = check_y_survival(survival_test)
+
+    # computing the Survival function at times
+    Survival = estimate
+
+
+    # Ordering Survival, T and E in descending order according to T
+    order = numpy.argsort(-T)
+    Survival = Survival[order, :]
+    T = T[order]
+    E = E[order]
+    survival_test=survival_test[order]
+    
+    #fit IPCW estimator for estimation of IPCW at time t*
+    cens=CensoringDistributionEstimator()
+    if internal_validation: cens.fit(survival_train)
+    else: cens.fit(survival_test)
+
+    #calculate inverse probability of censoring weights at observation T[i] from survival_train
+    struct_event_times=numpy.zeros((T.shape[0],),dtype=[('event','bool'),('time','int64')])
+    struct_event_times['time'][:]=T
+    struct_event_times['event'][:]=E
+    ipcw=cens.predict_ipcw(struct_event_times)
+        
+    #setting time to last time observed, if not t_max set
+    if t_max is None or t_max <= 0.:
+        t_max = max(T)
+
+    # Calculating the brier scores at each t <= t_max
+    brierlist=[]
+    for t in times[times<=t_max]:
+        # init bs
+        bs = numpy.zeros((T.shape[0]))
+        if(use_mean_point): # in case of time buckets (breaks), use mean probability in the bucket
+            Survival = (numpy.add(Survival,numpy.roll(Survival,1,axis=-1)))/2. 
+
+
+        is_case= (T <=t) & E
+        is_control = (T > t)
+        
+        # get survival function S(t) by interpolating the Survival function
+        S=_interp_pred_surv(Survival,times,t)
+        S2=numpy.multiply(S,S)
+        omS2=numpy.multiply(1 - S,1 - S)
+        
+        #calculate inverse probability of censoring weight at current timepoint t.
+        struct_arr=numpy.zeros((T.shape[0],),dtype=[('event','bool'),('time','int64')])
+        struct_arr['time'][:]=t
+        struct_arr['event'][:]=numpy.ones((E.shape[0],))
+        ipcw_t=cens.predict_ipcw(struct_arr)
+        
+
+        bs[is_case]= numpy.multiply(S2[is_case],ipcw[is_case]) # multiplicative IPCW at T[i]
+        bs[is_control] = numpy.multiply(omS2[is_control],ipcw_t[is_control]) # multiplicative IPCW at current t
+        brierlist.append(numpy.mean(bs))
+    
+    return times[times<=t_max],numpy.array(brierlist)
+
+def integrated_brier_score(survival_train,survival_test, estimate, times,
+                     t_max=None,
+                     use_mean_point=False,
+                     internal_validation=True,
+                     **kwargs):
+    """ The Integrated Brier Score (IBS) provides an overall calculation of 
+        the model performance at all available times t<=t_max. 
+        If t_max == None overall model performance will be integrated over
+        all available times.
+    Parameters:
+    -----------
+    survival_train : structured array, shape = (n_train_samples,)
+        Survival times for training data to estimate if training
+        and testing data are drawn from same sample.
+        Set internal_validation to True in this case.
+        Otherwise, use surival_test again as input.
+        A structured array containing the binary event indicator
+        as first field, and time of event or time of censoring as
+        second field.
+
+    survival_test : structured array, shape = (n_samples,)
+        Survival times of test data.
+        A structured array containing the binary event indicator
+        as first field, and time of event or time of censoring as
+        second field.
+
+    estimate : array-like, shape = (n_samples,n_times)
+        Estimated risk of experiencing an event for test data at `times`.
+
+    times : array-like, shape = (n_times,)
+        The time points for which the predicted Survival function
+        is calculated and interpolation for a specific follow-up-time
+        will be calculated from. Values must be
+        within the range of follow-up times of the test data
+        `survival_test`.
+    
+        
+    * t_max: float 
+        Maximal time for estimating the prediction error curves. 
+        If missing the largest value of the response variable is used.
+        
+    * t_max: use_mean_point 
+        not necessary at the moment. 
+        Predicted survival will be calculated at the mean of a time bucket (between 2 breaks)
+    Returns:
+    --------
+        * times : array, shape = (n_times*)
+            represents the time axis (length n_times* = n_times[times <= t_max] at which the brier scores were 
+            computed
+        * brier_scores : array , shape = (n_times*)
+            values of the brier scores
+                    
+    Example:
+    --------
+        
+    """
+     # Computing the brier scores
+    times, brier_scores = brier_score(survival_train,survival_test, estimate, times,
+                     t_max=t_max,
+                     use_mean_point=False,
+                     internal_validation=True,
+                     )
+
+    # Getting the proper value of t_max
+    if t_max is None:
+        t_max = max(times)
+    else:
+        t_max = min(t_max, max(times))
+
+    # Computing the IBS
+    ibs_value = numpy.trapz(brier_scores, times)/t_max
+    
+    return ibs_value
+
+
+def calibration_curve(survival_train,survival_test, estimate, times,
+                     fu_time,
+                     n_bins =10,
+                     my_alpha = 0.7,
+                     my_markersize = 4.,
+                     color='#377eb8',
+                     label='Actual versus predicted survival probability with 95% CI',
+                     ci=True,
+                     ci_alpha= .05,
+                     pseudovals=True,
+                     loess=True,
+                     internal_validation = True,
+                     ):
+    """
+    A calibration plot based on pseudovalues (pseudovals = True): 
+    A product limit estimator (Kaplan-Meier) is used to generate a jackknife pseudo-value
+    for the i'th observation, by calculating the product limit estimate for 
+    a n-1 subsample without the i'th observation.
+    Pseudovalues are then calculated by:
+        
+        est_i(t) = n * (prodlim(t)) - (n-1) * prodlim_i(t)
+        
+    where prodlim is the KM estimate for the whole sample and prodlim_i is the
+    one applied to the subsample without i'th observation.
+    
+    see r package prodlim https://rdrr.io/cran/prodlim/man/jackknife.html
+    see also    Gerds et al.,Calibration plots for risk prediction models in the presence of competing risks., https://doi.org/10.1002/sim.6152
+                Graw et al., https://doi.org/10.1007/s10985-008-9107-z
+    
+    We combined the pseudovalues approach with loess smoothing (https://dx.doi.org/10.1002%2Fsim.5941)
+    Note: span = 0.75 (default) works good according to https://dx.doi.org/10.1002%2Fsim.5941
+    
+    Parameters:
+    -----------
+    survival_train : structured array, shape = (n_train_samples,)
+        Survival times for training data to estimate if training
+        and testing data are drawn from same sample.
+        Set internal_validation to True in this case.
+        Otherwise, use surival_test again as input.
+        A structured array containing the binary event indicator
+        as first field, and time of event or time of censoring as
+        second field.
+
+    survival_test : structured array, shape = (n_samples,)
+        Survival times of test data.
+        A structured array containing the binary event indicator
+        as first field, and time of event or time of censoring as
+        second field.
+
+    estimate : array-like, shape = (n_samples,n_times)
+        Estimated risk of experiencing an event for test data at `times`.
+
+    times : array-like, shape = (n_times,)
+        The time points for which the predicted Survival function
+        is calculated and interpolation for a specific follow-up-time
+        is calculated. Values must be
+        within the range of follow-up times of the test data
+        `survival_test`.
+    
+    fu_time : float,
+        The timepoint for which the calibration curve should be plotted.
+        
+    * color: str
+        color for the plot
+        
+    * label: str
+        label of the plot
+        
+    * trunc: int / float
+        truncate pred_surv at trunc'th percentile.
+        
+    * my_alpha: float
+        alpha transluicency for plot
+        
+    * my_markersize: float
+        markersize for pyplot
+                
+    * ci: bool
+        controls, whether confidence intervals should be calculated
+        
+    * ci_alpha: float
+        confidence niveau, default 0.05
+    * loess: bool
+        use loess smoothing (recommended) or k nearest neighbors regression?
+    * pseudovals: bool
+        controls, whether pseudovals or binning approach should be used.
+    * internal_validation: bool
+        survival_train and survival_test are considered as beeing drawn
+        from same sample and are both used for calculation of Kaplan-Meier-estimates
+    
+    Returns:
+    --------
+        * (globmin_x,globmax_x,globmin_y, globmax_y) : tuple of floats
+            - respective global extremum across the named axis
+                    
+    Example:
+    --------
+
+    """
+    
+    # check survival arrays for test_data
+    test_event, test_time = check_y_survival(survival_test)
+    train_event, train_time = check_y_survival(survival_train)
+    times = check_array(numpy.atleast_1d(times), ensure_2d=False, dtype=test_time.dtype)
+    
+    if internal_validation:
+        test_time_traintest=numpy.concatenate([test_time,train_time])
+        test_event_traintest=numpy.concatenate([test_event,train_event])
+    else:
+        test_time_traintest=test_time
+        test_event_traintest=test_event
+    # interpolate predicted survival at fu_time.
+    pred_surv = _interp_pred_surv(estimate, times, fu_time)
+    
+    # sort by pred_surv in ascending order
+    order=numpy.argsort(pred_surv)
+    pred_surv=pred_surv[order]
+    test_time=test_time[order]
+    test_event=test_event[order]
+    test_time_traintest = test_time_traintest[order]
+    test_event_traintest = test_event_traintest[order]
+    
+    if pseudovals: # use pseudovals approach with loess smoothing
+        (pred, actual,ci_upper,ci_lower)=_calib_plot_loess(fu_time,
+                                                pred_surv, test_time,test_event,
+                                                test_time_traintest, test_event_traintest,
+                                                color=color,
+                                                label=label,
+                                                ci=ci,
+                                                alpha=my_alpha,
+                                                markersize=my_markersize,
+                                                markertype='-',
+                                                loess=loess)
+    else: # use traditional binning (visual analog to Hosmer-Lemshaw-test)
+        (pred, actual,ci_upper,ci_lower)=_calib_plot(fu_time,n_bins,
+                                                pred_surv,test_time, test_event,
+                                                color=color,
+                                                label=label,
+                                                error_bars=ci,
+                                                alpha=my_alpha,
+                                                markersize=my_markersize,
+                                                markertype='-')
+    if ci:
+        globmin_x=pred.min() -0.02
+        globmax_x=pred.max() +0.02
+        globmin_y=ci_lower.min() -0.02
+        globmax_y=ci_upper.max()+0.02
+    else:
+        globmin_x=min(actual.min(),pred.min())-0.02
+        globmax_x=max(actual.max(),pred.max())+0.02
+        globmin_y=min(actual.min(),pred.min())-0.02
+        globmax_y=max(actual.max(),pred.max())+0.02
+
+    return (globmin_x,globmax_x,globmin_y, globmax_y,)
