@@ -6,7 +6,7 @@ import pytest
 
 from sksurv.datasets import load_gbsg2
 from sksurv.functions import StepFunction
-from sksurv.nonparametric import kaplan_meier_estimator
+from sksurv.linear_model import CoxPHSurvivalAnalysis
 from sksurv.metrics import (
     brier_score,
     concordance_index_censored,
@@ -14,6 +14,8 @@ from sksurv.metrics import (
     cumulative_dynamic_auc,
     integrated_brier_score,
 )
+from sksurv.nonparametric import kaplan_meier_estimator
+from sksurv.preprocessing import OneHotEncoder
 from sksurv.util import Surv
 
 
@@ -799,6 +801,22 @@ def test_brier_wrong_estimate_shape(nottingham_prognostic_index):
     with pytest.raises(ValueError,
                        match="expected estimate with 686 samples, but got 10"):
         brier_score(y, y, pred[:10], times=[720, 1825])
+
+
+def test_brier_coxph():
+    X, y = load_gbsg2()
+    X.loc[:, "tgrade"] = X.loc[:, "tgrade"].map(len).astype(int)
+
+    Xt = OneHotEncoder().fit_transform(X)
+
+    est = CoxPHSurvivalAnalysis(ties="efron").fit(Xt, y)
+    survs = est.predict_survival_function(Xt)
+
+    preds = [fn(1825) for fn in survs]
+
+    _, score = brier_score(y, y, preds, 1825)
+
+    assert round(abs(score[0] - 0.208817407492645), 5) == 0
 
 
 def test_ibs_nottingham_1(nottingham_prognostic_index):

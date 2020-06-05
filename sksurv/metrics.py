@@ -18,10 +18,10 @@ from .nonparametric import CensoringDistributionEstimator, SurvivalFunctionEstim
 from .util import check_y_survival
 
 __all__ = [
+    'brier_score',
     'concordance_index_censored',
     'concordance_index_ipcw',
     'cumulative_dynamic_auc',
-    'brier_score',
     'integrated_brier_score',
 ]
 
@@ -464,7 +464,7 @@ def brier_score(survival_train, survival_test, estimate, times):
 
     .. math::
 
-        \\mathrm{BS}(t) = \\frac{1}{n} \\sum_{i=1}^n I(y_i \\leq t \\land \\delta_i = 1)
+        \\mathrm{BS}^c(t) = \\frac{1}{n} \\sum_{i=1}^n I(y_i \\leq t \\land \\delta_i = 1)
         \\frac{(0 - \\hat{\\pi}(t | \\mathbf{x}_i))^2}{\\hat{G}(y_i)} + I(y_i > t)
         \\frac{(1 - \\hat{\\pi}(t | \\mathbf{x}_i))^2}{\\hat{G}(t)} ,
 
@@ -507,6 +507,39 @@ def brier_score(survival_train, survival_test, estimate, times):
 
     brier_scores : array , shape = (n_times,)
         Values of the brier score.
+
+    Examples
+    --------
+    >>> from sksurv.datasets import load_gbsg2
+    >>> from sksurv.linear_model import CoxPHSurvivalAnalysis
+    >>> from sksurv.metrics import brier_score
+    >>> from sksurv.preprocessing import OneHotEncoder
+
+    Load and prepare data.
+
+    >>> X, y = load_gbsg2()
+    >>> X.loc[:, "tgrade"] = X.loc[:, "tgrade"].map(len).astype(int)
+    >>> Xt = OneHotEncoder().fit_transform(X)
+
+    Fit a Cox model.
+
+    >>> est = CoxPHSurvivalAnalysis(ties="efron").fit(Xt, y)
+
+    Retrieve individual survival functions and get probability
+    of remaining event free up to 5 years (=1825 days).
+
+    >>> survs = est.predict_survival_function(Xt)
+    >>> preds = [fn(1825) for fn in survs]
+
+    Compute the Brier score at 5 years.
+
+    >>> times, score = brier_score(y, y, preds, 1825)
+    >>> print(score)
+    [0.20881843]
+
+    See also
+    --------
+    integrated_brier_score
 
     References
     ----------
@@ -561,7 +594,7 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
 
     .. math::
 
-        \\mathrm{IBS} = \\int_{t_1}^{t_\\text{max}} \\mathrm{BS}(t) d w(t)
+        \\mathrm{IBS} = \\int_{t_1}^{t_\\text{max}} \\mathrm{BS}^c(t) d w(t)
 
     where the weighting function is :math:`w(t) = t / t_\\text{max}`.
     The integral is estimated via the trapezoidal rule.
@@ -597,6 +630,41 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
     -------
     ibs : float
         The integrated Brier score.
+
+    Examples
+    --------
+    >>> import numpy
+    >>> from sksurv.datasets import load_gbsg2
+    >>> from sksurv.linear_model import CoxPHSurvivalAnalysis
+    >>> from sksurv.metrics import integrated_brier_score
+    >>> from sksurv.preprocessing import OneHotEncoder
+
+    Load and prepare data.
+
+    >>> X, y = load_gbsg2()
+    >>> X.loc[:, "tgrade"] = X.loc[:, "tgrade"].map(len).astype(int)
+    >>> Xt = OneHotEncoder().fit_transform(X)
+
+    Fit a Cox model.
+
+    >>> est = CoxPHSurvivalAnalysis(ties="efron").fit(Xt, y)
+
+    Retrieve individual survival functions and get probability
+    of remaining event free from 1 year to 5 years (=1825 days).
+
+    >>> survs = est.predict_survival_function(Xt)
+    >>> times = numpy.arange(365, 1826)
+    >>> preds = numpy.asarray([[fn(t) for t in times for fn in survs]])
+
+    Compute the integrated Brier score from 1 to 5 years.
+
+    >>> score = integrated_brier_score(y, y, preds, times)
+    >>> print(score)
+    0.1815853064627424
+
+    See also
+    --------
+    brier_score
 
     References
     ----------
