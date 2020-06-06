@@ -118,6 +118,11 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         The underlying Tree object. Please refer to
         ``help(sklearn.tree._tree.Tree)`` for attributes of Tree object.
 
+    See also
+    --------
+    sksurv.ensemble.RandomSurvivalForest
+        An ensemble of SurvivalTrees.
+
     References
     ----------
     .. [1] Leblanc, M., & Crowley, J. (1993). Survival Trees by Goodness of Split.

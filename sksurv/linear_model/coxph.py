@@ -342,6 +342,11 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     baseline_survival_ : :class:`sksurv.functions.StepFunction`
         Estimated baseline survival function.
 
+    See also
+    --------
+    sksurv.linear_model.CoxnetSurvivalAnalysis
+        Cox proportional hazards model with l1 (LASSO) and l2 (ridge) penalty.
+
     References
     ----------
     .. [1] Cox, D. R. Regression models and life tables (with discussion).

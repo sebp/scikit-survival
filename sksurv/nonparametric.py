@@ -302,6 +302,12 @@ def ipc_weights(event, time):
     -------
     weights : array, shape = (n_samples,)
         inverse probability of censoring weights
+
+    See also
+    --------
+    CensoringDistributionEstimator
+        An estimator interface for estimating inverse probability
+        of censoring weights for unseen time points.
     """
     if event.all():
         return numpy.ones(time.shape[0])

@@ -134,6 +134,11 @@ class RandomSurvivalForest(BaseForest, SurvivalAnalysisMixin):
         Concordance index of the training dataset obtained
         using an out-of-bag estimate.
 
+    See also
+    --------
+    sksurv.tree.SurvivalTree
+        A single survival tree.
+
     Notes
     -----
     The default values for the parameters controlling the size of the trees
