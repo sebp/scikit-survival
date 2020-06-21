@@ -368,7 +368,7 @@ class TestCoxPH(object):
         ])
 
         for i, ff in enumerate(f):
-            actual_y = [ff(v) for v in expected_x]
+            actual_y = ff(expected_x)
             # check that values increase
             assert (numpy.diff(actual_y) > 0).all()
             assert_array_almost_equal(actual_y, expected_y[i, :])
@@ -464,7 +464,7 @@ class TestCoxPH(object):
         assert len(f) == len(test_idx)
 
         for i, ff in enumerate(f):
-            actual_y = [ff(v) for v in expected_x]
+            actual_y = ff(expected_x)
             # check that values decrease
             assert (numpy.diff(actual_y) < 0).all()
             assert_array_almost_equal(actual_y, expected_y[i, :])

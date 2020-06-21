@@ -35,7 +35,7 @@ class TestStepFunction(object):
                   a_step_function.x[-1] + eps]
 
         for v in values:
-            with pytest.raises(ValueError, match=r"x must be within \[0.0+; 9.0+\], but was.+"):
+            with pytest.raises(ValueError, match=r"x must be within \[0.0+; 9.0+\]"):
                 a_step_function(v)
 
     @staticmethod
