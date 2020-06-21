@@ -342,7 +342,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Returns
         -------
-        cum_hazard : ndarray, shape = (n_samples,)
+        cum_hazard : ndarray of :class:`sksurv.functions.StepFunction`, shape = (n_samples,)
             Predicted cumulative hazard functions.
         """
         baseline_model = self._get_baseline_model(alpha)
@@ -375,7 +375,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Returns
         -------
-        survival : ndarray, shape = (n_samples,)
+        survival : ndarray of :class:`sksurv.functions.StepFunction`, shape = (n_samples,)
             Predicted survival functions.
         """
         baseline_model = self._get_baseline_model(alpha)

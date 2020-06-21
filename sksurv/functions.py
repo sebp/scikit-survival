@@ -27,14 +27,17 @@ class StepFunction(object):
 
     Parameters
     ----------
-    x : ndarray, shape = [n_points,]
+    x : ndarray, shape = (n_points,)
         Values on the x axis in ascending order.
 
-    y : ndarray, shape = [n_points,]
+    y : ndarray, shape = (n_points,)
         Corresponding values on the y axis.
 
-    a : float, optional
-        Constant to multiply
+    a : float, optional, default: 1.0
+        Constant to multiply by.
+
+    b : float, optional, default: 0.0
+        Constant offset term.
     """
     def __init__(self, x, y, a=1., b=0.):
         check_consistent_length(x, y)
@@ -44,15 +47,31 @@ class StepFunction(object):
         self.b = b
 
     def __call__(self, x):
-        if not numpy.isfinite(x):
+        """Evaluate step function.
+
+        Parameters
+        ----------
+        x : float|array-like, shape=(n_values,)
+            Values to evaluate step function at.
+
+        Returns
+        -------
+        y : float|array-like, shape=(n_values,)
+            Values of step function at `x`.
+        """
+        x = numpy.atleast_1d(x)
+        if not numpy.isfinite(x).all():
             raise ValueError("x must be finite")
-        if x < self.x[0] or x > self.x[-1]:
+        if numpy.min(x) < self.x[0] or numpy.max(x) > self.x[-1]:
             raise ValueError(
-                "x must be within [%f; %f], but was %f" % (self.x[0], self.x[-1], x))
+                "x must be within [%f; %f]" % (self.x[0], self.x[-1]))
         i = numpy.searchsorted(self.x, x, side='left')
-        if self.x[i] != x:
-            i -= 1
-        return self.a * self.y[i] + self.b
+        not_exact = self.x[i] != x
+        i[not_exact] -= 1
+        value = self.a * self.y[i] + self.b
+        if value.shape[0] == 1:
+            return value[0]
+        return value
 
     def __repr__(self):
-        return "StepFunction(x=%r, y=%r)" % (self.x, self.y)
+        return "StepFunction(x=%r, y=%r, a=%r, b=%r)" % (self.x, self.y, self.a, self.b)

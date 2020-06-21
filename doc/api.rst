@@ -25,6 +25,16 @@ Hypothesis testing
     compare_survival
 
 
+Functions
+---------
+.. currentmodule:: sksurv.functions
+
+.. autosummary::
+    :toctree: generated/
+
+    StepFunction
+
+
 Linear Models
 -------------
 .. currentmodule:: sksurv.linear_model
