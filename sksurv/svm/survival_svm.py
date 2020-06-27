@@ -11,22 +11,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from abc import ABCMeta, abstractmethod
+import warnings
+
+import numpy
+import numexpr
+from scipy.optimize import minimize
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.utils import check_X_y, check_array, check_consistent_length, check_random_state
 from sklearn.utils.extmath import safe_sparse_dot, squared_norm
 
-from scipy.optimize import minimize
-
-import numpy
-import numexpr
-import warnings
-
-from ._prsvm import survival_constraints_simple, survival_constraints_with_support_vectors
 from ..base import SurvivalAnalysisMixin
 from ..bintrees import AVLTree, RBTree
+from ..exceptions import NoComparablePairException
 from ..util import check_arrays_survival
+from ._prsvm import survival_constraints_simple, survival_constraints_with_support_vectors
 
 
 class Counter(object, metaclass=ABCMeta):
@@ -263,6 +263,9 @@ class SimpleOptimizer(RankSVMOptimizer):
         self.data_x = x
         self.constraints = survival_constraints_simple(numpy.asarray(y, dtype=numpy.uint8))
 
+        if self.constraints.shape[0] == 0:
+            raise NoComparablePairException("Data has no comparable pairs, cannot fit model.")
+
         self.L = numpy.ones(self.constraints.shape[0])
 
     @property
@@ -302,6 +305,10 @@ class PRSVMOptimizer(RankSVMOptimizer):
         self.data_x = x
         self.data_y = numpy.asarray(y, dtype=numpy.uint8)
         self._constraints = lambda w: survival_constraints_with_support_vectors(self.data_y, w)
+
+        Aw = self._constraints(numpy.zeros(x.shape[1]))
+        if Aw.shape[0] == 0:
+            raise NoComparablePairException("Data has no comparable pairs, cannot fit model.")
 
     @property
     def n_coefficients(self):
@@ -372,8 +379,15 @@ class LargeScaleOptimizer(RankSVMOptimizer):
 
     def _init_coefficients(self):
         w = super()._init_coefficients()
+        n = w.shape[0]
         if self._fit_intercept:
             w[0] = self._counter.time.mean()
+            n -= 1
+
+        l_plus, _, l_minus, _ = self._counter.calculate(numpy.zeros(n))
+        if numpy.all(l_plus == 0) and numpy.all(l_minus == 0):
+            raise NoComparablePairException("Data has no comparable pairs, cannot fit model.")
+
         return w
 
     def _split_coefficents(self, w):
@@ -498,8 +512,15 @@ class NonlinearLargeScaleOptimizer(RankSVMOptimizer):
 
     def _init_coefficients(self):
         w = super()._init_coefficients()
+        n = w.shape[0]
         if self._fit_intercept:
             w[0] = self._counter.time.mean()
+            n -= 1
+
+        l_plus, _, l_minus, _ = self._counter.calculate(numpy.zeros(n))
+        if numpy.all(l_plus == 0) and numpy.all(l_minus == 0):
+            raise NoComparablePairException("Data has no comparable pairs, cannot fit model.")
+
         return w
 
     def _split_coefficents(self, w):

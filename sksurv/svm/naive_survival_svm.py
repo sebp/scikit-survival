@@ -18,6 +18,7 @@ from sklearn.svm import LinearSVC
 from sklearn.utils import check_random_state
 
 from ..base import SurvivalAnalysisMixin
+from ..exceptions import NoComparablePairException
 from ..util import check_arrays_survival
 
 
@@ -154,6 +155,8 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
         random_state = check_random_state(self.random_state)
 
         x_pairs, y_pairs = self._get_survival_pairs(X, y, random_state)
+        if x_pairs.shape[0] == 0:
+            raise NoComparablePairException("Data has no comparable pairs, cannot fit model.")
 
         self.C = self.alpha
         return super().fit(x_pairs, y_pairs, sample_weight=sample_weight)

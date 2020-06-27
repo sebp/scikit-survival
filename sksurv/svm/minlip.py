@@ -6,6 +6,7 @@ from sklearn.metrics.pairwise import pairwise_kernels
 import warnings
 
 from ..base import SurvivalAnalysisMixin
+from ..exceptions import NoComparablePairException
 from ..util import check_arrays_survival
 from ._minlip import create_difference_matrix
 
@@ -135,6 +136,9 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
     def _fit(self, x, event, time):
         D = create_difference_matrix(event.astype(numpy.uint8), time, kind=self.pairs)
+        if D.shape[0] == 0:
+            raise NoComparablePairException("Data has no comparable pairs, cannot fit model.")
+
         K = self._get_kernel(x)
 
         if self.solver == "cvxpy":
