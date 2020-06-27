@@ -14,6 +14,7 @@ from sksurv.metrics import (
     cumulative_dynamic_auc,
     integrated_brier_score,
 )
+from sksurv.exceptions import NoComparablePairException
 from sksurv.nonparametric import kaplan_meier_estimator
 from sksurv.preprocessing import OneHotEncoder
 from sksurv.util import Surv
@@ -28,6 +29,20 @@ def whas500_pred():
     time = dat[:, 1]
     risk = dat[:, 2]
     return event, time, risk
+
+
+@pytest.fixture
+def no_comparable_pairs():
+    y = numpy.array([(False, 849.), (False, 28.), (False, 55.), (False, 727.),
+                     (False, 505.), (False, 1558.), (False, 1292.), (False, 1737.),
+                     (False, 944.), (False, 750.), (False, 2513.), (False, 472.),
+                     (False, 2417.), (False, 538.), (False, 49.), (False, 723.),
+                     (True, 3563.), (False, 1090.), (False, 1167.), (False, 587.),
+                     (False, 1354.), (False, 910.), (False, 398.), (False, 854.),
+                     (False, 3534.), (False, 280.), (False, 183.), (False, 883.),
+                     (False, 32.), (False, 144.)], dtype=[("event", bool), ("time", float)])
+    scores = numpy.random.randn(y.shape[0])
+    return y, scores
 
 
 def test_concordance_index_no_censoring_all_correct():
@@ -130,7 +145,7 @@ def test_concordance_index_with_tied_risk():
 def test_concordance_index_with_almost_tied_risk():
     event = [False, True, True, False, True, True, False, False]
     time = [1, 5, 6, 11, 34, 45, 46, 50]
-    estimate = [5, 15, 11, 34, 12+4.5e-9, 3, 9, 12-4.5e-9]
+    estimate = [5, 15, 11, 34, 12 + 4.5e-9, 3, 9, 12 - 4.5e-9]
 
     c, con, dis, tie_r, tie_t = concordance_index_censored(event, time, estimate)
 
@@ -237,6 +252,13 @@ def test_concordance_index_all_finite():
     estimate[5] = numpy.inf
     with pytest.raises(ValueError, match=msg):
         concordance_index_censored(event, time, estimate)
+
+
+def test_concordance_index_no_comparable(no_comparable_pairs):
+    y, scores = no_comparable_pairs
+
+    with pytest.raises(NoComparablePairException):
+        concordance_index_censored(y["event"], y["time"], scores)
 
 
 def assert_uno_c_almost_equal(y_train, y_test, estimate, expected, tau=None):
@@ -356,7 +378,7 @@ def uno_c_failure_data(request):
             time=(1, 3, 5, 7, 12, 13, 20),
             event=(True, False, False, True, True, False, True))
         estimate = (5, 8, 13, 11, 9, 7, 4)
-        match = "time must be smaller than largest "\
+        match = "time must be smaller than largest " \
                 "observed time point:"
     elif p == 'last_time_uncensored_2':
         y_train = Surv.from_arrays(
@@ -366,7 +388,7 @@ def uno_c_failure_data(request):
             time=(1, 23, 5, 27, 12),
             event=(True, False, True, True, False))
         estimate = (5, 13, 11, 9, 4)
-        match = "time must be smaller than largest "\
+        match = "time must be smaller than largest " \
                 "observed time point:"
     elif p == 'zero_prob_1':
         y_train = Surv.from_arrays(
@@ -376,7 +398,7 @@ def uno_c_failure_data(request):
             time=(1, 3, 5, 7, 12, 13, 19),
             event=(True, False, False, True, True, False, True))
         estimate = (5, 8, 13, 11, 9, 7, 4)
-        match = "censoring survival function is zero "\
+        match = "censoring survival function is zero " \
                 "at one or more time points"
     elif p == 'zero_prob_2':
         y_train = Surv.from_arrays(
@@ -386,7 +408,7 @@ def uno_c_failure_data(request):
             time=(1, 3, 5, 7, 12, 13, 19),
             event=(True, False, False, True, True, False, True))
         estimate = (5, 8, 13, 11, 9, 7, 4)
-        match = "censoring survival function is zero "\
+        match = "censoring survival function is zero " \
                 "at one or more time points"
     elif p == 'zero_prob_3':
         y_train = Surv.from_arrays(
@@ -396,7 +418,7 @@ def uno_c_failure_data(request):
             time=(1, 3, 5, 19, 12, 13, 7),
             event=(True, False, False, True, True, False, True))
         estimate = (5, 8, 13, 11, 9, 7, 4)
-        match = "censoring survival function is zero "\
+        match = "censoring survival function is zero " \
                 "at one or more time points"
     else:
         assert False
@@ -423,6 +445,13 @@ def test_uno_c_all_censored():
     ret_uno = concordance_index_ipcw(y_train, y_test, estimate)
     ret_harrell = concordance_index_censored(y_test['event'], y_test['time'], estimate)
     assert ret_uno == ret_harrell
+
+
+def test_uno_c_no_comparable(no_comparable_pairs):
+    y, scores = no_comparable_pairs
+
+    with pytest.raises(NoComparablePairException):
+        concordance_index_ipcw(y, y, scores)
 
 
 @pytest.fixture()
