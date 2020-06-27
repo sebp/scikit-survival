@@ -14,6 +14,7 @@ import numpy
 from scipy.integrate import trapz
 from sklearn.utils import check_consistent_length, check_array
 
+from .exceptions import NoComparablePairException
 from .nonparametric import CensoringDistributionEstimator, SurvivalFunctionEstimator
 from .util import check_y_survival
 
@@ -100,6 +101,10 @@ def _estimate_concordance_index(event_indicator, event_time, estimate, weights, 
     order = numpy.argsort(event_time)
 
     comparable, tied_time = _get_comparable(event_indicator, event_time, order)
+
+    if len(comparable) == 0:
+        raise NoComparablePairException(
+            "Data has no comparable pairs, cannot estimate concordance index.")
 
     concordant = 0
     discordant = 0
