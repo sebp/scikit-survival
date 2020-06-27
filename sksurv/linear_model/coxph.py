@@ -490,6 +490,33 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         -------
         cum_hazard : ndarray of :class:`sksurv.functions.StepFunction`, shape = (n_samples,)
             Predicted cumulative hazard functions.
+
+        Examples
+        --------
+        >>> import matplotlib.pyplot as plt
+        >>> from sksurv.datasets import load_whas500
+        >>> from sksurv.linear_model import CoxPHSurvivalAnalysis
+
+        Load the data.
+
+        >>> X, y = load_whas500()
+        >>> X = X.astype(float)
+
+        Fit the model.
+
+        >>> estimator = CoxPHSurvivalAnalysis().fit(X, y)
+
+        Estimate the cumulative hazard function for the first 10 samples.
+
+        >>> chf_funcs = estimator.predict_cumulative_hazard_function(X.iloc[:10])
+
+        Plot the estimated cumulative hazard functions.
+
+        >>> for fn in chf_funcs:
+        ...     plt.step(fn.x, fn(fn.x), where="post")
+        ...
+        >>> plt.ylim(0, 1)
+        >>> plt.show()
         """
         return self._baseline_model.get_cumulative_hazard_function(self.predict(X))
 
@@ -515,5 +542,32 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         -------
         survival : ndarray of :class:`sksurv.functions.StepFunction`, shape = (n_samples,)
             Predicted survival functions.
+
+        Examples
+        --------
+        >>> import matplotlib.pyplot as plt
+        >>> from sksurv.datasets import load_whas500
+        >>> from sksurv.linear_model import CoxPHSurvivalAnalysis
+
+        Load the data.
+
+        >>> X, y = load_whas500()
+        >>> X = X.astype(float)
+
+        Fit the model.
+
+        >>> estimator = CoxPHSurvivalAnalysis().fit(X, y)
+
+        Estimate the survival function for the first 10 samples.
+
+        >>> surv_funcs = estimator.predict_survival_function(X.iloc[:10])
+
+        Plot the estimated survival functions.
+
+        >>> for fn in surv_funcs:
+        ...     plt.step(fn.x, fn(fn.x), where="post")
+        ...
+        >>> plt.ylim(0, 1)
+        >>> plt.show()
         """
         return self._baseline_model.get_survival_function(self.predict(X))

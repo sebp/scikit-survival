@@ -344,6 +344,42 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         -------
         cum_hazard : ndarray of :class:`sksurv.functions.StepFunction`, shape = (n_samples,)
             Predicted cumulative hazard functions.
+
+        Examples
+        --------
+        >>> import matplotlib.pyplot as plt
+        >>> from sksurv.datasets import load_breast_cancer
+        >>> from sksurv.preprocessing import OneHotEncoder
+        >>> from sksurv.linear_model import CoxnetSurvivalAnalysis
+
+        Load and prepare the data.
+
+        >>> X, y = load_breast_cancer()
+        >>> X = OneHotEncoder().fit_transform(X)
+
+        Fit the model.
+
+        >>> estimator = CoxnetSurvivalAnalysis(l1_ratio=0.99, fit_baseline_model=True)
+        >>> estimator.fit(X, y)
+
+        Estimate the cumulative hazard function for one sample and the five highest alpha.
+
+        >>> chf_funcs = {}
+        >>> for alpha in estimator.alphas_[:5]:
+        ...     chf_funcs[alpha] = estimator.predict_cumulative_hazard_function(
+        ...         X.iloc[:1], alpha=alpha)
+        ...
+
+        Plot the estimated cumulative hazard functions.
+
+        >>> for alpha, chf_alpha in chf_funcs.items():
+        ...     for fn in chf_alpha:
+        ...         plt.step(fn.x, fn(fn.x), where="post",
+        ...                  label="alpha = {:.3f}".format(alpha))
+        ...
+        >>> plt.ylim(0, 1)
+        >>> plt.legend()
+        >>> plt.show()
         """
         baseline_model = self._get_baseline_model(alpha)
 
@@ -377,6 +413,42 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         -------
         survival : ndarray of :class:`sksurv.functions.StepFunction`, shape = (n_samples,)
             Predicted survival functions.
+
+        Examples
+        --------
+        >>> import matplotlib.pyplot as plt
+        >>> from sksurv.datasets import load_breast_cancer
+        >>> from sksurv.preprocessing import OneHotEncoder
+        >>> from sksurv.linear_model import CoxnetSurvivalAnalysis
+
+        Load and prepare the data.
+
+        >>> X, y = load_breast_cancer()
+        >>> X = OneHotEncoder().fit_transform(X)
+
+        Fit the model.
+
+        >>> estimator = CoxnetSurvivalAnalysis(l1_ratio=0.99, fit_baseline_model=True)
+        >>> estimator.fit(X, y)
+
+        Estimate the survival function for one sample and the five highest alpha.
+
+        >>> surv_funcs = {}
+        >>> for alpha in estimator.alphas_[:5]:
+        ...     surv_funcs[alpha] = estimator.predict_survival_function(
+        ...         X.iloc[:1], alpha=alpha)
+        ...
+
+        Plot the estimated survival functions.
+
+        >>> for alpha, surv_alpha in surv_funcs.items():
+        ...     for fn in surv_alpha:
+        ...         plt.step(fn.x, fn(fn.x), where="post",
+        ...                  label="alpha = {:.3f}".format(alpha))
+        ...
+        >>> plt.ylim(0, 1)
+        >>> plt.legend()
+        >>> plt.show()
         """
         baseline_model = self._get_baseline_model(alpha)
 
