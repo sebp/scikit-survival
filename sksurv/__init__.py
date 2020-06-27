@@ -5,7 +5,7 @@ from sklearn.utils.metaestimators import if_delegate_has_method
 
 
 @if_delegate_has_method(delegate='_final_estimator')
-def predict_cumulative_hazard_function(self, X):
+def predict_cumulative_hazard_function(self, X, **kwargs):
     """Predict cumulative hazard function.
 
     The cumulative hazard function for an individual
@@ -31,11 +31,11 @@ def predict_cumulative_hazard_function(self, X):
     Xt = X
     for _, _, transform in self._iter(with_final=False):
         Xt = transform.transform(Xt)
-    return self.steps[-1][-1].predict_cumulative_hazard_function(Xt)
+    return self.steps[-1][-1].predict_cumulative_hazard_function(Xt, **kwargs)
 
 
 @if_delegate_has_method(delegate='_final_estimator')
-def predict_survival_function(self, X):
+def predict_survival_function(self, X, **kwargs):
     """Predict survival function.
 
     The survival function for an individual
@@ -61,7 +61,7 @@ def predict_survival_function(self, X):
     Xt = X
     for _, _, transform in self._iter(with_final=False):
         Xt = transform.transform(Xt)
-    return self.steps[-1][-1].predict_survival_function(Xt)
+    return self.steps[-1][-1].predict_survival_function(Xt, **kwargs)
 
 
 def patch_pipeline():

@@ -35,7 +35,7 @@ def test_fit_predict_chf(make_whas500):
 
     assert len(forest.estimators_) == 10
 
-    chf = forest.predict_cumulative_hazard_function(whas500.x)
+    chf = forest.predict_cumulative_hazard_function(whas500.x, return_array=True)
     assert chf.shape == (500, forest.event_times_.shape[0])
 
     assert numpy.isfinite(chf).all()
@@ -57,7 +57,7 @@ def test_fit_predict_surv(make_whas500):
 
     assert len(forest.estimators_) == 10
 
-    surv = forest.predict_survival_function(whas500.x)
+    surv = forest.predict_survival_function(whas500.x, return_array=True)
     assert surv.shape == (500, forest.event_times_.shape[0])
 
     assert numpy.isfinite(surv).all()
@@ -85,6 +85,39 @@ def test_oob_score(make_whas500):
 
     assert forest.oob_prediction_.shape == (whas500.x.shape[0],)
     assert round(abs(forest.oob_score_ - 0.753010685), 6) == 0.0
+
+
+@pytest.mark.parametrize("func", ("predict_survival_function", "predict_cumulative_hazard_function"))
+def test_predict_step_function(make_whas500, func):
+    whas500 = make_whas500(to_numeric=True)
+
+    forest = RandomSurvivalForest(n_estimators=10, random_state=2)
+    forest.fit(whas500.x[10:], whas500.y[10:])
+
+    pred_fn = getattr(forest, func)
+
+    ret_array = pred_fn(whas500.x[:10], return_array=True)
+    fn_array = pred_fn(whas500.x[:10], return_array=False)
+
+    assert ret_array.shape[0] == fn_array.shape[0]
+
+    for fn, arr in zip(fn_array, ret_array):
+        assert_array_almost_equal(fn.x, forest.event_times_)
+        assert_array_almost_equal(fn.y, arr)
+
+
+@pytest.mark.parametrize("func", ("predict_survival_function", "predict_cumulative_hazard_function"))
+def test_predict_step_function_warning(make_whas500, func):
+    whas500 = make_whas500(to_numeric=True)
+
+    forest = RandomSurvivalForest(n_estimators=3, oob_score=True, random_state=2)
+    forest.fit(whas500.x, whas500.y)
+
+    pred_fn = getattr(forest, func)
+
+    with pytest.warns(FutureWarning,
+                      match="{} will return an array of StepFunction instances in 0.14".format(func)):
+        pred_fn(whas500.x)
 
 
 def test_oob_too_little_estimators(make_whas500):

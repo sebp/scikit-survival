@@ -10,12 +10,22 @@ from sklearn.tree._classes import DENSE_SPLITTERS
 from sklearn.utils.validation import check_array, check_is_fitted, check_random_state
 
 from ..base import SurvivalAnalysisMixin
+from ..functions import StepFunction
 from ..util import check_arrays_survival
 from ._criterion import LogrankCriterion
 
 __all__ = ["SurvivalTree"]
 
 DTYPE = _tree.DTYPE
+
+
+def _array_to_step_function(x, array):
+    n_samples = array.shape[0]
+    funcs = np.empty(n_samples, dtype=np.object_)
+    for i in range(n_samples):
+        funcs[i] = StepFunction(x=x,
+                                y=array[i])
+    return funcs
 
 
 class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
@@ -375,7 +385,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         chf = self.predict_cumulative_hazard_function(X, check_input)
         return chf.sum(1)
 
-    def predict_cumulative_hazard_function(self, X, check_input=True):
+    def predict_cumulative_hazard_function(self, X, check_input=True, return_array="warn"):
         """Predict cumulative hazard function.
 
         The cumulative hazard function (CHF) for an individual
@@ -393,18 +403,61 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             Allow to bypass several input checking.
             Don't use this parameter unless you know what you do.
 
+        return_array : boolean
+            If set, return an array with the cumulative hazard rate
+            for each `self.event_times_`, otherwise an array of
+            :class:`sksurv.functions.StepFunction`.
+
         Returns
         -------
-        cum_hazard : ndarray, shape = (n_samples, n_event_times)
-            Predicted cumulative hazard functions.
+        cum_hazard : ndarray
+            If `return_array` is set, an array with the cumulative hazard rate
+            for each `self.event_times_`, otherwise an array of
+            :class:`sksurv.functions.StepFunction` will be returned.
+
+        Examples
+        --------
+        >>> import matplotlib.pyplot as plt
+        >>> from sksurv.datasets import load_whas500
+        >>> from sksurv.tree import SurvivalTree
+
+        Load and prepare the data.
+
+        >>> X, y = load_whas500()
+        >>> X = X.astype(float)
+
+        Fit the model.
+
+        >>> estimator = SurvivalTree().fit(X, y)
+
+        Estimate the cumulative hazard function for the first 5 samples.
+
+        >>> chf_funcs = estimator.predict_cumulative_hazard_function(X.iloc[:5], return_array=False)
+
+        Plot the estimated cumulative hazard functions.
+
+        >>> for fn in chf_funcs:
+        ...    plt.step(fn.x, fn(fn.x), where="post")
+        ...
+        >>> plt.ylim(0, 1)
+        >>> plt.show()
         """
+        if return_array == "warn":
+            warnings.warn(
+                "predict_cumulative_hazard_function will return an array of StepFunction instances in 0.14. "
+                "Use return_array=True to keep the old behavior.",
+                FutureWarning)
+
         check_is_fitted(self, 'tree_')
         X = self._validate_X_predict(X, check_input)
 
         pred = self.tree_.predict(X)
-        return pred[..., 0]
+        arr = pred[..., 0]
+        if return_array:
+            return arr
+        return _array_to_step_function(self.event_times_, arr)
 
-    def predict_survival_function(self, X, check_input=True):
+    def predict_survival_function(self, X, check_input=True, return_array="warn"):
         """Predict survival function.
 
         The survival function for an individual
@@ -422,13 +475,57 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             Allow to bypass several input checking.
             Don't use this parameter unless you know what you do.
 
+        return_array : boolean
+            If set, return an array with the probability
+            of survival for each `self.event_times_`,
+            otherwise an array of :class:`sksurv.functions.StepFunction`.
+
         Returns
         -------
-        survival : ndarray, shape = (n_samples, n_event_times)
-            Predicted survival functions.
+        survival : ndarray
+            If `return_array` is set, an array with the probability
+            of survival for each `self.event_times_`,
+            otherwise an array of :class:`sksurv.functions.StepFunction`
+            will be returned.
+
+        Examples
+        --------
+        >>> import matplotlib.pyplot as plt
+        >>> from sksurv.datasets import load_whas500
+        >>> from sksurv.tree import SurvivalTree
+
+        Load and prepare the data.
+
+        >>> X, y = load_whas500()
+        >>> X = X.astype(float)
+
+        Fit the model.
+
+        >>> estimator = SurvivalTree().fit(X, y)
+
+        Estimate the survival function for the first 5 samples.
+
+        >>> surv_funcs = estimator.predict_survival_function(X.iloc[:5], return_array=False)
+
+        Plot the estimated survival functions.
+
+        >>> for fn in surv_funcs:
+        ...    plt.step(fn.x, fn(fn.x), where="post")
+        ...
+        >>> plt.ylim(0, 1)
+        >>> plt.show()
         """
+        if return_array == "warn":
+            warnings.warn(
+                "predict_survival_function will return an array of StepFunction instances in 0.14. "
+                "Use return_array=True to keep the old behavior.",
+                FutureWarning)
+
         check_is_fitted(self, 'tree_')
         X = self._validate_X_predict(X, check_input)
 
         pred = self.tree_.predict(X)
-        return pred[..., 1]
+        arr = pred[..., 1]
+        if return_array:
+            return arr
+        return _array_to_step_function(self.event_times_, arr)

@@ -1,3 +1,4 @@
+from functools import partial
 import threading
 import warnings
 from joblib import Parallel, delayed
@@ -12,6 +13,7 @@ from sklearn.utils.validation import check_array, check_is_fitted, check_random_
 from ..base import SurvivalAnalysisMixin
 from ..metrics import concordance_index_censored
 from ..tree import SurvivalTree
+from ..tree.tree import _array_to_step_function
 from ..util import check_arrays_survival
 
 __all__ = ["RandomSurvivalForest"]
@@ -347,11 +349,17 @@ class RandomSurvivalForest(BaseForest, SurvivalAnalysisMixin):
         else:
             y_hat = np.zeros((X.shape[0], self.n_outputs_), dtype=np.float64)
 
+        def _get_fn(est, name):
+            fn = getattr(est, name)
+            if name in ("predict_cumulative_hazard_function", "predict_survival_function"):
+                fn = partial(fn, return_array=True)
+            return fn
+
         # Parallel loop
         lock = threading.Lock()
         Parallel(n_jobs=n_jobs, verbose=self.verbose,
                  **_joblib_parallel_args(require="sharedmem"))(
-            delayed(_accumulate_prediction)(getattr(e, predict_fn), X, [y_hat], lock)
+            delayed(_accumulate_prediction)(_get_fn(e, predict_fn), X, [y_hat], lock)
             for e in self.estimators_)
 
         y_hat /= len(self.estimators_)
@@ -384,7 +392,7 @@ class RandomSurvivalForest(BaseForest, SurvivalAnalysisMixin):
         """
         return self._predict("predict", X)
 
-    def predict_cumulative_hazard_function(self, X):
+    def predict_cumulative_hazard_function(self, X, return_array="warn"):
         """Predict cumulative hazard function.
 
         For each tree in the ensemble, the cumulative hazard
@@ -401,14 +409,57 @@ class RandomSurvivalForest(BaseForest, SurvivalAnalysisMixin):
         X : array-like, shape = (n_samples, n_features)
             Data matrix.
 
+        return_array : boolean
+            If set, return an array with the cumulative hazard rate
+            for each `self.event_times_`, otherwise an array of
+            :class:`sksurv.functions.StepFunction`.
+
         Returns
         -------
-        cum_hazard : ndarray, shape = (n_samples, n_event_times)
-            Predicted cumulative hazard functions.
-        """
-        return self._predict("predict_cumulative_hazard_function", X)
+        cum_hazard : ndarray
+            If `return_array` is set, an array with the cumulative hazard rate
+            for each `self.event_times_`, otherwise an array of
+            :class:`sksurv.functions.StepFunction` will be returned.
 
-    def predict_survival_function(self, X):
+        Examples
+        --------
+        >>> import matplotlib.pyplot as plt
+        >>> from sksurv.datasets import load_whas500
+        >>> from sksurv.ensemble import RandomSurvivalForest
+
+        Load and prepare the data.
+
+        >>> X, y = load_whas500()
+        >>> X = X.astype(float)
+
+        Fit the model.
+
+        >>> estimator = RandomSurvivalForest().fit(X, y)
+
+        Estimate the cumulative hazard function for the first 5 samples.
+
+        >>> chf_funcs = estimator.predict_cumulative_hazard_function(X.iloc[:5], return_array=False)
+
+        Plot the estimated cumulative hazard functions.
+
+        >>> for fn in chf_funcs:
+        ...    plt.step(fn.x, fn(fn.x), where="post")
+        ...
+        >>> plt.ylim(0, 1)
+        >>> plt.show()
+        """
+        if return_array == "warn":
+            warnings.warn(
+                "predict_cumulative_hazard_function will return an array of StepFunction instances in 0.14. "
+                "Use return_array=True to keep the old behavior.",
+                FutureWarning)
+
+        arr = self._predict("predict_cumulative_hazard_function", X)
+        if return_array:
+            return arr
+        return _array_to_step_function(self.event_times_, arr)
+
+    def predict_survival_function(self, X, return_array="warn"):
         """Predict survival function.
 
         For each tree in the ensemble, the survival function
@@ -425,9 +476,53 @@ class RandomSurvivalForest(BaseForest, SurvivalAnalysisMixin):
         X : array-like, shape = (n_samples, n_features)
             Data matrix.
 
+        return_array : boolean
+            If set, return an array with the probability
+            of survival for each `self.event_times_`,
+            otherwise an array of :class:`sksurv.functions.StepFunction`.
+
         Returns
         -------
-        survival : ndarray, shape = (n_samples, n_event_times)
-            Predicted survival functions.
+        survival : ndarray
+            If `return_array` is set, an array with the probability
+            of survival for each `self.event_times_`,
+            otherwise an array of :class:`sksurv.functions.StepFunction`
+            will be returned.
+
+        Examples
+        --------
+        >>> import matplotlib.pyplot as plt
+        >>> from sksurv.datasets import load_whas500
+        >>> from sksurv.ensemble import RandomSurvivalForest
+
+        Load and prepare the data.
+
+        >>> X, y = load_whas500()
+        >>> X = X.astype(float)
+
+        Fit the model.
+
+        >>> estimator = RandomSurvivalForest().fit(X, y)
+
+        Estimate the survival function for the first 5 samples.
+
+        >>> surv_funcs = estimator.predict_survival_function(X.iloc[:5], return_array=False)
+
+        Plot the estimated survival functions.
+
+        >>> for fn in surv_funcs:
+        ...    plt.step(fn.x, fn(fn.x), where="post")
+        ...
+        >>> plt.ylim(0, 1)
+        >>> plt.show()
         """
-        return self._predict("predict_survival_function", X)
+        if return_array == "warn":
+            warnings.warn(
+                "predict_survival_function will return an array of StepFunction instances in 0.14. "
+                "Use return_array=True to keep the old behavior.",
+                FutureWarning)
+
+        arr = self._predict("predict_survival_function", X)
+        if return_array:
+            return arr
+        return _array_to_step_function(self.event_times_, arr)

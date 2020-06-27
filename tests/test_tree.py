@@ -182,7 +182,7 @@ def test_tree_one_split(veterans):
 
     X_pred = numpy.array([[threshold - 10], [threshold + 10]])
     chf_pred = tree.predict_cumulative_hazard_function(
-        X_pred)
+        X_pred, return_array=True)
 
     assert_curve_almost_equal(chf_pred[0], chf_left)
     assert_curve_almost_equal(chf_pred[1], chf_right)
@@ -196,7 +196,7 @@ def test_tree_one_split(veterans):
         y_right["Status"], y_right["Survival_in_days"])
 
     surv_pred = tree.predict_survival_function(
-        X_pred)
+        X_pred, return_array=True)
 
     assert_curve_almost_equal(surv_pred[0], surv_left)
     assert_curve_almost_equal(surv_pred[1], surv_right)
@@ -227,11 +227,11 @@ def test_tree_two_split(veterans):
     assert_array_almost_equal(mrt_pred, expected_risk)
 
     chf_pred = tree.predict_cumulative_hazard_function(
-        X_pred)
+        X_pred, return_array=True)
     assert numpy.all(numpy.diff(chf_pred) >= 0)
 
     surv_pred = tree.predict_survival_function(
-        X_pred)
+        X_pred, return_array=True)
     assert numpy.all(numpy.diff(surv_pred) <= 0)
 
 
@@ -315,6 +315,43 @@ def test_breast_cancer_2(breast_cancer):
 
 
 @pytest.mark.parametrize("func", ("predict_survival_function", "predict_cumulative_hazard_function"))
+def test_predict_step_function(breast_cancer, func):
+    X, y = breast_cancer
+
+    tree = SurvivalTree(max_features="log2",
+                        splitter="random",
+                        max_depth=5,
+                        min_samples_split=30,
+                        min_samples_leaf=15,
+                        random_state=6)
+    tree.fit(X.iloc[10:], y[10:])
+
+    pred_fn = getattr(tree, func)
+
+    ret_array = pred_fn(X.iloc[:10], return_array=True)
+    fn_array = pred_fn(X.iloc[:10], return_array=False)
+
+    assert ret_array.shape[0] == fn_array.shape[0]
+
+    for fn, arr in zip(fn_array, ret_array):
+        assert_array_almost_equal(fn.x, tree.event_times_)
+        assert_array_almost_equal(fn.y, arr)
+
+
+@pytest.mark.parametrize("func", ("predict_survival_function", "predict_cumulative_hazard_function"))
+def test_predict_step_function_warning(toy_data, func):
+    X, y = toy_data
+    tree = SurvivalTree(max_depth=1)
+    tree.fit(X, y)
+
+    pred_fn = getattr(tree, func)
+
+    with pytest.warns(FutureWarning,
+                      match="{} will return an array of StepFunction instances in 0.14".format(func)):
+        pred_fn(X)
+
+
+@pytest.mark.parametrize("func", ("predict_survival_function", "predict_cumulative_hazard_function"))
 def test_pipeline_predict(breast_cancer, func):
     X_num, y = breast_cancer
     X_num = X_num.loc[:, ["er", "grade"]].values
@@ -327,8 +364,8 @@ def test_pipeline_predict(breast_cancer, func):
     pipe = make_pipeline(OrdinalEncoder(), SurvivalTree())
     pipe.fit(X_str[10:], y[10:])
 
-    tree_pred = getattr(tree, func)(X_num[:10])
-    pipe_pred = getattr(pipe, func)(X_str[:10])
+    tree_pred = getattr(tree, func)(X_num[:10], return_array=True)
+    pipe_pred = getattr(pipe, func)(X_str[:10], return_array=True)
 
     assert_array_almost_equal(tree_pred, pipe_pred)
 
