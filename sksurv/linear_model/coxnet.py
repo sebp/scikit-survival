@@ -40,17 +40,17 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         List of alphas where to compute the models.
         If ``None`` alphas are set automatically.
 
-    alpha_min_ratio : float, optional, default 0.0001
+    alpha_min_ratio : float or { "auto" }, optional, default: "auto"
         Determines minimum alpha of the regularization path
         if ``alphas`` is ``None``. The smallest value for alpha
         is computed as the fraction of the data derived maximum
         alpha (i.e. the smallest value for which all
         coefficients are zero).
 
-        The default value of alpha_min_ratio will depend on the
-        sample size relative to the number of features in 0.13.
-        If `n_samples > n_features`, the current default value 0.0001
-        will be used. If `n_samples < n_features`, 0.01 will be used instead.
+        If set to "auto", the value will depend on the
+        sample size relative to the number of features.
+        If ``n_samples > n_features``, the default value is 0.0001
+        If ``n_samples <= n_features``, 0.01 is the default value.
 
     l1_ratio : float, optional, default: 0.5
         The ElasticNet mixing parameter, with ``0 < l1_ratio <= 1``.
@@ -99,6 +99,9 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     alphas_ : ndarray, shape=(n_alphas,)
         The actual sequence of alpha values used.
 
+    alpha_min_ratio_ : float
+        The inferred value of alpha_min_ratio.
+
     penalty_factor_ : ndarray, shape=(n_features,)
         The actual penalty factors used.
 
@@ -115,7 +118,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
            Journal of statistical software. 2011 Mar;39(5):1.
     """
 
-    def __init__(self, n_alphas=100, alphas=None, alpha_min_ratio="warn", l1_ratio=0.5,
+    def __init__(self, n_alphas=100, alphas=None, alpha_min_ratio="auto", l1_ratio=0.5,
                  penalty_factor=None, normalize=False, copy_X=True,
                  tol=1e-7, max_iter=100000, verbose=False, fit_baseline_model=False):
         self.n_alphas = n_alphas
@@ -147,13 +150,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         time = time[o].astype(numpy.float64)
         return X, event_num, time
 
-    def _check_params(self, n_features):
-        if not 0 < self.l1_ratio <= 1:
-            raise ValueError("l1_ratio must be in interval ]0;1], but was %f" % self.l1_ratio)
-
-        if self.tol <= 0:
-            raise ValueError("tolerance must be positive, but was %f" % self.tol)
-
+    def _check_penalty_factor(self, n_features):
         if self.penalty_factor is None:
             penalty_factor = numpy.ones(n_features, dtype=numpy.float64)
         else:
@@ -165,7 +162,9 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
             check_non_negative(pf, "penalty_factor")
             penalty_factor = pf * n_features / pf.sum()
             assert_all_finite(penalty_factor)
+        return penalty_factor
 
+    def _check_alphas(self):
         create_path = self.alphas is None
         if create_path:
             if self.n_alphas <= 0:
@@ -177,11 +176,41 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
             assert_all_finite(alphas)
             check_non_negative(alphas, "alphas")
             assert_all_finite(alphas)
+        return alphas, create_path
+
+    def _check_alpha_min_ratio(self, n_samples, n_features):
+        if isinstance(self.alpha_min_ratio, str):
+            if self.alpha_min_ratio == "auto":
+                if n_samples > n_features:
+                    alpha_min_ratio = 0.0001
+                else:
+                    alpha_min_ratio = 0.01
+            else:
+                raise ValueError("Invalid value for alpha_min_ratio. "
+                                 "Allowed string values are 'auto'.")
+        else:
+            alpha_min_ratio = float(self.alpha_min_ratio)
+            if alpha_min_ratio <= 0 or not numpy.isfinite(alpha_min_ratio):
+                raise ValueError("alpha_min_ratio must be positive")
+        return alpha_min_ratio
+
+    def _check_params(self, n_samples, n_features):
+        if not 0 < self.l1_ratio <= 1:
+            raise ValueError("l1_ratio must be in interval ]0;1], but was %f" % self.l1_ratio)
+
+        if self.tol <= 0:
+            raise ValueError("tolerance must be positive, but was %f" % self.tol)
+
+        penalty_factor = self._check_penalty_factor(n_features)
+
+        alphas, create_path = self._check_alphas()
 
         if self.max_iter <= 0:
             raise ValueError("max_iter must be a positive integer")
 
-        return create_path, alphas.astype(numpy.float64), penalty_factor.astype(numpy.float64)
+        alpha_min_ratio = self._check_alpha_min_ratio(n_samples, n_features)
+
+        return create_path, alphas.astype(numpy.float64), penalty_factor.astype(numpy.float64), alpha_min_ratio
 
     def fit(self, X, y):
         """Fit estimator.
@@ -201,19 +230,11 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         self
         """
         X, event_num, time = self._pre_fit(X, y)
-        create_path, alphas, penalty = self._check_params(X.shape[1])
-
-        if self.alpha_min_ratio == 'warn':
-            warnings.warn("The default value of alpha_min_ratio will depend on the "
-                          "sample size relative to the number of features in 0.13. "
-                          "If n_samples > n_features, the current default value 0.0001 "
-                          "will be used. If n_samples < n_features, 0.01 will be used instead.",
-                          FutureWarning)
-            self.alpha_min_ratio = 0.0001
+        create_path, alphas, penalty, alpha_min_ratio = self._check_params(*X.shape)
 
         coef, alphas, deviance_ratio, n_iter = call_fit_coxnet(
             X, time, event_num, penalty, alphas, create_path,
-            self.alpha_min_ratio, self.l1_ratio, int(self.max_iter),
+            alpha_min_ratio, self.l1_ratio, int(self.max_iter),
             self.tol, self.verbose)
         assert numpy.isfinite(coef).all()
 
@@ -237,6 +258,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
             self._baseline_models = None
 
         self.alphas_ = alphas
+        self.alpha_min_ratio_ = alpha_min_ratio
         self.penalty_factor_ = penalty
         self.coef_ = coef
         self.deviance_ratio_ = deviance_ratio
