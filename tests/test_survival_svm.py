@@ -13,6 +13,7 @@ from sklearn.preprocessing import normalize
 from sksurv.bintrees import AVLTree, RBTree
 from sksurv.column import encode_categorical
 from sksurv.datasets import load_whas500, get_x_y
+from sksurv.exceptions import NoComparablePairException
 from sksurv.io import loadarff
 from sksurv.kernels import ClinicalKernelTransform
 from sksurv.metrics import concordance_index_censored
@@ -176,6 +177,13 @@ class TestFastSurvivalSVM(object):
         with pytest.raises(ValueError,
                            match="fit_intercept=True is only meaningful if rank_ratio < 1.0"):
             ssvm.fit(x, y)
+
+    @staticmethod
+    @pytest.mark.parametrize("optimizer", ("simple", "avltree", "direct-count", "PRSVM", "rbtree"))
+    def test_fit_uncomparable(whas500_uncomparable, optimizer):
+        ssvm = FastSurvivalSVM(optimizer=optimizer)
+        with pytest.raises(NoComparablePairException):
+            ssvm.fit(whas500_uncomparable.x, whas500_uncomparable.y)
 
     @staticmethod
     def test_survial_constraints_no_ties():
@@ -629,6 +637,13 @@ class TestKernelSurvivalSVM(object):
                                  r"Got \(100, 14\) for 500 indexed\."):
             ssvm.predict(x_new)
 
+    @staticmethod
+    @pytest.mark.parametrize("optimizer", ("avltree", "rbtree"))
+    def test_fit_uncomparable(whas500_uncomparable, optimizer):
+        ssvm = FastKernelSurvivalSVM(optimizer=optimizer)
+        with pytest.raises(NoComparablePairException):
+            ssvm.fit(whas500_uncomparable.x, whas500_uncomparable.y)
+
 
 @pytest.fixture(params=[
     SurvivalCounter,
@@ -766,3 +781,9 @@ class TestNaiveSurvivalSVM(object):
 
         cindex = nrsvm.score(x, y)
         assert round(abs(cindex - 0.7760582309811175), 7) == 0
+
+    @staticmethod
+    def test_fit_uncomparable(whas500_uncomparable):
+        ssvm = NaiveSurvivalSVM(loss='squared_hinge', dual=False, tol=1e-8, max_iter=1000, random_state=0)
+        with pytest.raises(NoComparablePairException):
+            ssvm.fit(whas500_uncomparable.x, whas500_uncomparable.y)

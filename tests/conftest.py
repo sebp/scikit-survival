@@ -68,6 +68,15 @@ def whas500_sparse_data():
 
 
 @pytest.fixture
+def whas500_uncomparable(make_whas500):
+    whas500 = make_whas500(to_numeric=True)
+    i = numpy.argmax(whas500.y["lenfol"])
+    whas500.y["fstat"][:] = False
+    whas500.y["fstat"][i] = True
+    return whas500
+
+
+@pytest.fixture
 def rossi():
     """Load rossi.csv"""
     p = Path(__file__)

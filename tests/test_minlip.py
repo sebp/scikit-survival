@@ -1,14 +1,16 @@
+from itertools import product
+
 import numpy
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 import pytest
-
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.preprocessing import scale
 
-from sksurv.svm.minlip import MinlipSurvivalAnalysis, HingeLossSurvivalSVM
 from sksurv.datasets import load_gbsg2
+from sksurv.exceptions import NoComparablePairException
 from sksurv.column import encode_categorical
 from sksurv.svm._minlip import create_difference_matrix
+from sksurv.svm.minlip import MinlipSurvivalAnalysis, HingeLossSurvivalSVM
 from sksurv.testing import assert_cindex_almost_equal
 from sksurv.util import Surv
 
@@ -693,3 +695,13 @@ class TestMinlipCvxopt(object):
         with pytest.warns(ConvergenceWarning,
                           match=r"cvxopt solver did not converge: unknown \(duality gap = [.0-9]+\)"):
             m.fit(x, y)
+
+
+@pytest.mark.parametrize(["model_cls", "solver", "pairs"],
+                         list(product((MinlipSurvivalAnalysis, HingeLossSurvivalSVM),
+                                      ("cvxpy", "cvxopt", "osqp"),
+                                      ("all", "nearest", "next"))))
+def test_fit_uncomparable(whas500_uncomparable, model_cls, solver, pairs):
+    ssvm = model_cls(solver=solver, pairs=pairs)
+    with pytest.raises(NoComparablePairException):
+        ssvm.fit(whas500_uncomparable.x, whas500_uncomparable.y)
