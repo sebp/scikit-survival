@@ -520,10 +520,16 @@ class TestCoxnetSurvivalAnalysis(object):
                            match="Input contains NaN, infinity or a value too large"):
             self._fit_example(alpha_min_ratio=0.0001, alphas=infinite_float_array)
 
-    def test_alpha_min_ratio_future_warning(self):
-        with pytest.warns(FutureWarning,
-                          match="The default value of alpha_min_ratio will depend "):
-            self._fit_example()
+    def test_invalid_alpha_min_ratio_string(self):
+        with pytest.raises(ValueError,
+                           match="Invalid value for alpha_min_ratio"):
+            self._fit_example(alpha_min_ratio="max")
+
+    @pytest.mark.parametrize("value", [0.0, -1e-12, -1, -numpy.infty, numpy.nan])
+    def test_invalid_alpha_min_ratio_float(self, value):
+        with pytest.raises(ValueError,
+                           match="alpha_min_ratio must be positive"):
+            self._fit_example(alpha_min_ratio=value)
 
     @staticmethod
     def test_alpha_too_small():
@@ -551,8 +557,10 @@ class TestCoxnetSurvivalAnalysis(object):
         x, y = load_breast_cancer()
         x = column.encode_categorical(x)
 
-        coxnet = CoxnetSurvivalAnalysis(alpha_min_ratio=0.0001, l1_ratio=1.0)
+        coxnet = CoxnetSurvivalAnalysis(l1_ratio=1.0)
         coxnet.fit(x.values, y)
+
+        assert coxnet.alpha_min_ratio_ == 0.0001
 
         expected_alphas = numpy.array([
             0.207764947265866, 0.189307681974955, 0.172490109262135, 0.157166563357949, 0.143204319038428,
