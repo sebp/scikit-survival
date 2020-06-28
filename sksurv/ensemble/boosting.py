@@ -204,7 +204,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
             scale = numpy.ones(int(self.n_estimators), dtype=float)
 
         if self.verbose:
-            verbose_reporter = VerboseReporter(self.verbose)
+            verbose_reporter = VerboseReporter(verbose=self.verbose)
             verbose_reporter.init(self, 0)
 
         for num_iter in range(int(self.n_estimators)):
@@ -722,7 +722,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         loss_ = self.loss_
 
         if self.verbose:
-            verbose_reporter = VerboseReporter(self.verbose)
+            verbose_reporter = VerboseReporter(verbose=self.verbose)
             verbose_reporter.init(self, begin_at_stage)
 
         X_csc = csc_matrix(X) if issparse(X) else None
