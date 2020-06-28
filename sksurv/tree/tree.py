@@ -387,7 +387,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         risk_scores : ndarray, shape = (n_samples,)
             Predicted risk scores.
         """
-        chf = self.predict_cumulative_hazard_function(X, check_input)
+        chf = self.predict_cumulative_hazard_function(X, check_input, return_array=True)
         return chf.sum(1)
 
     def predict_cumulative_hazard_function(self, X, check_input=True, return_array="warn"):
