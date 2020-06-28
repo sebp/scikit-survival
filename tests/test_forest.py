@@ -3,10 +3,9 @@ from numpy.testing import assert_array_almost_equal
 import pytest
 from sklearn.pipeline import make_pipeline
 
-from sksurv.column import encode_categorical
 from sksurv.datasets import load_breast_cancer
-from sksurv.preprocessing import OneHotEncoder
 from sksurv.ensemble import RandomSurvivalForest
+from sksurv.preprocessing import OneHotEncoder
 from sksurv.testing import assert_cindex_almost_equal
 
 
@@ -197,9 +196,9 @@ def test_fit_with_small_max_samples(make_whas500):
 
 
 @pytest.mark.parametrize("func", ("predict_survival_function", "predict_cumulative_hazard_function"))
-def test_pipeline_predict(func):
-    X_str, y = load_breast_cancer()
-    X_num = encode_categorical(X_str)
+def test_pipeline_predict(breast_cancer, func):
+    X_str, _ = load_breast_cancer()
+    X_num, y = breast_cancer
 
     est = RandomSurvivalForest(n_estimators=10, random_state=1)
     est.fit(X_num[10:], y[10:])

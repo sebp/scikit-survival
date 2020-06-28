@@ -8,8 +8,8 @@ import pandas
 import pytest
 from scipy.sparse import coo_matrix
 
-from sksurv.column import categorical_to_numeric, standardize
-from sksurv.datasets import load_whas500
+from sksurv.column import categorical_to_numeric, encode_categorical, standardize
+from sksurv.datasets import load_breast_cancer, load_whas500
 from sksurv.util import Surv
 
 DataSet = namedtuple('DataSet', ['x', 'y'])
@@ -33,6 +33,13 @@ def fake_data():
     x = numpy.random.randn(100, 11)
     y = Surv.from_arrays(numpy.ones(100, dtype=bool), numpy.arange(1, 101, dtype=float))
     return x, y
+
+
+@pytest.fixture
+def breast_cancer():
+    X_str, y = load_breast_cancer()
+    X_num = encode_categorical(X_str)
+    return X_num, y
 
 
 @pytest.fixture
