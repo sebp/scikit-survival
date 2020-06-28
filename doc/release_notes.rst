@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-scikit-survival 0.12 (2020-06-28)
+scikit-survival 0.13 (2020-06-28)
 ---------------------------------
 
 The highlights of this release include the addition of
@@ -12,7 +12,7 @@ and compatibility with scikit-learn 0.23.
 `predict_survival_function` and `predict_cumulative_hazard_function`
 of :class:`sksurv.ensemble.RandomSurvivalForest` and
 :class:`sksurv.tree.SurvivalTree` can now return an array of
-:class:`sksurv.functions.StepFunctions`, similar
+:class:`sksurv.functions.StepFunction`, similar
 to :class:`sksurv.linear_model.CoxPHSurvivalAnalysis`
 by specifying ``return_array=False``. This will be the default
 behavior starting with 0.14.0.
@@ -44,7 +44,7 @@ Deprecations
 - `predict_survival_function` and `predict_cumulative_hazard_function`
   of :class:`sksurv.ensemble.RandomSurvivalForest` and
   :class:`sksurv.tree.SurvivalTree` will return an array of
-  :class:`sksurv.functions.StepFunctions` in the future
+  :class:`sksurv.functions.StepFunction` in the future
   (as :class:`sksurv.linear_model.CoxPHSurvivalAnalysis` does).
   For the old behavior, use `return_array=True`.
 
