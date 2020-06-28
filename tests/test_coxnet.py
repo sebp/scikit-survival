@@ -7,13 +7,13 @@ import pytest
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.pipeline import make_pipeline
 
-from sksurv import column
 from sksurv.datasets import load_breast_cancer, get_x_y
 from sksurv.linear_model.coxnet import CoxnetSurvivalAnalysis
 from sksurv.preprocessing import OneHotEncoder
 from sksurv.util import Surv
 
 BREAST_CANCER_COEFFICIENTS_FILE = join(dirname(__file__), 'data', 'breast_cancer_glmnet_coefficients.csv')
+BREAST_CANCER_HIGH_COEFFICIENTS_FILE = join(dirname(__file__), 'data', 'breast_cancer_glmnet_coefficients_high.csv')
 EXAMPLE_FILE = join(dirname(__file__), 'data', 'cox-example.csv')
 EXAMPLE_COEF_FILE = join(dirname(__file__), 'data', 'cox-example-coef-{}.csv')
 SIMPLE_COEF_FILE = join(dirname(__file__), 'data', 'cox-simple-coef.csv')
@@ -532,9 +532,9 @@ class TestCoxnetSurvivalAnalysis(object):
             self._fit_example(alpha_min_ratio=value)
 
     @staticmethod
-    def test_alpha_too_small():
-        X, y = load_breast_cancer()
-        Xt = OneHotEncoder().fit_transform(X)
+    def test_alpha_too_small(breast_cancer):
+        Xt, y = breast_cancer
+
         index = numpy.array([
             0, 1, 2, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 20, 21, 22, 23, 25, 26, 27, 28, 29, 30, 31, 33,
             34, 36, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 51, 52, 53, 54, 56, 57, 58, 60, 61, 62, 63, 64, 65, 66,
@@ -553,9 +553,8 @@ class TestCoxnetSurvivalAnalysis(object):
             nn.fit(Xf, yf)
 
     @staticmethod
-    def test_breast_example():
-        x, y = load_breast_cancer()
-        x = column.encode_categorical(x)
+    def test_breast_example(breast_cancer):
+        x, y = breast_cancer
 
         coxnet = CoxnetSurvivalAnalysis(l1_ratio=1.0)
         coxnet.fit(x.values, y)
@@ -615,6 +614,75 @@ class TestCoxnetSurvivalAnalysis(object):
         assert_columns_almost_equal(coef, expected_coef, 5)
 
     @staticmethod
+    def test_breast_p_greater_n(breast_cancer):
+        x, y = breast_cancer
+        x -= x.mean()
+        order = (-y['t.tdm']).argsort()
+        x = x.iloc[order[:80]]
+        y = y[order[:80]]
+
+        coxnet = CoxnetSurvivalAnalysis(l1_ratio=1.0)
+        coxnet.fit(x.values, y)
+
+        assert coxnet.alpha_min_ratio_ == 0.01
+
+        expected_alphas = numpy.array([
+            0.0948288922619048, 0.0905187727555525, 0.086404554832736, 0.0824773344641409, 0.0787286123223276,
+            0.0751502753874057, 0.0717345793887599, 0.0684741320448266, 0.0653618770646479, 0.0623910788765801,
+            0.0595553080511063, 0.0568484273862036, 0.054264578625153, 0.0517981697780446, 0.0494438630195401,
+            0.0471965631367011, 0.0450514065018809, 0.0430037505468153, 0.0410491637151331, 0.0391834158715392,
+            0.0374024691469166, 0.0357024691995311, 0.0340797368734291, 0.0325307602359731, 0.0310521869772843,
+            0.0296408171551414, 0.0282935962696359, 0.0270076086525939, 0.0257800711574603, 0.024608327135986,
+            0.023489840688685, 0.0224221911766166, 0.021403067982616, 0.0204302655106344, 0.0195016784123676,
+            0.0186152970308409, 0.0177692030510908, 0.0169615653485295, 0.0161906360260076, 0.0154547466309991,
+            0.0147523045447198, 0.0140817895353677, 0.013441750468022, 0.0128308021640839, 0.0122476224034596,
+            0.0116909490629993, 0.0111595773849981, 0.0106523573698482, 0.0101681912871989, 0.00970603130023803,
+            0.00926487719795367, 0.00884377423046809, 0.00844181104275901, 0.00805811770229645, 0.00769186381632648,
+            0.00734225673472744, 0.00700853983454904, 0.00668999088252177, 0.0063859204719929, 0.00609567053090603,
+            0.00581861289759537, 0.00555414796131231, 0.00530170336454213, 0.00506073276430255, 0.00483071464974297,
+            0.00461115121348587, 0.00440156727426728, 0.00420150924854507, 0.00401054416884912, 0.00382825874674904,
+            0.00365425847841146, 0.00348816679081109, 0.00332962422674778, 0.00317828766690595, 0.00303382958727242,
+            0.00289593735030589, 0.00276431252832385, 0.00263867025764251, 0.00251873862207214, 0.00240425806443351,
+            0.00229498082482178, 0.00219067040440213, 0.00209110105357681, 0.00199605728341568, 0.00190533339929305,
+            0.00181873305572143, 0.00173606883141875, 0.00165716182368948, 0.00158184126124171, 0.00150994413460228,
+            0.00144131484333019, 0.00137580485926463, 0.0013132724050789, 0.00125358214744464, 0.00119660490414211,
+            0.00114221736448283, 0.00109030182243944, 0.00104074592190515, 0.000993442413531659, 0.000948288922619052
+        ])
+
+        assert_array_almost_equal(expected_alphas, coxnet.alphas_)
+
+        expected_deviance_ratio = numpy.array([
+            0, 0.0462280671677718, 0.0886824292023055, 0.127809395879191, 0.167202029735547, 0.21150983511365,
+            0.25202048418497, 0.288977870766515, 0.322894526112143, 0.354184937130736, 0.383227342294078,
+            0.41020873570105, 0.435399917854983, 0.458992629893996, 0.481148794953564, 0.502007028421266,
+            0.521687007555194, 0.540326070242061, 0.557951417089716, 0.574673796628669, 0.590565196035048,
+            0.605720094024342, 0.620136650121787, 0.633893317242588, 0.647036975167954, 0.659641706497287,
+            0.671685014319545, 0.683229207693947, 0.694339713809272, 0.704984204297195, 0.715217033589695,
+            0.725098421441951, 0.734586489938626, 0.743749179587877, 0.756951344840625, 0.769374262091115,
+            0.781088604662055, 0.792115179997869, 0.802515292743199, 0.812333737139071, 0.821610165074286,
+            0.830380590378993, 0.838677922696392, 0.846532328413876, 0.853971528730985, 0.861021056012275,
+            0.867704476556531, 0.874043585172118, 0.880058575813189, 0.885768191772895, 0.891189858340372,
+            0.89633980035321, 0.901233146689909, 0.905884008467536, 0.910305596711285, 0.914510324284785,
+            0.918509724810968, 0.922314672256325, 0.925935372520073, 0.929371697720327, 0.932660004492162,
+            0.935775430981201, 0.938748309596168, 0.941580730549356, 0.944278997138997, 0.946849613332775,
+            0.949298889398519, 0.951632778072432, 0.953856965822007, 0.955976832090688, 0.957995949491087,
+            0.95992200533877, 0.961758223454499, 0.963507897227564, 0.96517707093905, 0.966769081504476,
+            0.968287420437941, 0.969735526668442, 0.971107538859051, 0.972432535259795, 0.973681544039006,
+            0.97487938238315, 0.976022813266596, 0.977113969626666, 0.978155133509104, 0.979151911611324,
+            0.980095030270948, 0.981003596012864, 0.98186553640233, 0.982688707756662, 0.983474488924476,
+            0.984224494959766, 0.984940315524502, 0.985612152584937, 0.98627427317818, 0.986896672934578,
+            0.987488984924729, 0.988056860176794, 0.988587033996462, 0.989113296247043
+        ])
+
+        assert_array_almost_equal(expected_deviance_ratio, coxnet.deviance_ratio_)
+
+        coef = pandas.DataFrame(coxnet.coef_, index=x.columns, dtype=float)
+        expected_coef = pandas.read_csv(BREAST_CANCER_HIGH_COEFFICIENTS_FILE, index_col=0)
+        expected_coef.columns = numpy.arange(expected_coef.shape[1])
+
+        assert_columns_almost_equal(coef, expected_coef, 5)
+
+    @staticmethod
     def test_simple():
         y = Surv.from_arrays([True, False, False, True, False], [7., 8., 11., 11., 23.],
                              name_event="D", name_time="Y")
@@ -650,9 +718,9 @@ class TestCoxnetSurvivalAnalysis(object):
 
 
 @pytest.mark.parametrize("func", ("predict_survival_function", "predict_cumulative_hazard_function"))
-def test_pipeline_predict(func):
-    X_str, y = load_breast_cancer()
-    X_num = column.encode_categorical(X_str)
+def test_pipeline_predict(breast_cancer, func):
+    X_str, _ = load_breast_cancer()
+    X_num, y = breast_cancer
 
     est = CoxnetSurvivalAnalysis(alpha_min_ratio=0.0001, l1_ratio=1.0, fit_baseline_model=True)
     est.fit(X_num[10:], y[10:])
