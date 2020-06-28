@@ -1,50 +1,21 @@
 API reference
 =============
 
-Non-parametric Estimators
--------------------------
-.. currentmodule:: sksurv.nonparametric
+Datasets
+--------
+.. currentmodule:: sksurv.datasets
 
 .. autosummary::
     :toctree: generated/
 
-    CensoringDistributionEstimator
-    SurvivalFunctionEstimator
-    kaplan_meier_estimator
-    nelson_aalen_estimator
-    ipc_weights
-
-
-Hypothesis testing
-------------------
-.. currentmodule:: sksurv.compare
-
-.. autosummary::
-    :toctree: generated/
-
-    compare_survival
-
-
-Functions
----------
-.. currentmodule:: sksurv.functions
-
-.. autosummary::
-    :toctree: generated/
-
-    StepFunction
-
-
-Linear Models
--------------
-.. currentmodule:: sksurv.linear_model
-
-.. autosummary::
-    :toctree: generated/
-
-    CoxnetSurvivalAnalysis
-    CoxPHSurvivalAnalysis
-    IPCRidge
+    get_x_y
+    load_aids
+    load_arff_files_standardized
+    load_breast_cancer
+    load_flchain
+    load_gbsg2
+    load_whas500
+    load_veterans_lung_cancer
 
 
 Ensemble Models
@@ -59,18 +30,35 @@ Ensemble Models
     RandomSurvivalForest
 
 
-Survival Support Vector Machine
--------------------------------
-.. currentmodule:: sksurv.svm
+Functions
+---------
+.. currentmodule:: sksurv.functions
 
 .. autosummary::
     :toctree: generated/
 
-    FastKernelSurvivalSVM
-    FastSurvivalSVM
-    MinlipSurvivalAnalysis
-    HingeLossSurvivalSVM
-    NaiveSurvivalSVM
+    StepFunction
+
+
+Hypothesis testing
+------------------
+.. currentmodule:: sksurv.compare
+
+.. autosummary::
+    :toctree: generated/
+
+    compare_survival
+
+
+I/O Utilities
+-------------
+.. currentmodule:: sksurv.io
+
+.. autosummary::
+    :toctree: generated/
+
+    loadarff
+    writearff
 
 
 Kernels
@@ -80,18 +68,20 @@ Kernels
 .. autosummary::
     :toctree: generated/
 
-    clinical_kernel
     ClinicalKernelTransform
+    clinical_kernel
 
 
-Survival Trees
---------------
-.. currentmodule:: sksurv.tree
+Linear Models
+-------------
+.. currentmodule:: sksurv.linear_model
 
 .. autosummary::
     :toctree: generated/
 
-    SurvivalTree
+    CoxnetSurvivalAnalysis
+    CoxPHSurvivalAnalysis
+    IPCRidge
 
 
 Meta Models
@@ -113,11 +103,25 @@ Metrics
 .. autosummary::
     :toctree: generated/
 
+    brier_score
     concordance_index_censored
     concordance_index_ipcw
     cumulative_dynamic_auc
-    brier_score
     integrated_brier_score
+
+
+Non-parametric Estimators
+-------------------------
+.. currentmodule:: sksurv.nonparametric
+
+.. autosummary::
+    :toctree: generated/
+
+    CensoringDistributionEstimator
+    SurvivalFunctionEstimator
+    ipc_weights
+    kaplan_meier_estimator
+    nelson_aalen_estimator
 
 
 Pre-Processing
@@ -139,32 +143,28 @@ Pre-Processing
     standardize
 
 
-I/O Utilities
--------------
-.. currentmodule:: sksurv.io
+Survival Support Vector Machine
+-------------------------------
+.. currentmodule:: sksurv.svm
 
 .. autosummary::
     :toctree: generated/
 
-    loadarff
-    writearff
+    HingeLossSurvivalSVM
+    FastKernelSurvivalSVM
+    FastSurvivalSVM
+    MinlipSurvivalAnalysis
+    NaiveSurvivalSVM
 
 
-Datasets
---------
-.. currentmodule:: sksurv.datasets
+Survival Trees
+--------------
+.. currentmodule:: sksurv.tree
 
 .. autosummary::
     :toctree: generated/
 
-    get_x_y
-    load_arff_files_standardized
-    load_aids
-    load_breast_cancer
-    load_flchain
-    load_gbsg2
-    load_whas500
-    load_veterans_lung_cancer
+    SurvivalTree
 
 
 Utilities
