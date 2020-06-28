@@ -206,8 +206,8 @@ def test_pipeline_predict(breast_cancer, func):
     pipe = make_pipeline(OneHotEncoder(), RandomSurvivalForest(n_estimators=10, random_state=1))
     pipe.fit(X_str[10:], y[10:])
 
-    tree_pred = getattr(est, func)(X_num[:10])
-    pipe_pred = getattr(pipe, func)(X_str[:10])
+    tree_pred = getattr(est, func)(X_num[:10], return_array=True)
+    pipe_pred = getattr(pipe, func)(X_str[:10], return_array=True)
 
     assert_array_almost_equal(tree_pred, pipe_pred)
 
