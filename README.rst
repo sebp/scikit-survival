@@ -38,7 +38,7 @@ while utilizing the power of scikit-learn, e.g., for pre-processing or doing cro
 About Survival Analysis
 =======================
 
-The objective in `survival analysis`_ (also referred to as reliability analysis in engineering)
+The objective in `survival analysis`_ (also referred to as time-to-event or reliability analysis)
 is to establish a connection between covariates and the time of an event.
 What makes survival analysis differ from traditional machine learning is the fact that
 parts of the training data can only be partially observed – they are *censored*.
@@ -64,7 +64,7 @@ Requirements
 - numpy 1.12 or later
 - osqp
 - pandas 0.21 or later
-- scikit-learn 0.22
+- scikit-learn 0.22 or 0.23
 - scipy 1.0 or later
 - C/C++ compiler
 
