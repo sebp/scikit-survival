@@ -1,6 +1,79 @@
 Release Notes
 =============
 
+scikit-survival 0.12 (2020-06-28)
+---------------------------------
+
+The highlights of this release include the addition of
+:func:`sksurv.metrics.brier_score` and
+:func:`sksurv.metrics.integrated_brier_score`
+and compatibility with scikit-learn 0.23.
+
+`predict_survival_function` and `predict_cumulative_hazard_function`
+of :class:`sksurv.ensemble.RandomSurvivalForest` and
+:class:`sksurv.tree.SurvivalTree` can now return an array of
+:class:`sksurv.functions.StepFunctions`, similar
+to :class:`sksurv.linear_model.CoxPHSurvivalAnalysis`
+by specifying ``return_array=False``. This will be the default
+behavior starting with 0.14.0.
+
+Note that this release fixes a bug in estimating
+inverse probability of censoring weights (IPCW), which will
+affect all estimators relying on IPCW.
+
+Enhancements
+^^^^^^^^^^^^
+
+- Make build system compatible with PEP-517/518.
+- Added :func:`sksurv.metrics.brier_score` and
+  :func:`sksurv.metrics.integrated_brier_score` (#101).
+- :class:`sksurv.functions.StepFunction` can now be evaluated at multiple points
+  in a single call.
+- Update documentation on usage of `predict_survival_function` and
+  `predict_cumulative_hazard_function` (#118).
+- The default value of `alpha_min_ratio` of
+  :class:`sksurv.linear_model.CoxnetSurvivalAnalysis` will now depend
+  on the `n_samples/n_features` ratio.
+  If ``n_samples > n_features``, the default value is 0.0001
+  If ``n_samples <= n_features``, the default value is 0.01.
+- Add support for scikit-learn 0.23 (#119).
+
+Deprecations
+^^^^^^^^^^^^
+
+- `predict_survival_function` and `predict_cumulative_hazard_function`
+  of :class:`sksurv.ensemble.RandomSurvivalForest` and
+  :class:`sksurv.tree.SurvivalTree` will return an array of
+  :class:`sksurv.functions.StepFunctions` in the future
+  (as :class:`sksurv.linear_model.CoxPHSurvivalAnalysis` does).
+  For the old behavior, use `return_array=True`.
+
+Bug fixes
+^^^^^^^^^
+
+- Fix deprecation of importing joblib via sklearn.
+- Fix estimation of censoring distribution for tied times with events.
+  When estimating the censoring distribution,
+  by specifying ``reverse=True`` when calling
+  :func:`sksurv.nonparametric.kaplan_meier_estimator`,
+  we now consider events to occur before censoring.
+  For tied time points with an event, those
+  with an event are not considered at risk anymore and subtracted from
+  the denominator of the Kaplan-Meier estimator.
+  The change affects all functions relying on inverse probability
+  of censoring weights, namely:
+
+  - :class:`sksurv.nonparametric.CensoringDistributionEstimator`
+  - :func:`sksurv.nonparametric.ipc_weights`
+  - :class:`sksurv.linear_model.IPCRidge`
+  - :func:`sksurv.metrics.cumulative_dynamic_auc`
+  - :func:`sksurv.metrics.concordance_index_ipcw`
+
+- Throw an exception when trying to estimate c-index from uncomparable data (#117).
+- Estimators in ``sksurv.svm`` will now throw an
+  exception when trying to fit a model to data with uncomparable pairs.
+
+
 scikit-survival 0.12 (2020-04-15)
 ---------------------------------
 
