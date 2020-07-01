@@ -187,10 +187,11 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         if check_input:
             X, event, time = check_arrays_survival(X, y)
+            time = time.astype(np.float64)
             self.event_times_ = np.unique(time[event])
 
             y_numeric = np.empty((X.shape[0], 2), dtype=np.float64)
-            y_numeric[:, 0] = time.astype(np.float64)
+            y_numeric[:, 0] = time
             y_numeric[:, 1] = event.astype(np.float64)
         else:
             y_numeric, self.event_times_ = y

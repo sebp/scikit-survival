@@ -26,6 +26,27 @@ def test_fit_predict(make_whas500):
         whas500.y["fstat"], whas500.y["lenfol"], pred, expected_c)
 
 
+def test_fit_int_time(make_whas500):
+    whas500 = make_whas500(to_numeric=True)
+    y = whas500.y
+    y_int = numpy.empty(y.shape[0],
+                        dtype=[(y.dtype.names[0], bool), (y.dtype.names[1], int)])
+    y_int[:] = y
+
+    forest_f = RandomSurvivalForest(oob_score=True, random_state=2).fit(whas500.x[50:], y[50:])
+    forest_i = RandomSurvivalForest(oob_score=True, random_state=2).fit(whas500.x[50:], y_int[50:])
+
+    assert len(forest_f.estimators_) == len(forest_i.estimators_)
+    assert forest_f.n_features_ == forest_i.n_features_
+    assert forest_f.oob_score_ == forest_i.oob_score_
+    assert_array_almost_equal(forest_f.event_times_, forest_i.event_times_)
+
+    pred_f = forest_f.predict(whas500.x[:50])
+    pred_i = forest_i.predict(whas500.x[:50])
+
+    assert_array_almost_equal(pred_f, pred_i)
+
+
 def test_fit_predict_chf(make_whas500):
     whas500 = make_whas500(to_numeric=True)
 

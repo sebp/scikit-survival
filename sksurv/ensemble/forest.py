@@ -236,11 +236,12 @@ class RandomSurvivalForest(BaseForest, SurvivalAnalysisMixin):
         X, event, time = check_arrays_survival(X, y)
 
         self.n_features_ = X.shape[1]
+        time = time.astype(np.float64)
         self.event_times_ = np.unique(time[event])
         self.n_outputs_ = self.event_times_.shape[0]
 
         y_numeric = np.empty((X.shape[0], 2), dtype=np.float64)
-        y_numeric[:, 0] = time.astype(np.float64)
+        y_numeric[:, 0] = time
         y_numeric[:, 1] = event.astype(np.float64)
 
         # Get bootstrap sample size

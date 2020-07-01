@@ -314,6 +314,32 @@ def test_breast_cancer_2(breast_cancer):
          TREE_UNDEFINED]), 5)
 
 
+def test_fit_int_time(breast_cancer):
+    X, y = breast_cancer
+    y_int = numpy.empty(y.shape[0],
+                        dtype=[(y.dtype.names[0], bool), (y.dtype.names[1], int)])
+    y_int[:] = y
+
+    tree_f = SurvivalTree(max_features="log2",
+                          splitter="random",
+                          max_depth=5,
+                          min_samples_split=30,
+                          min_samples_leaf=15,
+                          random_state=6).fit(X, y)
+
+    tree_i = SurvivalTree(max_features="log2",
+                          splitter="random",
+                          max_depth=5,
+                          min_samples_split=30,
+                          min_samples_leaf=15,
+                          random_state=6).fit(X, y_int)
+
+    assert_array_almost_equal(tree_f.event_times_, tree_i.event_times_)
+    assert_array_equal(tree_f.tree_.feature, tree_i.tree_.feature)
+    assert_array_equal(tree_f.tree_.n_node_samples, tree_i.tree_.n_node_samples)
+    assert_array_almost_equal(tree_f.tree_.threshold, tree_i.tree_.threshold)
+
+
 @pytest.mark.parametrize("func", ("predict_survival_function", "predict_cumulative_hazard_function"))
 def test_predict_step_function(breast_cancer, func):
     X, y = breast_cancer
