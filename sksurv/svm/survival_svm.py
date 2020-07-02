@@ -285,9 +285,8 @@ class SimpleOptimizer(RankSVMOptimizer):
 
     def _gradient_func(self, w):
         # sum over columns without running into overflow problems
-        # scipy.sparse.spmatrix.sum uses dtype of matrix, which is too small
-        col_sum = numpy.asmatrix(numpy.ones((1, self.Asv.shape[0]), dtype=numpy.int_)) * self.Asv
-        v = numpy.asarray(col_sum).squeeze()
+        col_sum = self.Asv.sum(axis=0, dtype=numpy.int_)
+        v = col_sum.A.squeeze()
 
         z = numpy.dot(self.data_x.T, (self.Asv.T.dot(self.Asv.dot(self.xw)) - v))
         return w + self.alpha * z
@@ -326,9 +325,8 @@ class PRSVMOptimizer(RankSVMOptimizer):
 
     def _gradient_func(self, w):
         # sum over columns without running into overflow problems
-        # scipy.sparse.spmatrix.sum uses dtype of matrix, which is too small
-        col_sum = numpy.asmatrix(numpy.ones((1, self.Aw.shape[0]), dtype=numpy.int_)) * self.Aw
-        v = numpy.asarray(col_sum).squeeze()
+        col_sum = self.Aw.sum(axis=0, dtype=numpy.int_)
+        v = col_sum.A.squeeze()
         z = numpy.dot(self.data_x.T, self.Aw.T.dot(self.AXw) - v)
         return w + self.alpha * z
 
