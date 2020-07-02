@@ -237,8 +237,11 @@ def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None, rev
 
         uniq_times, n_events, n_at_risk = _compute_counts_truncated(event, time_enter, time_exit)
 
-    values = 1 - n_events / n_at_risk
-    values[n_events == 0] = 1.0  # in case of 0/0 = nan
+    # account for 0/0 = nan
+    ratio = numpy.divide(n_events, n_at_risk,
+                         out=numpy.zeros(uniq_times.shape[0], dtype=float),
+                         where=n_events != 0)
+    values = 1.0 - ratio
 
     if time_min is not None:
         mask = uniq_times >= time_min
