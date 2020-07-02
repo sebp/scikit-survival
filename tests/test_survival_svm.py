@@ -504,6 +504,7 @@ class TestKernelSurvivalSVM(object):
 
     @staticmethod
     @pytest.mark.slow
+    @pytest.mark.filterwarnings("ignore:Optimization did not converge")
     def test_fit_and_predict_regression_rbf(make_whas500):
         whas500 = make_whas500(to_numeric=True)
         ssvm = FastKernelSurvivalSVM(optimizer="rbtree", rank_ratio=0.0, kernel="rbf",
@@ -519,6 +520,7 @@ class TestKernelSurvivalSVM(object):
 
     @staticmethod
     @pytest.mark.slow
+    @pytest.mark.filterwarnings("ignore:Optimization did not converge")
     def test_fit_and_predict_hybrid_rbf(make_whas500):
         whas500 = make_whas500(to_numeric=True)
         ssvm = FastKernelSurvivalSVM(optimizer="rbtree", rank_ratio=0.5, kernel="rbf",
@@ -534,6 +536,7 @@ class TestKernelSurvivalSVM(object):
 
     @staticmethod
     @pytest.mark.slow
+    @pytest.mark.filterwarnings("ignore:Optimization did not converge")
     def test_fit_and_predict_clinical_kernel(make_whas500):
         whas500 = make_whas500(to_numeric=True)
 
@@ -552,6 +555,7 @@ class TestKernelSurvivalSVM(object):
 
     @staticmethod
     @pytest.mark.slow
+    @pytest.mark.filterwarnings("ignore:Optimization did not converge")
     def test_compare_builtin_kernel(make_whas500):
         whas500 = make_whas500(to_numeric=True)
         x = normalize(whas500.x)
@@ -577,6 +581,7 @@ class TestKernelSurvivalSVM(object):
 
     @staticmethod
     @pytest.mark.slow
+    @pytest.mark.filterwarnings("ignore:Optimization did not converge")
     def test_compare_clinical_kernel(make_whas500):
         whas500 = make_whas500(to_numeric=True)
 
