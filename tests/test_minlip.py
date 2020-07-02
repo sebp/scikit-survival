@@ -355,7 +355,8 @@ class TestToyCvxpyExample(object):
         x, y = toy_data
         m = self.minlip_model
         m.set_params(alpha=2)
-        m.fit(x, y)
+        with pytest.deprecated_call():
+            m.fit(x, y)
 
         assert (1, x.shape[0]) == m.coef_.shape
         assert 1 == m.coef0
@@ -368,14 +369,16 @@ class TestToyCvxpyExample(object):
         x, y = toy_data
         m = self.minlip_model
         m.set_params(timeit=7)
-        m.fit(x, y)
+        with pytest.deprecated_call():
+            m.fit(x, y)
 
         assert 7 == len(m.timings_)
 
     def test_toy_minlip_predict_1_cvxpy(self, toy_data):
         x, y = toy_data
         m = self.minlip_model
-        m.fit(x, y)
+        with pytest.deprecated_call():
+            m.fit(x, y)
 
         p = m.predict(x)
         assert_cindex_almost_equal(y['status'], y['time'], p,
@@ -388,7 +391,8 @@ class TestToyCvxpyExample(object):
         y = y.copy()
         y["time"] = numpy.arange(1, 7)
         sd = numpy.std(x, axis=0)
-        m.fit(x / sd, y)
+        with pytest.deprecated_call():
+            m.fit(x / sd, y)
 
         p = m.predict(toy_test_data / sd)
         expected = numpy.array([-0.033523879826, -1.878228488294, -2.410824233892])
@@ -398,7 +402,8 @@ class TestToyCvxpyExample(object):
         x, y = toy_data
         m = self.svm_model
         sd = numpy.std(x, axis=0)
-        m.fit(x / sd, y)
+        with pytest.deprecated_call():
+            m.fit(x / sd, y)
 
         assert (1, x.shape[0]) == m.coef_.shape
         assert 1 == m.coef0
@@ -415,7 +420,8 @@ class TestToyCvxpyExample(object):
         x, y = toy_data
         m = self.svm_model
         sd = numpy.std(x, axis=0)
-        m.fit(x / sd, y)
+        with pytest.deprecated_call():
+            m.fit(x / sd, y)
 
         p = m.predict(toy_test_data / sd)
         expected = numpy.array([-0.090550891252, -4.213744335308, -5.252123739017])
@@ -426,7 +432,8 @@ class TestToyCvxpyExample(object):
         m = self.svm_model
         m.set_params(pairs="nearest")
         sd = numpy.std(x, axis=0)
-        m.fit(x / sd, y)
+        with pytest.deprecated_call():
+            m.fit(x / sd, y)
 
         assert(1, x.shape[0]) == m.coef_.shape
         assert 1 == m.coef0
@@ -446,7 +453,8 @@ class TestToyCvxpyExample(object):
         xm = numpy.mean(x, axis=0, keepdims=True)
         xsd = numpy.std(x, axis=0, keepdims=True)
         xt = (x - xm) / xsd
-        m.fit(xt, y)
+        with pytest.deprecated_call():
+            m.fit(xt, y)
 
         p = m.predict((toy_test_data - xm) / xsd)
         expected = numpy.array([2.8571060045, -1.2661069033, -2.3044907774])
@@ -476,7 +484,8 @@ class TestToyCvxoptExample(object):
     def test_toy_minlip_fit_cvxopt(self, toy_data):
         x, y = toy_data
         m = self.minlip_model
-        m.fit(x, y)
+        with pytest.deprecated_call():
+            m.fit(x, y)
 
         assert (1, x.shape[0]) == m.coef_.shape
         assert 1 == m.coef0
@@ -488,7 +497,8 @@ class TestToyCvxoptExample(object):
     def test_toy_minlip_predict_1_cvxopt(self, toy_data):
         x, y = toy_data
         m = self.minlip_model
-        m.fit(x, y)
+        with pytest.deprecated_call():
+            m.fit(x, y)
 
         p = m.predict(x)
         assert_cindex_almost_equal(y['status'], y['time'], p,
@@ -499,7 +509,8 @@ class TestToyCvxoptExample(object):
         m = self.minlip_model
         y = y.copy()
         y["time"] = numpy.arange(1, 7)
-        m.fit(x, y)
+        with pytest.deprecated_call():
+            m.fit(x, y)
 
         p = m.predict(numpy.array([[3, 4], [41, 29]]))
         assert_array_almost_equal(numpy.array([-0.34162365, -5.37435297]), p)
@@ -507,7 +518,8 @@ class TestToyCvxoptExample(object):
     def test_toy_hinge_predict_cvxopt(self, toy_data):
         x, y = toy_data
         m = self.svm_model
-        m.fit(x, y)
+        with pytest.deprecated_call():
+            m.fit(x, y)
 
         p = m.predict(numpy.array([[3, 4], [41, 29]]))
         assert_array_almost_equal(numpy.array([-0.341622, -5.374336]), p)
@@ -516,7 +528,8 @@ class TestToyCvxoptExample(object):
         x, y = toy_data
         m = self.svm_model
         m.set_params(pairs="nearest")
-        m.fit(x, y)
+        with pytest.deprecated_call():
+            m.fit(x, y)
 
         p = m.predict(numpy.array([[3, 4], [41, 29]]))
         assert_array_almost_equal(numpy.array([-0.341623, -5.374339]), p)
@@ -593,7 +606,8 @@ class TestMinlipCvxpy(object):
         x, y = gbsg2
         x = scale(x)
         m = MinlipSurvivalAnalysis(solver="cvxpy", alpha=1, pairs="next")
-        m.fit(x, y)
+        with pytest.deprecated_call():
+            m.fit(x, y)
 
         assert (1, x.shape[0]) == m.coef_.shape
 
@@ -608,7 +622,8 @@ class TestMinlipCvxpy(object):
         x = scale(x)
         m = MinlipSurvivalAnalysis(solver="cvxpy", alpha=1, kernel="rbf",
                                    gamma=1./8, pairs="next", max_iter=1000)
-        m.fit(x, y)
+        with pytest.deprecated_call():
+            m.fit(x, y)
 
         assert (1, x.shape[0]) == m.coef_.shape
 
@@ -647,7 +662,8 @@ class TestMinlipCvxpy(object):
         X_fit, y_fit = _safe_split(m, K, y, train_idx)
         X_test, y_test = _safe_split(m, K, y, test_idx, train_idx)
 
-        m.fit(X_fit, y_fit)
+        with pytest.deprecated_call():
+            m.fit(X_fit, y_fit)
 
         p = m.predict(X_test)
         assert_cindex_almost_equal(y_test['cens'], y_test['time'], p,
@@ -664,7 +680,8 @@ class TestMinlipCvxopt(object):
     def test_breast_cancer_cvxopt(self, gbsg2):
         x, y = gbsg2
         m = self.model
-        m.fit(x, y)
+        with pytest.deprecated_call():
+            m.fit(x, y)
 
         assert (1, x.shape[0]) == m.coef_.shape
 
@@ -677,7 +694,8 @@ class TestMinlipCvxopt(object):
         x = scale(x)
         m = self.model
         m.set_params(kernel="rbf", gamma=1./8)
-        m.fit(x, y)
+        with pytest.deprecated_call():
+            m.fit(x, y)
 
         assert (1, x.shape[0]) == m.coef_.shape
 

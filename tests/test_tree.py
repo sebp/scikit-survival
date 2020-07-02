@@ -499,6 +499,5 @@ def test_presort(fake_data, val):
     X, y = fake_data
     tree = SurvivalTree(presort=val)
 
-    with pytest.warns(DeprecationWarning,
-                      match="The parameter 'presort' is deprecated "):
+    with pytest.deprecated_call(match="The parameter 'presort' is deprecated "):
         tree.fit(X, y)

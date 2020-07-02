@@ -159,8 +159,7 @@ class TestGradientBoosting(object):
 
         model = GradientBoostingSurvivalAnalysis(n_estimators=10, presort=presort, random_state=0)
 
-        with pytest.warns(DeprecationWarning,
-                          match="The parameter 'presort' is deprecated "):
+        with pytest.deprecated_call(match="The parameter 'presort' is deprecated "):
             model.fit(whas500_data.x, whas500_data.y)
 
     @staticmethod
