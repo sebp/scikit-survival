@@ -462,6 +462,7 @@ class TestLoadArffFile(object):
                                                standardize_numeric=False, to_numeric=False)
 
     @staticmethod
+    @pytest.mark.filterwarnings("ignore:Restricting columns to intersection")
     def test_load_train_and_test_columns_dont_intersect(temp_file_pair):
         tmp_train, tmp_test = temp_file_pair
         _make_and_write_data(tmp_train, 100, 19, True, True, 0, column_prefix="A")
