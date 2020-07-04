@@ -797,7 +797,7 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         Tolerance for termination. For detailed control, use solver-specific
         options.
 
-    optimizer : "avltree" | "direct-count" | "PRSVM" | "rbtree" | "simple", optional, default: avltree)
+    optimizer : "avltree" | "direct-count" | "PRSVM" | "rbtree" | "simple", optional, default: avltree
         Which optimizer to use.
 
     random_state : int or :class:`numpy.random.RandomState` instance, optional
