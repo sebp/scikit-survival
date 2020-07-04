@@ -1,8 +1,26 @@
 Release Notes
 =============
 
-scikit-survival 0.13 (2020-06-28)
----------------------------------
+scikit-survival 0.13.1 (2020-07-04)
+-----------------------------------
+
+This release fixes warnings that were introduced with 0.13.0.
+
+Bug fixes
+^^^^^^^^^
+
+- Explicitly pass ``return_array=True`` in :meth:`sksurv.tree.SurvivalTree.predict`
+  to avoid FutureWarning.
+- Fix error when fitting :class:`sksurv.tree.SurvivalTree` with non-float
+  dtype for time (#127).
+- Fix RuntimeWarning: invalid value encountered in true_divide
+  in :func:`sksurv.nonparametric.kaplan_meier_estimator`.
+- Fix PendingDeprecationWarning about use of matrix when fitting
+  :class:`sksurv.svm.FastSurvivalSVM` if optimizer is `PRSVM` or `simple`.
+
+
+scikit-survival 0.13.0 (2020-06-28)
+-----------------------------------
 
 The highlights of this release include the addition of
 :func:`sksurv.metrics.brier_score` and
