@@ -449,7 +449,7 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
             raise TypeError
     estimate=numpy.atleast_1d(estimate)          
     if estimate.ndim == 1:
-        numpy.tile(numpy.expand_dims(estimate,axis=1),(1,n_times))
+        estimate=numpy.tile(numpy.expand_dims(estimate,axis=1),(1,n_times))
     estimate = _check_estimate2D(estimate, test_time)
     
     if times.max() >= test_time.max() or times.min() < test_time.min():
