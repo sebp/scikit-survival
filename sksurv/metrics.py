@@ -434,11 +434,9 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
             
     test_event, test_time = check_y_survival(survival_test)
 
-
-
     times = check_array(numpy.atleast_1d(times), ensure_2d=False, dtype=test_time.dtype)
     times = numpy.unique(times)
-    
+
     try: # numpy.array, pandas df
         n_times=times.shape[0]
     except: # list
@@ -447,6 +445,7 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
             times=numpy.array(times)
         else:
             raise TypeError
+
     estimate=numpy.atleast_1d(estimate)          
     if estimate.ndim == 1:
         estimate=numpy.tile(numpy.expand_dims(estimate,axis=1),(1,n_times))
@@ -457,16 +456,10 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
             'all times must be within follow-up time of test data: [{}; {}['.format(
                 test_time.min(), test_time.max()))
 
-#    # sort by risk score (descending)
-#    o = numpy.argsort(-estimate)
-#    test_time = test_time[o]
-#    test_event = test_event[o]
-#    estimate = estimate[o]
-#    survival_test = survival_test[o]
+#   fit and transform IPCW
     cens = CensoringDistributionEstimator()
     cens.fit(survival_train)
     ipcw = cens.predict_ipcw(survival_test) 
-    
 
 #   expand arrays to (n_samples,n_times) shape      
     n_samples = test_time.shape[0]
@@ -483,7 +476,7 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
     estimate = numpy.take_along_axis(estimate,o,axis=0)
     survival_test = numpy.take_along_axis(survival_test,o,axis=0)
     ipcw = numpy.take_along_axis(ipcw,o,axis=0)
-    
+
     is_case= numpy.logical_and(numpy.less_equal(test_time,times),
                             test_event)
     is_control = numpy.greater_equal(test_time,times)
@@ -495,7 +488,6 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
                                      )
                                  )
                              ,tied_tol)
-    
 
     add_tp =  numpy.multiply(is_case,ipcw)
     add_fp =  numpy.multiply(is_control,1)
@@ -511,7 +503,6 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
         tpr=[true_pos[:,i][~is_tied[:,i]] for i in range(is_tied.shape[1])]    
         fpr=[false_pos[:,i][~is_tied[:,i]] for i in range(is_tied.shape[1])]    
 
-
     if times.shape[0] == 1:
         mean_auc = scores[0]
     else:
@@ -519,8 +510,10 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
         if survival_test.ndim == 2:
             survival_test=survival_test[:,0]
             times=times[0,:]
+
         surv.fit(survival_test)
         s_times = surv.predict_proba(times)
+
         # compute integral of AUC over survival function
         d = -numpy.diff(numpy.concatenate(([1.0], s_times)))
         integral = (scores * d).sum()
