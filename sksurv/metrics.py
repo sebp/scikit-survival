@@ -438,18 +438,17 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
     times = numpy.unique(times)
 
     try: # numpy.array, pandas df
-        n_times=times.shape[0]
+        n_times = times.shape[0]
     except: # list
-        if isinstance(times,list):
-            n_times=len(times)
-            times=numpy.array(times)
+        if isinstance(times, list, ):
+            n_times = len(times)
+            times = numpy.array(times)
         else:
             raise TypeError
 
-    estimate=numpy.atleast_1d(estimate)          
+    estimate = numpy.atleast_1d(estimate)          
     if estimate.ndim == 1:
-        estimate=numpy.tile(numpy.expand_dims(estimate,axis=1),(1,n_times))
-    estimate = _check_estimate2D(estimate, test_time)
+        estimate=numpy.tile(numpy.expand_dims(estimate, axis=1), (1, n_times, ))
     
     if times.max() >= test_time.max() or times.min() < test_time.min():
         raise ValueError(
@@ -459,57 +458,58 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
 #   fit and transform IPCW
     cens = CensoringDistributionEstimator()
     cens.fit(survival_train)
-    ipcw = cens.predict_ipcw(survival_test) 
+    ipcw = cens.predict_ipcw(survival_test)
 
-#   expand arrays to (n_samples,n_times) shape      
+#   expand arrays to (n_samples, n_times, ) shape      
     n_samples = test_time.shape[0]
-    test_time = numpy.tile(numpy.expand_dims(test_time,axis=1),(1,n_times,))
-    test_event = numpy.tile(numpy.expand_dims(test_event,axis=1),(1,n_times,))
-    times= numpy.tile(numpy.expand_dims(times,axis=0),(n_samples,1))
-    survival_test = numpy.tile(numpy.expand_dims(survival_test,axis=1),(1,n_times,))
-    ipcw = numpy.tile(numpy.expand_dims(ipcw,axis=1),(1,n_times,))
+    test_time = numpy.tile(numpy.expand_dims(test_time, axis=1), (1, n_times, ))
+    test_event = numpy.tile(numpy.expand_dims(test_event, axis=1), (1, n_times, ))
+    times = numpy.tile(numpy.expand_dims(times, axis=0), (n_samples, 1))
+    survival_test = numpy.tile(numpy.expand_dims(survival_test, axis=1), (1, n_times, ))
+    ipcw = numpy.tile(numpy.expand_dims(ipcw, axis=1), (1, n_times, ))
 
+#   check estimate after expanding test_time
+    estimate = _check_estimate2D(estimate, test_time)
+    
 #   sort estimates in ascending order and the other arrays too
-    o = numpy.argsort(-estimate,axis=0)
-    test_time = numpy.take_along_axis(test_time,o,axis=0)
-    test_event = numpy.take_along_axis(test_event,o,axis=0)
-    estimate = numpy.take_along_axis(estimate,o,axis=0)
-    survival_test = numpy.take_along_axis(survival_test,o,axis=0)
-    ipcw = numpy.take_along_axis(ipcw,o,axis=0)
+    o = numpy.argsort(-estimate, axis=0, )
+    test_time = numpy.take_along_axis(test_time, o, axis=0, )
+    test_event = numpy.take_along_axis(test_event, o, axis=0, )
+    estimate = numpy.take_along_axis(estimate, o, axis=0, )
+    survival_test = numpy.take_along_axis(survival_test, o, axis=0, )
+    ipcw = numpy.take_along_axis(ipcw, o, axis=0, )
 
-    is_case= numpy.logical_and(numpy.less_equal(test_time,times),
+    is_case = numpy.logical_and(numpy.less_equal(test_time, times, ), 
                             test_event)
-    is_control = numpy.greater_equal(test_time,times)
-    n_controls = is_control.sum(axis=0)
+    is_control = numpy.greater_equal(test_time, times)
+    n_controls = is_control.sum(axis=0, )
     is_tied = numpy.less_equal(
                     numpy.absolute(numpy.subtract
                                      (
-                                             estimate,numpy.roll(estimate,1,axis=0)
+                                             estimate, numpy.roll(estimate, 1, axis=0, )
                                      )
                                  )
-                             ,tied_tol)
+                             , tied_tol)
 
-    add_tp =  numpy.multiply(is_case,ipcw)
-    add_fp =  numpy.multiply(is_control,1)
-#    is_case_ipcw= numpy.where(~is_case,1,numpy.multiply(is_case,ipcw))
-#        case_tied=numpy.logical_and(is_case, is_tied)
-#        control_tied=numpy.logical_and(is_control, is_tied)
-    cumsum_tp=numpy.cumsum(add_tp,axis=0)
-    cumsum_fp=numpy.cumsum(add_fp,axis=0)
-    true_pos=numpy.divide(cumsum_tp,add_tp.sum(axis=0))
-    false_pos=numpy.divide(cumsum_fp,n_controls)
-    scores=[trapz(true_pos[:,i][~is_tied[:,i]],false_pos[:,i][~is_tied[:,i]]) for i in range(is_tied.shape[1])]
+    add_tp =  numpy.multiply(is_case, ipcw)
+    add_fp =  numpy.multiply(is_control, 1)
+
+    cumsum_tp = numpy.cumsum(add_tp, axis=0)
+    cumsum_fp = numpy.cumsum(add_fp, axis=0)
+    true_pos = numpy.divide(cumsum_tp, add_tp.sum(axis=0))
+    false_pos = numpy.divide(cumsum_fp, n_controls)
+    scores = [trapz(true_pos[:, i][~is_tied[:, i]], false_pos[:, i][~is_tied[:, i]]) for i in range(is_tied.shape[1])]
     if ret_roc:
-        tpr=[true_pos[:,i][~is_tied[:,i]] for i in range(is_tied.shape[1])]    
-        fpr=[false_pos[:,i][~is_tied[:,i]] for i in range(is_tied.shape[1])]    
+        tpr = [true_pos[:, i][~is_tied[:, i]] for i in range(is_tied.shape[1])]    
+        fpr = [false_pos[:, i][~is_tied[:, i]] for i in range(is_tied.shape[1])]    
 
     if times.shape[0] == 1:
         mean_auc = scores[0]
     else:
         surv = SurvivalFunctionEstimator()
         if survival_test.ndim == 2:
-            survival_test=survival_test[:,0]
-            times=times[0,:]
+            survival_test = survival_test[:, 0]
+            times = times[0, :] 
 
         surv.fit(survival_test)
         s_times = surv.predict_proba(times)
@@ -518,9 +518,9 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
         d = -numpy.diff(numpy.concatenate(([1.0], s_times)))
         integral = (scores * d).sum()
         mean_auc = integral / (1.0 - s_times[-1])
-        
+
     if ret_roc:
-        return tpr,fpr,scores,mean_auc
+        return tpr, fpr, scores, mean_auc
     else:
         return scores, mean_auc
 
