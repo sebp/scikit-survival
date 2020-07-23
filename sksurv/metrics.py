@@ -37,6 +37,15 @@ def _check_estimate(estimate, test_time):
     return estimate
 
 
+def _check_estimate2D(estimate, test_time):
+    estimate = check_array(estimate, ensure_2d=True)
+    if estimate.ndim != 2:
+        raise ValueError(
+            'Expected 2D array, got {:d}D array instead:\narray={}.\n'.format(
+                estimate.ndim, estimate))
+    check_consistent_length(test_time, estimate)
+    return estimate
+
 def _check_inputs(event_indicator, event_time, estimate):
     check_consistent_length(event_indicator, event_time, estimate)
     event_indicator = check_array(event_indicator, ensure_2d=False)
@@ -314,9 +323,10 @@ def concordance_index_ipcw(survival_train, survival_test, estimate, tau=None, ti
     return _estimate_concordance_index(test_event, test_time, estimate, w, tied_tol)
 
 
-def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_tol=1e-8):
-    """Estimator of cumulative/dynamic AUC for right-censored time-to-event data.
 
+def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_tol=1e-8,ret_roc=False):
+    """Estimator of cumulative/dynamic AUC for right-censored time-to-event data.
+    !!!: optimized numpy version, uses numpy instead of loops
     The receiver operating characteristic (ROC) curve and the area under the
     ROC curve (AUC) can be extended to survival data by defining
     sensitivity (true positive rate) and specificity (true negative rate)
@@ -360,7 +370,6 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
 
     where :math:`\\hat{S}(t)` is the Kaplan–Meier estimator of the survival function.
 
-    See [1]_, [2]_, [3]_ for further description.
 
     Parameters
     ----------
@@ -411,65 +420,115 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
            "Summary measure of discrimination in survival models based on cumulative/dynamic time-dependent ROC curves,"
            Statistical Methods in Medical Research, 2014.
     """
+    """
+       IMPROVEMENT:
+       numpy calculation for speed up, returns also the IPCW ROC pairs tpr and fpr
+       test_time, test_event and times should be arrays with shapes:
+           test_time:(n_samples,)
+           test_event: (n_samples,)
+           times: (n_times,)
+           estimate:(n_samples,) NOTE: could be generalized to (n_samples,n_times,)
+           to account for time varying estimates (eg. predicted survival function from RSF)
+           sorting needs to be done on every axis then.
+    """
+    try: # numpy.array, pandas df
+        n_times=times.shape[0]
+    except: # list
+        if isinstance(times,list):
+            n_times=len(times)
+            times=numpy.array(times)
+        else:
+            raise TypeError
+            
     test_event, test_time = check_y_survival(survival_test)
 
-    estimate = _check_estimate(estimate, test_time)
 
-    times = _check_times(test_time, times)
 
-    # sort by risk score (descending)
-    o = numpy.argsort(-estimate)
-    test_time = test_time[o]
-    test_event = test_event[o]
-    estimate = estimate[o]
-    survival_test = survival_test[o]
+    times = check_array(numpy.atleast_1d(times), ensure_2d=False, dtype=test_time.dtype)
+    times = numpy.unique(times)
 
+    if estimate.ndim == 1:
+        numpy.tile(numpy.expand_dims(estimate,axis=1),(1,n_times))
+    estimate = _check_estimate2D(estimate, test_time)
+    
+    if times.max() >= test_time.max() or times.min() < test_time.min():
+        raise ValueError(
+            'all times must be within follow-up time of test data: [{}; {}['.format(
+                test_time.min(), test_time.max()))
+
+#    # sort by risk score (descending)
+#    o = numpy.argsort(-estimate)
+#    test_time = test_time[o]
+#    test_event = test_event[o]
+#    estimate = estimate[o]
+#    survival_test = survival_test[o]
     cens = CensoringDistributionEstimator()
     cens.fit(survival_train)
-    ipcw = cens.predict_ipcw(survival_test)
+    ipcw = cens.predict_ipcw(survival_test) 
+    
 
+#   expand arrays to (n_samples,n_times) shape      
     n_samples = test_time.shape[0]
-    scores = numpy.empty(times.shape[0], dtype=float)
-    for k, t in enumerate(times):
-        is_case = (test_time <= t) & test_event
-        is_control = test_time > t
-        n_controls = is_control.sum()
+    test_time = numpy.tile(numpy.expand_dims(test_time,axis=1),(1,n_times,))
+    test_event = numpy.tile(numpy.expand_dims(test_event,axis=1),(1,n_times,))
+    times= numpy.tile(numpy.expand_dims(times,axis=0),(n_samples,1))
+    survival_test = numpy.tile(numpy.expand_dims(survival_test,axis=1),(1,n_times,))
+    ipcw = numpy.tile(numpy.expand_dims(ipcw,axis=1),(1,n_times,))
 
-        true_pos = []
-        false_pos = []
-        tp_value = 0.0
-        fp_value = 0.0
-        est_prev = numpy.infty
+#   sort estimates in ascending order and the other arrays too
+    o = numpy.argsort(-estimate,axis=0)
+    test_time = numpy.take_along_axis(test_time,o,axis=0)
+    test_event = numpy.take_along_axis(test_event,o,axis=0)
+    estimate = numpy.take_along_axis(estimate,o,axis=0)
+    survival_test = numpy.take_along_axis(survival_test,o,axis=0)
+    ipcw = numpy.take_along_axis(ipcw,o,axis=0)
+    
+    is_case= numpy.logical_and(numpy.less_equal(test_time,times),
+                            test_event)
+    is_control = numpy.greater_equal(test_time,times)
+    n_controls = is_control.sum(axis=0)
+    is_tied = numpy.less_equal(
+                    numpy.absolute(numpy.subtract
+                                     (
+                                             estimate,numpy.roll(estimate,1,axis=0)
+                                     )
+                                 )
+                             ,tied_tol)
+    
 
-        for i in range(n_samples):
-            est = estimate[i]
-            if numpy.absolute(est - est_prev) > tied_tol:
-                true_pos.append(tp_value)
-                false_pos.append(fp_value)
-                est_prev = est
-            if is_case[i]:
-                tp_value += ipcw[i]
-            elif is_control[i]:
-                fp_value += 1
-        true_pos.append(tp_value)
-        false_pos.append(fp_value)
+    add_tp =  numpy.multiply(is_case,ipcw)
+    add_fp =  numpy.multiply(is_control,1)
+#    is_case_ipcw= numpy.where(~is_case,1,numpy.multiply(is_case,ipcw))
+#        case_tied=numpy.logical_and(is_case, is_tied)
+#        control_tied=numpy.logical_and(is_control, is_tied)
+    cumsum_tp=numpy.cumsum(add_tp,axis=0)
+    cumsum_fp=numpy.cumsum(add_fp,axis=0)
+    true_pos=numpy.divide(cumsum_tp,add_tp.sum(axis=0))
+    false_pos=numpy.divide(cumsum_fp,n_controls)
+    scores=[trapz(true_pos[:,i][~is_tied[:,i]],false_pos[:,i][~is_tied[:,i]]) for i in range(is_tied.shape[1])]
+    if ret_roc:
+        tpr=[true_pos[:,i][~is_tied[:,i]] for i in range(is_tied.shape[1])]    
+        fpr=[false_pos[:,i][~is_tied[:,i]] for i in range(is_tied.shape[1])]    
 
-        sens = numpy.array(true_pos) / ipcw[is_case].sum()
-        fpr = numpy.array(false_pos) / n_controls
-        scores[k] = trapz(sens, fpr)
 
     if times.shape[0] == 1:
         mean_auc = scores[0]
     else:
         surv = SurvivalFunctionEstimator()
+        if survival_test.ndim == 2:
+            survival_test=survival_test[:,0]
+            times=times[0,:]
         surv.fit(survival_test)
         s_times = surv.predict_proba(times)
         # compute integral of AUC over survival function
         d = -numpy.diff(numpy.concatenate(([1.0], s_times)))
         integral = (scores * d).sum()
         mean_auc = integral / (1.0 - s_times[-1])
-
-    return scores, mean_auc
+        
+    if ret_roc:
+        return tpr,fpr,scores,mean_auc
+    else:
+        return scores, mean_auc
 
 
 def brier_score(survival_train, survival_test, estimate, times):
