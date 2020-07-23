@@ -431,6 +431,14 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
            to account for time varying estimates (eg. predicted survival function from RSF)
            sorting needs to be done on every axis then.
     """
+            
+    test_event, test_time = check_y_survival(survival_test)
+
+
+
+    times = check_array(numpy.atleast_1d(times), ensure_2d=False, dtype=test_time.dtype)
+    times = numpy.unique(times)
+    
     try: # numpy.array, pandas df
         n_times=times.shape[0]
     except: # list
@@ -440,13 +448,6 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
         else:
             raise TypeError
             
-    test_event, test_time = check_y_survival(survival_test)
-
-
-
-    times = check_array(numpy.atleast_1d(times), ensure_2d=False, dtype=test_time.dtype)
-    times = numpy.unique(times)
-
     if estimate.ndim == 1:
         numpy.tile(numpy.expand_dims(estimate,axis=1),(1,n_times))
     estimate = _check_estimate2D(estimate, test_time)
