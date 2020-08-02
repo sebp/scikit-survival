@@ -1,7 +1,72 @@
+import importlib
 from pkg_resources import get_distribution, DistributionNotFound
+import platform
+import sys
 
 from sklearn.pipeline import Pipeline
 from sklearn.utils.metaestimators import if_delegate_has_method
+
+
+def _get_version(name):
+    try:
+        module = importlib.import_module(name)
+    except ImportError:
+        return None
+
+    if name == "osqp":
+        version = module.OSQP().version()
+    else:
+        version = getattr(module, "__version__", None)
+
+    if version is None:  # pragma: no cover
+        raise ImportError("Can't determine version for {}".format(
+            module.__name__))
+    return version
+
+
+def show_versions():
+    sys_info = {
+        "Platform": platform.platform(),
+        "Python version": "{} {}".format(
+            platform.python_implementation(),
+            platform.python_version()),
+        "Python interpreter": sys.executable,
+    }
+
+    deps = [
+        "sksurv",
+        "sklearn",
+        "numpy",
+        "scipy",
+        "pandas",
+        "cvxopt",
+        "cvxpy",
+        "numexpr",
+        "osqp",
+        "joblib",
+        "matplotlib",
+        "pytest",
+        "sphinx",
+        "Cython",
+        "pip",
+        "setuptools",
+    ]
+    minwidth = max(
+        max(map(len, deps)),
+        max(map(len, sys_info.keys())),
+    )
+    fmt = "{0:<%ds}: {1}" % minwidth
+
+    print("SYSTEM")
+    print("------")
+    for name, version in sys_info.items():
+        print(fmt.format(name, version))
+
+    print("\nDEPENDENCIES")
+    print("------------")
+    for dep in deps:
+        version = _get_version(dep)
+        print(fmt.format(dep, version))
 
 
 @if_delegate_has_method(delegate='_final_estimator')
