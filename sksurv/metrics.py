@@ -669,7 +669,7 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
 
     >>> survs = est.predict_survival_function(Xt)
     >>> times = numpy.arange(365, 1826)
-    >>> preds = numpy.asarray([[fn(t) for t in times for fn in survs]])
+    >>> preds = numpy.asarray([[fn(t) for t in times] for fn in survs])
 
     Compute the integrated Brier score from 1 to 5 years.
 
