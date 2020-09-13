@@ -45,6 +45,7 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.linkcode',
     'sphinx.ext.mathjax',
+    'nbsphinx',
 ]
 
 autosummary_generate = True
@@ -94,6 +95,9 @@ version = '.'.join(release.split('.')[:3])
 # Else, today_fmt is used as the format for a strftime call.
 #today_fmt = '%B %d, %Y'
 
+# The default language to highlight source code in.
+highlight_language = 'none'
+
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 exclude_patterns = ['_build', '**/README.*', 'Thumbs.db', '.DS_Store']
@@ -121,6 +125,9 @@ pygments_style = 'sphinx'
 
 # If true, keep warnings as "system message" paragraphs in the built documents.
 #keep_warnings = False
+
+
+nbsphinx_execute = 'never'
 
 
 # -- Options for HTML output ----------------------------------------------
@@ -188,7 +195,7 @@ html_static_path = ['_static']
 #html_split_index = False
 
 # If true, links to the reST sources are added to the pages.
-#html_show_sourcelink = True
+html_show_sourcelink = False
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 #html_show_sphinx = True
@@ -211,14 +218,21 @@ htmlhelp_basename = 'scikit-survivaldoc'
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
-# The paper size ('letterpaper' or 'a4paper').
-#'papersize': 'letterpaper',
+    # The paper size ('letterpaper' or 'a4paper').
+    #
+    # 'papersize': 'letterpaper',
 
-# The font size ('10pt', '11pt' or '12pt').
-#'pointsize': '10pt',
+    # The font size ('10pt', '11pt' or '12pt').
+    #
+    # 'pointsize': '10pt',
 
-# Additional stuff for the LaTeX preamble.
-#'preamble': '',
+    # Additional stuff for the LaTeX preamble.
+    #
+    # 'preamble': '',
+
+    # Latex figure (float) alignment
+    #
+    # 'figure_align': 'htbp',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -229,26 +243,6 @@ latex_documents = [
    'Sebastian Pölsterl', 'manual'),
 ]
 
-# The name of an image file (relative to this directory) to place at the top of
-# the title page.
-#latex_logo = None
-
-# For "manual" documents, if this is true, then toplevel headings are parts,
-# not chapters.
-#latex_use_parts = False
-
-# If true, show page references after internal links.
-#latex_show_pagerefs = False
-
-# If true, show URL addresses after external links.
-#latex_show_urls = False
-
-# Documents to append as an appendix to all manuals.
-#latex_appendices = []
-
-# If false, no module index is generated.
-#latex_domain_indices = True
-
 
 # -- Options for manual page output ---------------------------------------
 
@@ -258,9 +252,6 @@ man_pages = [
     ('index', 'scikit-survival', 'scikit-survival Documentation',
      ['Sebastian Pölsterl'], 1)
 ]
-
-# If true, show URL addresses after external links.
-#man_show_urls = False
 
 
 # -- Options for Texinfo output -------------------------------------------
@@ -273,23 +264,6 @@ texinfo_documents = [
    'Sebastian Pölsterl', 'scikit-survival', 'Survival analysis on top of scikit-learn',
    'Miscellaneous'),
 ]
-
-# Documents to append as an appendix to all manuals.
-#texinfo_appendices = []
-
-# If false, no module index is generated.
-#texinfo_domain_indices = True
-
-# How to display URL addresses: 'footnote', 'no', or 'inline'.
-#texinfo_show_urls = 'footnote'
-
-# If true, do not generate a @detailmenu in the "Top" node's menu.
-#texinfo_no_detailmenu = False
-
-
-# -----------------
-# Source code links
-# -----------------
 
 
 def linkcode_resolve(domain, info):
