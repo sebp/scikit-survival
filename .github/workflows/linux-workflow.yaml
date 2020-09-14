@@ -62,11 +62,8 @@ jobs:
           fail_ci_if_error: true
         if: env.NO_SLOW == 'false'
       - name: Submit Coverage to Codacy
-        shell: bash
-        env:
-          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
-        run: |
-          source activate sksurv-test
-          pip install codacy-coverage
-          python-codacy-coverage -r tests/coverage.xml
+        uses: codacy/codacy-coverage-reporter-action@master
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          coverage-reports: tests/coverage.xml
         if: env.NO_SLOW == 'false'
