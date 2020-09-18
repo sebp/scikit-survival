@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -e
+
+# Back up notebooks
+TMP_CONTENT_DIR=/tmp/scikit-survival
+mkdir -p $TMP_CONTENT_DIR
+cp -r doc/examples .binder $TMP_CONTENT_DIR
+# delete everything in current directory including dot files and dot folders
+find . -delete
+
+# Generate notebooks and remove other files from examples folder
+NOTEBOOKS_DIR=notebooks
+cp -r $TMP_CONTENT_DIR/examples $NOTEBOOKS_DIR
+
+# Put the .binder folder back (may be useful for debugging purposes)
+mv $TMP_CONTENT_DIR/.binder .
+# Final clean up
+rm -rf $TMP_CONTENT_DIR
