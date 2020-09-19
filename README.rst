@@ -1,34 +1,10 @@
+|License| |Docs| |DOI|
+
+|build-linux| |build-macos| |build-windows| |Codecov| |Codacy|
+
 ***************
 scikit-survival
 ***************
-
-.. image:: https://img.shields.io/badge/license-GPLv3-blue.svg
-  :target: COPYING
-  :alt: License
-
-.. image:: https://github.com/sebp/scikit-survival/workflows/Linux/badge.svg?branch=master
-  :target: https://github.com/sebp/scikit-survival/actions?query=workflow%3ALinux+branch%3Amaster+
-  :alt: Linux Build Status
-
-.. image:: https://ci.appveyor.com/api/projects/status/github/sebp/scikit-survival?branch=master&svg=true
-   :target: https://ci.appveyor.com/project/sebp/scikit-survival
-   :alt: Windows Build Status on AppVeyor
-
-.. image:: https://codecov.io/gh/sebp/scikit-survival/branch/master/graph/badge.svg
-  :target: https://codecov.io/gh/sebp/scikit-survival
-  :alt: codecov
-
-.. image:: https://api.codacy.com/project/badge/Grade/17242004cdf6422c9a1052bf1ec63104
-   :target: https://www.codacy.com/app/sebp/scikit-survival?utm_source=github.com&utm_medium=referral&utm_content=sebp/scikit-survival&utm_campaign=badger
-   :alt: Codacy Badge
-
-.. image:: https://readthedocs.org/projects/scikit-survival/badge/?version=latest
-  :target: https://scikit-survival.readthedocs.io/en/latest/
-  :alt: readthedocs.org
-
-.. image:: https://zenodo.org/badge/77409504.svg
-   :target: https://zenodo.org/badge/latestdoi/77409504
-   :alt: Digital Object Identifier (DOI)
 
 scikit-survival is a Python module for `survival analysis`_
 built on top of `scikit-learn <http://scikit-learn.org/>`_. It allows doing survival analysis
@@ -139,5 +115,37 @@ Lecture Notes in Computer Science, vol. 9285, pp. 243-259 (2015)
 3. Pölsterl, S., Gupta, P., Wang, L., Conjeti, S., Katouzian, A., and Navab, N.,
 `Heterogeneous ensembles for predicting survival of metastatic, castrate-resistant prostate cancer patients <http://doi.org/10.12688/f1000research.8231.1>`_.
 F1000Research, vol. 5, no. 2676 (2016).
+
+.. |License| image:: https://img.shields.io/badge/license-GPLv3-blue.svg
+  :target: COPYING
+  :alt: License
+
+.. |Codecov| image:: https://codecov.io/gh/sebp/scikit-survival/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/sebp/scikit-survival
+  :alt: codecov
+
+.. |Codacy| image:: https://api.codacy.com/project/badge/Grade/17242004cdf6422c9a1052bf1ec63104
+   :target: https://www.codacy.com/app/sebp/scikit-survival?utm_source=github.com&utm_medium=referral&utm_content=sebp/scikit-survival&utm_campaign=badger
+   :alt: Codacy Badge
+
+.. |Docs| image:: https://readthedocs.org/projects/scikit-survival/badge/?version=latest
+  :target: https://scikit-survival.readthedocs.io/en/latest/
+  :alt: readthedocs.org
+
+.. |DOI| image:: https://zenodo.org/badge/77409504.svg
+   :target: https://zenodo.org/badge/latestdoi/77409504
+   :alt: Digital Object Identifier (DOI)
+
+.. |build-linux| image:: https://github.com/sebp/scikit-survival/workflows/Linux/badge.svg?branch=master
+  :target: https://github.com/sebp/scikit-survival/actions?query=workflow%3ALinux+branch%3Amaster+
+  :alt: Linux Build Status
+
+.. |build-macos| image:: https://github.com/sebp/scikit-survival/workflows/macOS/badge.svg?branch=master
+  :target: https://github.com/sebp/scikit-survival/actions?query=workflow%3AmacOS+branch%3Amaster+
+  :alt: macOS Build Status
+
+.. |build-windows| image:: https://ci.appveyor.com/api/projects/status/github/sebp/scikit-survival?branch=master&svg=true
+   :target: https://ci.appveyor.com/project/sebp/scikit-survival
+   :alt: Windows Build Status on AppVeyor
 
 .. _survival analysis: https://en.wikipedia.org/wiki/Survival_analysis

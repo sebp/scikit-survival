@@ -1,9 +1,9 @@
-name: Linux
+name: macOS
 on: [push, pull_request]
 
 jobs:
   checks:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     name: Build and check
     strategy:
       matrix:
@@ -16,14 +16,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Fetch all history for all tags and branches
-        run: git fetch --prune --unshallow
-      - name: Checkout submodules
-        shell: bash
-        run: |
-          auth_header="$(git config --local --get http.https://github.com/.extraheader)"
-          git submodule sync --recursive
-          git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+        with:
+          fetch-depth: 0
+          submodules: true
       - name: Adding conda to PATH
         run: echo "::add-path::${CONDA}/bin:${PATH}"
       - name: Set dependencies
@@ -55,15 +50,3 @@ jobs:
         run: |
           source activate sksurv-test
           ci/run_tests.sh
-      - name: Submit Coverage to Codecov
-        uses: codecov/codecov-action@v1
-        with:
-          file: tests/coverage.xml
-          fail_ci_if_error: true
-        if: env.NO_SLOW == 'false'
-      - name: Submit Coverage to Codacy
-        uses: codacy/codacy-coverage-reporter-action@master
-        with:
-          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          coverage-reports: tests/coverage.xml
-        if: env.NO_SLOW == 'false'
