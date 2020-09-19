@@ -46,7 +46,7 @@ def breast_cancer():
 def make_whas500():
     """Load and standardize WHAS500 data."""
     def _make_whas500(with_mean=True, with_std=True, to_numeric=False):
-        x, y, = load_whas500()
+        x, y = load_whas500()
         if with_mean:
             x = standardize(x, with_std=with_std)
         if to_numeric:
