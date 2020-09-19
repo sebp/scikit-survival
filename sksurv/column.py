@@ -33,8 +33,8 @@ def _apply_along_column(array, func1d, **kwargs):
 
 def standardize_column(series_or_array, with_std=True):
     d = series_or_array.dtype
-    output = series_or_array.copy()
     if issubclass(d.type, numpy.number):
+        output = series_or_array.astype(numpy.float_)
         m = series_or_array.mean()
         output -= m
 
@@ -42,12 +42,19 @@ def standardize_column(series_or_array, with_std=True):
             s = series_or_array.std(ddof=1)
             output /= s
 
-    return output
+        return output
+
+    return series_or_array
 
 
 def standardize(table, with_std=True):
     """
     Perform Z-Normalization on each numeric column of the given table.
+
+    If `table` is a pandas.DataFrame, only numeric columns are modified,
+    all other columns remain unchanged. If `table` is a numpy.ndarray,
+    it is only modified if it has numeric dtype, in which case the returned
+    array will have floating point dtype.
 
     Parameters
     ----------
