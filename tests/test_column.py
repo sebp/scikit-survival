@@ -47,6 +47,22 @@ class TestColumn(object):
         assert_array_almost_equal(expected, result)
 
     @staticmethod
+    def test_standardize_float_numpy_array(numeric_data):
+        numeric_data_frame, expected = numeric_data
+        result = column.standardize(numeric_data_frame.values)
+
+        assert isinstance(result, numpy.ndarray)
+        assert_array_almost_equal(expected, result)
+
+    @staticmethod
+    def test_standardize_int_numpy_array(numeric_data):
+        numeric_data_frame, expected = numeric_data
+        result = column.standardize(numeric_data_frame.values.astype(int))
+
+        assert isinstance(result, numpy.ndarray)
+        assert_array_almost_equal(expected, result)
+
+    @staticmethod
     def test_standardize_not_inplace(numeric_data):
         numeric_data_frame, expected = numeric_data
         numeric_array = numeric_data_frame.values
