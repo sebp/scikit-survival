@@ -455,7 +455,7 @@ class TestKernelSurvivalSVM(object):
         numpy.random.RandomState(0).shuffle(i)
         pred = ssvm.predict(whas500.x[i])
         rmse = numpy.sqrt(mean_squared_error(whas500.y['lenfol'][i], pred))
-        assert rmse <= 1339.3006854574726 + 0.275
+        assert rmse <= 1339.3006854574726 + 0.293
 
     @staticmethod
     def test_fit_and_predict_linear_regression_precomputed(make_whas500):
@@ -472,7 +472,7 @@ class TestKernelSurvivalSVM(object):
         numpy.random.RandomState(0).shuffle(i)
         pred = ssvm.predict(x[i])
         rmse = numpy.sqrt(mean_squared_error(whas500.y['lenfol'][i], pred))
-        assert rmse <= 1339.3006854574726 + 0.275
+        assert rmse <= 1339.3006854574726 + 0.293
 
     @staticmethod
     def test_fit_and_predict_linear_regression_no_intercept(make_whas500):
