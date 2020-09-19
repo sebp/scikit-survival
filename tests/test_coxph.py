@@ -375,7 +375,7 @@ class TestCoxPH(object):
 
         pipe = make_pipeline(StandardScaler(with_std=False), CoxPHSurvivalAnalysis())
         pipe.fit(rossi.x, rossi.y)
-        f = pipe.predict_cumulative_hazard_function(xc.values[test_idx, :])
+        f = pipe.predict_cumulative_hazard_function(rossi.x.values[test_idx, :])
         assert len(f) == len(test_idx)
 
         for i, ff in enumerate(f):
@@ -460,7 +460,7 @@ class TestCoxPH(object):
 
         pipe = make_pipeline(StandardScaler(with_std=False), CoxPHSurvivalAnalysis())
         pipe.fit(rossi.x, rossi.y)
-        f = pipe.predict_survival_function(xc.values[test_idx, :])
+        f = pipe.predict_survival_function(rossi.x.values[test_idx, :])
         assert len(f) == len(test_idx)
 
         for i, ff in enumerate(f):
