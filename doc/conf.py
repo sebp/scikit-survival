@@ -131,7 +131,7 @@ nbsphinx_execute = 'never'
 
 nbsphinx_prolog = r"""
 {% set docname = "doc/" + env.doc2path(env.docname, base=None) %}
-{% set notebook = env.doc2path(env.docname, base=None)|replace("examples/", "notebooks/") %}
+{% set notebook = env.doc2path(env.docname, base=None)|replace("user_guide/", "notebooks/") %}
 {% set branch = 'master' if 'dev' in env.config.release else 'v{}'.format(env.config.release) %}
 
 .. raw:: html
@@ -149,12 +149,16 @@ nbsphinx_prolog = r"""
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'nature'
+html_theme = 'sphinx_book_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
+html_theme_options = {
+    "repository_url": "https://github.com/sebp/scikit-survival",
+    "path_to_docs": "doc",
+    "use_issues_button": True,
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []

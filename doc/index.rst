@@ -40,27 +40,12 @@ Documentation
    :maxdepth: 1
 
    install
-   understanding_predictions
-   api
+   user_guide/index
+   api/index
    contributing
    release_notes
-
-
-Notebooks
----------
-
-.. toctree::
-   :maxdepth: 1
-
-   examples/00-introduction
-   examples/evaluating-survival-models
-   examples/survival-svm
-   examples/random-survival-forest
-
 
 Indices and tables
 ------------------
 
 * :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
