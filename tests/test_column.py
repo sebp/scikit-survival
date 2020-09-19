@@ -8,90 +8,101 @@ import pytest
 
 from sksurv import column
 
-NUMERIC_DATA_FRAME = pandas.DataFrame(numpy.arange(50).reshape(10, 5))
 
-NON_NUMERIC_DATA_FRAME = pandas.DataFrame({'q1': ['no', 'no', 'yes', 'yes', 'no', 'no', None, 'yes', 'no', None],
-                                           'q2': ['maybe', 'no', 'yes', 'maybe', 'yes', 'no', None, 'maybe', 'no',
-                                                  'yes'],
-                                           'q3': [1, 2, 1, 3, 1, 2, numpy.nan, numpy.nan, 3, 2]})
+@pytest.fixture
+def numeric_data():
+    data = pandas.DataFrame(numpy.arange(50, dtype=float).reshape(10, 5))
 
-MIXED_DATA_FRAME = pandas.concat((NUMERIC_DATA_FRAME, NON_NUMERIC_DATA_FRAME), axis=1)
+    expected = numpy.array([[-1.486301, -1.486301, -1.486301, -1.486301, -1.486301],
+                            [-1.156012, -1.156012, -1.156012, -1.156012, -1.156012],
+                            [-0.825723, -0.825723, -0.825723, -0.825723, -0.825723],
+                            [-0.495434, -0.495434, -0.495434, -0.495434, -0.495434],
+                            [-0.165145, -0.165145, -0.165145, -0.165145, -0.165145],
+                            [0.165145, 0.165145, 0.165145, 0.165145, 0.165145],
+                            [0.495434, 0.495434, 0.495434, 0.495434, 0.495434],
+                            [0.825723, 0.825723, 0.825723, 0.825723, 0.825723],
+                            [1.156012, 1.156012, 1.156012, 1.156012, 1.156012],
+                            [1.486301, 1.486301, 1.486301, 1.486301, 1.486301]])
+    return data, expected
 
-NON_NUMERIC_DATA_FRAME['q3'] = NON_NUMERIC_DATA_FRAME['q3'].astype('category')
-MIXED_DATA_FRAME['q3'] = MIXED_DATA_FRAME['q3'].astype('category')
+
+@pytest.fixture
+def non_numeric_data_frame():
+    data = pandas.DataFrame({'q1': ['no', 'no', 'yes', 'yes', 'no', 'no', None, 'yes', 'no', None],
+                             'q2': ['maybe', 'no', 'yes', 'maybe', 'yes', 'no', None, 'maybe', 'no',
+                                    'yes'],
+                             'q3': [1, 2, 1, 3, 1, 2, numpy.nan, numpy.nan, 3, 2]})
+
+    data['q3'] = data['q3'].astype('category')
+    return data
 
 
 class TestColumn(object):
     @staticmethod
-    def test_standardize_numeric():
-        result = column.standardize(NUMERIC_DATA_FRAME)
-
-        expected = numpy.array([[-1.486301, -1.486301, -1.486301, -1.486301, -1.486301],
-                                [-1.156012, -1.156012, -1.156012, -1.156012, -1.156012],
-                                [-0.825723, -0.825723, -0.825723, -0.825723, -0.825723],
-                                [-0.495434, -0.495434, -0.495434, -0.495434, -0.495434],
-                                [-0.165145, -0.165145, -0.165145, -0.165145, -0.165145],
-                                [0.165145, 0.165145, 0.165145, 0.165145, 0.165145],
-                                [0.495434, 0.495434, 0.495434, 0.495434, 0.495434],
-                                [0.825723, 0.825723, 0.825723, 0.825723, 0.825723],
-                                [1.156012, 1.156012, 1.156012, 1.156012, 1.156012],
-                                [1.486301, 1.486301, 1.486301, 1.486301, 1.486301]])
+    def test_standardize_numeric(numeric_data):
+        numeric_data_frame, expected = numeric_data
+        result = column.standardize(numeric_data_frame)
 
         assert isinstance(result, pandas.DataFrame)
         assert_array_almost_equal(expected, result)
 
     @staticmethod
-    def test_standardize_non_numeric():
-        result = column.standardize(NON_NUMERIC_DATA_FRAME)
+    def test_standardize_not_inplace(numeric_data):
+        numeric_data_frame, expected = numeric_data
+        numeric_array = numeric_data_frame.values
 
-        assert isinstance(result, pandas.DataFrame)
-        tm.assert_frame_equal(NON_NUMERIC_DATA_FRAME, result)
-
-    @staticmethod
-    def test_standardize_mixed():
-        result = column.standardize(MIXED_DATA_FRAME)
-
-        expected = numpy.array([[-1.486301, -1.486301, -1.486301, -1.486301, -1.486301],
-                                [-1.156012, -1.156012, -1.156012, -1.156012, -1.156012],
-                                [-0.825723, -0.825723, -0.825723, -0.825723, -0.825723],
-                                [-0.495434, -0.495434, -0.495434, -0.495434, -0.495434],
-                                [-0.165145, -0.165145, -0.165145, -0.165145, -0.165145],
-                                [0.165145, 0.165145, 0.165145, 0.165145, 0.165145],
-                                [0.495434, 0.495434, 0.495434, 0.495434, 0.495434],
-                                [0.825723, 0.825723, 0.825723, 0.825723, 0.825723],
-                                [1.156012, 1.156012, 1.156012, 1.156012, 1.156012],
-                                [1.486301, 1.486301, 1.486301, 1.486301, 1.486301]])
-
-        assert isinstance(result, pandas.DataFrame)
-        assert_array_almost_equal(expected, result.iloc[:, :NUMERIC_DATA_FRAME.shape[1]].values)
-
-        tm.assert_frame_equal(NON_NUMERIC_DATA_FRAME, result.iloc[:, NUMERIC_DATA_FRAME.shape[1]:])
+        before = numeric_array.copy()
+        result = column.standardize(numeric_array)
+        assert_array_almost_equal(expected, result)
+        assert_array_almost_equal(before, numeric_array)
 
     @staticmethod
-    def test_standardize_numpy_array():
-        result = column.standardize(MIXED_DATA_FRAME.values)
+    def test_standardize_non_numeric(non_numeric_data_frame):
+        result = column.standardize(non_numeric_data_frame)
 
-        expected = numpy.array([[-1.486301, -1.486301, -1.486301, -1.486301, -1.486301],
-                                [-1.156012, -1.156012, -1.156012, -1.156012, -1.156012],
-                                [-0.825723, -0.825723, -0.825723, -0.825723, -0.825723],
-                                [-0.495434, -0.495434, -0.495434, -0.495434, -0.495434],
-                                [-0.165145, -0.165145, -0.165145, -0.165145, -0.165145],
-                                [0.165145, 0.165145, 0.165145, 0.165145, 0.165145],
-                                [0.495434, 0.495434, 0.495434, 0.495434, 0.495434],
-                                [0.825723, 0.825723, 0.825723, 0.825723, 0.825723],
-                                [1.156012, 1.156012, 1.156012, 1.156012, 1.156012],
-                                [1.486301, 1.486301, 1.486301, 1.486301, 1.486301]])
+        assert isinstance(result, pandas.DataFrame)
+        tm.assert_frame_equal(non_numeric_data_frame, result)
+
+    @staticmethod
+    def test_standardize_non_numeric_numpy_array(non_numeric_data_frame):
+        result = column.standardize(non_numeric_data_frame.values)
 
         assert isinstance(result, numpy.ndarray)
-        assert_array_almost_equal(expected, result[:, :NUMERIC_DATA_FRAME.shape[1]])
 
-        assert_array_equal(pandas.isnull(NON_NUMERIC_DATA_FRAME),
-                           pandas.isnull(result[:, NUMERIC_DATA_FRAME.shape[1]:]))
+        assert_array_equal(pandas.isnull(non_numeric_data_frame),
+                           pandas.isnull(result))
 
         non_nan_idx = [0, 1, 2, 3, 4, 5, 8, 9]
 
-        assert_array_equal(NON_NUMERIC_DATA_FRAME.iloc[non_nan_idx, :].values,
-                           result[:, NUMERIC_DATA_FRAME.shape[1]:][non_nan_idx, :])
+        assert_array_equal(non_numeric_data_frame.iloc[non_nan_idx, :].values,
+                           result[non_nan_idx, :])
+
+    @staticmethod
+    def test_standardize_mixed(numeric_data, non_numeric_data_frame):
+        numeric_data_frame, expected = numeric_data
+        mixed_data_frame = pandas.concat((numeric_data_frame, non_numeric_data_frame), axis=1)
+        result = column.standardize(mixed_data_frame)
+
+        assert isinstance(result, pandas.DataFrame)
+        assert_array_almost_equal(expected, result.iloc[:, :numeric_data_frame.shape[1]].values)
+
+        tm.assert_frame_equal(non_numeric_data_frame, result.iloc[:, numeric_data_frame.shape[1]:])
+
+    @staticmethod
+    def test_standardize_mixed_numpy_array(numeric_data, non_numeric_data_frame):
+        numeric_data_frame, _ = numeric_data
+        mixed_data_frame = pandas.concat((numeric_data_frame, non_numeric_data_frame), axis=1)
+        result = column.standardize(mixed_data_frame.values)
+
+        assert_array_equal(pandas.isnull(mixed_data_frame),
+                           pandas.isnull(result))
+
+        assert_array_almost_equal(numeric_data_frame, result[:, :numeric_data_frame.shape[1]])
+
+        non_nan_idx = [0, 1, 2, 3, 4, 5, 8, 9]
+
+        assert_array_equal(non_numeric_data_frame.iloc[non_nan_idx, :].values,
+                           result[:, numeric_data_frame.shape[1]:][non_nan_idx, :])
 
 
 class TestEncodeCategorical(object):

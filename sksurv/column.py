@@ -33,15 +33,16 @@ def _apply_along_column(array, func1d, **kwargs):
 
 def standardize_column(series_or_array, with_std=True):
     d = series_or_array.dtype
+    output = series_or_array.copy()
     if issubclass(d.type, numpy.number):
         m = series_or_array.mean()
-        series_or_array -= m
+        output -= m
 
         if with_std:
-            s = series_or_array.std()
-            series_or_array /= s
+            s = series_or_array.std(ddof=1)
+            output /= s
 
-    return series_or_array
+    return output
 
 
 def standardize(table, with_std=True):
