@@ -49,7 +49,10 @@ extensions = [
 ]
 
 autosummary_generate = True
-autodoc_default_flags = ['members', 'inherited-members']
+autodoc_default_options = {
+    'members': None,
+    'inherited-members': None,
+}
 
 # Napoleon settings
 napoleon_google_docstring = False
