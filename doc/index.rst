@@ -33,17 +33,59 @@ Alternatively, you can install scikit-survival from source
 following :doc:`this guide <install>`.
 
 
-Documentation
--------------
+.. raw:: html
+
+    <div class="row">
+      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex p-1">
+        <div class="flex-fill tile">
+          <a class="tile-link" href="user_guide/index.html">
+            <h3 class="tile-title">User Guide
+            <i class="fas fa-book-open tile-icon"></i>
+            </h3>
+            <div class="tile-desc">
+              <p>The user guide provides in-depth information on the key concepts of scikit-survival with useful background information and explanation.</p>
+            </div>
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex p-1">
+        <div class="flex-fill tile">
+          <a class="tile-link" href="api/index.html">
+            <h3 class="tile-title">API reference
+            <i class="fas fa-cogs tile-icon"></i>
+            </h3>
+            <div class="tile-desc">
+              <p>The reference guide contains a detailed description of the scikit-survival API. The reference describes how the methods work and which parameters can be used. It assumes that you have an understanding of the key concepts.</p>
+            </div>
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex p-1">
+        <div class="flex-fill tile">
+          <a class="tile-link" href="contributing.html">
+            <h3 class="tile-title">Contributing
+            <i class="fas fa-code tile-icon"></i>
+            </h3>
+            <div class="tile-desc">
+              <p>Saw a typo in the documentation? Want to improve existing functionalities? The contributing guidelines will guide you through the process of improving scikit-survival.</p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
 
 .. toctree::
    :maxdepth: 1
+   :hidden:
+   :titlesonly:
 
    install
    user_guide/index
    api/index
    contributing
    release_notes
+
 
 Indices and tables
 ------------------

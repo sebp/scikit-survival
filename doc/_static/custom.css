@@ -1,0 +1,77 @@
+.tile {
+    position: relative;
+    display: block;
+    padding: 1rem 1.2rem;
+    border-radius: 6px;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2)
+}
+
+@media screen and (max-width:39.99875em) {
+    .tile {
+        margin-bottom: 1rem
+    }
+}
+
+@media screen and (min-width:40em) and (max-width:63.99875em) {
+    .tile {
+        margin-bottom: 2rem
+    }
+}
+
+.tile .tile-title {
+    position: relative;
+    font-size: 22px;
+    line-height: 1.4;
+    margin-top: 0;
+    margin-bottom: .5rem;
+}
+
+.tile .tile-title .tile-icon {
+    position: absolute;
+    right: 0;
+    line-height: 1.4;
+    transition: all .2s
+}
+
+.tile .tile-desc {
+    margin-top: 1rem;
+    color: #646976
+}
+
+@media screen and (min-width:40em) {
+    .tile .tile-desc {
+        padding-right: 3.5rem
+    }
+}
+
+.tile .tile-desc p:last-child {
+    margin-bottom: 0
+}
+
+.tile:after {
+    content: " ";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: #4ce8ff;
+    background: linear-gradient(90deg, #4ce8ff, #d07cff);
+    opacity: 0;
+    transition: all .2s
+}
+
+.tile:hover:after {
+    opacity: 1
+}
+
+.tile:hover .tile-icon {
+    transform: scale(1.4)
+}
+
+a.tile-link:active,
+a.tile-link:link,
+a.tile-link:hover,
+a.tile-link:focus {
+    text-decoration: none;
+}
