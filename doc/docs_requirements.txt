@@ -4,4 +4,4 @@ ipython
 nbsphinx
 setuptools_scm
 sphinx <2
-sphinx-book-theme
+pydata-sphinx-theme ~=0.4.0

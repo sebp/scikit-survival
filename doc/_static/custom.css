@@ -75,3 +75,37 @@ a.tile-link:hover,
 a.tile-link:focus {
     text-decoration: none;
 }
+
+.github-icon, .github-repository {
+    display: inline-block;
+}
+
+.github-icon {
+    width: 1.8rem;
+}
+
+.github-facts {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+    font-size: .95rem;
+    font-weight: 700;
+    list-style: none;
+    opacity: .75;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+
+.github-fact {
+    float: left;
+}
+
+.github-fact::before {
+    margin: 0.2rem;
+    content: "\00B7"
+}
+
+.github-fact:first-child::before {
+    display: none
+}
