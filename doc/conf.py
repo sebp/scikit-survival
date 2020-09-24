@@ -17,6 +17,8 @@ import re
 import os
 from pathlib import Path
 import sys
+from nbconvert.preprocessors import Preprocessor
+import nbsphinx
 from setuptools_scm import get_version
 
 # on_rtd is whether we are on readthedocs.org, this line of code grabbed from docs.readthedocs.org
@@ -253,6 +255,49 @@ def linkcode_resolve(domain, info):
         )
     else:
         return None
+
+
+class RTDUrlPreprocessor(Preprocessor):
+    """Convert URLs to RTD in notebook to relative urls."""
+    URL_PATTERN = re.compile(
+        r'\(https://scikit-survival\.readthedocs\.io/.+?/.+?/([-._a-zA-Z0-9/]+)/(.+?)\.html.*?\)'
+    )
+    DOC_DIR = Path(__file__).parent
+
+    def preprocess_cell(self, cell, resources, index):
+        # path of notebook directory, relative to conf.py
+        nb_path = Path(resources['metadata']['path']).relative_to(self.DOC_DIR)
+        to_root = [os.pardir] * len(nb_path.parts)
+
+        if cell.cell_type == 'markdown':
+            text = cell.source
+            replace = []
+            for match in self.URL_PATTERN.finditer(text):
+                path = to_root[:]
+                path.append(match.group(1))
+
+                rel_url = "/".join(path)
+                filename = match.group(2)
+                replace.append((match.group(0), '({}/{}.rst)'.format(rel_url, filename)))
+
+            for s, r in replace:
+                text = text.replace(s, r)
+            cell.source = text
+            return cell, resources
+        return cell, resources
+
+
+def _from_notebook_node(self, nb, resources, **kwargs):
+    filters = [RTDUrlPreprocessor(), ]
+    for f in filters:
+        nb, resources = f.preprocess(nb, resources=resources)
+
+    return nbsphinx_from_notebook_node(self, nb, resources=resources, **kwargs)
+
+
+# see https://github.com/spatialaudio/nbsphinx/issues/305#issuecomment-506748814-permalink
+nbsphinx_from_notebook_node = nbsphinx.Exporter.from_notebook_node
+nbsphinx.Exporter.from_notebook_node = _from_notebook_node
 
 
 # ------------------------
