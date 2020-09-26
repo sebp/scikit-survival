@@ -1,4 +1,4 @@
-.. understanding_predictions
+.. _understanding_predictions:
 
 Understanding Predictions in Survival Analysis
 ==============================================
