@@ -21,8 +21,19 @@ it is unknown whether an event has or has not occurred after the study ended.
 Consequently, survival analysis demands for models that take
 this unique characteristic of such a dataset into account.
 
-Installation
-------------
+
+.. raw:: html
+
+    <div class="row">
+      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex p-1">
+        <div class="flex-fill tile">
+          <a class="tile-link" href="install.html">
+            <h3 class="tile-title">Install
+            <i class="fas fa-download tile-icon"></i>
+            </h3>
+          </a>
+          <div class="tile-desc">
+
 
 The easiest way to install scikit-survival is to use
 `Anaconda <https://www.anaconda.com/distribution/>`_ by running::
@@ -35,7 +46,9 @@ following :doc:`this guide <install>`.
 
 .. raw:: html
 
-    <div class="row">
+          </div>
+        </div>
+      </div>
       <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex p-1">
         <div class="flex-fill tile">
           <a class="tile-link" href="user_guide/index.html">
@@ -80,14 +93,9 @@ following :doc:`this guide <install>`.
    :hidden:
    :titlesonly:
 
-   install
+   Install <install>
    user_guide/index
    api/index
-   contributing
+   Contribute <contributing>
    release_notes
-
-
-Indices and tables
-------------------
-
-* :ref:`genindex`
+   Cite <cite>

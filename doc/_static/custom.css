@@ -33,6 +33,11 @@
     transition: all .2s
 }
 
+.tile h3.tile-title:before {
+    height: 0;
+    margin: 0;
+}
+
 .tile .tile-desc {
     margin-top: 1rem;
     color: #646976
@@ -74,6 +79,11 @@ a.tile-link:link,
 a.tile-link:hover,
 a.tile-link:focus {
     text-decoration: none;
+}
+
+.tile .tile-desc pre {
+    font-size: 80%;
+    white-space: pre-line;
 }
 
 .github-icon, .github-repository {
