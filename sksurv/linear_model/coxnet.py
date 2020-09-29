@@ -108,6 +108,9 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     coef_ : ndarray, shape=(n_features, n_alphas)
         Matrix of coefficients.
 
+    offset_ : ndarray, shape=(n_alphas,)
+        Bias term to account for non-centered features.
+
     deviance_ratio_ : ndarray, shape=(n_alphas,)
         The fraction of (null) deviance explained.
 
@@ -141,14 +144,16 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         X_offset = numpy.average(X, axis=0)
         X -= X_offset
         if self.normalize:
-            X = f_normalize(X, copy=False, axis=0)
+            X, X_scale = f_normalize(X, copy=False, axis=0, return_norm=True)
+        else:
+            X_scale = numpy.ones(X.shape[1], dtype=X.dtype)
 
         # sort descending
         o = numpy.argsort(-time, kind="mergesort")
         X = numpy.asfortranarray(X[o, :])
         event_num = event[o].astype(numpy.uint8)
         time = time[o].astype(numpy.float64)
-        return X, event_num, time
+        return X, event_num, time, X_offset, X_scale
 
     def _check_penalty_factor(self, n_features):
         if self.penalty_factor is None:
@@ -229,7 +234,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         -------
         self
         """
-        X, event_num, time = self._pre_fit(X, y)
+        X, event_num, time, X_offset, X_scale = self._pre_fit(X, y)
         create_path, alphas, penalty, alpha_min_ratio = self._check_params(*X.shape)
 
         coef, alphas, deviance_ratio, n_iter = call_fit_coxnet(
@@ -250,8 +255,9 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
                           stacklevel=2)
 
         if self.fit_baseline_model:
+            predictions = numpy.dot(X, coef)
             self._baseline_models = tuple(
-                BreslowEstimator().fit(numpy.dot(X, coef[:, i]), event_num, time)
+                BreslowEstimator().fit(predictions[:, i], event_num, time)
                 for i in range(coef.shape[1])
             )
         else:
@@ -262,13 +268,14 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         self.penalty_factor_ = penalty
         self.coef_ = coef
         self.deviance_ratio_ = deviance_ratio
+        self.offset_ = numpy.dot(X_offset, coef)
         return self
 
     def _get_coef(self, alpha):
         check_is_fitted(self, "coef_")
 
         if alpha is None:
-            coef = self.coef_[:, -1]
+            coef = self.coef_[:, -1], self.offset_[-1]
         else:
             coef = self._interpolate_coefficients(alpha)
         return coef
@@ -288,16 +295,19 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         if coef_idx is None:
             coef = self.coef_[:, 0]
+            offset = self.offset_[0]
         elif exact or coef_idx == len(self.alphas_) - 1:
             coef = self.coef_[:, coef_idx]
+            offset = self.offset_[coef_idx]
         else:
             # interpolate between coefficients
             a1 = self.alphas_[coef_idx + 1]
             a2 = self.alphas_[coef_idx]
             frac = (alpha - a1) / (a2 - a1)
             coef = frac * self.coef_[:, coef_idx] + (1.0 - frac) * self.coef_[:, coef_idx + 1]
+            offset = frac * self.offset_[coef_idx] + (1.0 - frac) * self.offset_[coef_idx + 1]
 
-        return coef
+        return coef, offset
 
     def predict(self, X, alpha=None):
         """The linear predictor of the model.
@@ -318,8 +328,8 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
             The predicted decision function
         """
         X = check_array(X)
-        coef = self._get_coef(alpha)
-        return numpy.dot(X, coef)
+        coef, offset = self._get_coef(alpha)
+        return numpy.dot(X, coef) - offset
 
     def _get_baseline_model(self, alpha):
         check_is_fitted(self, "coef_")
