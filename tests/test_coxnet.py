@@ -107,6 +107,9 @@ class TestCoxnetSurvivalAnalysis(object):
         ])
         assert_array_almost_equal(coxnet.deviance_ratio_, expected_dev)
 
+        expected_offset = numpy.dot(numpy.mean(x.values, axis=0), expected_coef)
+        assert_array_almost_equal(coxnet.offset_, expected_offset)
+
         expected_pred = numpy.array([
             0, 0.00140948454488767, 0.00160298997140239, -0.00830742573928443, -0.0174234349495347, -0.0200048263613719,
             -0.0224801816347042, -0.0248329460065182, -0.0216924070471563, -0.0325287602403503, -0.0510221489452056,
@@ -118,7 +121,7 @@ class TestCoxnetSurvivalAnalysis(object):
             -0.375502769096629, -0.379949069210773, -0.384261695764238, -0.388813847771416, -0.393135194649681,
             -0.397093422412222, -0.40046816729172, -0.402004566839427, -0.40331328958967, -0.404500835078198,
             -0.405588873666053, -0.406584748259676, -0.407495670627834, -0.407927461818659, -0.408063340186696
-        ])
+        ]) - expected_offset
         assert_predictions_equal(coxnet, x, expected_pred)
 
     def test_example_1_penalty_factor_1(self, make_example_coef):
@@ -147,6 +150,9 @@ class TestCoxnetSurvivalAnalysis(object):
         coef = pandas.DataFrame(coxnet.coef_, columns=expected_coef.columns, dtype=float)
         assert_columns_almost_equal(coef, expected_coef)
 
+        expected_offset = numpy.dot(numpy.mean(x.values, axis=0), expected_coef)
+        assert_array_almost_equal(coxnet.offset_, expected_offset)
+
         expected_pred = numpy.array([
             0, -0.0219470160430587, -0.0423872317402525, -0.0613777857697107, -0.0789932877972767, -0.0953091589085253,
             -0.110400665798654, -0.124342123109189, -0.137206242394496, -0.149063613776774, -0.159982305706598,
@@ -161,7 +167,7 @@ class TestCoxnetSurvivalAnalysis(object):
             -0.403587140384981, -0.405974801639294, -0.408793015715854, -0.411377351836687, -0.413496980133616,
             -0.414144504730355, -0.41438652016618, -0.414598984650713, -0.414796366581722, -0.414979630970168,
             -0.415149243472181, -0.415305936592074, -0.414884495552163
-        ])
+        ]) - expected_offset
         assert_predictions_equal(coxnet, x, expected_pred)
 
     def test_example_1_penalty_factor_2(self, make_example_coef):
@@ -192,6 +198,9 @@ class TestCoxnetSurvivalAnalysis(object):
         coef = pandas.DataFrame(coxnet.coef_, columns=expected_coef.columns, dtype=float)
         assert_columns_almost_equal(coef, expected_coef)
 
+        expected_offset = numpy.dot(numpy.mean(x.values, axis=0), expected_coef)
+        assert_array_almost_equal(coxnet.offset_, expected_offset)
+
         expected_pred = numpy.array([
             0, -0.0219470160430587, -0.0423872317402525, -0.0613777857697107, -0.0789932877972767, -0.0953091589085253,
             -0.110400665798654, -0.124342123109189, -0.137206242394496, -0.149063613776774, -0.159982305706598,
@@ -206,7 +215,7 @@ class TestCoxnetSurvivalAnalysis(object):
             -0.397870315511183, -0.401029223528979, -0.404277261469497, -0.407255492228115, -0.409734816795972,
             -0.410650182963323, -0.411197059249143, -0.411692846517166, -0.412145302413102, -0.412561364082062,
             -0.4129435341443, -0.41329427736124, -0.413095216567575
-        ])
+        ]) - expected_offset
         assert_predictions_equal(coxnet, x, expected_pred)
 
     def test_example_1_unpenalized(self, make_example_coef):
@@ -234,6 +243,9 @@ class TestCoxnetSurvivalAnalysis(object):
         coef = pandas.DataFrame(coxnet.coef_, columns=expected_coef.columns, dtype=float)
         assert_columns_almost_equal(coef, expected_coef)
 
+        expected_offset = numpy.dot(numpy.mean(x.values, axis=0), expected_coef)
+        assert_array_almost_equal(coxnet.offset_, expected_offset)
+
         expected_pred = numpy.array([
             0.0373756105322525, 0.0389973815599095, 0.0405683877195706, 0.0280831344913328, 0.0159083690720834,
             0.0103802188902682, 0.00515467167201751, 0.000240537790719531, -0.00398308401428462, 0.00430672528959097,
@@ -246,7 +258,7 @@ class TestCoxnetSurvivalAnalysis(object):
             -0.392161768186302, -0.395575701614631, -0.397949529352037, -0.399599074245129, -0.401120250339891,
             -0.402505065734498, -0.403764001966903, -0.404916031377837, -0.405970148147989, -0.406934334318935,
             -0.407120115909973
-        ])
+        ]) - expected_offset
         assert_predictions_equal(coxnet, x, expected_pred)
 
     def test_example_2(self, make_example_coef):
@@ -284,6 +296,9 @@ class TestCoxnetSurvivalAnalysis(object):
         ])
         assert_array_almost_equal(coxnet.deviance_ratio_, expected_dev)
 
+        expected_offset = numpy.dot(numpy.mean(x.values, axis=0), expected_coef)
+        assert_array_almost_equal(coxnet.offset_, expected_offset)
+
         expected_pred = numpy.array([
             0, 0.00196016970842094, 0.00140611753838389, -0.0116396716112419, -0.022089013534796, -0.0250863119930773,
             -0.0278225590136988, -0.0302883122217436, -0.0221472435312749, -0.0381375326325586, -0.0662858762239503,
@@ -295,7 +310,7 @@ class TestCoxnetSurvivalAnalysis(object):
             -0.385584019971888, -0.389340460428481, -0.392932674551871, -0.396271896579473, -0.399949396718947,
             -0.403353040387268, -0.405235426737329, -0.406286722398451, -0.407239920728446, -0.408098144214668,
             -0.408543625518507, -0.409505822297035, -0.409923859178006
-        ])
+        ]) - expected_offset
         assert_predictions_equal(coxnet, x, expected_pred)
 
     def test_example_2_normalize(self, make_example_coef):
@@ -322,6 +337,9 @@ class TestCoxnetSurvivalAnalysis(object):
         coef = pandas.DataFrame(coxnet.coef_, columns=expected_coef.columns, dtype=float)
         assert_columns_almost_equal(coef, expected_coef)
 
+        expected_offset = numpy.dot(numpy.mean(x.values, axis=0), expected_coef)
+        assert_array_almost_equal(coxnet.offset_, expected_offset)
+
         expected_pred = numpy.array([
             0, 0.0200226427002756, -0.0132864652217919, -0.195695033468803, -0.379805498473001, -0.461423510865113,
             -0.51290628721436, -0.564121426824778, -0.614835044106511, -0.870140455743473, -1.21451474553013,
@@ -334,7 +352,7 @@ class TestCoxnetSurvivalAnalysis(object):
             -11.6221787745943, -11.7734319972722, -11.9128564853398, -12.041266644828, -12.1048477697581,
             -12.157813645944, -12.1990911046183, -12.2378380608187, -12.2647532662837, -12.2898323148056,
             -12.3129678566791, -12.3367564940579, -12.358304617252, -12.3780929390135
-        ])
+        ]) - expected_offset
         assert_predictions_equal(coxnet, x, expected_pred)
 
     @staticmethod
@@ -381,10 +399,13 @@ class TestCoxnetSurvivalAnalysis(object):
         coef = pandas.DataFrame(coxnet.coef_, columns=expected_coef.columns, dtype=float)
         assert_columns_almost_equal(coef, expected_coef)
 
-        expected_pred = numpy.array([0, 0, 0, 0, 0, 0, -7.82043051660585])
+        expected_offset = numpy.dot(numpy.mean(x.values, axis=0), expected_coef)
+        assert_array_almost_equal(coxnet.offset_, expected_offset)
+
+        expected_pred = numpy.array([0, 0, 0, 0, 0, 0, -7.82043051660585]) - expected_offset
         assert_predictions_equal(coxnet, x, expected_pred)
 
-    def test_example_2_with_n_alpha(self, make_example_coef):
+    def test_example_2_with_n_alpha_and_norm(self, make_example_coef):
         expected_alphas = numpy.array([
             0.00831887750878913, 0.00416931520551416, 0.00208960755397176, 0.00104728462934176, 0.00052488568620016,
             0.000263066005037211, 0.000131845323325978, 6.607919286444e-05, 3.31180478720517e-05, 1.65983427961291e-05,
@@ -396,16 +417,20 @@ class TestCoxnetSurvivalAnalysis(object):
 
         assert_array_almost_equal(expected_alphas, coxnet.alphas_)
 
-        expected_coef = make_example_coef("2-nalpha")
+        expected_coef = make_example_coef("2-nalpha-norm")
         coef = pandas.DataFrame(coxnet.coef_, columns=expected_coef.columns, dtype=float)
         assert_columns_almost_equal(coef, expected_coef)
 
+        expected_offset = numpy.dot(numpy.mean(x.values, axis=0), expected_coef)
+        assert_array_almost_equal(coxnet.offset_, expected_offset)
+
         expected_pred = numpy.array([
             0, -0.585544346463982, -4.3131376746924, -7.67018844671395, -9.54168719460625, -10.920819487563,
-            -12.0733454980442, -12.3385685033175, -12.4597634855469, -12.530947384041, -12.5681225386368])
+            -12.0733454980442, -12.3385685033175, -12.4597634855469, -12.530947384041, -12.5681225386368
+        ]) - expected_offset
         assert_predictions_equal(coxnet, x, expected_pred)
 
-    def test_example_2_predict(self):
+    def test_example_2_with_n_alpha_interpolation(self, make_example_coef):
         x, coxnet = self._fit_example(l1_ratio=0.9, n_alphas=11,
                                       alpha_min_ratio=0.001)
 
@@ -415,13 +440,21 @@ class TestCoxnetSurvivalAnalysis(object):
              0.000260499895802314])
         assert_array_almost_equal(expected_alphas, coxnet.alphas_)
 
+        expected_coef = make_example_coef("2-nalpha")
+        coef = pandas.DataFrame(coxnet.coef_, columns=expected_coef.columns, dtype=float)
+        assert_columns_almost_equal(coef, expected_coef)
+
+        expected_offset = numpy.array(
+            [0, 0.000691134372356494, 0.00398228309120452, 0.00727343181005256, 0.0120190989555886, 0.0148545910591148]
+        )
+
         expected_pred = numpy.array([
             [0, -0.00238292430438636, -0.0137302955033516, -0.0250776667023169, -0.11170732289777, -0.178968215018837],
             [0, 0.019393427730732, 0.111744000040494, 0.204094572350256, 0.202194208945816, 0.1712643455565],
             [0, -0.0142582806836494, -0.0821555291520897, -0.15005277762053, -0.227574637069682, -0.269396998188837],
             [0, -1.68697383231657e-05, -9.72026227669121e-05, -0.000177535507210586, 0.0889321572547518,
              0.161856892574037]
-        ])
+        ]) - expected_offset[numpy.newaxis]
         pred = numpy.column_stack([
             coxnet.predict(x.iloc[[122, 10, 22, 200], :], alpha=a) for a in [0.75, 0.25, 0.2, 0.15, 0.1, 0.075]])
         assert_array_almost_equal(pred, expected_pred)
@@ -438,6 +471,73 @@ class TestCoxnetSurvivalAnalysis(object):
 
             sf = coxnet.predict_survival_function(xtest, alpha=a)
             assert len(sf) == 4
+
+    @pytest.mark.parametrize('fn', ["baseline_survival_", "cum_baseline_hazard_"])
+    def test_baseline_models(self, breast_cancer, fn):
+        X, y = breast_cancer
+
+        X_test = X.iloc[:19]
+        X_train = X.iloc[19:]
+        y_train = y[19:]
+
+        coxnet_1 = CoxnetSurvivalAnalysis(fit_baseline_model=True, alpha_min_ratio=0.001, n_alphas=23)
+        coxnet_1.fit(X_train, y_train)
+
+        coxnet_2 = CoxnetSurvivalAnalysis()
+        coxnet_2.set_params(**coxnet_1.get_params())
+        Xm = X_train.mean()
+        X_train_t = X_train - Xm
+        X_test_t = X_test - Xm
+        coxnet_2.fit(X_train_t, y_train)
+
+        assert_array_almost_equal(coxnet_1.coef_, coxnet_2.coef_)
+        assert_array_almost_equal(coxnet_1.alphas_, coxnet_2.alphas_)
+
+        for k, (a_1, a_2) in enumerate(zip(coxnet_1.alphas_, coxnet_2.alphas_)):
+            c0 = coxnet_1.predict(X_test, a_1)
+            c1 = coxnet_2.predict(X_test_t, a_2)
+            assert_array_almost_equal(c0, c1, err_msg="alphas[{}]".format(k))
+
+            pred_1 = getattr(coxnet_1._baseline_models[k], fn)
+            pred_2 = getattr(coxnet_2._baseline_models[k], fn)
+
+            assert_array_almost_equal(pred_1.y, pred_2.y, decimal=3, err_msg="alphas[{}]".format(k))
+
+    @pytest.mark.parametrize('fn', ["predict_survival_function", "predict_cumulative_hazard_function"])
+    def test_baseline_predict(self, breast_cancer, fn):
+        X, y = breast_cancer
+
+        X_test = X.iloc[:19]
+        X_train = X.iloc[19:]
+        y_train = y[19:]
+
+        coxnet_1 = CoxnetSurvivalAnalysis(fit_baseline_model=True, alpha_min_ratio=0.001, n_alphas=23)
+        coxnet_1.fit(X_train, y_train)
+
+        coxnet_2 = CoxnetSurvivalAnalysis()
+        coxnet_2.set_params(**coxnet_1.get_params())
+        Xm = X_train.mean()
+        X_train_t = X_train - Xm
+        X_test_t = X_test - Xm
+        coxnet_2.fit(X_train_t, y_train)
+
+        assert_array_almost_equal(coxnet_1.coef_, coxnet_2.coef_)
+        assert_array_almost_equal(coxnet_1.alphas_, coxnet_2.alphas_)
+
+        time_points = numpy.unique(y["t.tdm"])
+
+        for k, (a_1, a_2) in enumerate(zip(coxnet_1.alphas_, coxnet_2.alphas_)):
+            pred_1 = getattr(coxnet_1, fn)(X_test, alpha=a_1)
+            pred_2 = getattr(coxnet_2, fn)(X_test_t, alpha=a_2)
+
+            for i, (f1, f2) in enumerate(zip(pred_1, pred_2)):
+                assert_array_almost_equal(f1.a, f2.a, 5, err_msg="alphas[{}] [{}].a mismatch".format(k, i))
+                assert_array_almost_equal(f1.x, f2.x, err_msg="alphas[{}] [{}].a mismatch".format(k, i))
+                assert_array_almost_equal(f1.y, f2.y, err_msg="alphas[{}] [{}].a mismatch".format(k, i))
+
+                out_1 = f1(time_points)
+                out_2 = f2(time_points)
+                assert_array_almost_equal(out_1, out_2, 5, err_msg="alphas[{}] {}() mismatch".format(k, i))
 
     def test_predict_func_disabled(self):
         x, coxnet = self._fit_example(l1_ratio=0.9, n_alphas=11,
