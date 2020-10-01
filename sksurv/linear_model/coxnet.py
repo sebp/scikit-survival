@@ -254,6 +254,8 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
                           category=ConvergenceWarning,
                           stacklevel=2)
 
+        coef /= X_scale[:, numpy.newaxis]
+
         if self.fit_baseline_model:
             predictions = numpy.dot(X, coef)
             self._baseline_models = tuple(
