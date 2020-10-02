@@ -33,5 +33,6 @@ Models
 .. toctree::
    :maxdepth: 1
 
+   coxnet
    survival-svm
    random-survival-forest
