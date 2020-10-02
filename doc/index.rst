@@ -4,7 +4,7 @@ scikit-survival
 ===============
 
 scikit-survival is a Python module for `survival analysis <https://en.wikipedia.org/wiki/Survival_analysis>`_
-built on top of `scikit-learn <http://scikit-learn.org/>`_. It allows doing survival analysis
+built on top of `scikit-learn <https://scikit-learn.org/>`_. It allows doing survival analysis
 while utilizing the power of scikit-learn, e.g., for pre-processing or doing cross-validation.
 
 The objective in survival analysis (also referred to as time-to-event or reliability analysis)
