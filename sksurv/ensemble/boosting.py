@@ -385,9 +385,12 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
     In each stage, a regression tree is fit on the negative gradient
     of the loss function.
 
-    For more details on gradient boosting see [1]_ and [2]_, for gradient
-    boosting of the proportional hazards model see [3]_. When using a non-zero
-    `dropout_rate`, regularization is applied during training following [4]_.
+    For more details on gradient boosting see [1]_ and [2]_. If `loss='coxph'`,
+    the partial likelihood of the proportional hazards model is optimized as
+    described in [3]_. If `loss='ipcwls'`, the accelerated failture time model with
+    inverse-probability of censoring weighted least squares error is optimized as
+    described in [4]_. When using a non-zero `dropout_rate`, regularization is
+    applied during training following [5]_.
 
     Parameters
     ----------
@@ -537,7 +540,9 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
            Computational Statistics & Data Analysis, 38(4), 367–378, 2002.
     .. [3] G. Ridgeway, "The state of boosting,"
            Computing Science and Statistics, 172–181, 1999.
-    .. [4] K. V. Rashmi and R. Gilad-Bachrach,
+    .. [4] Hothorn, T., Bühlmann, P., Dudoit, S., Molinaro, A., van der Laan, M. J.,
+           "Survival ensembles", Biostatistics, 7(3), 355-73, 2006.
+    .. [5] K. V. Rashmi and R. Gilad-Bachrach,
            "DART: Dropouts meet multiple additive regression trees,"
            in 18th International Conference on Artificial Intelligence and Statistics,
            2015, 489–497.
