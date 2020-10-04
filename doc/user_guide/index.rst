@@ -34,5 +34,6 @@ Models
    :maxdepth: 1
 
    coxnet
-   survival-svm
    random-survival-forest
+   boosting
+   survival-svm
