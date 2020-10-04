@@ -41,7 +41,7 @@ The easiest way to install scikit-survival is to use
   conda install -c sebp scikit-survival
 
 Alternatively, you can install scikit-survival from source
-following :doc:`this guide <install>`.
+following :ref:`this guide <install-from-source>`.
 
 
 .. raw:: html
@@ -56,7 +56,7 @@ following :doc:`this guide <install>`.
             <i class="fas fa-book-open tile-icon"></i>
             </h3>
             <div class="tile-desc">
-              <p>The user guide provides in-depth information on the key concepts of scikit-survival with useful background information and explanation.</p>
+              <p>The user guide provides in-depth information on the key concepts of scikit-survival, an overview of available survival models, and hands-on examples.</p>
             </div>
           </a>
         </div>
@@ -68,7 +68,7 @@ following :doc:`this guide <install>`.
             <i class="fas fa-cogs tile-icon"></i>
             </h3>
             <div class="tile-desc">
-              <p>The reference guide contains a detailed description of the scikit-survival API. The reference describes how the methods work and which parameters can be used. It assumes that you have an understanding of the key concepts.</p>
+              <p>The reference guide contains a detailed description of the scikit-survival API. It describes which classes and functions are available and what their parameters are.</p>
             </div>
           </a>
         </div>
@@ -80,7 +80,7 @@ following :doc:`this guide <install>`.
             <i class="fas fa-code tile-icon"></i>
             </h3>
             <div class="tile-desc">
-              <p>Saw a typo in the documentation? Want to improve existing functionalities? The contributing guidelines will guide you through the process of improving scikit-survival.</p>
+              <p>Saw a typo in the documentation? Want to add new functionalities? The contributing guidelines will guide you through the process of setting up a development environment and submitting your changes to the scikit-survival team.</p>
             </div>
           </a>
         </div>
