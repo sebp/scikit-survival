@@ -34,7 +34,8 @@ class RandomSurvivalForest(BaseForest, SurvivalAnalysisMixin):
     In each survival tree, the quality of a split is measured by the
     log-rank splitting rule.
 
-    See [1]_ and [2]_ for further description.
+    See the :ref:`User Guide </user_guide/random-survival-forest.ipynb>`,
+    [1]_ and [2]_ for further description.
 
     Parameters
     ----------

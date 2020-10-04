@@ -87,7 +87,7 @@ def _fit_stage_componentwise(X, residuals, sample_weight, **fit_params):
 class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalysisMixin):
     r"""Gradient boosting with component-wise least squares as base learner.
 
-    See [1]_ for further description.
+    See the :ref:`User Guide </user_guide/boosting.ipynb>` and [1]_ for further description.
 
     Parameters
     ----------
@@ -391,6 +391,8 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
     inverse-probability of censoring weighted least squares error is optimized as
     described in [4]_. When using a non-zero `dropout_rate`, regularization is
     applied during training following [5]_.
+
+    See the :ref:`User Guide </user_guide/boosting.ipynb>` for examples.
 
     Parameters
     ----------
