@@ -22,6 +22,7 @@ jobs:
       - name: Adding conda to PATH
         run: echo "::add-path::${CONDA}/bin:${PATH}"
       - name: Set dependencies
+        id: dependencies
         run: |
           source ci/deps/${{ matrix.config }}.sh
           echo "::set-env name=CONDA_PYTHON_VERSION::${CONDA_PYTHON_VERSION}"
@@ -29,6 +30,15 @@ jobs:
           echo "::set-env name=NUMPY_VERSION::${NUMPY_VERSION}"
           echo "::set-env name=SKLEARN_VERSION::${SKLEARN_VERSION}"
           echo "::set-env name=NO_SLOW::${NO_SLOW}"
+          echo "::set-output name=requirements::ci/deps/${{ matrix.config }}.sh"
+          echo "::set-output name=conda_pkgs::$(${CONDA}/bin/python -c "from conda.base.context import context; print(context.pkgs_dirs[0])")"
+      - name: Cache downloaded packages
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.dependencies.outputs.conda_pkgs }}
+          key: ${{ runner.os }}-conda-${{ hashFiles(steps.dependencies.outputs.requirements) }}
+          restore-keys: |
+            ${{ runner.os }}-conda-
       - name: Create Conda Environment
         run: |
           sudo chown -R $USER $CONDA
