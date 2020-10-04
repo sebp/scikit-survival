@@ -35,5 +35,9 @@ class SurvivalAnalysisMixin(object):
         from .metrics import concordance_index_censored
         name_event, name_time = y.dtype.names
 
-        result = concordance_index_censored(y[name_event], y[name_time], self.predict(X))
+        risk_score = self.predict(X)
+        if not getattr(self, "_predict_risk_score", True):
+            risk_score *= -1  # convert prediction on time scale to risk scale
+
+        result = concordance_index_censored(y[name_event], y[name_time], risk_score)
         return result[0]

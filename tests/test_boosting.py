@@ -219,6 +219,9 @@ class TestGradientBoosting(object):
         rmse_uncensored = numpy.sqrt(mean_squared_error(time_true[event_true], time_predicted[event_true]))
         assert round(abs(rmse_uncensored - 392.97741487479743), 7) == 0
 
+        cindex = model.score(whas500_data.x, whas500_data.y)
+        assert round(abs(cindex - 0.8979161399), 7) == 0
+
     @staticmethod
     def test_squared_loss(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
@@ -235,6 +238,9 @@ class TestGradientBoosting(object):
 
         rmse_uncensored = numpy.sqrt(mean_squared_error(time_true[event_true], time_predicted[event_true]))
         assert round(abs(rmse_uncensored - 383.10639243317951), 7) == 0
+
+        cindex = model.score(whas500_data.x, whas500_data.y)
+        assert round(abs(cindex - 0.9021810004), 7) == 0
 
     @staticmethod
     def test_ipcw_loss_staged_predict(make_whas500):
@@ -459,6 +465,9 @@ class TestComponentwiseGradientBoosting(object):
         rmse_uncensored = numpy.sqrt(mean_squared_error(time_true[event_true], time_predicted[event_true]))
         assert round(abs(rmse_uncensored - 542.884585289), 7) == 0
 
+        cindex = model.score(whas500_data.x, whas500_data.y)
+        assert round(abs(cindex - 0.7773356931), 7) == 0
+
     @staticmethod
     def test_squared_loss(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
@@ -475,6 +484,9 @@ class TestComponentwiseGradientBoosting(object):
 
         rmse_uncensored = numpy.sqrt(mean_squared_error(time_true[event_true], time_predicted[event_true]))
         assert round(abs(rmse_uncensored - 542.83358120153525), 7) == 0
+
+        cindex = model.score(whas500_data.x, whas500_data.y)
+        assert round(abs(cindex - 0.7777082862), 7) == 0
 
 
 @pytest.fixture(params=[GradientBoostingSurvivalAnalysis, ComponentwiseGradientBoostingSurvivalAnalysis])

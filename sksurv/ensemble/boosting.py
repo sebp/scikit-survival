@@ -30,7 +30,7 @@ from scipy.sparse import csc_matrix, csr_matrix, issparse
 from ..base import SurvivalAnalysisMixin
 from ..util import check_arrays_survival
 from .survival_loss import LOSS_FUNCTIONS, CensoredSquaredLoss, \
-    IPCWLeastSquaresError
+    CoxPH, IPCWLeastSquaresError
 
 
 __all__ = ['ComponentwiseGradientBoostingSurvivalAnalysis', 'GradientBoostingSurvivalAnalysis']
@@ -166,6 +166,10 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         self.dropout_rate = dropout_rate
         self.random_state = random_state
         self.verbose = verbose
+
+    @property
+    def _predict_risk_score(self):
+        return isinstance(self.loss_, CoxPH)
 
     def _check_params(self):
         """Check validity of parameters and raise ValueError if not valid. """
@@ -568,6 +572,10 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                          verbose=verbose,
                          ccp_alpha=ccp_alpha)
         self.dropout_rate = dropout_rate
+
+    @property
+    def _predict_risk_score(self):
+        return isinstance(self.loss_, CoxPH)
 
     def _check_params(self):
         """Check validity of parameters and raise ValueError if not valid. """
