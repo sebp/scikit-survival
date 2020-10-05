@@ -1,18 +1,10 @@
-name: macOS
+name: Notebooks
 on: [push, pull_request]
 
 jobs:
   checks:
-    runs-on: macos-latest
-    name: Build and check
-    strategy:
-      matrix:
-        config:
-          - py36_pandas021_numpy114_sklearn022
-          - py37_pandas024_numpy116_sklearn022
-          - py38_pandas025_numpy118_sklearn022
-          - py38_pandas10_numpy118_sklearn023
-          - py38_pandas11_numpy119_sklearn023
+    runs-on: ubuntu-latest
+    name: Build and check notebooks
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -23,14 +15,16 @@ jobs:
         run: echo "::add-path::${CONDA}/bin:${PATH}"
       - name: Set dependencies
         id: dependencies
+        env:
+          DEPS_CONFIG: py38_pandas11_numpy119_sklearn023
         run: |
-          source ci/deps/${{ matrix.config }}.sh
+          source ci/deps/${DEPS_CONFIG}.sh
           echo "::set-env name=CONDA_PYTHON_VERSION::${CONDA_PYTHON_VERSION}"
           echo "::set-env name=PANDAS_VERSION::${PANDAS_VERSION}"
           echo "::set-env name=NUMPY_VERSION::${NUMPY_VERSION}"
           echo "::set-env name=SKLEARN_VERSION::${SKLEARN_VERSION}"
           echo "::set-env name=NO_SLOW::${NO_SLOW}"
-          echo "::set-output name=requirements::ci/deps/${{ matrix.config }}.sh"
+          echo "::set-output name=requirements::ci/deps/${DEPS_CONFIG}.sh"
           echo "::set-output name=conda_pkgs::$(${CONDA}/bin/python -c "from conda.base.context import context; print(context.pkgs_dirs[0])")"
       - name: Cache downloaded packages
         uses: actions/cache@v2
@@ -49,6 +43,8 @@ jobs:
         run: |
           python3 ci/list-requirements.py requirements/dev.txt > /tmp/conda-req.txt
           conda install -c sebp -n sksurv-test --file /tmp/conda-req.txt
+          conda install -n sksurv-test ipykernel 'matplotlib==3.3.1' nbformat 'seaborn==0.10.1'
+          conda run -n sksurv-test pip install nbval
           conda list -n sksurv-test
       - name: Build package
         run: |
@@ -56,7 +52,7 @@ jobs:
           pip wheel --wheel-dir dist/ --no-binary scikit-survival --no-deps -e .
           pip install --exists-action=w --pre --no-index --find-links dist/ scikit-survival
           rm -fr build dist
-      - name: Run Tests
+      - name: Test notebooks
         run: |
           source activate sksurv-test
-          ci/run_tests.sh
+          pytest --nbval doc/user_guide/*.ipynb --sanitize-with ci/nb_sanitize.cfg

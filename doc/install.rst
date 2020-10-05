@@ -34,7 +34,7 @@ Please follow your distribution's instructions on how to install packages.
 **MacOS**
 
 On MacOS, you need to install *clang*, which is available from
-the *Command Line Tools* package. Open a terminal and excecute::
+the *Command Line Tools* package. Open a terminal and execute::
 
   xcode-select --install
 
@@ -58,6 +58,14 @@ To install the latest release of scikit-survival from source, run::
   pip install scikit-survival
 
 
+.. note::
+
+    If you have not installed the :ref:`dependencies <dependencies>` previously, this command
+    will first install all dependencies before installing scikit-survival.
+    Therefore, installation might fail if build requirements of some dependencies
+    are not met. In particular, `osqp <https://github.com/oxfordcontrol/osqp-python>`_
+    does require `CMake <https://cmake.org/>`_ to be installed.
+
 Development Version
 ^^^^^^^^^^^^^^^^^^^
 
@@ -67,6 +75,9 @@ simply run::
 
   pip install git+https://github.com/sebp/scikit-survival.git
 
+
+
+.. _dependencies:
 
 Dependencies
 ------------

@@ -29,7 +29,7 @@ __all__ = ['CoxnetSurvivalAnalysis']
 class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     """Cox's proportional hazard's model with elastic net penalty.
 
-    See [1]_ for further description.
+    See the :ref:`User Guide </user_guide/coxnet.ipynb>` and [1]_ for further description.
 
     Parameters
     ----------

@@ -1,0 +1,121 @@
+.tile {
+    position: relative;
+    display: block;
+    padding: 1rem 1.2rem;
+    border-radius: 6px;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2)
+}
+
+@media screen and (max-width:39.99875em) {
+    .tile {
+        margin-bottom: 1rem
+    }
+}
+
+@media screen and (min-width:40em) and (max-width:63.99875em) {
+    .tile {
+        margin-bottom: 2rem
+    }
+}
+
+.tile .tile-title {
+    position: relative;
+    font-size: 22px;
+    line-height: 1.4;
+    margin-top: 0;
+    margin-bottom: .5rem;
+}
+
+.tile .tile-title .tile-icon {
+    position: absolute;
+    right: 0;
+    line-height: 1.4;
+    transition: all .2s
+}
+
+.tile h3.tile-title:before {
+    height: 0;
+    margin: 0;
+}
+
+.tile .tile-desc {
+    margin-top: 1rem;
+    color: #646976
+}
+
+@media screen and (min-width:40em) {
+    .tile .tile-desc {
+        padding-right: 3.5rem
+    }
+}
+
+.tile .tile-desc p:last-child {
+    margin-bottom: 0
+}
+
+.tile:after {
+    content: " ";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: #4ce8ff;
+    background: linear-gradient(90deg, #4ce8ff, #d07cff);
+    opacity: 0;
+    transition: all .2s
+}
+
+.tile:hover:after {
+    opacity: 1
+}
+
+.tile:hover .tile-icon {
+    transform: scale(1.4)
+}
+
+a.tile-link:active,
+a.tile-link:link,
+a.tile-link:hover,
+a.tile-link:focus {
+    text-decoration: none;
+}
+
+.tile .tile-desc pre {
+    font-size: 80%;
+    white-space: pre-line;
+}
+
+.github-icon, .github-repository {
+    display: inline-block;
+}
+
+.github-icon {
+    width: 1.8rem;
+}
+
+.github-facts {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+    font-size: .95rem;
+    font-weight: 700;
+    list-style: none;
+    opacity: .75;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+
+.github-fact {
+    float: left;
+}
+
+.github-fact::before {
+    margin: 0.2rem;
+    content: "\00B7"
+}
+
+.github-fact:first-child::before {
+    display: none
+}

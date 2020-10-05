@@ -154,7 +154,8 @@ def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1
     When predicted risks are identical for a pair, 0.5 rather than 1 is added to the count
     of concordant pairs.
 
-    See [1]_ for further description.
+    See the :ref:`User Guide </user_guide/evaluating-survival-models.ipynb>`
+    and [1]_ for further description.
 
     Parameters
     ----------
@@ -230,7 +231,8 @@ def concordance_index_ipcw(survival_train, survival_test, estimate, tau=None, ti
     situations where the random censoring assumption holds and
     censoring is independent of the features.
 
-    See [1]_ for further description.
+    See the :ref:`User Guide </user_guide/evaluating-survival-models.ipynb>`
+    and [1]_ for further description.
 
     Parameters
     ----------
@@ -360,7 +362,8 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
 
     where :math:`\\hat{S}(t)` is the Kaplan–Meier estimator of the survival function.
 
-    See [1]_, [2]_, [3]_ for further description.
+    See the :ref:`User Guide </user_guide/evaluating-survival-models.ipynb>`,
+    [1]_, [2]_, [3]_ for further description.
 
     Parameters
     ----------
@@ -488,7 +491,7 @@ def brier_score(survival_train, survival_test, estimate, times):
     and :math:`1/\\hat{G}(t)` is a inverse probability of censoring weight, estimated by
     the Kaplan-Meier estimator.
 
-    See [1]_ for details.
+    See the :ref:`User Guide </user_guide/evaluating-survival-models.ipynb>` and [1]_ for details.
 
     Parameters
     ----------
@@ -614,7 +617,8 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
     where the weighting function is :math:`w(t) = t / t_\\text{max}`.
     The integral is estimated via the trapezoidal rule.
 
-    See [1]_ for further details.
+    See the :ref:`User Guide </user_guide/evaluating-survival-models.ipynb>`
+    and [1]_ for further details.
 
     Parameters
     ----------

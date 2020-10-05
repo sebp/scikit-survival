@@ -1,4 +1,4 @@
-.. understanding_predictions
+.. _understanding_predictions:
 
 Understanding Predictions in Survival Analysis
 ==============================================
@@ -16,7 +16,7 @@ observed – they are *censored*.
 As an example, consider a clinical study, which investigates cardiovascular disease and has been carried out over a
 1 year period as in the figure below.
 
-.. image:: _static/images/censoring.svg
+.. image:: ../_static/images/censoring.svg
    :alt: censoring
 
 Patient A was lost to follow-up after three months with no recorded cardiovascular event, patient B experienced an event

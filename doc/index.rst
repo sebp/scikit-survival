@@ -4,7 +4,7 @@ scikit-survival
 ===============
 
 scikit-survival is a Python module for `survival analysis <https://en.wikipedia.org/wiki/Survival_analysis>`_
-built on top of `scikit-learn <http://scikit-learn.org/>`_. It allows doing survival analysis
+built on top of `scikit-learn <https://scikit-learn.org/>`_. It allows doing survival analysis
 while utilizing the power of scikit-learn, e.g., for pre-processing or doing cross-validation.
 
 The objective in survival analysis (also referred to as time-to-event or reliability analysis)
@@ -21,8 +21,19 @@ it is unknown whether an event has or has not occurred after the study ended.
 Consequently, survival analysis demands for models that take
 this unique characteristic of such a dataset into account.
 
-Installation
-------------
+
+.. raw:: html
+
+    <div class="row">
+      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex p-1">
+        <div class="flex-fill tile">
+          <a class="tile-link" href="install.html">
+            <h3 class="tile-title">Install
+            <i class="fas fa-download tile-icon"></i>
+            </h3>
+          </a>
+          <div class="tile-desc">
+
 
 The easiest way to install scikit-survival is to use
 `Anaconda <https://www.anaconda.com/distribution/>`_ by running::
@@ -30,34 +41,61 @@ The easiest way to install scikit-survival is to use
   conda install -c sebp scikit-survival
 
 Alternatively, you can install scikit-survival from source
-following :doc:`this guide <install>`.
+following :ref:`this guide <install-from-source>`.
 
 
-Documentation
--------------
+.. raw:: html
+
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex p-1">
+        <div class="flex-fill tile">
+          <a class="tile-link" href="user_guide/index.html">
+            <h3 class="tile-title">User Guide
+            <i class="fas fa-book-open tile-icon"></i>
+            </h3>
+            <div class="tile-desc">
+              <p>The user guide provides in-depth information on the key concepts of scikit-survival, an overview of available survival models, and hands-on examples.</p>
+            </div>
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex p-1">
+        <div class="flex-fill tile">
+          <a class="tile-link" href="api/index.html">
+            <h3 class="tile-title">API reference
+            <i class="fas fa-cogs tile-icon"></i>
+            </h3>
+            <div class="tile-desc">
+              <p>The reference guide contains a detailed description of the scikit-survival API. It describes which classes and functions are available and what their parameters are.</p>
+            </div>
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex p-1">
+        <div class="flex-fill tile">
+          <a class="tile-link" href="contributing.html">
+            <h3 class="tile-title">Contributing
+            <i class="fas fa-code tile-icon"></i>
+            </h3>
+            <div class="tile-desc">
+              <p>Saw a typo in the documentation? Want to add new functionalities? The contributing guidelines will guide you through the process of setting up a development environment and submitting your changes to the scikit-survival team.</p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
 
 .. toctree::
    :maxdepth: 1
+   :hidden:
+   :titlesonly:
 
-   install
-   understanding_predictions
-   api
-   contributing
+   Install <install>
+   user_guide/index
+   api/index
+   Contribute <contributing>
    release_notes
-
-
-Notebooks
----------
-
-* `Introduction to Survival Analysis with scikit-survival <https://nbviewer.jupyter.org/github/sebp/scikit-survival/blob/master/examples/00-introduction.ipynb>`_
-* `Pitfalls when Evaluating Survival Models <https://nbviewer.jupyter.org/github/sebp/scikit-survival/blob/master/examples/evaluating-survival-models.ipynb>`_
-* `Introduction to Kernel Survival Support Vector Machines <https://nbviewer.jupyter.org/github/sebp/scikit-survival/blob/master/examples/survival-svm.ipynb>`_
-* `Using Random Survival Forests <https://nbviewer.jupyter.org/github/sebp/scikit-survival/blob/master/examples/random-survival-forest.ipynb>`_
-
-
-Indices and tables
-------------------
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   Cite <cite>
