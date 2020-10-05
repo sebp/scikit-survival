@@ -54,18 +54,15 @@ The easiest way to install scikit-survival is to use
   conda install -c sebp scikit-survival
 
 Alternatively, you can install scikit-survival from source
-following `this guide <https://scikit-survival.readthedocs.io/en/latest/install.html#from-source>`_.
+following `this guide <https://scikit-survival.readthedocs.io/en/stable/install.html#from-source>`_.
 
 ========
 Examples
 ========
 
-The following examples are available as `Jupyter notebook <https://jupyter.org/>`_:
-
-* `Introduction to Survival Analysis with scikit-survival <https://nbviewer.jupyter.org/github/sebp/scikit-survival/blob/master/examples/00-introduction.ipynb>`_
-* `Pitfalls when Evaluating Survival Models <https://nbviewer.jupyter.org/github/sebp/scikit-survival/blob/master/examples/evaluating-survival-models.ipynb>`_
-* `Introduction to Kernel Survival Support Vector Machines <https://nbviewer.jupyter.org/github/sebp/scikit-survival/blob/master/examples/survival-svm.ipynb>`_
-* `Using Random Survival Forests <https://nbviewer.jupyter.org/github/sebp/scikit-survival/blob/master/examples/random-survival-forest.ipynb>`_
+The `user guide <https://scikit-survival.readthedocs.io/en/stable/user_guide/index.html>`_ provides
+in-depth information on the key concepts of scikit-survival, an overview of available survival models,
+and hands-on examples in the form of `Jupyter notebooks <https://jupyter.org/>`_.
 
 ================
 Help and Support
