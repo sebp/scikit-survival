@@ -9,9 +9,10 @@ cp -r doc/user_guide .binder $TMP_CONTENT_DIR
 # delete everything in current directory including dot files and dot folders
 find . -delete
 
-# Generate notebooks and remove other files from user_guide folder
+# Copy notebooks and remove other files from user_guide folder
 NOTEBOOKS_DIR=notebooks
 cp -r $TMP_CONTENT_DIR/user_guide $NOTEBOOKS_DIR
+find $NOTEBOOKS_DIR -not -name '*.ipynb' -type f -delete
 
 # Put the .binder folder back (may be useful for debugging purposes)
 mv $TMP_CONTENT_DIR/.binder .
