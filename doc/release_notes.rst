@@ -1,6 +1,52 @@
 Release Notes
 =============
 
+scikit-survival 0.14.0 (2020-10-07)
+-----------------------------------
+
+This release features a complete overhaul of the :doc:`documentation <index>`.
+It features a new visual design, and the inclusion of several interactive notebooks
+in the :ref:`User Guide`.
+
+In addition, it includes important bug fixes.
+It fixes several bugs in :class:`sksurv.linear_model.CoxnetSurvivalAnalysis`
+where ``predict``, ``predict_survival_function``, and ``predict_cumulative_hazard_function``
+returned wrong values if features of the training data were not centered.
+Moreover, the `score` function of :class:`sksurv.ensemble.ComponentwiseGradientBoostingSurvivalAnalysis`
+and :class:`sksurv.ensemble.GradientBoostingSurvivalAnalysis` will now
+correctly compute the concordance index if ``loss='ipcwls'`` or ``loss='squared'``.
+
+Bug fixes
+^^^^^^^^^
+
+- :func:`sksurv.column.standardize` modified data in-place. Data is now always copied.
+- :func:`sksurv.column.standardize` works with integer numpy arrays now.
+- :func:`sksurv.column.standardize` used biased standard deviation for numpy arrays (``ddof=0``),
+  but unbiased standard deviation for pandas objects (``ddof=1``). It always uses ``ddof=1`` now.
+  Therefore, the output, if the input is a numpy array, will differ from that of previous versions.
+- Fixed :meth:`sksurv.linear_model.CoxnetSurvivalAnalysis.predict_survival_function`
+  and :meth:`sksurv.linear_model.CoxnetSurvivalAnalysis.predict_cumulative_hazard_function`,
+  which returned wrong values if features of training data were not already centered.
+  This adds an ``offset_`` attribute that accounts for non-centered data and is added to the
+  predicted risk score. Therefore, the outputs of ``predict``, ``predict_survival_function``,
+  and ``predict_cumulative_hazard_function`` will be different to previous versions for
+  non-centered data (#139).
+- Rescale coefficients of :class:`sksurv.linear_model.CoxnetSurvivalAnalysis` if
+  `normalize=True`.
+- Fix `score` function of :class:`sksurv.ensemble.ComponentwiseGradientBoostingSurvivalAnalysis`
+  and :class:`sksurv.ensemble.GradientBoostingSurvivalAnalysis` if ``loss='ipcwls'`` or ``loss='squared'``
+  is used. Previously, it returned ``1.0 - true_cindex``.
+
+Enhancements
+^^^^^^^^^^^^
+
+- Add :func:`sksurv.show_versions` that prints the version of all dependencies.
+- Add support for pandas 1.1
+- Include interactive notebooks in documentation on readthedocs.
+- Add user guide on `penalized Cox models <user_guide/coxnet.ipynb>`_.
+- Add user guide on `gradient boosted models <user_guide/boosting.ipynb>`_.
+
+
 scikit-survival 0.13.1 (2020-07-04)
 -----------------------------------
 
