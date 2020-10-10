@@ -1,4 +1,4 @@
 [submodule "sksurv/linear_model/src/eigen"]
 	path = sksurv/linear_model/src/eigen
-	url = https://github.com/eigenteam/eigen-git-mirror.git
-	branch = branches/3.3
+	url = https://gitlab.com/libeigen/eigen.git
+	branch = 3.3
