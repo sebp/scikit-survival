@@ -20,16 +20,16 @@ jobs:
           fetch-depth: 0
           submodules: true
       - name: Adding conda to PATH
-        run: echo "::add-path::${CONDA}/bin:${PATH}"
+        run: echo "${CONDA}/bin" >> $GITHUB_PATH
       - name: Set dependencies
         id: dependencies
         run: |
           source ci/deps/${{ matrix.config }}.sh
-          echo "::set-env name=CONDA_PYTHON_VERSION::${CONDA_PYTHON_VERSION}"
-          echo "::set-env name=PANDAS_VERSION::${PANDAS_VERSION}"
-          echo "::set-env name=NUMPY_VERSION::${NUMPY_VERSION}"
-          echo "::set-env name=SKLEARN_VERSION::${SKLEARN_VERSION}"
-          echo "::set-env name=NO_SLOW::${NO_SLOW}"
+          echo "CONDA_PYTHON_VERSION=${CONDA_PYTHON_VERSION}" >> $GITHUB_ENV
+          echo "PANDAS_VERSION=${PANDAS_VERSION}" >> $GITHUB_ENV
+          echo "NUMPY_VERSION=${NUMPY_VERSION}" >> $GITHUB_ENV
+          echo "SKLEARN_VERSION=${SKLEARN_VERSION}" >> $GITHUB_ENV
+          echo "NO_SLOW=${NO_SLOW}" >> $GITHUB_ENV
           echo "::set-output name=requirements::ci/deps/${{ matrix.config }}.sh"
           echo "::set-output name=conda_pkgs::$(${CONDA}/bin/python -c "from conda.base.context import context; print(context.pkgs_dirs[0])")"
       - name: Cache downloaded packages
