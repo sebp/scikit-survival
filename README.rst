@@ -96,22 +96,22 @@ on how to get started and to make sure your code complies with our guidelines.
 References
 ==========
 
-Please cite the following papers if you are using **scikit-survival**.
+Please cite the following paper if you are using **scikit-survival**.
 
-1. Pölsterl, S., Navab, N., and Katouzian, A.,
-`Fast Training of Support Vector Machines for Survival Analysis <http://link.springer.com/chapter/10.1007/978-3-319-23525-7_15>`_.
-Machine Learning and Knowledge Discovery in Databases: European Conference,
-ECML PKDD 2015, Porto, Portugal,
-Lecture Notes in Computer Science, vol. 9285, pp. 243-259 (2015)
+> S. Pölsterl, "scikit-survival: A Library for Time-to-Event Analysis Built on Top of scikit-learn," Journal of Machine Learning Research, vol. 21, no. 212, pp. 1–6, 2020.
 
-2. Pölsterl, S., Navab, N., and Katouzian, A.,
-`An Efficient Training Algorithm for Kernel Survival Support Vector Machines <https://arxiv.org/abs/1611.07054>`_.
-4th Workshop on Machine Learning in Life Sciences,
-23 September 2016, Riva del Garda, Italy
-
-3. Pölsterl, S., Gupta, P., Wang, L., Conjeti, S., Katouzian, A., and Navab, N.,
-`Heterogeneous ensembles for predicting survival of metastatic, castrate-resistant prostate cancer patients <http://doi.org/10.12688/f1000research.8231.1>`_.
-F1000Research, vol. 5, no. 2676 (2016).
+```
+@article{sksurv,
+  author  = {Sebastian P{\"o}lsterl},
+  title   = {scikit-survival: A Library for Time-to-Event Analysis Built on Top of scikit-learn},
+  journal = {Journal of Machine Learning Research},
+  year    = {2020},
+  volume  = {21},
+  number  = {212},
+  pages   = {1-6},
+  url     = {http://jmlr.org/papers/v21/20-729.html}
+}
+```
 
 .. |License| image:: https://img.shields.io/badge/license-GPLv3-blue.svg
   :target: COPYING
