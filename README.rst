@@ -98,20 +98,21 @@ References
 
 Please cite the following paper if you are using **scikit-survival**.
 
-> S. Pölsterl, "scikit-survival: A Library for Time-to-Event Analysis Built on Top of scikit-learn," Journal of Machine Learning Research, vol. 21, no. 212, pp. 1–6, 2020.
+  S. Pölsterl, "scikit-survival: A Library for Time-to-Event Analysis Built on Top of scikit-learn,"
+  Journal of Machine Learning Research, vol. 21, no. 212, pp. 1–6, 2020.
 
-```
-@article{sksurv,
-  author  = {Sebastian P{\"o}lsterl},
-  title   = {scikit-survival: A Library for Time-to-Event Analysis Built on Top of scikit-learn},
-  journal = {Journal of Machine Learning Research},
-  year    = {2020},
-  volume  = {21},
-  number  = {212},
-  pages   = {1-6},
-  url     = {http://jmlr.org/papers/v21/20-729.html}
-}
-```
+.. code::
+
+  @article{sksurv,
+    author  = {Sebastian P{\"o}lsterl},
+    title   = {scikit-survival: A Library for Time-to-Event Analysis Built on Top of scikit-learn},
+    journal = {Journal of Machine Learning Research},
+    year    = {2020},
+    volume  = {21},
+    number  = {212},
+    pages   = {1-6},
+    url     = {http://jmlr.org/papers/v21/20-729.html}
+  }
 
 .. |License| image:: https://img.shields.io/badge/license-GPLv3-blue.svg
   :target: COPYING

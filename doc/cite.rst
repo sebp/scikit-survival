@@ -4,7 +4,8 @@ Citing scikit-survival
 If you are using **scikit-survival** in your scientific research,
 please cite the following paper:
 
-    S. Pölsterl, "scikit-survival: A Library for Time-to-Event Analysis Built on Top of scikit-learn," Journal of Machine Learning Research, vol. 21, no. 212, pp. 1–6, 2020.
+    S. Pölsterl, "scikit-survival: A Library for Time-to-Event Analysis Built on Top of scikit-learn,"
+    Journal of Machine Learning Research, vol. 21, no. 212, pp. 1–6, 2020.
 
 BibTeX entry::
 
