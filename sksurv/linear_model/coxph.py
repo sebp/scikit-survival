@@ -469,7 +469,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         """
         check_is_fitted(self, "coef_")
 
-        X = numpy.atleast_2d(X)
+        X = check_array(X)
 
         return numpy.dot(X, self.coef_)
 

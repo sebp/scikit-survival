@@ -20,6 +20,7 @@ from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.utils import check_X_y, check_array, check_consistent_length, check_random_state
+from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.extmath import safe_sparse_dot, squared_norm
 
 from ..base import SurvivalAnalysisMixin
@@ -860,6 +861,9 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         y : ndarray, shape = (n_samples,)
             Predicted ranks.
         """
+        check_is_fitted(self, "coef_")
+        X = check_array(X)
+
         val = numpy.dot(X, self.coef_)
         if hasattr(self, "intercept_"):
             val += self.intercept_
