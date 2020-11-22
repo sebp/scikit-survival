@@ -326,6 +326,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
             Predicted risk scores.
         """
         check_is_fitted(self, 'estimators_')
+        X = check_array(X)
 
         if X.shape[1] != self.n_features_:
             raise ValueError('Dimensions of X are inconsistent with training data: '
