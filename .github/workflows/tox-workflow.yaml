@@ -11,9 +11,9 @@ jobs:
         with:
           submodules: true
       - name: Run Tox
-        uses: fedora-python/tox-github-action@master
+        uses: fedora-python/tox-github-action@v0.4
         with:
-          tox_env: ${{ matrix.tox_env }}
+          tox_env: py38-${{ matrix.tox_env }}
           dnf_install: pandoc cmake make
       - name: Archive documentation
         uses: actions/upload-artifact@v1
@@ -21,6 +21,9 @@ jobs:
           name: documentation
           path: doc/_build/html
         if: ${{ matrix.tox_env == 'docs' }}
+      - name: Print debug information
+        run: cat .tox/py38-${{ matrix.tox_env }}/log/*.log
+        if: ${{ failure() }}
     strategy:
       matrix:
         tox_env: [flake8, docs]
