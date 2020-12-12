@@ -52,6 +52,7 @@ jobs:
           conda list -n sksurv-test
       - name: Build package
         run: |
+          sudo xcode-select -s "/Applications/Xcode_12.app"
           source activate sksurv-test
           pip wheel --wheel-dir dist/ --no-binary scikit-survival --no-deps -e .
           pip install --exists-action=w --pre --no-index --find-links dist/ scikit-survival
