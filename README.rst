@@ -81,6 +81,7 @@ Help and Support
 
 **Questions**
 
+- If you have a question on how to use scikit-survival, please use `GitHub Discussions <https://github.com/sebp/scikit-survival/discussions>`_.
 - For general theoretical or methodological questions on survival analysis, please use
   `Cross Validated <https://stats.stackexchange.com/questions/tagged/survival>`_.
 
