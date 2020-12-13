@@ -74,7 +74,7 @@ For a pull request to be accepted, your changes must meet the below requirements
    To check that your code conforms to PEP8, you can install
    `tox`_ and run::
 
-    tox -e flake8
+    tox -e py38-flake8
 
 3. Each function, class, method, and attribute needs to be documented using docstrings.
    scikit-survival conforms to the
@@ -125,7 +125,7 @@ The documentation resides in the ``doc/`` folder and is written in
 reStructuredText. HTML files of the documentation can be generated using `Sphinx`_.
 The easiest way to build the documentation is to install `tox`_ and run::
 
-    tox -e docs
+    tox -e py38-docs
 
 Generated files will be located in ``doc/_build/html``. To open the main page
 of the documentation, run::
