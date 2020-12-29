@@ -366,7 +366,7 @@ if on_rtd:
         'sksurv.tree._criterion']
 
     MOCK_VERSIONS = {
-        'pandas': '0.22.0',
+        'pandas': '0.25.0',
         'sklearn': '0.22.0',
     }
 
