@@ -341,22 +341,21 @@ class TestToyOsqpExample(object):
         assert_array_almost_equal(expected, p, decimal=5)
 
 
-class TestToyCvxpyExample(object):
+class TestToyEcosExample(object):
 
     @property
     def minlip_model(self):
-        return MinlipSurvivalAnalysis(solver="cvxpy", alpha=1, pairs="next")
+        return MinlipSurvivalAnalysis(solver="ecos", alpha=1, pairs="next")
 
     @property
     def svm_model(self):
-        return HingeLossSurvivalSVM(solver="cvxpy", alpha=2.)
+        return HingeLossSurvivalSVM(solver="ecos", alpha=2.)
 
-    def test_toy_minlip_fit_cvxpy(self, toy_data):
+    def test_toy_minlip_fit_ecos(self, toy_data):
         x, y = toy_data
         m = self.minlip_model
         m.set_params(alpha=2)
-        with pytest.deprecated_call():
-            m.fit(x, y)
+        m.fit(x, y)
 
         assert (1, x.shape[0]) == m.coef_.shape
         assert 1 == m.coef0
@@ -369,30 +368,27 @@ class TestToyCvxpyExample(object):
         x, y = toy_data
         m = self.minlip_model
         m.set_params(timeit=7)
-        with pytest.deprecated_call():
-            m.fit(x, y)
+        m.fit(x, y)
 
         assert 7 == len(m.timings_)
 
-    def test_toy_minlip_predict_1_cvxpy(self, toy_data):
+    def test_toy_minlip_predict_1_ecos(self, toy_data):
         x, y = toy_data
         m = self.minlip_model
-        with pytest.deprecated_call():
-            m.fit(x, y)
+        m.fit(x, y)
 
         p = m.predict(x)
         assert_cindex_almost_equal(y['status'], y['time'], p,
                                    (1.0, 11, 0, 0, 0))
 
-    def test_toy_minlip_predict_2_cvxpy(self, toy_data, toy_test_data):
+    def test_toy_minlip_predict_2_ecos(self, toy_data, toy_test_data):
         x, y = toy_data
         m = self.minlip_model
         m.set_params(pairs="next")
         y = y.copy()
         y["time"] = numpy.arange(1, 7)
         sd = numpy.std(x, axis=0)
-        with pytest.deprecated_call():
-            m.fit(x / sd, y)
+        m.fit(x / sd, y)
 
         p = m.predict(toy_test_data / sd)
         expected = numpy.array([-0.033523879826, -1.878228488294, -2.410824233892])
@@ -402,8 +398,7 @@ class TestToyCvxpyExample(object):
         x, y = toy_data
         m = self.svm_model
         sd = numpy.std(x, axis=0)
-        with pytest.deprecated_call():
-            m.fit(x / sd, y)
+        m.fit(x / sd, y)
 
         assert (1, x.shape[0]) == m.coef_.shape
         assert 1 == m.coef0
@@ -416,12 +411,11 @@ class TestToyCvxpyExample(object):
         assert_cindex_almost_equal(y['status'], y['time'], p,
                                    (1.0, 11, 0, 0, 0))
 
-    def test_toy_hinge_predict_cvxpy(self, toy_data, toy_test_data):
+    def test_toy_hinge_predict_ecos(self, toy_data, toy_test_data):
         x, y = toy_data
         m = self.svm_model
         sd = numpy.std(x, axis=0)
-        with pytest.deprecated_call():
-            m.fit(x / sd, y)
+        m.fit(x / sd, y)
 
         p = m.predict(toy_test_data / sd)
         expected = numpy.array([-0.090550891252, -4.213744335308, -5.252123739017])
@@ -432,8 +426,7 @@ class TestToyCvxpyExample(object):
         m = self.svm_model
         m.set_params(pairs="nearest")
         sd = numpy.std(x, axis=0)
-        with pytest.deprecated_call():
-            m.fit(x / sd, y)
+        m.fit(x / sd, y)
 
         assert(1, x.shape[0]) == m.coef_.shape
         assert 1 == m.coef0
@@ -446,93 +439,19 @@ class TestToyCvxpyExample(object):
         assert_cindex_almost_equal(y['status'], y['time'], p,
                                    (1.0, 11, 0, 0, 0))
 
-    def test_toy_hinge_nearest_predict_cvxpy(self, toy_data, toy_test_data):
+    def test_toy_hinge_nearest_predict_ecos(self, toy_data, toy_test_data):
         x, y = toy_data
         m = self.svm_model
         m.set_params(pairs="nearest")
         xm = numpy.mean(x, axis=0, keepdims=True)
         xsd = numpy.std(x, axis=0, keepdims=True)
         xt = (x - xm) / xsd
-        with pytest.deprecated_call():
-            m.fit(xt, y)
+        m.fit(xt, y)
 
         p = m.predict((toy_test_data - xm) / xsd)
         expected = numpy.array([2.8571060045, -1.2661069033, -2.3044907774])
 
         assert_array_almost_equal(expected, p, decimal=5)
-
-
-def has_cvxopt():
-    try:
-        import cvxopt  # noqa: F401
-    except ImportError:
-        return False
-    return True
-
-
-@pytest.mark.skipif(not has_cvxopt(), reason='no cvxopt installed')
-class TestToyCvxoptExample(object):
-
-    @property
-    def minlip_model(self):
-        return MinlipSurvivalAnalysis(solver="cvxopt", alpha=1, pairs="next", max_iter=1000)
-
-    @property
-    def svm_model(self):
-        return HingeLossSurvivalSVM(solver="cvxopt", alpha=1, max_iter=1000)
-
-    def test_toy_minlip_fit_cvxopt(self, toy_data):
-        x, y = toy_data
-        m = self.minlip_model
-        with pytest.deprecated_call():
-            m.fit(x, y)
-
-        assert (1, x.shape[0]) == m.coef_.shape
-        assert 1 == m.coef0
-        expected_coef = numpy.array([
-            [-0.011727707619, 0.011727690349, 0.000000017270,
-             -0.017525505057, 0.017525505057, 0.]])
-        assert_array_almost_equal(m.coef_, expected_coef)
-
-    def test_toy_minlip_predict_1_cvxopt(self, toy_data):
-        x, y = toy_data
-        m = self.minlip_model
-        with pytest.deprecated_call():
-            m.fit(x, y)
-
-        p = m.predict(x)
-        assert_cindex_almost_equal(y['status'], y['time'], p,
-                                   (1.0, 11, 0, 0, 0))
-
-    def test_toy_minlip_predict_2_cvxopt(self, toy_data):
-        x, y = toy_data
-        m = self.minlip_model
-        y = y.copy()
-        y["time"] = numpy.arange(1, 7)
-        with pytest.deprecated_call():
-            m.fit(x, y)
-
-        p = m.predict(numpy.array([[3, 4], [41, 29]]))
-        assert_array_almost_equal(numpy.array([-0.34162365, -5.37435297]), p)
-
-    def test_toy_hinge_predict_cvxopt(self, toy_data):
-        x, y = toy_data
-        m = self.svm_model
-        with pytest.deprecated_call():
-            m.fit(x, y)
-
-        p = m.predict(numpy.array([[3, 4], [41, 29]]))
-        assert_array_almost_equal(numpy.array([-0.341622, -5.374336]), p)
-
-    def test_toy_hinge_nearest_predict_cvxopt(self, toy_data):
-        x, y = toy_data
-        m = self.svm_model
-        m.set_params(pairs="nearest")
-        with pytest.deprecated_call():
-            m.fit(x, y)
-
-        p = m.predict(numpy.array([[3, 4], [41, 29]]))
-        assert_array_almost_equal(numpy.array([-0.341623, -5.374339]), p)
 
 
 class TestMinlipOsqp(object):
@@ -548,7 +467,7 @@ class TestMinlipOsqp(object):
 
         p = m.predict(x)
         assert_cindex_almost_equal(y['cens'], y['time'], p,
-                                   (0.599066670674522, 79719, 53353, 0, 42))
+                                   (0.5990741854033906, 79720, 53352, 0, 42))
 
     @staticmethod
     @pytest.mark.slow
@@ -563,7 +482,7 @@ class TestMinlipOsqp(object):
 
         p = m.predict(x)
         assert_cindex_almost_equal(y['cens'], y['time'], p,
-                                   (0.6106168089455333, 81256, 51816, 0, 42))
+                                   (0.6106092942166647, 81255, 51817, 0, 42))
 
     @staticmethod
     @pytest.mark.slow
@@ -602,12 +521,11 @@ class TestMinlipOsqp(object):
 class TestMinlipCvxpy(object):
 
     @staticmethod
-    def test_breast_cancer_cvxpy(gbsg2):
+    def test_breast_cancer_ecos(gbsg2):
         x, y = gbsg2
         x = scale(x)
-        m = MinlipSurvivalAnalysis(solver="cvxpy", alpha=1, pairs="next")
-        with pytest.deprecated_call():
-            m.fit(x, y)
+        m = MinlipSurvivalAnalysis(solver="ecos", alpha=1, pairs="next")
+        m.fit(x, y)
 
         assert (1, x.shape[0]) == m.coef_.shape
 
@@ -617,13 +535,12 @@ class TestMinlipCvxpy(object):
 
     @staticmethod
     @pytest.mark.slow
-    def test_breast_cancer_rbf_cvxpy(gbsg2):
+    def test_breast_cancer_rbf_ecos(gbsg2):
         x, y = gbsg2
         x = scale(x)
-        m = MinlipSurvivalAnalysis(solver="cvxpy", alpha=1, kernel="rbf",
+        m = MinlipSurvivalAnalysis(solver="ecos", alpha=1, kernel="rbf",
                                    gamma=1./8, pairs="next", max_iter=1000)
-        with pytest.deprecated_call():
-            m.fit(x, y)
+        m.fit(x, y)
 
         assert (1, x.shape[0]) == m.coef_.shape
 
@@ -654,7 +571,7 @@ class TestMinlipCvxpy(object):
         from sklearn.metrics.pairwise import pairwise_kernels
         from sklearn.utils.metaestimators import _safe_split
 
-        m = MinlipSurvivalAnalysis(kernel="precomputed", solver="cvxpy")
+        m = MinlipSurvivalAnalysis(kernel="precomputed", solver="ecos")
         K = pairwise_kernels(x, metric="rbf", gamma=1./32)
 
         train_idx = numpy.arange(50, x.shape[0])
@@ -662,62 +579,27 @@ class TestMinlipCvxpy(object):
         X_fit, y_fit = _safe_split(m, K, y, train_idx)
         X_test, y_test = _safe_split(m, K, y, test_idx, train_idx)
 
-        with pytest.deprecated_call():
-            m.fit(X_fit, y_fit)
+        m.fit(X_fit, y_fit)
 
         p = m.predict(X_test)
         assert_cindex_almost_equal(y_test['cens'], y_test['time'], p,
                                    (0.626514131897712, 457, 269, 17, 0))
 
-
-@pytest.mark.skipif(not has_cvxopt(), reason='no cvxopt installed')
-class TestMinlipCvxopt(object):
-
-    @property
-    def model(self):
-        return MinlipSurvivalAnalysis(solver="cvxopt", alpha=1, pairs="next", max_iter=1000)
-
-    def test_breast_cancer_cvxopt(self, gbsg2):
-        x, y = gbsg2
-        m = self.model
-        with pytest.deprecated_call():
-            m.fit(x, y)
-
-        assert (1, x.shape[0]) == m.coef_.shape
-
-        p = m.predict(x)
-        assert_cindex_almost_equal(y['cens'], y['time'], p,
-                                   (0.59570007214139709, 79271, 53801, 0, 42))
-
-    def test_breast_cancer_rbf_cvxopt(self, gbsg2):
-        x, y = gbsg2
-        x = scale(x)
-        m = self.model
-        m.set_params(kernel="rbf", gamma=1./8)
-        with pytest.deprecated_call():
-            m.fit(x, y)
-
-        assert (1, x.shape[0]) == m.coef_.shape
-
-        p = m.predict(x)
-        assert_cindex_almost_equal(y['cens'], y['time'], p,
-                                   (0.6106092942166647, 81255, 51817, 0, 42))
-
     @staticmethod
     def test_max_iter(gbsg2):
         x, y = gbsg2
         x = scale(x)
-        m = MinlipSurvivalAnalysis(solver="cvxopt", alpha=1, kernel="polynomial",
+        m = MinlipSurvivalAnalysis(solver="ecos", alpha=1, kernel="polynomial",
                                    degree=2, pairs="next", max_iter=5)
 
         with pytest.warns(ConvergenceWarning,
-                          match=r"cvxopt solver did not converge: unknown \(duality gap = [.0-9]+\)"):
+                          match=r"ECOS solver did not converge: maximum iterations reached"):
             m.fit(x, y)
 
 
 @pytest.mark.parametrize(["model_cls", "solver", "pairs"],
                          list(product((MinlipSurvivalAnalysis, HingeLossSurvivalSVM),
-                                      ("cvxpy", "cvxopt", "osqp"),
+                                      ("ecos", "osqp"),
                                       ("all", "nearest", "next"))))
 def test_fit_uncomparable(whas500_uncomparable, model_cls, solver, pairs):
     ssvm = model_cls(solver=solver, pairs=pairs)
