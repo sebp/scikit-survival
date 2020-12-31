@@ -308,8 +308,7 @@ nbsphinx.Exporter.from_notebook_node = _from_notebook_node
 if on_rtd:
     MOCK_MODULES = [
         # external dependencies
-        'cvxopt',
-        'cvxpy',
+        'ecos',
         'joblib',
         'numexpr',
         'numpy',

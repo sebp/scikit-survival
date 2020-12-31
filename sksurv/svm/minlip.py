@@ -1,5 +1,7 @@
+from abc import ABCMeta, abstractmethod
 import numpy
 from scipy import sparse
+from scipy import linalg
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import pairwise_kernels
@@ -13,12 +15,165 @@ from ._minlip import create_difference_matrix
 __all__ = ['MinlipSurvivalAnalysis', 'HingeLossSurvivalSVM']
 
 
-def _check_cvxopt():
-    try:
-        import cvxopt
-    except ImportError:  # pragma: no cover
-        raise ImportError("Please install cvxopt from https://github.com/cvxopt/cvxopt")
-    return cvxopt
+class QPSolver(metaclass=ABCMeta):
+    """
+    Solves a quadratic program::
+
+        minimize    (1/2)*x'*P*x + q'*x
+        subject to  G*x <= h
+    """
+    @abstractmethod
+    def __init__(self, max_iter, verbose):
+        self.max_iter = max_iter
+        self.verbose = verbose
+
+    @abstractmethod
+    def solve(self, P, q, G, h):
+        """Returns solution to QP."""
+
+
+class OsqpSolver(QPSolver):
+    def __init__(self, max_iter, verbose):
+        super().__init__(
+            max_iter=max_iter,
+            verbose=verbose,
+        )
+
+    def solve(self, P, q, G, h):
+        import osqp
+
+        P = sparse.csc_matrix(P)
+
+        solver_opts = self._get_options()
+        m = osqp.OSQP()
+        m.setup(P=sparse.csc_matrix(P), q=q, A=G, u=h, **solver_opts)  # noqa: E741
+        results = m.solve()
+
+        if results.info.status_val == -2:  # max iter reached
+            warnings.warn(("OSQP solver did not converge: {}".format(
+                results.info.status)),
+                category=ConvergenceWarning,
+                stacklevel=2)
+        elif results.info.status_val not in (1, 2):  # pragma: no cover
+            # non of solved, solved inaccurate
+            raise RuntimeError("OSQP solver failed: {}".format(results.info.status))
+
+        return results.x[numpy.newaxis]
+
+    def _get_options(self):
+        solver_opts = {
+            "eps_abs": 1e-5,
+            "eps_rel": 1e-5,
+            "max_iter": self.max_iter or 4000,
+            "polish": True,
+            "verbose": self.verbose,
+        }
+        return solver_opts
+
+
+class EcosSolver(QPSolver):
+    """Solves QP by expressing it as second-order cone program::
+
+        minimize    c^T @ x
+        subject to  G @ x <=_K h
+
+    where the last inequality is generalized, i.e. ``h - G*x``
+    belongs to the cone ``K``. ECOS supports the positive orthant
+    ``R_+`` and second-order cones ``Q_n``.
+    """
+
+    EXIT_OPTIMAL = 0  # Optimal solution found
+    EXIT_PINF = 1  # Certificate of primal infeasibility found
+    EXIT_DINF = 2  # Certificate of dual infeasibility found
+    EXIT_MAXIT = -1  # Maximum number of iterations reached
+    EXIT_NUMERICS = -2  # Numerical problems (unreliable search direction)
+    EXIT_OUTCONE = -3  # Numerical problems (slacks or multipliers outside cone)
+    EXIT_INACC_OFFSET = 10
+
+    def __init__(self, max_iter, verbose, cond=None):
+        super().__init__(
+            max_iter=max_iter,
+            verbose=verbose,
+        )
+        self.cond = cond
+
+    def solve(self, P, q, G, h):
+        import ecos
+
+        n_pairs = P.shape[0]
+        L, max_eigval = self._decompose(P)
+
+        # minimize wrt t,x
+        c = numpy.empty(n_pairs + 1)
+        c[1:] = q
+        c[0] = 0.5 * max_eigval
+
+        zerorow = numpy.zeros((1, L.shape[1]))
+        G_quad = numpy.block([
+            [-1, zerorow],
+            [1, zerorow],
+            [numpy.zeros((L.shape[0], 1)), -2 * L],
+        ])
+        G_lin = sparse.hstack((sparse.csc_matrix((G.shape[0], 1)), G))
+        G_all = sparse.vstack((G_lin, sparse.csc_matrix(G_quad)), format="csc")
+
+        n_constraints = G.shape[0]
+        h_all = numpy.empty(G_all.shape[0])
+        h_all[:n_constraints] = h
+        h_all[n_constraints:(n_constraints + 2)] = 1
+        h_all[(n_constraints + 2):] = 0
+
+        dims = {
+            "l": G.shape[0],  # scalar, dimension of positive orthant
+            "q": [G_quad.shape[0]]  # vector with dimensions of second order cones
+        }
+        results = ecos.solve(
+            c, G_all, h_all, dims, verbose=self.verbose, max_iters=self.max_iter or 1000
+        )
+        self._check_success(results)
+
+        # drop solution for t
+        x = results["x"][1:]
+        return x[numpy.newaxis]
+
+    def _check_success(self, results):
+        exit_flag = results["info"]["exitFlag"]
+        if exit_flag in (EcosSolver.EXIT_OPTIMAL,
+                         EcosSolver.EXIT_OPTIMAL + EcosSolver.EXIT_INACC_OFFSET):
+            return
+
+        if exit_flag == EcosSolver.EXIT_MAXIT:
+            warnings.warn(
+                "ECOS solver did not converge: maximum iterations reached",
+                category=ConvergenceWarning,
+                stacklevel=3)
+        elif exit_flag == EcosSolver.EXIT_PINF:  # pragma: no cover
+            raise RuntimeError("Certificate of primal infeasibility found")
+        elif exit_flag == EcosSolver.EXIT_DINF:  # pragma: no cover
+            raise RuntimeError("Certificate of dual infeasibility found")
+        else:  # pragma: no cover
+            raise RuntimeError("Unknown problem in ECOS solver, exit status: {}".format(exit_flag))
+
+    def _decompose(self, P):
+        # from scipy.linalg.pinvh
+        s, u = linalg.eigh(P)
+        largest_eigenvalue = numpy.max(numpy.abs(s))
+
+        cond = self.cond
+        if cond is None:
+            t = u.dtype
+            cond = largest_eigenvalue * max(P.shape) * numpy.finfo(t).eps
+
+        not_below_cutoff = (abs(s) > -cond)
+        assert not_below_cutoff.all(), "matrix has negative eigenvalues: {}".format(s.min())
+
+        above_cutoff = (abs(s) > cond)
+        u = u[:, above_cutoff]
+        s = s[above_cutoff]
+
+        # set maximum eigenvalue to 1
+        decomposed = u * numpy.sqrt(s / largest_eigenvalue)
+        return decomposed.T, largest_eigenvalue
 
 
 class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
@@ -42,7 +197,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
     Parameters
     ----------
-    solver : "cvxpy" | "cvxopt" | "osqp", optional, default: cvxpy
+    solver : "ecos" | "osqp", optional, default: ecos
         Which quadratic program solver to use.
 
     alpha : float, positive, default: 1
@@ -104,7 +259,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
            The Journal of Machine Learning Research, 12, 819-862. 2011
     """
 
-    def __init__(self, solver="cvxpy",
+    def __init__(self, solver="ecos",
                  alpha=1.0, kernel="linear", gamma=None, degree=3, coef0=1, kernel_params=None,
                  pairs="nearest", verbose=False, timeit=None, max_iter=None):
         self.solver = solver
@@ -134,154 +289,59 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         return pairwise_kernels(X, Y, metric=self.kernel,
                                 filter_params=True, **params)
 
+    def _setup_qp(self, K, D, time):
+        n_pairs = D.shape[0]
+        P = D.dot(D.dot(K).T).T
+        q = -D.dot(time)
+
+        Dt = D.T.astype(P.dtype)  # cast constraints to correct type
+        G = sparse.vstack((
+            Dt,  # upper bound
+            - Dt,  # lower bound
+            - sparse.eye(n_pairs, dtype=P.dtype),  # lower bound >= 0
+        ),
+            format="csc"
+        )
+        n_constraints = Dt.shape[0]
+        h = numpy.empty(G.shape[0], dtype=float)
+        h[:2 * n_constraints] = self.alpha
+        h[-n_pairs:] = 0.0
+
+        return {"P": P, "q": q, "G": G, "h": h}
+
     def _fit(self, x, event, time):
         D = create_difference_matrix(event.astype(numpy.uint8), time, kind=self.pairs)
         if D.shape[0] == 0:
             raise NoComparablePairException("Data has no comparable pairs, cannot fit model.")
 
-        K = self._get_kernel(x)
-
-        if self.solver == "cvxpy":
-            fit_func = self._fit_cvxpy
-        elif self.solver == "cvxopt":
-            fit_func = self._fit_cvxopt
+        max_iter = self.max_iter
+        if max_iter is not None:
+            max_iter = int(max_iter)
+        if self.solver == "ecos":
+            solver = EcosSolver(max_iter=max_iter, verbose=self.verbose)
         elif self.solver == "osqp":
-            fit_func = self._fit_osqp
+            solver = OsqpSolver(max_iter=max_iter, verbose=self.verbose)
         else:
             raise ValueError("unknown solver: {}".format(self.solver))
 
-        if self.solver != "osqp":
-            warnings.warn(("solver={!r} is deprecated and will be removed in future versions, "
-                           "please use solver='osqp'.".format(self.solver)),
-                          category=DeprecationWarning, stacklevel=2)
+        K = self._get_kernel(x)
+        problem_data = self._setup_qp(K, D, time)
 
         if self.timeit is not None:
             import timeit
 
             def _inner():
-                return fit_func(K, D, time)
+                return solver.solve(**problem_data)
 
             timer = timeit.Timer(_inner)
             self.timings_ = timer.repeat(self.timeit, number=1)
 
-        coef, sv = fit_func(K, D, time)
-
-        if sv is None:
-            self.coef_ = coef * D
-        else:
-            self.coef_ = coef[:, sv] * D[sv, :]
+        coef = solver.solve(**problem_data)
+        self._update_coef(coef, D)
         self.X_fit_ = x
 
-    def _get_options_osqp(self):
-        solver_opts = {
-            'eps_abs': 1e-5,
-            'eps_rel': 1e-5,
-            'max_iter': self.max_iter or 10000,
-            'polish': True,
-            'verbose': self.verbose,
-        }
-        return solver_opts
-
-    def _fit_osqp(self, K, D, time):
-        import osqp
-
-        n_pairs = D.shape[0]
-        n_samples = time.shape[0]
-
-        P = D.dot(D.dot(K).T).T
-        q = numpy.negative(D.dot(time))
-        Dt = D.T.astype(P.dtype)  # cast constraints to correct type
-        A = sparse.vstack((Dt, sparse.eye(n_pairs, dtype=P.dtype)), format="csc")
-        lower = numpy.empty(A.shape[0], dtype=P.dtype)
-
-        lower[:n_samples] = -self.alpha
-        lower[n_samples:] = 0.
-        upper = numpy.empty(A.shape[0], dtype=P.dtype)
-        upper[:n_samples] = self.alpha
-        upper[n_samples:] = numpy.inf
-
-        solver_opts = self._get_options_osqp()
-        m = osqp.OSQP()
-        m.setup(P=sparse.csc_matrix(P), q=q, A=A, l=lower, u=upper, **solver_opts)  # noqa: E741
-        results = m.solve()
-
-        if results.info.status_val == -2:  # max iter reached
-            warnings.warn(('OSQP solver did not converge: {}'.format(
-                results.info.status)),
-                category=ConvergenceWarning,
-                stacklevel=4)
-        elif results.info.status_val not in (1, 2):  # pragma: no cover
-            # non of solved, solved inaccurate
-            raise RuntimeError("OSQP solver failed: {}".format(results.info.status))
-
-        coef = results.x[numpy.newaxis, :]
-        return coef, None
-
-    def _fit_cvxpy(self, K, D, time):
-        import cvxpy
-
-        n_pairs = D.shape[0]
-
-        a = cvxpy.Variable(shape=(n_pairs, 1))
-        P = D.dot(D.dot(K).T).T
-        q = D.dot(time)
-
-        obj = cvxpy.Minimize(0.5 * cvxpy.quad_form(a, P) - a.T * q)
-        assert obj.is_dcp()
-
-        alpha = cvxpy.Parameter(nonneg=True, value=self.alpha)
-        Dta = D.T.astype(P.dtype) * a  # cast constraints to correct type
-        constraints = [a >= 0., -alpha <= Dta, Dta <= alpha]
-
-        prob = cvxpy.Problem(obj, constraints)
-        solver_opts = self._get_options_cvxpy()
-        prob.solve(solver=cvxpy.settings.ECOS, **solver_opts)
-        if prob.status != 'optimal':
-            s = prob.solver_stats
-            warnings.warn(('cvxpy solver {} did not converge after {} iterations: {}'.format(
-                s.solver_name, s.num_iters, prob.status)),
-                category=ConvergenceWarning,
-                stacklevel=4)
-
-        return a.value.T, None
-
-    def _get_options_cvxpy(self):
-        solver_opts = {'verbose': self.verbose}
-        if self.max_iter is not None:
-            solver_opts['max_iters'] = int(self.max_iter)
-        return solver_opts
-
-    def _fit_cvxopt(self, K, D, time):
-        cvxopt = _check_cvxopt()
-        n_samples = K.shape[0]
-
-        P = D.dot(D.dot(K).T).T
-        q = -D.dot(time)
-
-        high = numpy.repeat(self.alpha, n_samples * 2)
-
-        n_pairs = D.shape[0]
-        G = sparse.vstack((D.T, -D.T, -sparse.eye(n_pairs)))
-        h = numpy.concatenate((high, numpy.zeros(n_pairs)))
-
-        Gsp = cvxopt.matrix(G.toarray())
-        # Gsp = cvxopt.spmatrix(G.data, G.row, G.col, G.shape)
-
-        self._set_options_cvxopt(cvxopt)
-
-        sol = cvxopt.solvers.qp(cvxopt.matrix(P), cvxopt.matrix(q), Gsp, cvxopt.matrix(h))
-        if sol['status'] != 'optimal':
-            warnings.warn(('cvxopt solver did not converge: {} (duality gap = {})'.format(
-                sol['status'], sol['gap'])),
-                category=ConvergenceWarning,
-                stacklevel=4)
-
-        return numpy.array(sol['x']).T, None
-
-    def _set_options_cvxopt(self, cvxopt):
-        cvxopt.solvers.options["show_progress"] = int(self.verbose)
-        if self.max_iter is not None:
-            cvxopt.solvers.options['maxiters'] = int(self.max_iter)
+    def _update_coef(self, coef, D):
+        self.coef_ = coef * D
 
     def fit(self, X, y):
         """Build a MINLIP survival model from training data.
@@ -351,7 +411,7 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
 
     Parameters
     ----------
-    solver : "cvxpy" | "cvxopt" | "osqp", optional, default: cvxpy
+    solver : "ecos" | "osqp", optional, default: ecos
         Which quadratic program solver to use.
 
     alpha : float, positive, default: 1
@@ -421,67 +481,29 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
            89-94, 2008.
     """
 
-    def __init__(self, solver="cvxpy",
+    def __init__(self, solver="ecos",
                  alpha=1.0, kernel="linear", gamma=None, degree=3, coef0=1, kernel_params=None,
                  pairs="all", verbose=False, timeit=None, max_iter=None):
         super().__init__(solver=solver, alpha=alpha, kernel=kernel, gamma=gamma, degree=degree, coef0=coef0,
                          kernel_params=kernel_params, pairs=pairs, verbose=verbose, timeit=timeit, max_iter=max_iter)
 
-    def _fit_osqp(self, K, D, time):
-        import osqp
-
-        n_pairs = D.shape[0]
-
-        P = D.dot(D.dot(K).T).T
-        q = numpy.negative(numpy.ones(n_pairs, dtype=P.dtype))
-        lower = numpy.zeros(n_pairs, dtype=P.dtype)
-        upper = numpy.empty(n_pairs, dtype=P.dtype)
-        upper[:] = self.alpha
-        A = sparse.eye(n_pairs, dtype=P.dtype, format="csc")
-
-        solver_opts = self._get_options_osqp()
-        m = osqp.OSQP()
-        m.setup(P=sparse.csc_matrix(P), q=q, A=A, l=lower, u=upper, **solver_opts)  # noqa: E741
-        results = m.solve()
-
-        coef = results.x[numpy.newaxis, :]
-        sv = numpy.flatnonzero(coef > 1e-5)
-        return coef, sv
-
-    def _fit_cvxpy(self, K, D, time):
-        import cvxpy
-
-        n_pairs = D.shape[0]
-
-        a = cvxpy.Variable(shape=(n_pairs, 1))
-        alpha = cvxpy.Parameter(nonneg=True, value=self.alpha)
-        P = D.dot(D.dot(K).T).T
-
-        obj = cvxpy.Minimize(0.5 * cvxpy.quad_form(a, P) - cvxpy.sum(a))
-        constraints = [a >= 0., a <= alpha]
-
-        prob = cvxpy.Problem(obj, constraints)
-        solver_opts = self._get_options_cvxpy()
-        prob.solve(solver=cvxpy.settings.ECOS, **solver_opts)
-
-        coef = a.value.T
-        sv = numpy.flatnonzero(coef > 1e-5)
-        return coef, sv
-
-    def _fit_cvxopt(self, K, D, time):
-        cvxopt = _check_cvxopt()
-
+    def _setup_qp(self, K, D, time):
         n_pairs = D.shape[0]
 
         P = D.dot(D.dot(K).T).T
         q = -numpy.ones(n_pairs)
 
-        G = numpy.vstack((-numpy.eye(n_pairs), numpy.eye(n_pairs)))
-        h = numpy.concatenate((numpy.zeros(n_pairs), numpy.repeat(self.alpha, n_pairs)))
+        G = sparse.vstack((
+            -sparse.eye(n_pairs),
+            sparse.eye(n_pairs)),
+            format="csc"
+        )
+        h = numpy.empty(2 * n_pairs)
+        h[:n_pairs] = 0
+        h[n_pairs:] = self.alpha
 
-        self._set_options_cvxopt(cvxopt)
-        sol = cvxopt.solvers.qp(cvxopt.matrix(P), cvxopt.matrix(q), cvxopt.matrix(G), cvxopt.matrix(h))
+        return {"P": P, "q": q, "G": G, "h": h}
 
-        coef = numpy.array(sol['x']).T
+    def _update_coef(self, coef, D):
         sv = numpy.flatnonzero(coef > 1e-5)
-        return coef, sv
+        self.coef_ = coef[:, sv] * D[sv, :]

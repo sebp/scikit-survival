@@ -1,5 +1,4 @@
-cvxopt
-cvxpy >=1.0
+ecos
 joblib
 numexpr
 numpy

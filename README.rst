@@ -33,8 +33,7 @@ Requirements
 ============
 
 - Python 3.5 or later
-- cvxpy
-- cvxopt
+- ecos
 - joblib
 - numexpr
 - numpy 1.12 or later
