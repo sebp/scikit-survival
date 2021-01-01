@@ -444,35 +444,35 @@ class TestKernelSurvivalSVM(object):
     def test_fit_and_predict_linear_regression(make_whas500):
         whas500 = make_whas500(to_numeric=True)
         ssvm = FastKernelSurvivalSVM(optimizer="rbtree", rank_ratio=0.0, kernel="linear",
-                                     max_iter=50, fit_intercept=True, random_state=0)
+                                     max_iter=50, tol=1e-8, fit_intercept=True, random_state=0)
 
         ssvm.fit(whas500.x, whas500.y)
 
         assert not ssvm._pairwise
-        assert round(abs(ssvm.intercept_ - 6.3979746625712295), 5) == 0
+        assert round(abs(ssvm.intercept_ - 6.416017539824949), 5) == 0
 
         i = numpy.arange(250)
         numpy.random.RandomState(0).shuffle(i)
         pred = ssvm.predict(whas500.x[i])
         rmse = numpy.sqrt(mean_squared_error(whas500.y['lenfol'][i], pred))
-        assert rmse <= 1339.3006854574726 + 0.293
+        assert rmse <= 1342.274550652291 + 0.293
 
     @staticmethod
     def test_fit_and_predict_linear_regression_precomputed(make_whas500):
         whas500 = make_whas500(to_numeric=True)
         ssvm = FastKernelSurvivalSVM(optimizer="rbtree", rank_ratio=0.0, kernel="precomputed",
-                                     max_iter=50, fit_intercept=True, random_state=0)
+                                     max_iter=50, tol=1e-8, fit_intercept=True, random_state=0)
         x = numpy.dot(whas500.x, whas500.x.T)
         ssvm.fit(x, whas500.y)
 
         assert ssvm._pairwise
-        assert round(abs(ssvm.intercept_ - 6.3979746625712295), 5) == 0
+        assert round(abs(ssvm.intercept_ - 6.416017539824949), 5) == 0
 
         i = numpy.arange(250)
         numpy.random.RandomState(0).shuffle(i)
         pred = ssvm.predict(x[i])
         rmse = numpy.sqrt(mean_squared_error(whas500.y['lenfol'][i], pred))
-        assert rmse <= 1339.3006854574726 + 0.293
+        assert rmse <= 1342.274550652291 + 0.293
 
     @staticmethod
     def test_fit_and_predict_linear_regression_no_intercept(make_whas500):
