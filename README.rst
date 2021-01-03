@@ -32,11 +32,11 @@ this unique characteristic of such a dataset into account.
 Requirements
 ============
 
-- Python 3.5 or later
+- Python 3.7 or later
 - ecos
 - joblib
 - numexpr
-- numpy 1.12 or later
+- numpy 1.16 or later
 - osqp
 - pandas 0.25 or later
 - scikit-learn 0.22 or 0.23
