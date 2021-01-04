@@ -57,6 +57,10 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
                                        normalize=normalize, copy_X=copy_X,
                                        max_iter=max_iter, tol=tol, solver=solver)
 
+    @property
+    def _predict_risk_score(self):
+        return False
+
     def fit(self, X, y):
         """Build an accelerated failure time model.
 

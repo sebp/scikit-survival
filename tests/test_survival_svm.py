@@ -457,6 +457,9 @@ class TestKernelSurvivalSVM(object):
         rmse = numpy.sqrt(mean_squared_error(whas500.y['lenfol'][i], pred))
         assert rmse <= 1342.274550652291 + 0.293
 
+        c = ssvm.score(whas500.x[i], whas500.y[i])
+        assert round(abs(c - 0.7630027323714108), 6) == 0
+
     @staticmethod
     def test_fit_and_predict_linear_regression_precomputed(make_whas500):
         whas500 = make_whas500(to_numeric=True)
