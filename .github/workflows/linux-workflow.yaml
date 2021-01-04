@@ -34,15 +34,16 @@ jobs:
           echo "NUMPY_VERSION=${NUMPY_VERSION}" >> $GITHUB_ENV
           echo "SKLEARN_VERSION=${SKLEARN_VERSION}" >> $GITHUB_ENV
           echo "NO_SLOW=${NO_SLOW}" >> $GITHUB_ENV
+          echo "::set-output name=py_version::${CONDA_PYTHON_VERSION}"
           echo "::set-output name=requirements::ci/deps/${{ matrix.config }}.sh"
           echo "::set-output name=conda_pkgs::$(${CONDA}/bin/python -c "from conda.base.context import context; print(context.pkgs_dirs[0])")"
       - name: Cache downloaded packages
         uses: actions/cache@v2
         with:
           path: ${{ steps.dependencies.outputs.conda_pkgs }}
-          key: ${{ runner.os }}-conda-${{ hashFiles(steps.dependencies.outputs.requirements) }}
+          key: ${{ runner.os }}-conda-${{ steps.dependencies.outputs.py_version }}-${{ hashFiles(steps.dependencies.outputs.requirements, 'requirements/*.txt') }}
           restore-keys: |
-            ${{ runner.os }}-conda-
+            ${{ runner.os }}-conda-${{ steps.dependencies.outputs.py_version }}-
       - name: Create Conda Environment
         run: |
           sudo chown -R $USER $CONDA
