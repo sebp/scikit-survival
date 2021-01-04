@@ -16,6 +16,9 @@ def all_survival_estimators():
     root = dirname(sksurv.__file__)
     all_classes = []
     for importer, modname, ispkg in pkgutil.walk_packages(path=[root], prefix="sksurv."):
+        # meta-estimators require base estimators
+        if modname.startswith("sksurv.meta"):
+            continue
         module = import_module(modname)
         for name, cls in inspect.getmembers(module, is_survival_mixin):
             all_classes.append(cls)
