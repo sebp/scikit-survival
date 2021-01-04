@@ -57,6 +57,9 @@ class TestEnsembleSelectionSurvivalAnalysis(object):
         assert_cindex_almost_equal(whas500.y['fstat'], whas500.y['lenfol'], p,
                                    (0.7863312, 59088, 16053, 8, 14))
 
+        c_index = meta.score(whas500.x, whas500.y)
+        assert round(abs(c_index - 0.7863312), 6) == 0
+
     @staticmethod
     @pytest.mark.slow
     def test_fit_spearman_correlation(make_whas500):
@@ -257,6 +260,9 @@ class TestEnsembleSelectionRegressor(object):
         p = meta.predict(whas500.x[400:])
         score = numpy.sqrt(mean_squared_error(whas500.y[400:]['lenfol'], p))
         assert abs(score - 423.82894756865056) <= 0.1
+
+        c_index = meta.score(whas500.x[:400], whas500.y[:400])
+        assert round(abs(c_index - 0.767067946974157), 6) == 0
 
     @staticmethod
     def test_fit_dummy(make_whas500):

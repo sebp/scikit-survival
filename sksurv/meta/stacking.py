@@ -15,8 +15,10 @@ from sklearn.base import BaseEstimator, MetaEstimatorMixin
 from sklearn.utils import tosequence
 from sklearn.utils.metaestimators import if_delegate_has_method
 
+from ..base import SurvivalAnalysisMixin
 
-class Stacking(BaseEstimator, MetaEstimatorMixin):
+
+class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, BaseEstimator):
     """Meta estimator that combines multiple base learners.
 
     By default, base estimators' output corresponds to the array returned

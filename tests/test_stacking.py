@@ -216,3 +216,17 @@ class TestStackingSurvivalAnalysis(object):
         with pytest.raises(AttributeError,
                            match="'_PredictDummy' object has no attribute 'predict_proba'"):
             getattr(meta, "predict_proba")
+
+    @staticmethod
+    def test_score(make_whas500):
+        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
+
+        meta = Stacking(MeanEstimator(),
+                        [('coxph', CoxPHSurvivalAnalysis()),
+                         ('svm', FastSurvivalSVM(random_state=0))],
+                        probabilities=False)
+
+        meta.fit(whas500.x, whas500.y)
+        c_index = meta.score(whas500.x, whas500.y)
+
+        assert round(abs(c_index - 0.7848807), 5) == 0

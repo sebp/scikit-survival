@@ -510,6 +510,10 @@ class EnsembleSelectionRegressor(BaseEnsembleSelection):
                          n_jobs=n_jobs,
                          verbose=verbose)
 
+    @property
+    def _predict_risk_score(self):
+        return False
+
     def _fit(self, X, y, cv, **fit_params):
         scores, base_ensemble = self._fit_and_score_ensemble(X, y, cv, **fit_params)
         fitted_models, scores = self._prune_by_cv_score(scores, base_ensemble)
