@@ -652,6 +652,10 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
 
         return optimizer
 
+    @property
+    def _predict_risk_score(self):
+        return self.rank_ratio == 1
+
     @abstractmethod
     def _fit(self, X, time, event, samples_order):
         """Create and run optimizer"""
