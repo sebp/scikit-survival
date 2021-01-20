@@ -100,6 +100,11 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         Best nodes are defined as relative reduction in impurity.
         If None then unlimited number of leaf nodes.
 
+    min_logrank_split: float, optional, default: 0.
+        A node will be split if this split induces an absolute logrank stat greater
+        than or equal to this value. This is passed as the `min_impurity_decrease`
+        parameter in sklearn's tree builder.
+
     presort : deprecated, optional, default: 'deprecated'
         This parameter is deprecated and will be removed in a future version.
 
@@ -144,6 +149,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
                  max_features=None,
                  random_state=None,
                  max_leaf_nodes=None,
+                 min_logrank_split=0.,
                  presort='deprecated'):
         self.splitter = splitter
         self.max_depth = max_depth
@@ -153,6 +159,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         self.max_features = max_features
         self.random_state = random_state
         self.max_leaf_nodes = max_leaf_nodes
+        self.min_logrank_split = min_logrank_split
         self.presort = presort
 
     def fit(self, X, y, sample_weight=None, check_input=True,
@@ -224,7 +231,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
                                             params["min_samples_leaf"],
                                             params["min_weight_leaf"],
                                             params["max_depth"],
-                                            0.0,  # min_impurity_decrease
+                                            params["min_logrank_split"],  # min_impurity_decrease
                                             params["min_impurity_split"])
         else:
             builder = BestFirstTreeBuilder(splitter,
@@ -233,7 +240,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
                                            params["min_weight_leaf"],
                                            params["max_depth"],
                                            params["max_leaf_nodes"],
-                                           0.0,  # min_impurity_decrease
+                                           params["min_logrank_split"],  # min_impurity_decrease
                                            params["min_impurity_split"])
 
         builder.build(self.tree_, X, y_numeric, sample_weight, X_idx_sorted)
@@ -260,6 +267,10 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         min_weight_leaf = self.min_weight_fraction_leaf * n_samples
         min_impurity_split = 1e-7
 
+        min_logrank_split = self.min_logrank_split
+        if min_logrank_split < 0:
+            raise ValueError("min_logrank_split must be non-negative")
+
         if self.presort != 'deprecated':
             warnings.warn("The parameter 'presort' is deprecated and has no "
                           "effect. It will be removed in v0.24. You can "
@@ -271,6 +282,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             "max_leaf_nodes": max_leaf_nodes,
             "min_samples_leaf": min_samples_leaf,
             "min_samples_split": min_samples_split,
+            "min_logrank_split": min_logrank_split,
             "min_impurity_split": min_impurity_split,
             "min_weight_leaf": min_weight_leaf,
         }
