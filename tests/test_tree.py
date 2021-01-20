@@ -494,6 +494,16 @@ def test_max_leaf_nodes_too_small(fake_data, val):
         tree.fit(X, y)
 
 
+@pytest.mark.parametrize("val", [-1, -0.1])
+def test_min_logrank_split_negative(fake_data, val):
+    X, y = fake_data
+    tree = SurvivalTree(min_logrank_split=val)
+
+    with pytest.raises(ValueError,
+                       match="min_logrank_split must be non-negative"):
+        tree.fit(X, y)
+
+
 @pytest.mark.parametrize("val", [-1, "False", "True", "", numpy.nan])
 def test_presort(fake_data, val):
     X, y = fake_data
