@@ -34,8 +34,8 @@ class TestGradientBoosting(object):
 
         assert (100,) == model.train_score_.shape
 
-        with pytest.raises(ValueError, match="Number of features of the model must match the input. "
-                                             "Model n_features is 14 and input n_features is 2 "):
+        with pytest.raises(ValueError, match="X has 2 features, but DecisionTreeRegressor is "
+                                             "expecting 14 features as input."):
             model.predict(whas500_data.x[:, :2])
 
     @staticmethod
@@ -62,8 +62,8 @@ class TestGradientBoosting(object):
         assert (50,) == model.train_score_.shape
         assert (50,) == model.oob_improvement_.shape
 
-        with pytest.raises(ValueError, match="Number of features of the model must match the input. "
-                                             "Model n_features is 14 and input n_features is 2 "):
+        with pytest.raises(ValueError, match="X has 2 features, but DecisionTreeRegressor is "
+                                             "expecting 14 features as input."):
             model.predict(whas500_data.x[:, :2])
 
     @staticmethod
@@ -150,16 +150,6 @@ class TestGradientBoosting(object):
                            match="Invalid value for max_features: 'fail_me'. "
                                  "Allowed string values are 'auto', 'sqrt' "
                                  "or 'log2'"):
-            model.fit(whas500_data.x, whas500_data.y)
-
-    @staticmethod
-    @pytest.mark.parametrize('presort', ['auto', True, False, None])
-    def test_presort(make_whas500, presort):
-        whas500_data = make_whas500(with_std=False, to_numeric=True)
-
-        model = GradientBoostingSurvivalAnalysis(n_estimators=10, presort=presort, random_state=0)
-
-        with pytest.deprecated_call(match="The parameter 'presort' is deprecated "):
             model.fit(whas500_data.x, whas500_data.y)
 
     @staticmethod
@@ -377,8 +367,8 @@ class TestComponentwiseGradientBoosting(object):
 
         assert (100,) == model.train_score_.shape
 
-        with pytest.raises(ValueError, match='Dimensions of X are inconsistent with training data: '
-                                             'expected 14 features, but got 2'):
+        with pytest.raises(ValueError, match="X has 2 features, but ComponentwiseGradientBoostingSurvivalAnalysis is "
+                                             "expecting 14 features as input."):
             model.predict(whas500_data.x[:, :2])
 
     @staticmethod
@@ -405,8 +395,8 @@ class TestComponentwiseGradientBoosting(object):
         assert (100,) == model.train_score_.shape
         assert (100,) == model.oob_improvement_.shape
 
-        with pytest.raises(ValueError, match='Dimensions of X are inconsistent with training data: '
-                                             'expected 14 features, but got 2'):
+        with pytest.raises(ValueError, match="X has 2 features, but ComponentwiseGradientBoostingSurvivalAnalysis is "
+                                             "expecting 14 features as input."):
             model.predict(whas500_data.x[:, :2])
 
     @staticmethod

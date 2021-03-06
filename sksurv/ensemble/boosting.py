@@ -11,7 +11,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numbers
-import warnings
 
 import numpy
 
@@ -278,6 +277,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         self
         """
         X, event, time = check_arrays_survival(X, y)
+        X = self._validate_data(X)
 
         n_samples, n_features = X.shape
 
@@ -293,7 +293,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         self.estimators_ = []
         self.n_features_ = n_features
-        self.loss_ = LOSS_FUNCTIONS[self.loss](1)
+        self.loss_ = LOSS_FUNCTIONS[self.loss]()
         if isinstance(self.loss_, (CensoredSquaredLoss, IPCWLeastSquaresError)):
             time = numpy.log(time)
 
@@ -326,11 +326,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
             Predicted risk scores.
         """
         check_is_fitted(self, 'estimators_')
-        X = check_array(X)
-
-        if X.shape[1] != self.n_features_:
-            raise ValueError('Dimensions of X are inconsistent with training data: '
-                             'expected %d features, but got %s' % (self.n_features_, X.shape[1]))
+        X = self._validate_data(X, reset=False)
 
         n_samples = X.shape[0]
         Xi = numpy.column_stack((numpy.ones(n_samples), X))
@@ -484,9 +480,6 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         Best nodes are defined as relative reduction in impurity.
         If None then unlimited number of leaf nodes.
 
-    presort : deprecated, optional, default: 'deprecated'
-        This parameter is deprecated and will be removed in a future version.
-
     subsample : float, optional, default: 1.0
         The fraction of samples to be used for fitting the individual regression
         trees. If smaller than 1.0, this results in Stochastic Gradient
@@ -557,7 +550,6 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                  max_depth=3, min_impurity_split=None,
                  min_impurity_decrease=0., random_state=None,
                  max_features=None, max_leaf_nodes=None,
-                 presort='deprecated',
                  subsample=1.0, dropout_rate=0.0,
                  verbose=0,
                  ccp_alpha=0.0):
@@ -576,10 +568,15 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                          random_state=random_state,
                          max_features=max_features,
                          max_leaf_nodes=max_leaf_nodes,
-                         presort=presort,
                          verbose=verbose,
                          ccp_alpha=ccp_alpha)
         self.dropout_rate = dropout_rate
+
+    def _warn_mae_for_criterion(self):
+        pass
+
+    def _validate_y(self, y, sample_weight):
+        pass
 
     @property
     def _predict_risk_score(self):
@@ -614,16 +611,10 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         self.max_features_ = max_features
 
-        if self.presort != 'deprecated':
-            warnings.warn("The parameter 'presort' is deprecated and has no "
-                          "effect. It will be removed in v0.24. You can "
-                          "suppress this warning by not passing any value "
-                          "to the 'presort' parameter.", DeprecationWarning)
-
         if self.loss not in LOSS_FUNCTIONS:
             raise ValueError("Loss {!r} not supported.".format(self.loss))
 
-        self.loss_ = LOSS_FUNCTIONS[self.loss](1)
+        self.loss_ = LOSS_FUNCTIONS[self.loss]()
 
     def _check_max_features(self):
         if isinstance(self.max_features, str):
@@ -651,7 +642,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         return max_features
 
     def _fit_stage(self, i, X, y, raw_predictions, sample_weight, sample_mask,
-                   random_state, scale, X_idx_sorted, X_csc=None, X_csr=None):
+                   random_state, scale, X_csc=None, X_csr=None):
         """Fit another stage of ``n_classes_`` trees to the boosting model. """
 
         assert sample_mask.dtype == numpy.bool
@@ -683,7 +674,6 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                 max_features=self.max_features,
                 max_leaf_nodes=self.max_leaf_nodes,
                 random_state=random_state,
-                presort=self.presort,
                 ccp_alpha=self.ccp_alpha)
 
             if self.subsample < 1.0:
@@ -692,7 +682,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
             X = X_csr if X_csr is not None else X
             tree.fit(X, residual, sample_weight=sample_weight,
-                     check_input=False, X_idx_sorted=X_idx_sorted)
+                     check_input=False)
 
             # add tree to ensemble
             self.estimators_[i, k] = tree
@@ -723,7 +713,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         return raw_predictions
 
     def _fit_stages(self, X, y, raw_predictions, sample_weight, random_state,
-                    begin_at_stage=0, monitor=None, X_idx_sorted=None):
+                    begin_at_stage=0, monitor=None):
         """Iteratively fits the stages.
 
         For each stage it computes the progress (OOB, train score)
@@ -766,7 +756,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
             # fit next stage of trees
             raw_predictions = self._fit_stage(
                 i, X, y, raw_predictions, sample_weight, sample_mask,
-                random_state, scale, X_idx_sorted, X_csc, X_csr)
+                random_state, scale, X_csc, X_csr)
 
             # track deviance (= loss)
             if do_oob:
@@ -853,12 +843,10 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         # The rng state must be preserved if warm_start is True
         self._rng = check_random_state(self.random_state)
 
-        X_idx_sorted = None
-
         # fit the boosting stages
         y = numpy.fromiter(zip(event, time), dtype=[('event', numpy.bool), ('time', numpy.float64)])
         n_stages = self._fit_stages(X, y, raw_predictions, sample_weight, self._rng,
-                                    begin_at_stage, monitor, X_idx_sorted)
+                                    begin_at_stage, monitor)
         # change shape of arrays after fit (early-stopping or additional tests)
         if n_stages != self.estimators_.shape[0]:
             self.estimators_ = self.estimators_[:n_stages]
