@@ -402,9 +402,8 @@ def test_predict_wrong_features(toy_data, n_features):
     tree = SurvivalTree(max_depth=1)
     tree.fit(X, y)
 
-    with pytest.raises(ValueError, match="Number of features of the model must "
-                                         "match the input. Model n_features is 4 and "
-                                         "input n_features is {}.".format(n_features)):
+    with pytest.raises(ValueError, match="X has {} features, but SurvivalTree is "
+                                         "expecting 4 features as input.".format(n_features)):
         X_new = numpy.random.randn(12, n_features)
         tree.predict(X_new)
 
@@ -494,10 +493,18 @@ def test_max_leaf_nodes_too_small(fake_data, val):
         tree.fit(X, y)
 
 
-@pytest.mark.parametrize("val", [-1, "False", "True", "", numpy.nan])
-def test_presort(fake_data, val):
+@pytest.mark.parametrize("val", [0, 1, None, "sort"])
+def test_X_idx_sorted(fake_data, val):
     X, y = fake_data
-    tree = SurvivalTree(presort=val)
+    tree = SurvivalTree()
 
-    with pytest.deprecated_call(match="The parameter 'presort' is deprecated "):
-        tree.fit(X, y)
+    if val == "sort":
+        X_idx_sorted = numpy.argsort(X, axis=0)
+    else:
+        X_idx_sorted = val
+
+    with pytest.warns(
+            FutureWarning,
+            match="The parameter 'X_idx_sorted' is deprecated and has no effect."
+    ):
+        tree.fit(X, y, X_idx_sorted=X_idx_sorted)

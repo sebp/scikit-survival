@@ -7,7 +7,7 @@ from sklearn.tree import _tree
 from sklearn.tree._splitter import Splitter
 from sklearn.tree._tree import BestFirstTreeBuilder, DepthFirstTreeBuilder, Tree
 from sklearn.tree._classes import DENSE_SPLITTERS
-from sklearn.utils.validation import check_array, check_is_fitted, check_random_state
+from sklearn.utils.validation import check_is_fitted, check_random_state
 
 from ..base import SurvivalAnalysisMixin
 from ..functions import StepFunction
@@ -100,9 +100,6 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         Best nodes are defined as relative reduction in impurity.
         If None then unlimited number of leaf nodes.
 
-    presort : deprecated, optional, default: 'deprecated'
-        This parameter is deprecated and will be removed in a future version.
-
     Attributes
     ----------
     event_times_ : array of shape = (n_event_times,)
@@ -143,8 +140,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
                  min_weight_fraction_leaf=0.,
                  max_features=None,
                  random_state=None,
-                 max_leaf_nodes=None,
-                 presort='deprecated'):
+                 max_leaf_nodes=None):
         self.splitter = splitter
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
@@ -153,10 +149,9 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         self.max_features = max_features
         self.random_state = random_state
         self.max_leaf_nodes = max_leaf_nodes
-        self.presort = presort
 
     def fit(self, X, y, sample_weight=None, check_input=True,
-            X_idx_sorted=None):
+            X_idx_sorted="deprecated"):
         """Build a survival tree from the training set (X, y).
 
         Parameters
@@ -173,11 +168,8 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             Allow to bypass several input checking.
             Don't use this parameter unless you know what you do.
 
-        X_idx_sorted : array-like, shape = (n_samples, n_features), optional
-            The indexes of the sorted training input samples. If many tree
-            are grown on the same dataset, this allows the ordering to be
-            cached between trees. If None, the data will be sorted here.
-            Don't use this parameter unless you know what to do.
+        X_idx_sorted : deprecated, default="deprecated"
+            This parameter is deprecated and has no effect
 
         Returns
         -------
@@ -197,7 +189,17 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             y_numeric, self.event_times_ = y
 
         n_samples, self.n_features_ = X.shape
+        self.n_features_in_ = self.n_features_
         params = self._check_params(n_samples)
+
+        if not isinstance(X_idx_sorted, str) or X_idx_sorted != "deprecated":
+            warnings.warn(
+                "The parameter 'X_idx_sorted' is deprecated and has no "
+                "effect. It will be removed in sklearn 1.1 (renaming of 0.26). "
+                "You can suppress this warning by not passing any value to the "
+                "'X_idx_sorted' parameter.",
+                FutureWarning
+            )
 
         self.n_outputs_ = self.event_times_.shape[0]
         # one "class" for CHF, one for survival function
@@ -236,7 +238,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
                                            0.0,  # min_impurity_decrease
                                            params["min_impurity_split"])
 
-        builder.build(self.tree_, X, y_numeric, sample_weight, X_idx_sorted)
+        builder.build(self.tree_, X, y_numeric, sample_weight)
 
         return self
 
@@ -259,12 +261,6 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         min_weight_leaf = self.min_weight_fraction_leaf * n_samples
         min_impurity_split = 1e-7
-
-        if self.presort != 'deprecated':
-            warnings.warn("The parameter 'presort' is deprecated and has no "
-                          "effect. It will be removed in v0.24. You can "
-                          "suppress this warning by not passing any value "
-                          "to the 'presort' parameter.", DeprecationWarning)
 
         return {
             "max_depth": max_depth,
@@ -349,14 +345,10 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
     def _validate_X_predict(self, X, check_input):
         """Validate X whenever one tries to predict"""
         if check_input:
-            X = check_array(X, dtype=DTYPE)
-
-        n_features = X.shape[1]
-        if self.n_features_ != n_features:
-            raise ValueError("Number of features of the model must "
-                             "match the input. Model n_features is %s and "
-                             "input n_features is %s."
-                             % (self.n_features_, n_features))
+            X = self._validate_data(X, dtype=DTYPE, reset=False)
+        else:
+            # The number of features is checked regardless of `check_input`
+            self._check_n_features(X, reset=False)
 
         return X
 

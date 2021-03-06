@@ -254,7 +254,9 @@ cdef class LogrankCriterion(Criterion):
         self.pos = new_pos
         return 0
 
-    cdef double impurity_improvement(self, double impurity) nogil:
+    cdef double impurity_improvement(self, double impurity_parent,
+                                     double impurity_left,
+                                     double impurity_right) nogil:
         """Compute the improvement in impurity"""
         return self.proxy_impurity_improvement()
 
