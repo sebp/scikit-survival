@@ -392,6 +392,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         self
         """
         X, event, time = check_arrays_survival(X, y)
+        X = self._validate_data(X)
 
         if isinstance(self.alpha, (numbers.Real, numbers.Integral)):
             alphas = numpy.empty(X.shape[1], dtype=numpy.float_)
@@ -469,7 +470,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         """
         check_is_fitted(self, "coef_")
 
-        X = check_array(X)
+        X = self._validate_data(X, reset=False)
 
         return numpy.dot(X, self.coef_)
 
