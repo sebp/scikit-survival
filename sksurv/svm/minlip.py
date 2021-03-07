@@ -274,10 +274,9 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         self.timeit = timeit
         self.max_iter = max_iter
 
-    @property
-    def _pairwise(self):
+    def _more_tags(self):
         # tell sklearn.utils.metaestimators._safe_split function that we expect kernel matrix
-        return self.kernel == "precomputed"
+        return {"pairwise": self.kernel == "precomputed"}
 
     def _get_kernel(self, X, Y=None):
         if callable(self.kernel):

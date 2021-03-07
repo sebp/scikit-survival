@@ -417,7 +417,7 @@ class TestKernelSurvivalSVM(object):
         ssvm = FastKernelSurvivalSVM(optimizer="rbtree", kernel='linear', random_state=0)
         ssvm.fit(whas500.x, whas500.y)
 
-        assert not ssvm._pairwise
+        assert not ssvm._more_tags()["pairwise"]
         assert whas500.x.shape[0] == ssvm.coef_.shape[0]
 
         i = numpy.arange(250)
@@ -432,7 +432,7 @@ class TestKernelSurvivalSVM(object):
         x = numpy.dot(whas500.x, whas500.x.T)
         ssvm.fit(x, whas500.y)
 
-        assert ssvm._pairwise
+        assert ssvm._get_tags()["pairwise"]
         assert whas500.x.shape[0] == ssvm.coef_.shape[0]
 
         i = numpy.arange(250)
@@ -448,7 +448,7 @@ class TestKernelSurvivalSVM(object):
 
         ssvm.fit(whas500.x, whas500.y)
 
-        assert not ssvm._pairwise
+        assert not ssvm._get_tags()["pairwise"]
         assert round(abs(ssvm.intercept_ - 6.416017539824949), 5) == 0
 
         i = numpy.arange(250)
@@ -468,7 +468,7 @@ class TestKernelSurvivalSVM(object):
         x = numpy.dot(whas500.x, whas500.x.T)
         ssvm.fit(x, whas500.y)
 
-        assert ssvm._pairwise
+        assert ssvm._get_tags()["pairwise"]
         assert round(abs(ssvm.intercept_ - 6.416017539824949), 5) == 0
 
         i = numpy.arange(250)
@@ -499,7 +499,7 @@ class TestKernelSurvivalSVM(object):
                                      tol=2e-6, max_iter=75, random_state=0)
         ssvm.fit(whas500.x, whas500.y)
 
-        assert not ssvm._pairwise
+        assert not ssvm._get_tags()["pairwise"]
         assert whas500.x.shape[0] == ssvm.coef_.shape[0]
 
         c = ssvm.score(whas500.x, whas500.y)
@@ -514,7 +514,7 @@ class TestKernelSurvivalSVM(object):
                                      tol=1e-6, max_iter=50, fit_intercept=True, random_state=0)
         ssvm.fit(whas500.x, whas500.y)
 
-        assert not ssvm._pairwise
+        assert not ssvm._get_tags()["pairwise"]
         assert round(abs(ssvm.intercept_ - 4.9267218894089533), 7) == 0
 
         pred = ssvm.predict(whas500.x)
@@ -530,7 +530,7 @@ class TestKernelSurvivalSVM(object):
                                      max_iter=50, fit_intercept=True, random_state=0)
         ssvm.fit(whas500.x, whas500.y)
 
-        assert not ssvm._pairwise
+        assert not ssvm._get_tags()["pairwise"]
         assert abs(5.0289145697617164 - ssvm.intercept_) <= 0.04
 
         pred = ssvm.predict(whas500.x)
@@ -550,7 +550,7 @@ class TestKernelSurvivalSVM(object):
                                      tol=7e-7, max_iter=100, random_state=0)
         ssvm.fit(whas500.x, whas500.y)
 
-        assert not ssvm._pairwise
+        assert not ssvm._get_tags()["pairwise"]
         assert whas500.x.shape[0] == ssvm.coef_.shape[0]
 
         c = ssvm.score(whas500.x, whas500.y)
