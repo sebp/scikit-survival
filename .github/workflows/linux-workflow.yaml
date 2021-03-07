@@ -16,7 +16,7 @@ jobs:
           - py38_pandas025_numpy118_sklearn024
           - py38_pandas10_numpy118_sklearn024
           - py38_pandas11_numpy119_sklearn024
-          - py39_pandas11_numpy119_sklearn024
+          - py39_pandas12_numpy119_sklearn024
     steps:
       - name: Checkout
         uses: actions/checkout@v2
