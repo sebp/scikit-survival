@@ -944,7 +944,8 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     Attributes
     ----------
     coef_ : ndarray, shape = (n_samples,)
-        Coefficients of the features in the decision function.
+        Weights assigned to the samples in training data to represent
+        the decision function in kernel space.
 
     fit_X_ : ndarray
         Training data.
