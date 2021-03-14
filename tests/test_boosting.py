@@ -10,6 +10,8 @@ from sksurv.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis, Gradi
 from sksurv.testing import assert_cindex_almost_equal
 from sksurv.util import Surv
 
+CGBOOST_CUMHAZ_FILE = join(dirname(__file__), 'data', 'compnentwise-gradient-boosting-coxph-cumhazard.csv')
+CGBOOST_SURV_FILE = join(dirname(__file__), 'data', 'compnentwise-gradient-boosting-coxph-surv.csv')
 GBOOST_CUMHAZ_FILE = join(dirname(__file__), 'data', 'gradient-boosting-coxph-cumhazard.csv')
 GBOOST_SURV_FILE = join(dirname(__file__), 'data', 'gradient-boosting-coxph-surv.csv')
 
@@ -461,6 +463,27 @@ class TestComponentwiseGradientBoosting(object):
         assert_array_almost_equal(expected_coef.values, model.coef_)
 
     @staticmethod
+    @pytest.mark.parametrize("fn,expected_file",
+                             [("predict_survival_function", CGBOOST_SURV_FILE),
+                              ("predict_cumulative_hazard_function", CGBOOST_CUMHAZ_FILE)])
+    def test_predict_function(make_whas500, fn, expected_file):
+        whas500_data = make_whas500(with_std=False, to_numeric=True)
+
+        model = ComponentwiseGradientBoostingSurvivalAnalysis(n_estimators=100, random_state=0)
+        train_x, train_y = whas500_data.x[10:], whas500_data.y[10:]
+        model.fit(train_x, train_y)
+
+        test_x = whas500_data.x[:10]
+        surv_fn = getattr(model, fn)(test_x)
+
+        times = numpy.unique(train_y["lenfol"][train_y["fstat"]])
+        actual = numpy.row_stack([fn_gb(times) for fn_gb in surv_fn])
+
+        expected = numpy.loadtxt(expected_file, delimiter=",")
+
+        assert_array_almost_equal(actual, expected)
+
+    @staticmethod
     def test_feature_importances(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
@@ -496,6 +519,12 @@ class TestComponentwiseGradientBoosting(object):
         cindex = model.score(whas500_data.x, whas500_data.y)
         assert round(abs(cindex - 0.7773356931), 7) == 0
 
+        with pytest.raises(ValueError, match="`fit` must be called with the loss option set to 'coxph'"):
+            model.predict_survival_function(whas500_data.x)
+
+        with pytest.raises(ValueError, match="`fit` must be called with the loss option set to 'coxph'"):
+            model.predict_cumulative_hazard_function(whas500_data.x)
+
     @staticmethod
     def test_squared_loss(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
@@ -515,6 +544,12 @@ class TestComponentwiseGradientBoosting(object):
 
         cindex = model.score(whas500_data.x, whas500_data.y)
         assert round(abs(cindex - 0.7777082862), 7) == 0
+
+        with pytest.raises(ValueError, match="`fit` must be called with the loss option set to 'coxph'"):
+            model.predict_survival_function(whas500_data.x)
+
+        with pytest.raises(ValueError, match="`fit` must be called with the loss option set to 'coxph'"):
+            model.predict_cumulative_hazard_function(whas500_data.x)
 
 
 @pytest.fixture(params=[GradientBoostingSurvivalAnalysis, ComponentwiseGradientBoostingSurvivalAnalysis])
