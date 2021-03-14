@@ -915,7 +915,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         """
         check_is_fitted(self, 'estimators_')
 
-        X = check_array(X, dtype=DTYPE, order="C")
+        X = check_array(X, dtype=DTYPE, order="C", accept_sparse="csr")
         score = self._raw_predict(X)
         if score.shape[1] == 1:
             score = score.ravel()

@@ -316,7 +316,7 @@ class TestSparseGradientBoosting(object):
         assert model.train_score_.shape == (100,)
         assert model.oob_improvement_.shape == (100,)
 
-        sparse_predict = model.predict(whas500_sparse_data.x_dense)
+        sparse_predict = model.predict(whas500_sparse_data.x_sparse)
 
         model.fit(whas500_sparse_data.x_sparse, whas500_sparse_data.y)
         dense_predict = model.predict(whas500_sparse_data.x_dense)
@@ -334,7 +334,7 @@ class TestSparseGradientBoosting(object):
         assert model.estimators_.shape[0] == 100
         assert model.train_score_.shape == (100,)
 
-        sparse_predict = model.predict(whas500_sparse_data.x_dense)
+        sparse_predict = model.predict(whas500_sparse_data.x_sparse)
 
         model.fit(whas500_sparse_data.x_dense, whas500_sparse_data.y)
         dense_predict = model.predict(whas500_sparse_data.x_dense)
