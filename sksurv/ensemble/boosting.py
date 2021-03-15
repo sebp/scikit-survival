@@ -28,7 +28,6 @@ from sklearn.utils.extmath import squared_norm
 from scipy.sparse import csc_matrix, csr_matrix, issparse
 
 from ..base import SurvivalAnalysisMixin
-from ..util import check_arrays_survival
 from .survival_loss import LOSS_FUNCTIONS, CensoredSquaredLoss, \
     CoxPH, IPCWLeastSquaresError
 from ..nonparametric import _compute_counts
@@ -134,7 +133,6 @@ class BreslowEstimator:
             funcs[i] = StepFunction(x=self.baseline_survival_.x,
                                     y=numpy.power(self.baseline_survival_.y, risk_score[i]))
         return funcs
-
 
 
 def _sample_binomial_plus_one(p, size, random_state):
@@ -683,8 +681,6 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         self.dropout_rate = dropout_rate
         self._baseline_model = BreslowEstimator()
 
-
-
     @property
     def _predict_risk_score(self):
         return isinstance(self.loss_, CoxPH)
@@ -1034,12 +1030,14 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         """
         check_is_fitted(self, 'estimators_')
 
+        if issparse(X):
+            X = X.toarray()
+
         X = check_array(X, dtype=DTYPE, order="C")
         score = self._raw_predict(X)
 
         if score.shape[1] == 1:
             score = score.ravel()
-
 
         return self.loss_._scale_raw_prediction(score)
 
@@ -1077,6 +1075,106 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
             y = self.loss_._scale_raw_prediction(raw_predictions)
             yield y.ravel()
 
+    def predict_cumulative_hazard_function(self, X):
+        """Predict cumulative hazard function.
+
+        The cumulative hazard function for an individual
+        with feature vector :math:`x` is defined as
+
+        .. math::
+
+            H(t \\mid x) = \\exp(x^\\top \\beta) H_0(t) ,
+
+        where :math:`H_0(t)` is the baseline hazard function,
+        estimated by Breslow's estimator.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            Data matrix.
+
+        Returns
+        -------
+        cum_hazard : ndarray of :class:`sksurv.functions.StepFunction`, shape = (n_samples,)
+            Predicted cumulative hazard functions.
+
+        Examples
+        --------
+        >>> import matplotlib.pyplot as plt
+        >>> from sksurv.datasets import load_whas500
+        >>> from sksurv.linear_model import GradientBoostingSurvivalAnalysis
+
+        Load the data.
+
+        >>> X, y = load_whas500()
+        >>> X = X.astype(float)
+
+        Fit the model.
+
+        >>> estimator = GradientBoostingSurvivalAnalysis(loss = 'coxph').fit(X, y)
+
+        Estimate the cumulative hazard function for the first 10 samples.
+
+        >>> chf_funcs = estimator.predict_survival_function(X.iloc[:10])
+
+        Plot the estimated cumulative hazard functions.
+
+        >>> for fn in chf_funcs:
+        ...     plt.step(fn.x, fn(fn.x), where="post")
+        ...
+        >>> plt.ylim(0, 1)
+        >>> plt.show()
+        """
+        return self._baseline_model.get_cumulative_hazard_function(self.predict(X))
+
     def predict_survival_function(self, X):
+        """Predict survival function
+
+        The survival function for an individual
+        with feature vector :math:`x` is defined as
+
+        .. math::
+
+            S(t \\mid x) = S_0(t)^{\\exp(x^\\top \\beta)} ,
+
+        where :math:`S_0(t)` is the baseline survival function,
+        estimated by Breslow's estimator.
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            Data matrix.
+
+        Returns
+        -------
+        survival : ndarray of :class:`sksurv.functions.StepFunction`, shape = (n_samples,)
+            Predicted survival functions.
+
+        Examples
+        --------
+        >>> import matplotlib.pyplot as plt
+        >>> from sksurv.datasets import load_whas500
+        >>> from sksurv.linear_model import GradientBoostingSurvivalAnalysis
+
+        Load the data.
+
+        >>> X, y = load_whas500()
+        >>> X = X.astype(float)
+
+        Fit the model.
+
+        >>> estimator = GradientBoostingSurvivalAnalysis(loss = 'coxph').fit(X, y)
+
+        Estimate the survival function for the first 10 samples.
+
+        >>> surv_funcs = estimator.predict_survival_function(X.iloc[:10])
+
+        Plot the estimated survival functions.
+
+        >>> for fn in surv_funcs:
+        ...     plt.step(fn.x, fn(fn.x), where="post")
+        ...
+        >>> plt.ylim(0, 1)
+        >>> plt.show()
+        """
 
         return self._baseline_model.get_survival_function(self.predict(X))
