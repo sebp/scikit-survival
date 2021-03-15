@@ -31,9 +31,110 @@ from ..base import SurvivalAnalysisMixin
 from ..util import check_arrays_survival
 from .survival_loss import LOSS_FUNCTIONS, CensoredSquaredLoss, \
     CoxPH, IPCWLeastSquaresError
+from ..nonparametric import _compute_counts
+from ..util import check_arrays_survival
+from ..functions import StepFunction
 
 
 __all__ = ['ComponentwiseGradientBoostingSurvivalAnalysis', 'GradientBoostingSurvivalAnalysis']
+
+
+class BreslowEstimator:
+    """Breslow's estimator of the cumulative hazard function.
+
+    Attributes
+    ----------
+    cum_baseline_hazard_ : :class:`sksurv.functions.StepFunction`
+        Cumulative baseline hazard function.
+
+    baseline_survival_ : :class:`sksurv.functions.StepFunction`
+        Baseline survival function.
+    """
+
+    def fit(self, linear_predictor, event, time):
+        """Compute baseline cumulative hazard function.
+
+        Parameters
+        ----------
+        linear_predictor : array-like, shape = (n_samples,)
+            Linear predictor of risk: `X @ coef`.
+
+        event : array-like, shape = (n_samples,)
+            Contains binary event indicators.
+
+        time : array-like, shape = (n_samples,)
+            Contains event/censoring times.
+
+        Returns
+        -------
+        self
+        """
+        risk_score = numpy.exp(linear_predictor)
+        order = numpy.argsort(time, kind="mergesort")
+        risk_score = risk_score[order]
+        uniq_times, n_events, n_at_risk, _ = _compute_counts(event, time, order)
+
+        divisor = numpy.empty(n_at_risk.shape, dtype=numpy.float_)
+        value = numpy.sum(risk_score)
+        divisor[0] = value
+        k = 0
+        for i in range(1, len(n_at_risk)):
+            d = n_at_risk[i - 1] - n_at_risk[i]
+            value -= risk_score[k:(k + d)].sum()
+            k += d
+            divisor[i] = value
+
+        assert k == n_at_risk[0] - n_at_risk[-1]
+
+        y = numpy.cumsum(n_events / divisor)
+        self.cum_baseline_hazard_ = StepFunction(uniq_times, y)
+        self.baseline_survival_ = StepFunction(self.cum_baseline_hazard_.x,
+                                               numpy.exp(- self.cum_baseline_hazard_.y))
+        return self
+
+    def get_cumulative_hazard_function(self, linear_predictor):
+        """Predict cumulative hazard function.
+
+        Parameters
+        ----------
+        linear_predictor : array-like, shape = (n_samples,)
+            Linear predictor of risk: `X @ coef`.
+
+        Returns
+        -------
+        cum_hazard : ndarray, shape = (n_samples,)
+            Predicted cumulative hazard functions.
+        """
+        risk_score = numpy.exp(linear_predictor)
+        n_samples = risk_score.shape[0]
+        funcs = numpy.empty(n_samples, dtype=numpy.object_)
+        for i in range(n_samples):
+            funcs[i] = StepFunction(x=self.cum_baseline_hazard_.x,
+                                    y=self.cum_baseline_hazard_.y,
+                                    a=risk_score[i])
+        return funcs
+
+    def get_survival_function(self, linear_predictor):
+        """Predict survival function.
+
+        Parameters
+        ----------
+        linear_predictor : array-like, shape = (n_samples,)
+            Linear predictor of risk: `X @ coef`.
+
+        Returns
+        -------
+        survival : ndarray, shape = (n_samples,)
+            Predicted survival functions.
+        """
+        risk_score = numpy.exp(linear_predictor)
+        n_samples = risk_score.shape[0]
+        funcs = numpy.empty(n_samples, dtype=numpy.object_)
+        for i in range(n_samples):
+            funcs[i] = StepFunction(x=self.baseline_survival_.x,
+                                    y=numpy.power(self.baseline_survival_.y, risk_score[i]))
+        return funcs
+
 
 
 def _sample_binomial_plus_one(p, size, random_state):
@@ -580,6 +681,9 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                          verbose=verbose,
                          ccp_alpha=ccp_alpha)
         self.dropout_rate = dropout_rate
+        self._baseline_model = BreslowEstimator()
+
+
 
     @property
     def _predict_risk_score(self):
@@ -867,6 +971,9 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                 self.oob_improvement_ = self.oob_improvement_[:n_stages]
 
         self.n_estimators_ = n_stages
+
+        self._baseline_model.fit(self.predict(X), event, time)
+
         return self
 
     def _dropout_predict_stage(self, X, i, K, score):
@@ -929,8 +1036,10 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         X = check_array(X, dtype=DTYPE, order="C")
         score = self._raw_predict(X)
+
         if score.shape[1] == 1:
             score = score.ravel()
+
 
         return self.loss_._scale_raw_prediction(score)
 
@@ -967,3 +1076,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         for raw_predictions in aiter:
             y = self.loss_._scale_raw_prediction(raw_predictions)
             yield y.ravel()
+
+    def predict_survival_function(self, X):
+
+        return self._baseline_model.get_survival_function(self.predict(X))
