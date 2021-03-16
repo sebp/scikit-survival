@@ -11,7 +11,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numpy
-from scipy.integrate import trapz
 from sklearn.utils import check_consistent_length, check_array
 
 from .exceptions import NoComparablePairException
@@ -27,7 +26,7 @@ __all__ = [
 ]
 
 
-def _check_estimate(estimate, test_time):
+def _check_estimate_1d(estimate, test_time):
     estimate = check_array(estimate, ensure_2d=False)
     if estimate.ndim != 1:
         raise ValueError(
@@ -37,21 +36,11 @@ def _check_estimate(estimate, test_time):
     return estimate
 
 
-def _check_estimate2D(estimate, test_time):
-    estimate = check_array(estimate, ensure_2d=True)
-    if estimate.ndim != 2:
-        raise ValueError(
-            'Expected 2D array, got {:d}D array instead:\narray={}.\n'.format(
-                estimate.ndim, estimate))
-    check_consistent_length(test_time, estimate)
-    return estimate
-
-
 def _check_inputs(event_indicator, event_time, estimate):
     check_consistent_length(event_indicator, event_time, estimate)
     event_indicator = check_array(event_indicator, ensure_2d=False)
     event_time = check_array(event_time, ensure_2d=False)
-    estimate = _check_estimate(estimate, event_time)
+    estimate = _check_estimate_1d(estimate, event_time)
 
     if not numpy.issubdtype(event_indicator.dtype, numpy.bool_):
         raise ValueError(
@@ -77,6 +66,18 @@ def _check_times(test_time, times):
                 test_time.min(), test_time.max()))
 
     return times
+
+
+def _check_estimate_2d(estimate, test_time, time_points):
+    estimate = check_array(estimate, ensure_2d=False, allow_nd=False)
+    time_points = _check_times(test_time, time_points)
+    check_consistent_length(test_time, estimate)
+
+    if estimate.ndim == 2 and estimate.shape[1] != time_points.shape[0]:
+        raise ValueError("expected estimate with {} columns, but got {}".format(
+            time_points.shape[0], estimate.shape[1]))
+
+    return estimate, time_points
 
 
 def _get_comparable(event_indicator, event_time, order):
@@ -309,7 +310,7 @@ def concordance_index_ipcw(survival_train, survival_test, estimate, tau=None, ti
         mask = test_time < tau
         survival_test = survival_test[mask]
 
-    estimate = _check_estimate(estimate, test_time)
+    estimate = _check_estimate_1d(estimate, test_time)
 
     cens = CensoringDistributionEstimator()
     cens.fit(survival_train)
@@ -326,8 +327,7 @@ def concordance_index_ipcw(survival_train, survival_test, estimate, tau=None, ti
     return _estimate_concordance_index(test_event, test_time, estimate, w, tied_tol)
 
 
-
-def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_tol=1e-8, ret_roc=False):
+def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_tol=1e-8):
     """Estimator of cumulative/dynamic AUC for right-censored time-to-event data.
 
     The receiver operating characteristic (ROC) curve and the area under the
@@ -426,88 +426,68 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
            Statistical Methods in Medical Research, 2014.
     """
     test_event, test_time = check_y_survival(survival_test)
+    estimate, times = _check_estimate_2d(estimate, test_time, times)
 
-    times = check_array(numpy.atleast_1d(times), ensure_2d=False, dtype=test_time.dtype)
-    times = numpy.unique(times)
-
+    n_samples = estimate.shape[0]
     n_times = times.shape[0]
-    estimate = numpy.atleast_1d(estimate)
     if estimate.ndim == 1:
-        estimate=numpy.tile(numpy.expand_dims(estimate, axis=1), (1, n_times, ))
-
-    if times.max() >= test_time.max() or times.min() < test_time.min():
-        raise ValueError(
-            'all times must be within follow-up time of test data: [{}; {}['.format(
-                test_time.min(), test_time.max()))
+        estimate = numpy.broadcast_to(estimate[:, numpy.newaxis], (n_samples, n_times))
 
     # fit and transform IPCW
     cens = CensoringDistributionEstimator()
     cens.fit(survival_train)
     ipcw = cens.predict_ipcw(survival_test)
 
-    # expand arrays to (n_samples, n_times, ) shape
-    n_samples = test_time.shape[0]
-    test_time = numpy.tile(numpy.expand_dims(test_time, axis=1), (1, n_times, ))
-    test_event = numpy.tile(numpy.expand_dims(test_event, axis=1), (1, n_times, ))
-    times = numpy.tile(numpy.expand_dims(times, axis=0), (n_samples, 1))
-    survival_test = numpy.tile(numpy.expand_dims(survival_test, axis=1), (1, n_times, ))
-    ipcw = numpy.tile(numpy.expand_dims(ipcw, axis=1), (1, n_times, ))
+    # expand arrays to (n_samples, n_times) shape
+    test_time = numpy.broadcast_to(test_time[:, numpy.newaxis], (n_samples, n_times))
+    test_event = numpy.broadcast_to(test_event[:, numpy.newaxis], (n_samples, n_times))
+    times_2d = numpy.broadcast_to(times, (n_samples, n_times))
+    ipcw = numpy.broadcast_to(ipcw[:, numpy.newaxis], (n_samples, n_times))
 
-    # check estimate after expanding test_time
-    estimate = _check_estimate2D(estimate, test_time)
+    # sort each time point (columns) by risk score (descending)
+    o = numpy.argsort(-estimate, axis=0)
+    test_time = numpy.take_along_axis(test_time, o, axis=0)
+    test_event = numpy.take_along_axis(test_event, o, axis=0)
+    estimate = numpy.take_along_axis(estimate, o, axis=0)
+    ipcw = numpy.take_along_axis(ipcw, o, axis=0)
 
-    # sort estimates in ascending order and the other arrays too
-    o = numpy.argsort(-estimate, axis=0, )
-    test_time = numpy.take_along_axis(test_time, o, axis=0, )
-    test_event = numpy.take_along_axis(test_event, o, axis=0, )
-    estimate = numpy.take_along_axis(estimate, o, axis=0, )
-    survival_test = numpy.take_along_axis(survival_test, o, axis=0, )
-    ipcw = numpy.take_along_axis(ipcw, o, axis=0, )
+    is_case = (test_time <= times_2d) & test_event
+    is_control = test_time > times_2d
+    n_controls = is_control.sum(axis=0)
 
-    is_case = numpy.logical_and(numpy.less_equal(test_time, times, ),
-                            test_event)
-    is_control = numpy.greater_equal(test_time, times)
-    n_controls = is_control.sum(axis=0, )
-    is_tied = numpy.less_equal(
-                    numpy.absolute(numpy.subtract
-                                     (
-                                             estimate, numpy.roll(estimate, 1, axis=0, )
-                                     )
-                                 )
-                             , tied_tol)
+    is_tied = numpy.absolute(numpy.diff(estimate, prepend=numpy.infty, axis=0)) <= tied_tol
 
-    add_tp =  numpy.multiply(is_case, ipcw)
-    add_fp =  numpy.multiply(is_control, 1)
+    cumsum_tp = numpy.cumsum(is_case * ipcw, axis=0)
+    cumsum_fp = numpy.cumsum(is_control, axis=0)
+    true_pos = cumsum_tp / cumsum_tp[-1]
+    false_pos = cumsum_fp / n_controls
 
-    cumsum_tp = numpy.cumsum(add_tp, axis=0)
-    cumsum_fp = numpy.cumsum(add_fp, axis=0)
-    true_pos = numpy.divide(cumsum_tp, add_tp.sum(axis=0))
-    false_pos = numpy.divide(cumsum_fp, n_controls)
-    scores = [trapz(true_pos[:, i][~is_tied[:, i]], false_pos[:, i][~is_tied[:, i]]) for i in range(is_tied.shape[1])]
-    if ret_roc:
-        tpr = [true_pos[:, i][~is_tied[:, i]] for i in range(is_tied.shape[1])]
-        fpr = [false_pos[:, i][~is_tied[:, i]] for i in range(is_tied.shape[1])]
+    scores = numpy.empty(n_times, dtype=float)
+    it = numpy.nditer((true_pos, false_pos, is_tied), order="F", flags=["external_loop"])
+    with it:
+        for i, (tp, fp, mask) in enumerate(it):
+            idx = numpy.flatnonzero(mask) - 1
+            # only keep the last estimate for tied risk scores
+            tp_no_ties = numpy.delete(tp, idx)
+            fp_no_ties = numpy.delete(fp, idx)
+            # Add an extra threshold position
+            # to make sure that the curve starts at (0, 0)
+            tp_no_ties = numpy.r_[0, tp_no_ties]
+            fp_no_ties = numpy.r_[0, fp_no_ties]
+            scores[i] = numpy.trapz(tp_no_ties, fp_no_ties)
 
-    if times.shape[0] == 1:
+    if n_times == 1:
         mean_auc = scores[0]
     else:
         surv = SurvivalFunctionEstimator()
-        if survival_test.ndim == 2:
-            survival_test = survival_test[:, 0]
-            times = times[0, :]
-
         surv.fit(survival_test)
         s_times = surv.predict_proba(times)
-
         # compute integral of AUC over survival function
         d = -numpy.diff(numpy.r_[1.0, s_times])
         integral = (scores * d).sum()
         mean_auc = integral / (1.0 - s_times[-1])
 
-    if ret_roc:
-        return tpr, fpr, scores, mean_auc
-    else:
-        return scores, mean_auc
+    return scores, mean_auc
 
 
 def brier_score(survival_train, survival_test, estimate, times):
@@ -601,20 +581,9 @@ def brier_score(survival_train, survival_test, estimate, times):
            Statistics in Medicine, vol. 18, no. 17-18, pp. 2529–2545, 1999.
     """
     test_event, test_time = check_y_survival(survival_test)
-    times = _check_times(test_time, times)
-
-    estimate = check_array(estimate, ensure_2d=False)
+    estimate, times = _check_estimate_2d(estimate, test_time, times)
     if estimate.ndim == 1 and times.shape[0] == 1:
         estimate = estimate.reshape(-1, 1)
-
-    if estimate.shape[0] != test_time.shape[0]:
-        raise ValueError("expected estimate with {} samples, but got {}".format(
-            test_time.shape[0], estimate.shape[0]
-        ))
-
-    if estimate.shape[1] != times.shape[0]:
-        raise ValueError("expected estimate with {} columns, but got {}".format(
-            times.shape[0], estimate.shape[1]))
 
     # fit IPCW estimator
     cens = CensoringDistributionEstimator().fit(survival_train)
@@ -733,6 +702,6 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
         raise ValueError("At least two time points must be given")
 
     # Computing the IBS
-    ibs_value = trapz(brier_scores, times) / (times[-1] - times[0])
+    ibs_value = numpy.trapz(brier_scores, times) / (times[-1] - times[0])
 
     return ibs_value
