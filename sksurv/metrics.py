@@ -500,7 +500,7 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
         s_times = surv.predict_proba(times)
 
         # compute integral of AUC over survival function
-        d = -numpy.diff(numpy.concatenate(([1.0], s_times)))
+        d = -numpy.diff(numpy.r_[1.0, s_times])
         integral = (scores * d).sum()
         mean_auc = integral / (1.0 - s_times[-1])
 

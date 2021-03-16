@@ -53,10 +53,10 @@ class TestUtil(object):
 
         expected_series = pandas.DataFrame.from_dict(OrderedDict([
             ("col_A", pandas.Series(pandas.Categorical.from_codes(
-                numpy.concatenate((a.col_A.cat.codes.values, b.col_A.cat.codes.values)),
+                numpy.r_[a.col_A.cat.codes.values, b.col_A.cat.codes.values],
                 ["C1", "C2", "C3"]
             ))),
-            ("col_B", numpy.concatenate((a.col_B.values, b.col_B.values)))
+            ("col_B", numpy.r_[a.col_B.values, b.col_B.values])
         ]))
         expected_series.index = pandas.Index(a.index.tolist() + b.index.tolist())
 

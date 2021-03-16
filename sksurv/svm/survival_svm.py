@@ -444,7 +444,7 @@ class LargeScaleOptimizer(RankSVMOptimizer):
             # intercept
             if self._fit_intercept:
                 grad_intercept = self._regr_penalty * (xcs.sum() + xc.shape[0] * bias - self.y_compressed.sum())
-                grad = numpy.concatenate(([grad_intercept], grad))
+                grad = numpy.r_[grad_intercept, grad]
 
         return grad
 
@@ -468,7 +468,7 @@ class LargeScaleOptimizer(RankSVMOptimizer):
                 hessp += self._regr_penalty * xsum * s_bias
                 hessp_intercept = (self._regr_penalty * xc.shape[0] * s_bias
                                    + self._regr_penalty * numpy.dot(xsum, s_feat))
-                hessp = numpy.concatenate(([hessp_intercept], hessp))
+                hessp = numpy.r_[hessp_intercept, hessp]
 
         return hessp
 
@@ -578,7 +578,7 @@ class NonlinearLargeScaleOptimizer(RankSVMOptimizer):
             if self._fit_intercept:
                 grad_intercept = self._regr_penalty * (K_comp_beta.sum()
                                                        + K_comp.shape[0] * bias - self.y_compressed.sum())
-                gradient = numpy.concatenate(([grad_intercept], gradient))
+                gradient = numpy.r_[grad_intercept, gradient]
 
         return gradient
 
@@ -602,7 +602,7 @@ class NonlinearLargeScaleOptimizer(RankSVMOptimizer):
                 hessian += self._regr_penalty * xsum * s_bias
                 hessian_intercept = (self._regr_penalty * K_comp.shape[0] * s_bias
                                      + self._regr_penalty * numpy.dot(xsum, s_feat))
-                hessian = numpy.concatenate(([hessian_intercept], hessian))
+                hessian = numpy.r_[hessian_intercept, hessian]
 
         return hessian
 

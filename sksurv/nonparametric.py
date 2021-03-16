@@ -92,7 +92,7 @@ def _compute_counts(event, time, order=None):
     n_censored = total_count - n_events
 
     # offset cumulative sum by one
-    total_count = numpy.concatenate(([0], total_count))
+    total_count = numpy.r_[0, total_count]
     n_at_risk = n_samples - numpy.cumsum(total_count)
 
     return times, n_events, n_at_risk[:-1], n_censored
@@ -129,7 +129,7 @@ def _compute_counts_truncated(event, time_enter, time_exit):
 
     n_samples = event.shape[0]
 
-    uniq_times = numpy.sort(numpy.unique(numpy.concatenate((time_enter, time_exit))), kind="mergesort")
+    uniq_times = numpy.sort(numpy.unique(numpy.r_[time_enter, time_exit]), kind="mergesort")
     total_counts = numpy.empty(len(uniq_times), dtype=numpy.int_)
     event_counts = numpy.empty(len(uniq_times), dtype=numpy.int_)
 
@@ -351,8 +351,8 @@ class SurvivalFunctionEstimator(BaseEstimator):
         event, time = check_y_survival(y, allow_all_censored=True)
 
         unique_time, prob = kaplan_meier_estimator(event, time)
-        self.unique_time_ = numpy.concatenate(([-numpy.infty], unique_time))
-        self.prob_ = numpy.concatenate(([1.], prob))
+        self.unique_time_ = numpy.r_[-numpy.infty, unique_time]
+        self.prob_ = numpy.r_[1., prob]
 
         return self
 
@@ -419,8 +419,8 @@ class CensoringDistributionEstimator(SurvivalFunctionEstimator):
             self.prob_ = numpy.ones(self.unique_time_.shape[0])
         else:
             unique_time, prob = kaplan_meier_estimator(event, time, reverse=True)
-            self.unique_time_ = numpy.concatenate(([-numpy.infty], unique_time))
-            self.prob_ = numpy.concatenate(([1.], prob))
+            self.unique_time_ = numpy.r_[-numpy.infty, unique_time]
+            self.prob_ = numpy.r_[1., prob]
 
         return self
 
