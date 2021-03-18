@@ -362,7 +362,13 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
     restricted to situations where the random censoring assumption holds and
     censoring is independent of the features.
 
-    The function also provides a single summary measure that refers to the mean
+    This function can also be used to evaluate models with time-dependent predictions
+    :math:`\\hat{f}(\\mathbf{x}_i, t)`, such as :class:`sksurv.ensemble.RandomSurvivalForest`
+    (see :ref:`User Guide </user_guide/evaluating-survival-models.ipynb#Using-Time-dependent-Risk-Scores>`).
+    In this case, `estimate` must be a 2-d array where ``estimate[i, j]`` is the
+    predicted risk score for the i-th instance at time point ``times[j]``.
+
+    Finally, the function also provides a single summary measure that refers to the mean
     of the :math:`\\mathrm{AUC}(t)` over the time range :math:`(\\tau_1, \\tau_2)`.
 
     .. math::
@@ -391,8 +397,11 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
         as first field, and time of event or time of censoring as
         second field.
 
-    estimate : array-like, shape = (n_samples,)
+    estimate : array-like, shape = (n_samples,) or (n_samples, n_times)
         Estimated risk of experiencing an event of test data.
+        If `estimate` is a 1-d array, the same risk score across all time
+        points is used. If `estimate` is a 2-d array, the risk scores in the
+        j-th column are used to evaluate the j-th time point.
 
     times : array-like, shape = (n_times,)
         The time points for which the area under the
