@@ -365,19 +365,6 @@ def test_predict_step_function(breast_cancer, func):
 
 
 @pytest.mark.parametrize("func", ("predict_survival_function", "predict_cumulative_hazard_function"))
-def test_predict_step_function_warning(toy_data, func):
-    X, y = toy_data
-    tree = SurvivalTree(max_depth=1)
-    tree.fit(X, y)
-
-    pred_fn = getattr(tree, func)
-
-    with pytest.warns(FutureWarning,
-                      match="{} will return an array of StepFunction instances in 0.14".format(func)):
-        pred_fn(X)
-
-
-@pytest.mark.parametrize("func", ("predict_survival_function", "predict_cumulative_hazard_function"))
 def test_pipeline_predict(breast_cancer, func):
     X_num, y = breast_cancer
     X_num = X_num.loc[:, ["er", "grade"]].values

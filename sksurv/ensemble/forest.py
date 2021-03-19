@@ -399,7 +399,7 @@ class RandomSurvivalForest(BaseForest, SurvivalAnalysisMixin):
         """
         return self._predict("predict", X)
 
-    def predict_cumulative_hazard_function(self, X, return_array="warn"):
+    def predict_cumulative_hazard_function(self, X, return_array=False):
         """Predict cumulative hazard function.
 
         For each tree in the ensemble, the cumulative hazard
@@ -445,7 +445,7 @@ class RandomSurvivalForest(BaseForest, SurvivalAnalysisMixin):
 
         Estimate the cumulative hazard function for the first 5 samples.
 
-        >>> chf_funcs = estimator.predict_cumulative_hazard_function(X.iloc[:5], return_array=False)
+        >>> chf_funcs = estimator.predict_cumulative_hazard_function(X.iloc[:5])
 
         Plot the estimated cumulative hazard functions.
 
@@ -455,18 +455,12 @@ class RandomSurvivalForest(BaseForest, SurvivalAnalysisMixin):
         >>> plt.ylim(0, 1)
         >>> plt.show()
         """
-        if return_array == "warn":
-            warnings.warn(
-                "predict_cumulative_hazard_function will return an array of StepFunction instances in 0.14. "
-                "Use return_array=True to keep the old behavior.",
-                FutureWarning)
-
         arr = self._predict("predict_cumulative_hazard_function", X)
         if return_array:
             return arr
         return _array_to_step_function(self.event_times_, arr)
 
-    def predict_survival_function(self, X, return_array="warn"):
+    def predict_survival_function(self, X, return_array=False):
         """Predict survival function.
 
         For each tree in the ensemble, the survival function
@@ -513,7 +507,7 @@ class RandomSurvivalForest(BaseForest, SurvivalAnalysisMixin):
 
         Estimate the survival function for the first 5 samples.
 
-        >>> surv_funcs = estimator.predict_survival_function(X.iloc[:5], return_array=False)
+        >>> surv_funcs = estimator.predict_survival_function(X.iloc[:5])
 
         Plot the estimated survival functions.
 
@@ -523,12 +517,6 @@ class RandomSurvivalForest(BaseForest, SurvivalAnalysisMixin):
         >>> plt.ylim(0, 1)
         >>> plt.show()
         """
-        if return_array == "warn":
-            warnings.warn(
-                "predict_survival_function will return an array of StepFunction instances in 0.14. "
-                "Use return_array=True to keep the old behavior.",
-                FutureWarning)
-
         arr = self._predict("predict_survival_function", X)
         if return_array:
             return arr

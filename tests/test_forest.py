@@ -126,20 +126,6 @@ def test_predict_step_function(make_whas500, func):
         assert_array_almost_equal(fn.y, arr)
 
 
-@pytest.mark.parametrize("func", ("predict_survival_function", "predict_cumulative_hazard_function"))
-def test_predict_step_function_warning(make_whas500, func):
-    whas500 = make_whas500(to_numeric=True)
-
-    forest = RandomSurvivalForest(n_estimators=3, oob_score=True, random_state=2)
-    forest.fit(whas500.x, whas500.y)
-
-    pred_fn = getattr(forest, func)
-
-    with pytest.warns(FutureWarning,
-                      match="{} will return an array of StepFunction instances in 0.14".format(func)):
-        pred_fn(whas500.x)
-
-
 def test_oob_too_little_estimators(make_whas500):
     whas500 = make_whas500(to_numeric=True)
 
