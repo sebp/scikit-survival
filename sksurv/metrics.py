@@ -464,7 +464,9 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
     is_control = test_time > times_2d
     n_controls = is_control.sum(axis=0)
 
-    is_tied = numpy.absolute(numpy.diff(estimate, prepend=numpy.infty, axis=0)) <= tied_tol
+    # prepend row of infinity values
+    estimate_diff = numpy.concatenate((numpy.broadcast_to(numpy.infty, (1, n_times)), estimate))
+    is_tied = numpy.absolute(numpy.diff(estimate_diff, axis=0)) <= tied_tol
 
     cumsum_tp = numpy.cumsum(is_case * ipcw, axis=0)
     cumsum_fp = numpy.cumsum(is_control, axis=0)
