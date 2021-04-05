@@ -140,10 +140,18 @@ def cythonize_extensions(extensions):
                      compiler_directives=directives)
 
 
+def _check_eigen_source():
+    eigen_src = Path("sksurv/linear_model/src/eigen/Eigen")
+    if not eigen_src.is_dir():
+        raise RuntimeError("{} directory not found. You might have to run "
+                           "'git submodule update --init'.".format(eigen_src.resolve()))
+
+
 def get_extensions():
     import numpy
 
     numpy_includes = [numpy.get_include()]
+    _check_eigen_source()
 
     extensions = []
     for config in EXTENSIONS.values():
