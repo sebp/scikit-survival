@@ -21,7 +21,7 @@ __all__ = ["RandomSurvivalForest", "ExtraSurvivalTrees"]
 MAX_INT = np.iinfo(np.int32).max
 
 
-class BaseSurvivalForest(BaseForest, SurvivalAnalysisMixin):
+class _BaseSurvivalForest(BaseForest, SurvivalAnalysisMixin):
     """
     Base class for forest-based estimators for survival analysis.
 
@@ -254,7 +254,7 @@ class BaseSurvivalForest(BaseForest, SurvivalAnalysisMixin):
         return _array_to_step_function(self.event_times_, arr)
 
 
-class RandomSurvivalForest(BaseSurvivalForest):
+class RandomSurvivalForest(_BaseSurvivalForest):
     """A random survival forest.
 
     A random survival forest is a meta estimator that fits a number of
@@ -563,7 +563,7 @@ class RandomSurvivalForest(BaseSurvivalForest):
         return super().predict_survival_function(X, return_array)
 
 
-class ExtraSurvivalTrees(BaseSurvivalForest):
+class ExtraSurvivalTrees(_BaseSurvivalForest):
     """An extremely random survival forest.
 
     This class implements a meta estimator that fits a number of randomized
