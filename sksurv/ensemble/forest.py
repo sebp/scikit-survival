@@ -2,6 +2,7 @@ from functools import partial
 import threading
 import warnings
 from joblib import Parallel, delayed
+from abc import ABCMeta, abstractmethod
 import numpy as np
 from sklearn.ensemble._base import _partition_estimators
 from sklearn.ensemble._forest import BaseForest, _accumulate_prediction, \
@@ -21,7 +22,9 @@ __all__ = ["RandomSurvivalForest", "ExtraSurvivalTrees"]
 MAX_INT = np.iinfo(np.int32).max
 
 
-class _BaseSurvivalForest(BaseForest, SurvivalAnalysisMixin):
+class _BaseSurvivalForest(BaseForest,
+                          SurvivalAnalysisMixin,
+                          metaclass=ABCMeta):
     """
     Base class for forest-based estimators for survival analysis.
 
@@ -29,6 +32,7 @@ class _BaseSurvivalForest(BaseForest, SurvivalAnalysisMixin):
     instead.
     """
 
+    @abstractmethod
     def __init__(self,
                  base_estimator,
                  n_estimators=100, *,
@@ -39,7 +43,6 @@ class _BaseSurvivalForest(BaseForest, SurvivalAnalysisMixin):
                  random_state=None,
                  verbose=0,
                  warm_start=False,
-                 class_weight=None,
                  max_samples=None):
         super().__init__(
             base_estimator,
@@ -51,7 +54,7 @@ class _BaseSurvivalForest(BaseForest, SurvivalAnalysisMixin):
             random_state=random_state,
             verbose=verbose,
             warm_start=warm_start,
-            class_weight=class_weight,
+            class_weight=None,
             max_samples=max_samples)
 
     @property
@@ -576,8 +579,12 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
     In each randomized survival tree, the quality of a split is measured by
     the log-rank splitting rule.
 
-    Compared to :class:`RandomSurvivalForest`, more randomness is ingested
-    into the process of finding the best splits.
+    Compared to :class:`RandomSurvivalForest`, randomness goes one step
+    further in the way splits are computed. As in
+    :class:`RandomSurvivalForest`, a random subset of candidate features is
+    used, but instead of looking for the most discriminative thresholds,
+    thresholds are drawn at random for each candidate feature and the best of
+    these randomly-generated thresholds is picked as the splitting rule.
 
     Parameters
     ----------
