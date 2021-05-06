@@ -15,10 +15,15 @@ FORESTS = {
 }
 
 
-def test_fit_predict(make_whas500):
+@pytest.mark.parametrize(
+    'name, expected_c',
+    [('RandomSurvivalForest', (0.9026201280123488, 67831, 7318, 0, 14)),
+     ('ExtraSurvivalTrees', (0.8389200122423452, 63044, 12105, 0, 14))]
+)
+def test_fit_predict(make_whas500, name, expected_c):
     whas500 = make_whas500(to_numeric=True)
 
-    forest = RandomSurvivalForest(random_state=2)
+    forest = FORESTS[name](random_state=2)
     forest.fit(whas500.x, whas500.y)
 
     assert len(forest.estimators_) == 100
@@ -27,7 +32,6 @@ def test_fit_predict(make_whas500):
     assert numpy.isfinite(pred).all()
     assert numpy.all(pred >= 0)
 
-    expected_c = (0.9026201280123488, 67831, 7318, 0, 14)
     assert_cindex_almost_equal(
         whas500.y["fstat"], whas500.y["lenfol"], pred, expected_c)
 
@@ -101,10 +105,15 @@ def test_fit_predict_surv(make_whas500, name):
     assert (d <= 0).all()
 
 
-def test_oob_score(make_whas500):
+@pytest.mark.parametrize(
+    'name, expected_oob_score',
+    [('RandomSurvivalForest', 0.753010685),
+     ('ExtraSurvivalTrees', 0.752092510)]
+)
+def test_oob_score(make_whas500, name, expected_oob_score):
     whas500 = make_whas500(to_numeric=True)
 
-    forest = RandomSurvivalForest(oob_score=True, bootstrap=False, random_state=2)
+    forest = FORESTS[name](oob_score=True, bootstrap=False, random_state=2)
     with pytest.raises(ValueError, match="Out of bag estimation only available "
                                          "if bootstrap=True"):
         forest.fit(whas500.x, whas500.y)
@@ -113,7 +122,7 @@ def test_oob_score(make_whas500):
     forest.fit(whas500.x, whas500.y)
 
     assert forest.oob_prediction_.shape == (whas500.x.shape[0],)
-    assert round(abs(forest.oob_score_ - 0.753010685), 6) == 0.0
+    assert round(abs(forest.oob_score_ - expected_oob_score), 6) == 0.0
 
 
 @pytest.mark.parametrize('name', FORESTS)
