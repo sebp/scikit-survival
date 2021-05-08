@@ -10,6 +10,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from ._binarytrees import RBTree, AVLTree, AATree
+from ._binarytrees import AATree, AVLTree, RBTree
 
 __all__ = ['RBTree', 'AVLTree', 'AATree']

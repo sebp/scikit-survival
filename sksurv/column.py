@@ -14,9 +14,7 @@ import logging
 
 import numpy
 import pandas
-
 from pandas.api.types import is_categorical_dtype
-
 
 __all__ = ['categorical_to_numeric', 'encode_categorical', 'standardize']
 

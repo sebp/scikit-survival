@@ -2,19 +2,18 @@
 # cython: boundscheck=False
 # cython: wraparound=False
 
-from libc.stdlib cimport calloc, free, malloc, realloc
-from libc.stdlib cimport qsort
+from libc.math cimport INFINITY, fabs, sqrt
+from libc.stdlib cimport calloc, free, malloc, qsort, realloc
 from libc.string cimport memset
-from libc.math cimport fabs, sqrt, INFINITY
 
 import numpy as np
+
 cimport numpy as cnp
+
 cnp.import_array()
 
 from sklearn.tree._criterion cimport Criterion
-from sklearn.tree._tree cimport SIZE_t
-from sklearn.tree._tree cimport DOUBLE_t
-
+from sklearn.tree._tree cimport DOUBLE_t, SIZE_t
 
 ctypedef struct Timepoint:
 

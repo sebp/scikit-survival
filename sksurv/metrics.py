@@ -11,7 +11,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numpy
-from sklearn.utils import check_consistent_length, check_array
+from sklearn.utils import check_array, check_consistent_length
 
 from .exceptions import NoComparablePairException
 from .nonparametric import CensoringDistributionEstimator, SurvivalFunctionEstimator

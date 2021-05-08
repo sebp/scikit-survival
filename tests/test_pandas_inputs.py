@@ -2,7 +2,9 @@ from importlib import import_module
 import inspect
 from os.path import dirname
 import pkgutil
+
 import pytest
+
 import sksurv
 from sksurv.base import SurvivalAnalysisMixin
 from sksurv.datasets import load_whas500

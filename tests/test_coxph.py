@@ -5,13 +5,13 @@ from numpy.testing import assert_array_almost_equal
 import pandas
 import pytest
 from scipy.optimize import check_grad
-from sksurv.datasets import load_breast_cancer
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
 from sksurv.column import standardize
-from sksurv.linear_model.coxph import CoxPHSurvivalAnalysis, CoxPHOptimizer
+from sksurv.datasets import load_breast_cancer
+from sksurv.linear_model.coxph import CoxPHOptimizer, CoxPHSurvivalAnalysis
 from sksurv.preprocessing import OneHotEncoder
 
 

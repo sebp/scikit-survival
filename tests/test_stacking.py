@@ -4,14 +4,14 @@ import pytest
 from sklearn.base import BaseEstimator
 from sklearn.datasets import load_iris
 from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score, roc_auc_score
 from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
 
 from sksurv.linear_model import CoxPHSurvivalAnalysis
-from sksurv.meta import Stacking, MeanEstimator
-from sksurv.testing import assert_cindex_almost_equal
+from sksurv.meta import MeanEstimator, Stacking
 from sksurv.svm import FastSurvivalSVM
+from sksurv.testing import assert_cindex_almost_equal
 
 
 class _NoFitEstimator(BaseEstimator):

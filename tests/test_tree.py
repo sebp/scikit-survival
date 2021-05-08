@@ -1,14 +1,15 @@
 from queue import LifoQueue
+
 import numpy
-from numpy.testing import assert_array_equal, assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 import pandas
 import pytest
-from sklearn.tree._tree import TREE_UNDEFINED
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import OrdinalEncoder
+from sklearn.tree._tree import TREE_UNDEFINED
 
 from sksurv.compare import compare_survival
-from sksurv.datasets import load_veterans_lung_cancer, load_breast_cancer
+from sksurv.datasets import load_breast_cancer, load_veterans_lung_cancer
 from sksurv.nonparametric import kaplan_meier_estimator, nelson_aalen_estimator
 from sksurv.tree import SurvivalTree
 

@@ -1,10 +1,11 @@
 import os.path
 
 import numpy
-from numpy.testing import assert_array_almost_equal, assert_array_equal, assert_almost_equal
+from numpy.testing import assert_almost_equal, assert_array_almost_equal, assert_array_equal
 import pytest
 
 from sksurv.datasets import load_gbsg2
+from sksurv.exceptions import NoComparablePairException
 from sksurv.functions import StepFunction
 from sksurv.linear_model import CoxPHSurvivalAnalysis
 from sksurv.metrics import (
@@ -14,7 +15,6 @@ from sksurv.metrics import (
     cumulative_dynamic_auc,
     integrated_brier_score,
 )
-from sksurv.exceptions import NoComparablePairException
 from sksurv.nonparametric import kaplan_meier_estimator
 from sksurv.preprocessing import OneHotEncoder
 from sksurv.util import Surv

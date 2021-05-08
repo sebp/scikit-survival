@@ -11,8 +11,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from abc import ABCMeta
-import numpy
 
+import numpy
 from sklearn.dummy import DummyRegressor
 from sklearn.ensemble._gb_losses import RegressionLossFunction
 from sklearn.utils.extmath import squared_norm

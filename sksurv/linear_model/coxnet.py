@@ -20,8 +20,8 @@ from sklearn.utils.validation import assert_all_finite, check_is_fitted, check_n
 
 from ..base import SurvivalAnalysisMixin
 from ..util import check_arrays_survival
-from .coxph import BreslowEstimator
 from ._coxnet import call_fit_coxnet
+from .coxph import BreslowEstimator
 
 __all__ = ['CoxnetSurvivalAnalysis']
 

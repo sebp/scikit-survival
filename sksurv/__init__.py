@@ -1,8 +1,8 @@
 import importlib
-from pkg_resources import get_distribution, DistributionNotFound
 import platform
 import sys
 
+from pkg_resources import DistributionNotFound, get_distribution
 from sklearn.pipeline import Pipeline
 from sklearn.utils.metaestimators import if_delegate_has_method
 

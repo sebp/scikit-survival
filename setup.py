@@ -13,10 +13,10 @@
 from distutils.version import LooseVersion
 import os
 from pathlib import Path
-from pkg_resources import parse_requirements as _parse_requirements
 import shutil
 import sys
 
+from pkg_resources import parse_requirements as _parse_requirements
 from setuptools import Command, Extension, find_packages, setup
 
 CYTHON_MIN_VERSION = '0.29'

@@ -13,25 +13,21 @@
 import numbers
 
 import numpy
-
+from scipy.sparse import csc_matrix, csr_matrix, issparse
 from sklearn.base import BaseEstimator
-from sklearn.ensemble._gradient_boosting import _random_sample_mask
 from sklearn.ensemble._base import BaseEnsemble
 from sklearn.ensemble._gb import BaseGradientBoosting, VerboseReporter
+from sklearn.ensemble._gradient_boosting import _random_sample_mask
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.tree._tree import DTYPE
-from sklearn.utils import check_consistent_length, check_random_state, column_or_1d, check_array
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils import check_array, check_consistent_length, check_random_state, column_or_1d
 from sklearn.utils.extmath import squared_norm
-
-from scipy.sparse import csc_matrix, csr_matrix, issparse
+from sklearn.utils.validation import check_is_fitted
 
 from ..base import SurvivalAnalysisMixin
 from ..linear_model.coxph import BreslowEstimator
 from ..util import check_arrays_survival
-from .survival_loss import LOSS_FUNCTIONS, CensoredSquaredLoss, \
-    CoxPH, IPCWLeastSquaresError
-
+from .survival_loss import LOSS_FUNCTIONS, CensoredSquaredLoss, CoxPH, IPCWLeastSquaresError
 
 __all__ = ['ComponentwiseGradientBoostingSurvivalAnalysis', 'GradientBoostingSurvivalAnalysis']
 

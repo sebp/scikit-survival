@@ -12,13 +12,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numpy
 import pandas
-
 from pandas.api.types import is_categorical_dtype, is_numeric_dtype
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
-from ._clinical_kernel import continuous_ordinal_kernel, continuous_ordinal_kernel_with_ranges, \
-    pairwise_continuous_ordinal_kernel, pairwise_nominal_kernel
+from ._clinical_kernel import (
+    continuous_ordinal_kernel,
+    continuous_ordinal_kernel_with_ranges,
+    pairwise_continuous_ordinal_kernel,
+    pairwise_nominal_kernel,
+)
 
 __all__ = ['clinical_kernel', 'ClinicalKernelTransform']
 

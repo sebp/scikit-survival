@@ -13,15 +13,15 @@
 from abc import ABCMeta, abstractmethod
 import warnings
 
-import numpy
 import numexpr
+import numpy
 from scipy.optimize import minimize
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import pairwise_kernels
-from sklearn.utils import check_X_y, check_array, check_consistent_length, check_random_state
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils import check_array, check_consistent_length, check_random_state, check_X_y
 from sklearn.utils.extmath import safe_sparse_dot, squared_norm
+from sklearn.utils.validation import check_is_fitted
 
 from ..base import SurvivalAnalysisMixin
 from ..bintrees import AVLTree, RBTree

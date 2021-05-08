@@ -1,5 +1,5 @@
 from functools import partial
-from os.path import join, dirname
+from os.path import dirname, join
 import warnings
 
 import numpy
@@ -12,17 +12,21 @@ from sklearn.preprocessing import normalize
 
 from sksurv.bintrees import AVLTree, RBTree
 from sksurv.column import encode_categorical
-from sksurv.datasets import load_whas500, get_x_y
+from sksurv.datasets import get_x_y, load_whas500
 from sksurv.exceptions import NoComparablePairException
 from sksurv.io import loadarff
 from sksurv.kernels import ClinicalKernelTransform
 from sksurv.metrics import concordance_index_censored
 from sksurv.svm._prsvm import survival_constraints_simple
 from sksurv.svm.naive_survival_svm import NaiveSurvivalSVM
-from sksurv.svm.survival_svm import FastSurvivalSVM, FastKernelSurvivalSVM, SurvivalCounter, \
-    OrderStatisticTreeSurvivalCounter
-from sksurv.util import Surv
+from sksurv.svm.survival_svm import (
+    FastKernelSurvivalSVM,
+    FastSurvivalSVM,
+    OrderStatisticTreeSurvivalCounter,
+    SurvivalCounter,
+)
 from sksurv.testing import assert_cindex_almost_equal
+from sksurv.util import Surv
 
 WHAS500_NOTIES_FILE = join(dirname(__file__), 'data', 'whas500-noties.arff')
 

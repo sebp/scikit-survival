@@ -1,7 +1,7 @@
 from os.path import dirname, join
 
 import numpy
-from numpy.testing import assert_array_equal, assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 import pandas
 import pytest
 from sklearn.metrics import mean_squared_error

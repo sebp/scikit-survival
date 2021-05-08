@@ -6,11 +6,11 @@ import pytest
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.preprocessing import scale
 
+from sksurv.column import encode_categorical
 from sksurv.datasets import load_gbsg2
 from sksurv.exceptions import NoComparablePairException
-from sksurv.column import encode_categorical
 from sksurv.svm._minlip import create_difference_matrix
-from sksurv.svm.minlip import MinlipSurvivalAnalysis, HingeLossSurvivalSVM
+from sksurv.svm.minlip import HingeLossSurvivalSVM, MinlipSurvivalAnalysis
 from sksurv.testing import assert_cindex_almost_equal
 from sksurv.util import Surv
 

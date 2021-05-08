@@ -1,15 +1,15 @@
 import numpy
 import pytest
-from sklearn.model_selection import KFold, ParameterGrid
 from sklearn.dummy import DummyRegressor
 from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import KFold, ParameterGrid
 
 from sksurv.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis
 from sksurv.kernels import ClinicalKernelTransform
 from sksurv.linear_model import IPCRidge
 from sksurv.meta import EnsembleSelection, EnsembleSelectionRegressor
 from sksurv.metrics import concordance_index_censored
-from sksurv.svm import FastSurvivalSVM, FastKernelSurvivalSVM
+from sksurv.svm import FastKernelSurvivalSVM, FastSurvivalSVM
 from sksurv.testing import assert_cindex_almost_equal
 from sksurv.util import check_arrays_survival
 

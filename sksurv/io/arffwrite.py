@@ -10,11 +10,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import pandas
-import numpy
 import os.path
 import re
 
+import numpy
+import pandas
 from pandas.api.types import is_categorical_dtype, is_object_dtype
 
 _ILLEGAL_CHARACTER_PAT = re.compile(r"[^-_=\w\d\(\)<>\.]")

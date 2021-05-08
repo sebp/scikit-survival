@@ -11,9 +11,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 cimport cython
-from libc cimport math
-
 cimport numpy as cnp
+from libc cimport math
 
 cnp.import_array()
 

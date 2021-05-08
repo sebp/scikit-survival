@@ -1,5 +1,6 @@
-import sksurv
 import re
+
+import sksurv
 
 
 def test_show_versions(capsys):

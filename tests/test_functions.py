@@ -1,5 +1,5 @@
-from numpy.testing import assert_array_equal
 import numpy
+from numpy.testing import assert_array_equal
 import pytest
 
 from sksurv.functions import StepFunction

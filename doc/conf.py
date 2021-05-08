@@ -13,10 +13,11 @@
 # serve to show the default.
 
 import inspect
-import re
 import os
 from pathlib import Path
+import re
 import sys
+
 from nbconvert.preprocessors import Preprocessor
 import nbsphinx
 from setuptools_scm import get_version

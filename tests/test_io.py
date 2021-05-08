@@ -8,7 +8,6 @@ import pytest
 
 from sksurv.io import loadarff, writearff
 
-
 EXPECTED_1 = ["@relation test_nominal\n",
               "\n",
               "@attribute attr_nominal\t{beer,water,wine}\n",

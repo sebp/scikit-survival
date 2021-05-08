@@ -11,10 +11,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 cimport cython
-from cython.operator import preincrement
 
+from cython.operator import preincrement
 import numpy as np
+
 cimport numpy as cnp
+
 from scipy.sparse import csr_matrix
 
 cnp.import_array()

@@ -4,10 +4,9 @@ import pytest
 from sklearn.pipeline import make_pipeline
 
 from sksurv.datasets import load_breast_cancer
-from sksurv.ensemble import RandomSurvivalForest, ExtraSurvivalTrees
+from sksurv.ensemble import ExtraSurvivalTrees, RandomSurvivalForest
 from sksurv.preprocessing import OneHotEncoder
 from sksurv.testing import assert_cindex_almost_equal
-
 
 FORESTS = {
     "RandomSurvivalForest": RandomSurvivalForest,

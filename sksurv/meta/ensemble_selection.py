@@ -14,8 +14,8 @@ import numbers
 
 from joblib import Parallel, delayed
 import numpy
-from scipy.stats import rankdata, kendalltau, spearmanr
-from sklearn.base import clone, BaseEstimator
+from scipy.stats import kendalltau, rankdata, spearmanr
+from sklearn.base import BaseEstimator, clone
 from sklearn.model_selection import check_cv
 
 from .base import _fit_and_score

@@ -1,15 +1,16 @@
-from os.path import join, dirname
+from os.path import dirname, join
 
 import numpy
-from numpy.testing import assert_array_equal, assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 import pandas
 import pytest
 
 from sksurv.nonparametric import (
     CensoringDistributionEstimator,
+    SurvivalFunctionEstimator,
     kaplan_meier_estimator,
     nelson_aalen_estimator,
-    SurvivalFunctionEstimator)
+)
 from sksurv.util import Surv
 
 CHANNING_FILE = join(dirname(__file__), 'data', 'channing.csv')

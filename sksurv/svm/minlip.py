@@ -1,11 +1,11 @@
 from abc import ABCMeta, abstractmethod
+import warnings
+
 import numpy
-from scipy import sparse
-from scipy import linalg
+from scipy import linalg, sparse
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import pairwise_kernels
-import warnings
 
 from ..base import SurvivalAnalysisMixin
 from ..exceptions import NoComparablePairException

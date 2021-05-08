@@ -1,12 +1,18 @@
+from abc import ABCMeta, abstractmethod
 from functools import partial
 import threading
 import warnings
+
 from joblib import Parallel, delayed
-from abc import ABCMeta, abstractmethod
 import numpy as np
 from sklearn.ensemble._base import _partition_estimators
-from sklearn.ensemble._forest import BaseForest, _accumulate_prediction, \
-    _generate_unsampled_indices, _get_n_samples_bootstrap, _parallel_build_trees
+from sklearn.ensemble._forest import (
+    BaseForest,
+    _accumulate_prediction,
+    _generate_unsampled_indices,
+    _get_n_samples_bootstrap,
+    _parallel_build_trees,
+)
 from sklearn.tree._tree import DTYPE
 from sklearn.utils.fixes import _joblib_parallel_args
 from sklearn.utils.validation import check_array, check_is_fitted, check_random_state

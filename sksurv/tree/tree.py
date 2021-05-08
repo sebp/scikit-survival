@@ -1,12 +1,13 @@
 from math import ceil
 import numbers
 import warnings
+
 import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.tree import _tree
+from sklearn.tree._classes import DENSE_SPLITTERS
 from sklearn.tree._splitter import Splitter
 from sklearn.tree._tree import BestFirstTreeBuilder, DepthFirstTreeBuilder, Tree
-from sklearn.tree._classes import DENSE_SPLITTERS
 from sklearn.utils.validation import check_is_fitted, check_random_state
 
 from ..base import SurvivalAnalysisMixin

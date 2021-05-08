@@ -2,11 +2,11 @@ from collections import OrderedDict
 
 import numpy
 from numpy.testing import assert_array_equal
-import pandas.util.testing as tm
 import pandas
+import pandas.util.testing as tm
 import pytest
 
-from sksurv.util import safe_concat, Surv
+from sksurv.util import Surv, safe_concat
 
 
 class TestUtil(object):

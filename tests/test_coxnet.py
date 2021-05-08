@@ -1,4 +1,4 @@
-from os.path import join, dirname
+from os.path import dirname, join
 
 import numpy
 from numpy.testing import assert_array_almost_equal
@@ -7,7 +7,7 @@ import pytest
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.pipeline import make_pipeline
 
-from sksurv.datasets import load_breast_cancer, get_x_y
+from sksurv.datasets import get_x_y, load_breast_cancer
 from sksurv.linear_model.coxnet import CoxnetSurvivalAnalysis
 from sksurv.preprocessing import OneHotEncoder
 from sksurv.util import Surv
@@ -362,8 +362,8 @@ class TestCoxnetSurvivalAnalysis(object):
 
     @staticmethod
     def test_example_2_standardize(make_example_coef):
-        from sklearn.preprocessing import StandardScaler
         from sklearn.pipeline import Pipeline
+        from sklearn.preprocessing import StandardScaler
 
         x, y = get_x_y(pandas.read_csv(EXAMPLE_FILE), ["status", "time"],
                        pos_label=1)
