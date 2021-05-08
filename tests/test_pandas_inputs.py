@@ -21,8 +21,7 @@ def all_survival_estimators():
             continue
         module = import_module(modname)
         for name, cls in inspect.getmembers(module, is_survival_mixin):
-            # ignore estimators intended for internal use
-            if name.startswith("_"):
+            if inspect.isabstract(cls):
                 continue
             all_classes.append(cls)
     return set(all_classes)
