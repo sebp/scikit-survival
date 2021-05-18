@@ -89,6 +89,9 @@ def _encode_categorical_series(series, allow_drop=True):
     if enc is None:
         return pandas.Series(index=series.index, name=series.name, dtype=series.dtype)
 
+    if not allow_drop and enc.shape[1] == 1:
+        return series
+    
     names = []
     for key in range(1, enc.shape[1]):
         names.append("{}={}".format(series.name, levels[key]))
