@@ -329,6 +329,22 @@ class TestEncodeCategorical(object):
         tm.assert_frame_equal(actual_df.isnull(), expected_df.isnull())
         tm.assert_frame_equal(actual_df.dropna(), expected_df.dropna(), check_exact=True)
 
+    @staticmethod
+    def test_retain_only_one_level():
+        b = numpy.r_[numpy.repeat(["yes"], 10)]
+
+        all_missing = numpy.repeat([None], len(b))
+
+        df = pandas.DataFrame({"categorical_col_with_only_one_level": b})
+
+        expected_df = df.copy(deep=True)
+
+        actual_df = column.encode_categorical(df, allow_drop=False)
+
+        assert actual_df.shape == expected_df.shape
+        tm.assert_frame_equal(actual_df.isnull(), expected_df.isnull())
+        tm.assert_frame_equal(actual_df.dropna(), expected_df.dropna(), check_exact=True)
+
 
 def test_categorical_series_to_numeric():
     input_series = pandas.Series(["a", "a", "b", "b", "b", "c"], name="Thr33",
