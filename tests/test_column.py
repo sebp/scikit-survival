@@ -333,8 +333,6 @@ class TestEncodeCategorical(object):
     def test_retain_only_one_level():
         b = numpy.r_[numpy.repeat(["yes"], 10)]
 
-        all_missing = numpy.repeat([None], len(b))
-
         df = pandas.DataFrame({"categorical_col_with_only_one_level": b})
 
         expected_df = df.copy(deep=True)
