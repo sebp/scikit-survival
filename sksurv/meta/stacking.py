@@ -66,7 +66,7 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, BaseEstimator):
 
     def get_params(self, deep=True):
         if not deep:
-            return super(Stacking, self).get_params(deep=False)
+            return super().get_params(deep=False)
         else:
             out = self.named_estimators.copy()
             for name, estimator in self.named_estimators.items():
