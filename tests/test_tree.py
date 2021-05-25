@@ -252,7 +252,7 @@ def test_tree_split_all_censored(veterans):
     assert_array_equal(tree.tree_.n_node_samples, expected_size)
 
 
-@pytest.mark.slow
+@pytest.mark.slow()
 def test_toy_data(toy_data):
     X, y = toy_data
     tree = SurvivalTree(max_depth=4, max_features=1.0, min_samples_leaf=20)
