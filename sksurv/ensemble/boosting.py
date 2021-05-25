@@ -1011,8 +1011,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         # otherwise consider scaling factor of individual trees
         if not hasattr(self, "scale_"):
             return super()._raw_predict(X)
-        else:
-            return self._dropout_raw_predict(X)
+        return self._dropout_raw_predict(X)
 
     def _init_decision_function(self, X):  # pragma: no cover
         return super()._init_decision_function(X).reshape(-1, 1)

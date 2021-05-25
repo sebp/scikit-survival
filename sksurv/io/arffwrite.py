@@ -134,8 +134,7 @@ def _write_data(data, fp):
     def to_str(x):
         if pandas.isnull(x):
             return '?'
-        else:
-            return str(x)
+        return str(x)
 
     data = data.applymap(to_str)
     n_rows = data.shape[0]

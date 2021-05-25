@@ -114,8 +114,7 @@ class BaseEnsembleSelection(Stacking):
     def __len__(self):
         if hasattr(self, "fitted_models_"):
             return len(self.fitted_models_)
-        else:
-            return 0
+        return 0
 
     def _check_params(self):
         if self.n_estimators <= 0:
