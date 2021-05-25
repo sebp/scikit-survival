@@ -122,7 +122,7 @@ class _BaseSurvivalForest(BaseForest,
                              "len(estimators_)=%d when warm_start==True"
                              % (self.n_estimators, len(self.estimators_)))
 
-        elif n_more_estimators == 0:
+        if n_more_estimators == 0:
             warnings.warn("Warm-start fitting without increasing n_estimators "
                           "does not fit new trees.")
         else:
