@@ -91,7 +91,7 @@ def _encode_categorical_series(series, allow_drop=True):
 
     if not allow_drop and enc.shape[1] == 1:
         return series
-    
+
     names = []
     for key in range(1, enc.shape[1]):
         names.append("{}={}".format(series.name, levels[key]))
