@@ -8,21 +8,21 @@ from sksurv.ensemble import ExtraSurvivalTrees, RandomSurvivalForest
 from sksurv.preprocessing import OneHotEncoder
 from sksurv.testing import assert_cindex_almost_equal
 
-FORESTS = {
-    "RandomSurvivalForest": RandomSurvivalForest,
-    "ExtraSurvivalTrees": ExtraSurvivalTrees,
-}
+FORESTS = [
+    RandomSurvivalForest,
+    ExtraSurvivalTrees,
+]
 
 
 @pytest.mark.parametrize(
-    'name, expected_c',
-    [('RandomSurvivalForest', (0.9026201280123488, 67831, 7318, 0, 14)),
-     ('ExtraSurvivalTrees', (0.8389200122423452, 63044, 12105, 0, 14))]
+    'forest_cls, expected_c',
+    [(RandomSurvivalForest, (0.9026201280123488, 67831, 7318, 0, 14)),
+     (ExtraSurvivalTrees, (0.8389200122423452, 63044, 12105, 0, 14))]
 )
-def test_fit_predict(make_whas500, name, expected_c):
+def test_fit_predict(make_whas500, forest_cls, expected_c):
     whas500 = make_whas500(to_numeric=True)
 
-    forest = FORESTS[name](random_state=2)
+    forest = forest_cls(random_state=2)
     forest.fit(whas500.x, whas500.y)
 
     assert len(forest.estimators_) == 100
@@ -35,16 +35,16 @@ def test_fit_predict(make_whas500, name, expected_c):
         whas500.y["fstat"], whas500.y["lenfol"], pred, expected_c)
 
 
-@pytest.mark.parametrize('name', FORESTS)
-def test_fit_int_time(make_whas500, name):
+@pytest.mark.parametrize('forest_cls', FORESTS)
+def test_fit_int_time(make_whas500, forest_cls):
     whas500 = make_whas500(to_numeric=True)
     y = whas500.y
     y_int = numpy.empty(y.shape[0],
                         dtype=[(y.dtype.names[0], bool), (y.dtype.names[1], int)])
     y_int[:] = y
 
-    forest_f = FORESTS[name](oob_score=True, random_state=2).fit(whas500.x[50:], y[50:])
-    forest_i = FORESTS[name](oob_score=True, random_state=2).fit(whas500.x[50:], y_int[50:])
+    forest_f = forest_cls(oob_score=True, random_state=2).fit(whas500.x[50:], y[50:])
+    forest_i = forest_cls(oob_score=True, random_state=2).fit(whas500.x[50:], y_int[50:])
 
     assert len(forest_f.estimators_) == len(forest_i.estimators_)
     assert forest_f.n_features_ == forest_i.n_features_
@@ -57,11 +57,11 @@ def test_fit_int_time(make_whas500, name):
     assert_array_almost_equal(pred_f, pred_i)
 
 
-@pytest.mark.parametrize('name', FORESTS)
-def test_fit_predict_chf(make_whas500, name):
+@pytest.mark.parametrize('forest_cls', FORESTS)
+def test_fit_predict_chf(make_whas500, forest_cls):
     whas500 = make_whas500(to_numeric=True)
 
-    forest = FORESTS[name](n_estimators=10, random_state=2)
+    forest = forest_cls(n_estimators=10, random_state=2)
     forest.fit(whas500.x, whas500.y)
 
     assert len(forest.estimators_) == 10
@@ -80,11 +80,11 @@ def test_fit_predict_chf(make_whas500, name):
     assert (d >= 0).all()
 
 
-@pytest.mark.parametrize('name', FORESTS)
-def test_fit_predict_surv(make_whas500, name):
+@pytest.mark.parametrize('forest_cls', FORESTS)
+def test_fit_predict_surv(make_whas500, forest_cls):
     whas500 = make_whas500(to_numeric=True)
 
-    forest = FORESTS[name](n_estimators=10, random_state=2)
+    forest = forest_cls(n_estimators=10, random_state=2)
     forest.fit(whas500.x, whas500.y)
 
     assert len(forest.estimators_) == 10
@@ -105,14 +105,14 @@ def test_fit_predict_surv(make_whas500, name):
 
 
 @pytest.mark.parametrize(
-    'name, expected_oob_score',
-    [('RandomSurvivalForest', 0.753010685),
-     ('ExtraSurvivalTrees', 0.752092510)]
+    'forest_cls, expected_oob_score',
+    [(RandomSurvivalForest, 0.753010685),
+     (ExtraSurvivalTrees, 0.752092510)]
 )
-def test_oob_score(make_whas500, name, expected_oob_score):
+def test_oob_score(make_whas500, forest_cls, expected_oob_score):
     whas500 = make_whas500(to_numeric=True)
 
-    forest = FORESTS[name](oob_score=True, bootstrap=False, random_state=2)
+    forest = forest_cls(oob_score=True, bootstrap=False, random_state=2)
     with pytest.raises(ValueError, match="Out of bag estimation only available "
                                          "if bootstrap=True"):
         forest.fit(whas500.x, whas500.y)
@@ -124,12 +124,12 @@ def test_oob_score(make_whas500, name, expected_oob_score):
     assert round(abs(forest.oob_score_ - expected_oob_score), 6) == 0.0
 
 
-@pytest.mark.parametrize('name', FORESTS)
-@pytest.mark.parametrize("func", ("predict_survival_function", "predict_cumulative_hazard_function"))
-def test_predict_step_function(make_whas500, name, func):
+@pytest.mark.parametrize('forest_cls', FORESTS)
+@pytest.mark.parametrize("func", ["predict_survival_function", "predict_cumulative_hazard_function"])
+def test_predict_step_function(make_whas500, forest_cls, func):
     whas500 = make_whas500(to_numeric=True)
 
-    forest = FORESTS[name](n_estimators=10, random_state=2)
+    forest = forest_cls(n_estimators=10, random_state=2)
     forest.fit(whas500.x[10:], whas500.y[10:])
 
     pred_fn = getattr(forest, func)
@@ -144,11 +144,11 @@ def test_predict_step_function(make_whas500, name, func):
         assert_array_almost_equal(fn.y, arr)
 
 
-@pytest.mark.parametrize('name', FORESTS)
-def test_oob_too_little_estimators(make_whas500, name):
+@pytest.mark.parametrize('forest_cls', FORESTS)
+def test_oob_too_little_estimators(make_whas500, forest_cls):
     whas500 = make_whas500(to_numeric=True)
 
-    forest = FORESTS[name](n_estimators=3, oob_score=True, random_state=2)
+    forest = forest_cls(n_estimators=3, oob_score=True, random_state=2)
     with pytest.warns(UserWarning, match="Some inputs do not have OOB scores. "
                                          "This probably means too few trees were used "
                                          "to compute any reliable oob estimates."):
@@ -168,11 +168,11 @@ def test_fit_no_bootstrap(make_whas500):
         whas500.y["fstat"], whas500.y["lenfol"], pred, expected_c)
 
 
-@pytest.mark.parametrize('name', FORESTS)
-def test_fit_warm_start(make_whas500, name):
+@pytest.mark.parametrize('forest_cls', FORESTS)
+def test_fit_warm_start(make_whas500, forest_cls):
     whas500 = make_whas500(to_numeric=True)
 
-    forest = FORESTS[name](n_estimators=11, max_depth=2, random_state=2)
+    forest = forest_cls(n_estimators=11, max_depth=2, random_state=2)
     forest.fit(whas500.x, whas500.y)
 
     assert len(forest.estimators_) == 11
@@ -195,23 +195,15 @@ def test_fit_warm_start(make_whas500, name):
     assert all((e.max_depth == 2 for e in forest.estimators_))
 
 
-@pytest.mark.parametrize('name', FORESTS)
-def test_fit_with_small_max_samples(make_whas500, name):
+@pytest.mark.parametrize('forest_cls', FORESTS)
+def test_fit_with_small_max_samples(make_whas500, forest_cls):
     whas500 = make_whas500(to_numeric=True)
 
     # First fit with no restriction on max samples
-    est1 = FORESTS[name](
-        n_estimators=1,
-        random_state=1,
-        max_samples=None,
-    )
+    est1 = forest_cls(n_estimators=1, random_state=1, max_samples=None)
 
     # Second fit with max samples restricted to just 2
-    est2 = FORESTS[name](
-        n_estimators=1,
-        random_state=1,
-        max_samples=2,
-    )
+    est2 = forest_cls(n_estimators=1, random_state=1, max_samples=2)
 
     est1.fit(whas500.x, whas500.y)
     est2.fit(whas500.x, whas500.y)
@@ -223,16 +215,16 @@ def test_fit_with_small_max_samples(make_whas500, name):
     assert tree1.node_count > tree2.node_count, msg
 
 
-@pytest.mark.parametrize('name', FORESTS)
-@pytest.mark.parametrize("func", ("predict_survival_function", "predict_cumulative_hazard_function"))
-def test_pipeline_predict(breast_cancer, name, func):
+@pytest.mark.parametrize('forest_cls', FORESTS)
+@pytest.mark.parametrize("func", ["predict_survival_function", "predict_cumulative_hazard_function"])
+def test_pipeline_predict(breast_cancer, forest_cls, func):
     X_str, _ = load_breast_cancer()
     X_num, y = breast_cancer
 
-    est = FORESTS[name](n_estimators=10, random_state=1)
+    est = forest_cls(n_estimators=10, random_state=1)
     est.fit(X_num[10:], y[10:])
 
-    pipe = make_pipeline(OneHotEncoder(), FORESTS[name](n_estimators=10, random_state=1))
+    pipe = make_pipeline(OneHotEncoder(), forest_cls(n_estimators=10, random_state=1))
     pipe.fit(X_str[10:], y[10:])
 
     tree_pred = getattr(est, func)(X_num[:10], return_array=True)
@@ -241,7 +233,7 @@ def test_pipeline_predict(breast_cancer, name, func):
     assert_array_almost_equal(tree_pred, pipe_pred)
 
 
-@pytest.mark.parametrize('name', FORESTS)
+@pytest.mark.parametrize('forest_cls', FORESTS)
 @pytest.mark.parametrize(
     'max_samples, exc_type, exc_msg',
     [(int(1e9), ValueError,
@@ -263,8 +255,8 @@ def test_pipeline_predict(breast_cancer, name, func):
       r"`max_samples` should be int or float, but got type "
       r"'\<class 'numpy.ndarray'\>'")]
 )
-def test_fit_max_samples(make_whas500, name, max_samples, exc_type, exc_msg):
+def test_fit_max_samples(make_whas500, forest_cls, max_samples, exc_type, exc_msg):
     whas500 = make_whas500(to_numeric=True)
-    forest = FORESTS[name](max_samples=max_samples)
+    forest = forest_cls(max_samples=max_samples)
     with pytest.raises(exc_type, match=exc_msg):
         forest.fit(whas500.x, whas500.y)

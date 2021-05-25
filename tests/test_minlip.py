@@ -1,5 +1,3 @@
-from itertools import product
-
 import numpy
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 import pytest
@@ -597,10 +595,9 @@ class TestMinlipCvxpy(object):
             m.fit(x, y)
 
 
-@pytest.mark.parametrize(["model_cls", "solver", "pairs"],
-                         list(product((MinlipSurvivalAnalysis, HingeLossSurvivalSVM),
-                                      ("ecos", "osqp"),
-                                      ("all", "nearest", "next"))))
+@pytest.mark.parametrize("model_cls", [MinlipSurvivalAnalysis, HingeLossSurvivalSVM])
+@pytest.mark.parametrize("solver", ["ecos", "osqp"])
+@pytest.mark.parametrize("pairs", ["all", "nearest", "next"])
 def test_fit_uncomparable(whas500_uncomparable, model_cls, solver, pairs):
     ssvm = model_cls(solver=solver, pairs=pairs)
     with pytest.raises(NoComparablePairException):

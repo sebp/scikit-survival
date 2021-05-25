@@ -183,7 +183,7 @@ class TestFastSurvivalSVM(object):
             ssvm.fit(x, y)
 
     @staticmethod
-    @pytest.mark.parametrize("optimizer", ("simple", "avltree", "direct-count", "PRSVM", "rbtree"))
+    @pytest.mark.parametrize("optimizer", ["simple", "avltree", "direct-count", "PRSVM", "rbtree"])
     def test_fit_uncomparable(whas500_uncomparable, optimizer):
         ssvm = FastSurvivalSVM(optimizer=optimizer)
         with pytest.raises(NoComparablePairException):
@@ -650,7 +650,7 @@ class TestKernelSurvivalSVM(object):
             ssvm.predict(x_new)
 
     @staticmethod
-    @pytest.mark.parametrize("optimizer", ("avltree", "rbtree"))
+    @pytest.mark.parametrize("optimizer", ["avltree", "rbtree"])
     def test_fit_uncomparable(whas500_uncomparable, optimizer):
         ssvm = FastKernelSurvivalSVM(optimizer=optimizer)
         with pytest.raises(NoComparablePairException):
