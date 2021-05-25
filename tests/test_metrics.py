@@ -362,7 +362,7 @@ def uno_c_data(request, whas500_pred):
     y_train = y if y_train is None else y_train
     y_test = y if y_test is None else y_test
 
-    yield y_train, y_test, estimate, expected, tau
+    return y_train, y_test, estimate, expected, tau
 
 
 def test_uno_c(uno_c_data):
@@ -433,7 +433,7 @@ def uno_c_failure_data(request):
     else:
         raise AssertionError()
 
-    yield y_train, y_test, estimate, match
+    return y_train, y_test, estimate, match
 
 
 def test_uno_c_failure(uno_c_failure_data):
@@ -595,7 +595,7 @@ def uno_auc_data(request, uno_auc_data_15, uno_auc_data_20, uno_auc_time_depende
 
     if y_test is None:
         y_test = y_train
-    yield y_train, y_test, estimate, times, expected, iauc
+    return y_train, y_test, estimate, times, expected, iauc
 
 
 def test_uno_auc(uno_auc_data):
@@ -671,7 +671,7 @@ def uno_auc_whas500_data(request, whas500_pred):
         raise AssertionError()
     iauc = 0.8045058
     expected = numpy.array([0.7720669, 0.7765915, 0.7962623, 0.8759295, 0.8759295, 0.8759513, 0.9147647])
-    yield y_train, y_test, estimate, times, expected, iauc
+    return y_train, y_test, estimate, times, expected, iauc
 
 
 def test_uno_auc_whas500(uno_auc_whas500_data):
@@ -730,7 +730,7 @@ def uno_auc_censoring_failure_data(request, uno_auc_data_20):
 
     if estimate is None:
         estimate = numpy.random.randn(y_test.shape[0])
-    yield y_train, y_test, times, estimate, match
+    return y_train, y_test, times, estimate, match
 
 
 def test_uno_auc_censoring_failure(uno_auc_censoring_failure_data):
@@ -810,7 +810,7 @@ def uno_auc_times_failure_data(request, uno_auc_data_20):
     else:
         raise AssertionError()
 
-    yield y_train, y_test, times, match
+    return y_train, y_test, times, match
 
 
 def test_uno_auc_times_failure(uno_auc_times_failure_data):
@@ -854,7 +854,7 @@ def uno_auc_shape_failure_data(request, uno_auc_data_20):
     else:
         raise AssertionError()
 
-    yield y_train, y_test, times, estimate, match
+    return y_train, y_test, times, estimate, match
 
 
 def test_uno_auc_shape_failure(uno_auc_shape_failure_data):
@@ -915,7 +915,7 @@ def brier_npi_data(request, nottingham_prognostic_index):
     else:
         raise AssertionError()
 
-    yield pred, y, t, bs
+    return pred, y, t, bs
 
 
 def test_brier_nottingham(brier_npi_data):
