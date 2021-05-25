@@ -83,7 +83,7 @@ def make_data():
     return _make_data
 
 
-class TestClinicalKernel(object):
+class TestClinicalKernel:
 
     @staticmethod
     def test_clinical_kernel_1(make_data):

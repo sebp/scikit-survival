@@ -80,7 +80,7 @@ def _make_classification_data(n_samples, n_features, n_classes, seed):
     return x, y
 
 
-class TestGetXy(object):
+class TestGetXy:
     @staticmethod
     def test_get_x_y_survival():
         x, event, time = _make_survival_data(100, 10, 0)
@@ -186,7 +186,7 @@ def assert_structured_array_dtype(arr, event, time, num_events):
     assert arr[event].sum() == num_events
 
 
-class TestLoadDatasets(object):
+class TestLoadDatasets:
 
     @staticmethod
     def test_load_whas500():
@@ -285,7 +285,7 @@ def assert_y_equal(y_true, y_train):
     assert_array_almost_equal(y_train["time"], y_true["time"].values)
 
 
-class TestLoadArffFile(object):
+class TestLoadArffFile:
 
     @staticmethod
     def test_load_with_index(temp_file):

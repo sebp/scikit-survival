@@ -119,7 +119,7 @@ def make_aids():
     return _make_aids
 
 
-class TestKaplanMeier(object):
+class TestKaplanMeier:
 
     @staticmethod
     def test_simple(simple_data_km):
@@ -476,7 +476,7 @@ class TestKaplanMeier(object):
             kaplan_meier_estimator(event, time_exit, time_enter, reverse=True)
 
 
-class TestNelsonAalen(object):
+class TestNelsonAalen:
 
     @staticmethod
     def test_simple(simple_data_na):

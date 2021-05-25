@@ -37,7 +37,7 @@ def non_numeric_data_frame():
     return data
 
 
-class TestColumn(object):
+class TestColumn:
     @staticmethod
     def test_standardize_numeric(numeric_data):
         numeric_data_frame, expected = numeric_data
@@ -121,7 +121,7 @@ class TestColumn(object):
                            result[:, numeric_data_frame.shape[1]:][non_nan_idx, :])
 
 
-class TestEncodeCategorical(object):
+class TestEncodeCategorical:
     @staticmethod
     def test_series_categorical():
         input_series = pandas.Series(pandas.Categorical.from_codes([1, 1, 0, 2, 0, 1, 2, 1, 2, 0, 0, 1, 2, 2],

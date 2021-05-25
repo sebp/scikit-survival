@@ -13,7 +13,7 @@ def a_step_function():
     return f
 
 
-class TestStepFunction(object):
+class TestStepFunction:
 
     @staticmethod
     def test_exact(a_step_function):

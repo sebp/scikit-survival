@@ -17,7 +17,7 @@ from sklearn.utils import check_consistent_length
 __all__ = ['StepFunction']
 
 
-class StepFunction(object):
+class StepFunction:
     """Callable step function.
 
     .. math::

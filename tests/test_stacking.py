@@ -39,7 +39,7 @@ class _PredictProbaDummy(BaseEstimator):
         pass
 
 
-class TestStackingClassifier(object):
+class TestStackingClassifier:
     @staticmethod
     @pytest.mark.parametrize('estimator', [_NoFitEstimator, _NoPredictDummy])
     def test_base_estimator(estimator):
@@ -163,7 +163,7 @@ class TestStackingClassifier(object):
         assert_array_almost_equal(numpy.array([1.0, 0.9986, 0.9986]), scores)
 
 
-class TestStackingSurvivalAnalysis(object):
+class TestStackingSurvivalAnalysis:
     @staticmethod
     def test_fit(make_whas500):
         whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)

@@ -52,7 +52,7 @@ def assert_gradient_correctness(cph):
     assert round(err, 4) == 0
 
 
-class TestCoxPH(object):
+class TestCoxPH:
 
     @staticmethod
     def test_likelihood_breslow(rossi, coef_rossi_coxph_breslow):

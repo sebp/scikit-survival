@@ -9,7 +9,7 @@ import pytest
 from sksurv.util import Surv, safe_concat
 
 
-class TestUtil(object):
+class TestUtil:
     @staticmethod
     def test_concat_numeric():
         rnd = numpy.random.RandomState(14)
@@ -130,7 +130,7 @@ def surv_data_frame():
     return df
 
 
-class TestSurv(object):
+class TestSurv:
 
     @staticmethod
     def test_from_list(surv_arrays):

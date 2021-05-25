@@ -51,7 +51,7 @@ def optimizer_regression(request):
     return request.param
 
 
-class TestFastSurvivalSVM(object):
+class TestFastSurvivalSVM:
 
     @staticmethod
     def test_alpha_negative(fake_data):
@@ -395,7 +395,7 @@ class TestFastSurvivalSVM(object):
         assert 'timings' in ssvm.optimizer_result_
 
 
-class TestKernelSurvivalSVM(object):
+class TestKernelSurvivalSVM:
 
     @staticmethod
     def test_default_optimizer(make_whas500):
@@ -673,7 +673,7 @@ def make_survival_counter(request):
     return _make_survival_counter
 
 
-class TestSurvivalCounter(object):
+class TestSurvivalCounter:
 
     def setup_01(self):
         w = numpy.array([-0.9, -0.7, -0.1, 0.15, 0.2, 1.6])
@@ -759,7 +759,7 @@ def whas500_with_ties():
     return x, y
 
 
-class TestNaiveSurvivalSVM(object):
+class TestNaiveSurvivalSVM:
 
     @staticmethod
     def test_survival_squared_hinge_loss(whas500_without_ties):

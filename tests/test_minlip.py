@@ -48,7 +48,7 @@ def gbsg2():
     return x.values, y
 
 
-class TestDifferenceMatrix(object):
+class TestDifferenceMatrix:
 
     @staticmethod
     def test_toy_create_difference_matrix_direct_neighbor_without_censoring(toy_data):
@@ -229,7 +229,7 @@ class TestDifferenceMatrix(object):
         assert_array_equal(expected, mat.toarray())
 
 
-class TestToyOsqpExample(object):
+class TestToyOsqpExample:
 
     @property
     def minlip_model(self):
@@ -339,7 +339,7 @@ class TestToyOsqpExample(object):
         assert_array_almost_equal(expected, p, decimal=5)
 
 
-class TestToyEcosExample(object):
+class TestToyEcosExample:
 
     @property
     def minlip_model(self):
@@ -452,7 +452,7 @@ class TestToyEcosExample(object):
         assert_array_almost_equal(expected, p, decimal=5)
 
 
-class TestMinlipOsqp(object):
+class TestMinlipOsqp:
 
     @staticmethod
     def test_breast_cancer_osqp(gbsg2):
@@ -516,7 +516,7 @@ class TestMinlipOsqp(object):
             m.fit(x, y)
 
 
-class TestMinlipCvxpy(object):
+class TestMinlipCvxpy:
 
     @staticmethod
     def test_breast_cancer_ecos(gbsg2):

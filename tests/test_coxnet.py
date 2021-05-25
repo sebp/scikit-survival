@@ -68,7 +68,7 @@ def assert_predictions_equal(coxnet, x, expected_pred):
     assert_array_almost_equal(pred_last, expected_pred[-1])
 
 
-class TestCoxnetSurvivalAnalysis(object):
+class TestCoxnetSurvivalAnalysis:
     def _fit_example(self, **kwargs):
         x, y = get_x_y(pandas.read_csv(EXAMPLE_FILE), ["status", "time"],
                        pos_label=1)

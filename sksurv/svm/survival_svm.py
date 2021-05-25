@@ -30,7 +30,7 @@ from ..util import check_arrays_survival
 from ._prsvm import survival_constraints_simple, survival_constraints_with_support_vectors
 
 
-class Counter(object, metaclass=ABCMeta):
+class Counter(metaclass=ABCMeta):
     @abstractmethod
     def __init__(self, x, y, status, time=None):
         self.x, self.y = check_X_y(x, y)
@@ -177,7 +177,7 @@ class SurvivalCounter(Counter):
         return l_plus, xv_plus, l_minus, xv_minus
 
 
-class RankSVMOptimizer(object, metaclass=ABCMeta):
+class RankSVMOptimizer(metaclass=ABCMeta):
     """Abstract base class for all optimizers"""
     def __init__(self, alpha, rank_ratio, timeit=False):
         self.alpha = alpha

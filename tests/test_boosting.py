@@ -21,7 +21,7 @@ def early_stopping_monitor(i, est, locals_):  # pylint: disable=unused-argument
     return i == 9
 
 
-class TestGradientBoosting(object):
+class TestGradientBoosting:
 
     @staticmethod
     def test_fit(make_whas500):
@@ -343,7 +343,7 @@ class TestGradientBoosting(object):
         assert est.oob_improvement_.shape[0] == 10
 
 
-class TestSparseGradientBoosting(object):
+class TestSparseGradientBoosting:
 
     @staticmethod
     @pytest.mark.parametrize('loss', ['coxph', 'squared', 'ipcwls'])
@@ -382,7 +382,7 @@ class TestSparseGradientBoosting(object):
         assert_array_almost_equal(sparse_predict, dense_predict)
 
 
-class TestComponentwiseGradientBoosting(object):
+class TestComponentwiseGradientBoosting:
 
     @staticmethod
     def test_fit(make_whas500):

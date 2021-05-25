@@ -50,7 +50,7 @@ def create_data():
     return _create_data
 
 
-class TestOneHotEncoder(object):
+class TestOneHotEncoder:
     @staticmethod
     def test_fit(create_data):
         data, expected_data = create_data()

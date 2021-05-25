@@ -8,7 +8,7 @@ def tree(request):
     return request.param(10)
 
 
-class TestBinaryTree(object):
+class TestBinaryTree:
     @staticmethod
     def test_insert(tree):
         for k in [12, 34, 45, 16, 35, 57]:

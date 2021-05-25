@@ -40,7 +40,7 @@ def _create_survival_ensemble(**kwargs):
     return meta
 
 
-class TestEnsembleSelectionSurvivalAnalysis(object):
+class TestEnsembleSelectionSurvivalAnalysis:
     @staticmethod
     @pytest.mark.slow
     def test_fit(make_whas500):
@@ -244,7 +244,7 @@ def _create_regression_ensemble():
     return meta
 
 
-class TestEnsembleSelectionRegressor(object):
+class TestEnsembleSelectionRegressor:
     @staticmethod
     @pytest.mark.slow
     def test_fit_and_predict(make_whas500):
