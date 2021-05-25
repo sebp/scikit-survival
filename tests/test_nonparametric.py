@@ -51,7 +51,7 @@ def simple_data_km(request):
             [1, 0.866666666666667, 0.733333333333333, 0.6, 0.466666666666667, 0.4,
              0.333333333333333, 0.266666666666667, 0.133333333333333, 0.0666666666666667, 0.0666666666666667])
     else:
-        assert False, 'should not be reached'
+        raise AssertionError('should not be reached')
 
     return time, event, true_x, true_y
 
@@ -85,7 +85,7 @@ def simple_data_na(request):
             [0, 0.133333333333333, 0.287179487179487, 0.468997668997669, 0.691219891219891, 0.834077034077034,
              1.0007437007437, 1.2007437007437, 1.7007437007437, 2.2007437007437, 2.2007437007437])
     else:
-        assert False, 'should not be reached'
+        raise AssertionError('should not be reached')
 
     return time, event, true_x, true_y
 
