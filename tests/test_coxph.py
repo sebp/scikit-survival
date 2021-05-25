@@ -15,7 +15,7 @@ from sksurv.linear_model.coxph import CoxPHOptimizer, CoxPHSurvivalAnalysis
 from sksurv.preprocessing import OneHotEncoder
 
 
-@pytest.fixture
+@pytest.fixture()
 def coef_rossi_coxph_breslow():
     return pandas.Series({"fin": -0.37902189,
                           "age": -0.05724593,
@@ -26,7 +26,7 @@ def coef_rossi_coxph_breslow():
                           "prio": 0.09111154})
 
 
-@pytest.fixture
+@pytest.fixture()
 def coef_rossi_coxph_efron():
     return pandas.Series({"fin": -0.379422166485887,
                           "age": -0.0574377426840626,

@@ -20,7 +20,7 @@ from sksurv.preprocessing import OneHotEncoder
 from sksurv.util import Surv
 
 
-@pytest.fixture
+@pytest.fixture()
 def whas500_pred():
     WHAS500_DATA_FILE = os.path.join(os.path.dirname(__file__), 'data', 'whas500_predictions.csv')
 
@@ -31,7 +31,7 @@ def whas500_pred():
     return event, time, risk
 
 
-@pytest.fixture
+@pytest.fixture()
 def no_comparable_pairs():
     y = numpy.array([(False, 849.), (False, 28.), (False, 55.), (False, 727.),
                      (False, 505.), (False, 1558.), (False, 1292.), (False, 1737.),
@@ -865,7 +865,7 @@ def test_uno_auc_shape_failure(uno_auc_shape_failure_data):
         cumulative_dynamic_auc(y_train, y_test, estimate, times)
 
 
-@pytest.fixture
+@pytest.fixture()
 def nottingham_prognostic_index():
     def _get_npi(times):
         X, y = load_gbsg2()

@@ -116,14 +116,14 @@ class TestUtil(object):
             safe_concat((numeric_df, cat_df), axis=1)
 
 
-@pytest.fixture
+@pytest.fixture()
 def surv_arrays():
     event = numpy.random.binomial(1, 0.5, size=100)
     time = numpy.exp(numpy.random.randn(100))
     return event, time
 
 
-@pytest.fixture
+@pytest.fixture()
 def surv_data_frame():
     df = pandas.DataFrame({'event': numpy.random.binomial(1, 0.5, size=100),
                            'time': numpy.exp(numpy.random.randn(100))})

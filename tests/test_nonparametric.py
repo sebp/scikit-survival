@@ -90,7 +90,7 @@ def simple_data_na(request):
     return time, event, true_x, true_y
 
 
-@pytest.fixture
+@pytest.fixture()
 def make_channing():
     def _make_channing(sex):
         data = pandas.read_csv(CHANNING_FILE).query("entry < exit and sex == @sex")
@@ -101,7 +101,7 @@ def make_channing():
     return _make_channing
 
 
-@pytest.fixture
+@pytest.fixture()
 def make_aids():
     def _make_aids(kind):
         if kind == 'children':

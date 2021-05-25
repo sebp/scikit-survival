@@ -740,7 +740,7 @@ class TestSurvivalCounter(object):
         assert_array_equal(numpy.array([8, 0, 14, 0, 14, 22, 19, 14, 0, 14]), xv_minus)
 
 
-@pytest.fixture
+@pytest.fixture()
 def whas500_without_ties():
     # naive survival SVM does resolve ties in survival time differently,
     # therefore use data without ties
@@ -750,7 +750,7 @@ def whas500_without_ties():
     return x, y
 
 
-@pytest.fixture
+@pytest.fixture()
 def whas500_with_ties():
     # naive survival SVM does resolve ties in survival time differently,
     # therefore use data without ties

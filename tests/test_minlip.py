@@ -15,7 +15,7 @@ from sksurv.testing import assert_cindex_almost_equal
 from sksurv.util import Surv
 
 
-@pytest.fixture
+@pytest.fixture()
 def toy_data():
     x = numpy.array([[1., 1.],
                      [10.2, 15.],
@@ -33,7 +33,7 @@ def toy_data():
     return x, y
 
 
-@pytest.fixture
+@pytest.fixture()
 def toy_test_data():
     x = numpy.array([[1., 1.],
                      [40, 30],
@@ -43,7 +43,7 @@ def toy_test_data():
     return x
 
 
-@pytest.fixture
+@pytest.fixture()
 def gbsg2():
     x, y = load_gbsg2()
     x = encode_categorical(x)

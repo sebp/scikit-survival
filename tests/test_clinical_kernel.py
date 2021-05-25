@@ -50,7 +50,7 @@ def _get_expected_matrix(with_ordinal=True, with_nominal=True, with_continuous=T
     return expected
 
 
-@pytest.fixture
+@pytest.fixture()
 def make_data():
     data = {'age': [20, 23, 26, 54, 100],
             'lymph node size': [2, 1, 3, 4, 1],

@@ -23,7 +23,7 @@ def _encoded_data(data):
     return expected_data
 
 
-@pytest.fixture
+@pytest.fixture()
 def create_data():
     def _create_data(n_samples=117):
         rnd = np.random.RandomState(51365192)

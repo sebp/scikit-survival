@@ -9,7 +9,7 @@ import pytest
 from sksurv import column
 
 
-@pytest.fixture
+@pytest.fixture()
 def numeric_data():
     data = pandas.DataFrame(numpy.arange(50, dtype=float).reshape(10, 5))
 
@@ -26,7 +26,7 @@ def numeric_data():
     return data, expected
 
 
-@pytest.fixture
+@pytest.fixture()
 def non_numeric_data_frame():
     data = pandas.DataFrame({'q1': ['no', 'no', 'yes', 'yes', 'no', 'no', None, 'yes', 'no', None],
                              'q2': ['maybe', 'no', 'yes', 'maybe', 'yes', 'no', None, 'maybe', 'no',
