@@ -76,4 +76,4 @@ jobs:
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           coverage-reports: tests/coverage.xml
-        if: env.NO_SLOW == 'false'
+        if: ${{ env.NO_SLOW == 'false' && github.event_name != 'pull_request' }}
