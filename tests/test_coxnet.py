@@ -39,7 +39,7 @@ def infinite_float_array(request):
     return penalty
 
 
-@pytest.fixture
+@pytest.fixture()
 def make_example_coef():
     def _make_example_coef(kind):
         return pandas.read_csv(EXAMPLE_COEF_FILE.format(kind))

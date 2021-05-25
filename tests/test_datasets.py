@@ -37,17 +37,17 @@ ASampleFive,3.14,no,large
 """
 
 
-@pytest.fixture
+@pytest.fixture()
 def arff_1():
     return StringIO(ARFF_CATEGORICAL_INDEX_1)
 
 
-@pytest.fixture
+@pytest.fixture()
 def arff_2():
     return StringIO(ARFF_CATEGORICAL_INDEX_2)
 
 
-@pytest.fixture
+@pytest.fixture()
 def temp_file_pair():
     tmp_train = tempfile.NamedTemporaryFile("w", suffix=".arff", delete=False)
     tmp_test = tempfile.NamedTemporaryFile("w", suffix=".arff", delete=False)
