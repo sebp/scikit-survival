@@ -477,7 +477,7 @@ class TestCoxnetSurvivalAnalysis(object):
             sf = coxnet.predict_survival_function(xtest, alpha=a)
             assert len(sf) == 4
 
-    @pytest.mark.parametrize('fn,', ["baseline_survival_", "cum_baseline_hazard_"])
+    @pytest.mark.parametrize('fn', ["baseline_survival_", "cum_baseline_hazard_"])
     def test_baseline_models(self, breast_cancer, fn, normalize_options):
         X, y = breast_cancer
 
@@ -826,7 +826,7 @@ class TestCoxnetSurvivalAnalysis(object):
         assert_columns_almost_equal(coef, expected_coef)
 
 
-@pytest.mark.parametrize("func", ("predict_survival_function", "predict_cumulative_hazard_function"))
+@pytest.mark.parametrize("func", ["predict_survival_function", "predict_cumulative_hazard_function"])
 def test_pipeline_predict(breast_cancer, func):
     X_str, _ = load_breast_cancer()
     X_num, y = breast_cancer

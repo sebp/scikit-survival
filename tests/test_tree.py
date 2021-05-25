@@ -341,7 +341,7 @@ def test_fit_int_time(breast_cancer):
     assert_array_almost_equal(tree_f.tree_.threshold, tree_i.tree_.threshold)
 
 
-@pytest.mark.parametrize("func", ("predict_survival_function", "predict_cumulative_hazard_function"))
+@pytest.mark.parametrize("func", ["predict_survival_function", "predict_cumulative_hazard_function"])
 def test_predict_step_function(breast_cancer, func):
     X, y = breast_cancer
 
@@ -365,7 +365,7 @@ def test_predict_step_function(breast_cancer, func):
         assert_array_almost_equal(fn.y, arr)
 
 
-@pytest.mark.parametrize("func", ("predict_survival_function", "predict_cumulative_hazard_function"))
+@pytest.mark.parametrize("func", ["predict_survival_function", "predict_cumulative_hazard_function"])
 def test_pipeline_predict(breast_cancer, func):
     X_num, y = breast_cancer
     X_num = X_num.loc[:, ["er", "grade"]].values
