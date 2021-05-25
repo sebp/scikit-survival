@@ -431,7 +431,7 @@ class LargeScaleOptimizer(RankSVMOptimizer):
         l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(wf)  # pylint: disable=unused-variable
         x = self._counter.x
 
-        xw = self._xw  # noqa: F841
+        xw = self._xw  # noqa: F841; # pylint: disable=unused-variable
         z = numexpr.evaluate('(l_plus + l_minus) * xw - xv_plus - xv_minus - l_minus + l_plus')
 
         grad = wf + self._rank_penalty * numpy.dot(x.T, z)
@@ -582,7 +582,7 @@ class NonlinearLargeScaleOptimizer(RankSVMOptimizer):
 
         return gradient
 
-    def _hessian_func(self, beta, s):
+    def _hessian_func(self, _beta, s):
         s_bias, s_feat = self._split_coefficents(s)
 
         K = self._counter.x

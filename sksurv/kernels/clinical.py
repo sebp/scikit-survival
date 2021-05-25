@@ -191,7 +191,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         self._numeric_ranges = numpy.asarray(numeric_ranges, dtype=float)
         self.X_fit_ = fit_data
 
-    def fit(self, X, y=None, **kwargs):
+    def fit(self, X, y=None, **kwargs):  # pylint: disable=unused-argument
         """Determine transformation parameters from data in X.
 
         Subsequent calls to `transform(Y)` compute the pairwise

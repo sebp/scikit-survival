@@ -45,7 +45,7 @@ class EnsembleAverage(BaseEstimator):
     def get_base_params(self):
         return self.base_estimators[0].get_params()
 
-    def fit(self, X, y=None, **kwargs):  # pragma: no cover
+    def fit(self, X, y=None, **kwargs):  # pragma: no cover; # pylint: disable=unused-argument
         return self
 
     def predict(self, X):
@@ -57,7 +57,7 @@ class EnsembleAverage(BaseEstimator):
 
 
 class MeanEstimator(BaseEstimator):
-    def fit(self, X, y=None, **kwargs):  # pragma: no cover
+    def fit(self, X, y=None, **kwargs):  # pragma: no cover; # pylint: disable=unused-argument
         return self
 
     def predict(self, X):
@@ -65,7 +65,7 @@ class MeanEstimator(BaseEstimator):
 
 
 class MeanRankEstimator(BaseEstimator):
-    def fit(self, X, y=None, **kwargs):  # pragma: no cover
+    def fit(self, X, y=None, **kwargs):  # pragma: no cover; # pylint: disable=unused-argument
         return self
 
     def predict(self, X):

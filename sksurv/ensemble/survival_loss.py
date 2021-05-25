@@ -46,12 +46,12 @@ class CoxPH(SurvivalLossFunction):
     """Cox Partial Likelihood"""
     # pylint: disable=no-self-use
 
-    def __call__(self, y, raw_predictions, sample_weight=None):
+    def __call__(self, y, raw_predictions, sample_weight=None):  # pylint: disable=unused-argument
         """Compute the partial likelihood of prediction ``y_pred`` and ``y``."""
         # TODO add support for sample weights
         return coxph_loss(y['event'].astype(numpy.uint8), y['time'], raw_predictions.ravel())
 
-    def negative_gradient(self, y, raw_predictions, sample_weight=None, **kwargs):
+    def negative_gradient(self, y, raw_predictions, sample_weight=None, **kwargs):  # pylint: disable=unused-argument
         """Negative gradient of partial likelihood
 
         Parameters
@@ -99,7 +99,7 @@ class CensoredSquaredLoss(SurvivalLossFunction):
         mask = (pred_time > 0) | y['event']
         return 0.5 * squared_norm(pred_time.compress(mask, axis=0))
 
-    def negative_gradient(self, y, raw_predictions, **kwargs):
+    def negative_gradient(self, y, raw_predictions, **kwargs):  # pylint: disable=unused-argument
         """Negative gradient of partial likelihood
 
         Parameters
@@ -143,7 +143,7 @@ class IPCWLeastSquaresError(SurvivalLossFunction):
         return (1.0 / sample_weight.sum()
                 * numpy.sum(sample_weight * ((y['time'] - raw_predictions.ravel()) ** 2.0)))
 
-    def negative_gradient(self, y, raw_predictions, **kwargs):
+    def negative_gradient(self, y, raw_predictions, **kwargs):  # pylint: disable=unused-argument
         return y['time'] - raw_predictions.ravel()
 
     def update_terminal_regions(self, tree, X, y, residual, y_pred,

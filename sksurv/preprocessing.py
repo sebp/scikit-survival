@@ -54,7 +54,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
     def __init__(self, allow_drop=True):
         self.allow_drop = allow_drop
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None):  # pylint: disable=unused-argument
         """Retrieve categorical columns.
 
         Parameters
@@ -74,7 +74,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
     def _encode(self, X, columns_to_encode):
         return encode_categorical(X, columns=columns_to_encode, allow_drop=self.allow_drop)
 
-    def fit_transform(self, X, y=None, **fit_params):
+    def fit_transform(self, X, y=None, **fit_params):  # pylint: disable=unused-argument
         """Convert categorical columns to numeric values.
 
         Parameters

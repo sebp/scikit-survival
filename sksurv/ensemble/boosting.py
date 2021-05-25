@@ -62,7 +62,7 @@ class ComponentwiseLeastSquares(BaseEstimator):
         return X[:, self.component] * self.coef_
 
 
-def _fit_stage_componentwise(X, residuals, sample_weight, **fit_params):
+def _fit_stage_componentwise(X, residuals, sample_weight, **fit_params):  # pylint: disable=unused-argument
     """Fit component-wise weighted least squares model"""
     n_features = X.shape[1]
 
