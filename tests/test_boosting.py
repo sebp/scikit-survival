@@ -209,8 +209,8 @@ class TestGradientBoosting(object):
         clf = GradientBoostingSurvivalAnalysis()
         msg = "ccp_alpha must be greater than or equal to 0"
 
+        clf.set_params(ccp_alpha=-1.0)
         with pytest.raises(ValueError, match=msg):
-            clf.set_params(ccp_alpha=-1.0)
             clf.fit(whas500_data.x, whas500_data.y)
 
     @staticmethod

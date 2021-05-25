@@ -390,9 +390,9 @@ def test_predict_wrong_features(toy_data, n_features):
     tree = SurvivalTree(max_depth=1)
     tree.fit(X, y)
 
+    X_new = numpy.random.randn(12, n_features)
     with pytest.raises(ValueError, match="X has {} features, but SurvivalTree is "
                                          "expecting 4 features as input.".format(n_features)):
-        X_new = numpy.random.randn(12, n_features)
         tree.predict(X_new)
 
 
