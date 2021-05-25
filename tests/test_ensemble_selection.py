@@ -291,7 +291,7 @@ class TestEnsembleSelectionRegressor(object):
             ('dummy_1', DummySurvivalRegressor(strategy="median")),
         ]
 
-        def _score(est, X_test, y_test, **predict_params):
+        def _score(est, X_test, y_test, **predict_params):  # pylint: disable=unused-argument
             return 'invalid'
 
         meta = EnsembleSelectionRegressor(base_estimators, n_estimators=1, min_score=5, cv=5,

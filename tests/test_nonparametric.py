@@ -92,7 +92,7 @@ def simple_data_na(request):
 
 @pytest.fixture()
 def make_channing():
-    def _make_channing(sex):
+    def _make_channing(sex):  # pylint: disable=unused-argument
         data = pandas.read_csv(CHANNING_FILE).query("entry < exit and sex == @sex")
         time_enter_m = data.loc[:, "entry"].values
         time_exit_m = data.loc[:, "exit"].values

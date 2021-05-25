@@ -16,7 +16,7 @@ GBOOST_CUMHAZ_FILE = join(dirname(__file__), 'data', 'gradient-boosting-coxph-cu
 GBOOST_SURV_FILE = join(dirname(__file__), 'data', 'gradient-boosting-coxph-surv.csv')
 
 
-def early_stopping_monitor(i, est, locals_):
+def early_stopping_monitor(i, est, locals_):  # pylint: disable=unused-argument
     """Returns True on the 10th iteration. """
     return i == 9
 
