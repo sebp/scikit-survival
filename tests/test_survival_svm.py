@@ -673,18 +673,31 @@ def make_survival_counter(request):
     return _make_survival_counter
 
 
+@pytest.fixture()
+def counter_data_01():
+    w = numpy.array([-0.9, -0.7, -0.1, 0.15, 0.2, 1.6])
+    y = numpy.array([2,       0,    4,    3,   5,   1])
+    event = numpy.array([True, True, False, True, False, True])
+    x = numpy.eye(6)
+    v = numpy.arange(6)
+    return x, y, event, w, v
+
+
+@pytest.fixture()
+def counter_data_02():
+    w = numpy.array([-0.9, -0.7, -0.1, 0.15, 0.2, 0.3, 0.8, 1.6, 1.85, 2.3])
+    y = numpy.array([3,       0,    4,    6,   8,   5,   1,   7,    2,   9])
+    event = numpy.array([0,   0,    0,    1,   0,   1,   1,   0,    1,   0], dtype=bool)
+    x = numpy.eye(10)
+    v = numpy.arange(10)
+    return x, y, event, w, v
+
+
 class TestSurvivalCounter:
 
-    def setup_01(self):
-        w = numpy.array([-0.9, -0.7, -0.1, 0.15, 0.2, 1.6])
-        y = numpy.array([2,       0,    4,    3,   5,   1])
-        event = numpy.array([True, True, False, True, False, True])
-        x = numpy.eye(6)
-        v = numpy.arange(6)
-        return x, y, event, w, v
-
-    def test_calculate_01(self, make_survival_counter):
-        x, y, event, w, v = self.setup_01()
+    @staticmethod
+    def test_calculate_01(make_survival_counter, counter_data_01):
+        x, y, event, w, v = counter_data_01
         counter = make_survival_counter(x, y, event, n_relevance_levels=6)
         counter.update_sort_order(w)
 
@@ -695,8 +708,9 @@ class TestSurvivalCounter:
         assert_array_equal(numpy.array([2, 0, 4, 2, 3, 0]), l_minus)
         assert_array_equal(numpy.array([6, 0, 9, 6, 9, 0]), xv_minus)
 
-    def test_calculate_01_reverse(self, make_survival_counter):
-        x, y, event, w, v = self.setup_01()
+    @staticmethod
+    def test_calculate_01_reverse(make_survival_counter, counter_data_01):
+        x, y, event, w, v = counter_data_01
         counter = make_survival_counter(x, y[::-1], event[::-1], n_relevance_levels=6)
         counter.update_sort_order(w[::-1])
 
@@ -707,16 +721,9 @@ class TestSurvivalCounter:
         assert_array_equal(numpy.array([0, 3, 2, 4, 0, 2]), l_minus)
         assert_array_equal(numpy.array([0, 9, 6, 9, 0, 6]), xv_minus)
 
-    def setup_02(self):
-        w = numpy.array([-0.9, -0.7, -0.1, 0.15, 0.2, 0.3, 0.8, 1.6, 1.85, 2.3])
-        y = numpy.array([3,       0,    4,    6,   8,   5,   1,   7,    2,   9])
-        event = numpy.array([0,   0,    0,    1,   0,   1,   1,   0,    1,   0], dtype=bool)
-        x = numpy.eye(10)
-        v = numpy.arange(10)
-        return x, y, event, w, v
-
-    def test_calculate_02(self, make_survival_counter):
-        x, y, event, w, v = self.setup_02()
+    @staticmethod
+    def test_calculate_02(make_survival_counter, counter_data_02):
+        x, y, event, w, v = counter_data_02
         counter = make_survival_counter(x, y, event, n_relevance_levels=10)
         counter.update_sort_order(w)
 
@@ -727,8 +734,9 @@ class TestSurvivalCounter:
         assert_array_equal(numpy.array([2, 0, 2, 3, 4, 2, 0, 2, 0, 1]), l_minus)
         assert_array_equal(numpy.array([14, 0, 14, 19, 22, 14, 0, 14, 0, 8]), xv_minus)
 
-    def test_calculate_02_reverse(self, make_survival_counter):
-        x, y, event, w, v = self.setup_02()
+    @staticmethod
+    def test_calculate_02_reverse(make_survival_counter, counter_data_02):
+        x, y, event, w, v = counter_data_02
         counter = make_survival_counter(x, y[::-1], event[::-1], n_relevance_levels=10)
         counter.update_sort_order(w[::-1])
 

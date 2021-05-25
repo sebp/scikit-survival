@@ -60,7 +60,7 @@ class MeanEstimator(BaseEstimator):
     def fit(self, X, y=None, **kwargs):  # pragma: no cover; # pylint: disable=unused-argument
         return self
 
-    def predict(self, X):
+    def predict(self, X):  # pylint: disable=no-self-use
         return X.mean(axis=X.ndim - 1)
 
 
@@ -68,7 +68,7 @@ class MeanRankEstimator(BaseEstimator):
     def fit(self, X, y=None, **kwargs):  # pragma: no cover; # pylint: disable=unused-argument
         return self
 
-    def predict(self, X):
+    def predict(self, X):  # pylint: disable=no-self-use
         # convert predictions of individual models into ranks
         ranks = numpy.apply_along_axis(rankdata, 0, X)
         # average predicted ranks
@@ -148,7 +148,7 @@ class BaseEnsembleSelection(Stacking):
             raise ValueError("correlation must be one of 'pearson', 'kendall', and 'spearman', "
                              "but got %r" % self.correlation)
 
-    def _create_base_ensemble(self, out, n_estimators, n_folds):
+    def _create_base_ensemble(self, out, n_estimators, n_folds):  # pylint: disable=no-self-use
         """For each base estimator collect models trained on each fold"""
         ensemble_scores = numpy.empty((n_estimators, n_folds))
         base_ensemble = numpy.empty_like(ensemble_scores, dtype=numpy.object)

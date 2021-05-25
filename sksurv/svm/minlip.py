@@ -136,7 +136,7 @@ class EcosSolver(QPSolver):
         x = results["x"][1:]
         return x[numpy.newaxis]
 
-    def _check_success(self, results):
+    def _check_success(self, results):  # pylint: disable=no-self-use
         exit_flag = results["info"]["exitFlag"]
         if exit_flag in (EcosSolver.EXIT_OPTIMAL,
                          EcosSolver.EXIT_OPTIMAL + EcosSolver.EXIT_INACC_OFFSET):
