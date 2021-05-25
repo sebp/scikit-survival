@@ -284,6 +284,7 @@ class TestGradientBoosting:
         y_pred = model.predict(whas500_data.x)
 
         # test if prediction for last stage equals ``predict``
+        y = None
         for y in model.staged_predict(whas500_data.x):
             assert y.shape == y_pred.shape
 
@@ -295,6 +296,7 @@ class TestGradientBoosting:
         y_pred = model.predict(whas500_data.x)
 
         # test if prediction for last stage equals ``predict``
+        y = None
         for y in model.staged_predict(whas500_data.x):
             assert y.shape == y_pred.shape
 
@@ -312,6 +314,7 @@ class TestGradientBoosting:
         y_pred = model.predict(whas500_data.x)
 
         # test if prediction for last stage equals ``predict``
+        y = None
         for y in model.staged_predict(whas500_data.x):
             assert y.shape == y_pred.shape
 
@@ -323,6 +326,7 @@ class TestGradientBoosting:
         y_pred = model.predict(whas500_data.x)
 
         # test if prediction for last stage equals ``predict``
+        y = None
         for y in model.staged_predict(whas500_data.x):
             assert y.shape == y_pred.shape
 
