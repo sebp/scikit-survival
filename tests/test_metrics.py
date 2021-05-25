@@ -431,7 +431,7 @@ def uno_c_failure_data(request):
         match = "censoring survival function is zero " \
                 "at one or more time points"
     else:
-        assert False
+        raise AssertionError()
 
     yield y_train, y_test, estimate, match
 
@@ -591,7 +591,7 @@ def uno_auc_data(request, uno_auc_data_15, uno_auc_data_20, uno_auc_time_depende
         iauc = 0.5522067
         expected = numpy.array([0.3636364, 0.5247813, 0.7603000])
     else:
-        assert False
+        raise AssertionError()
 
     if y_test is None:
         y_test = y_train
@@ -633,7 +633,7 @@ def uno_auc_time_dependent_without_censoring_data(request):
             [13, 11, 12, 17, 17, 134, 70, 78, 13, 99],
         ])
     else:
-        assert False
+        raise AssertionError()
 
     expected_auc = numpy.array(
         [roc_auc_score(y["time"] > t, e) for t, e in zip(times, estimate)]
@@ -668,7 +668,7 @@ def uno_auc_whas500_data(request, whas500_pred):
     elif p == 'whas500':
         times = (200, 400, 600, 800, 1000, 1200, 1400)
     else:
-        assert False
+        raise AssertionError()
     iauc = 0.8045058
     expected = numpy.array([0.7720669, 0.7765915, 0.7962623, 0.8759295, 0.8759295, 0.8759513, 0.9147647])
     yield y_train, y_test, estimate, times, expected, iauc
@@ -726,7 +726,7 @@ def uno_auc_censoring_failure_data(request, uno_auc_data_20):
         y_test['event'] = False
         match = "all samples are censored"
     else:
-        assert False
+        raise AssertionError()
 
     if estimate is None:
         estimate = numpy.random.randn(y_test.shape[0])
@@ -808,7 +808,7 @@ def uno_auc_times_failure_data(request, uno_auc_data_20):
         times = []
         match = r'Found array with 0 sample\(s\)'
     else:
-        assert False
+        raise AssertionError()
 
     yield y_train, y_test, times, match
 
@@ -852,7 +852,7 @@ def uno_auc_shape_failure_data(request, uno_auc_data_20):
         estimate = numpy.atleast_3d(estimate)
         match = "Found array with dim 3. Estimator expected <= 2."
     else:
-        assert False
+        raise AssertionError()
 
     yield y_train, y_test, times, estimate, match
 
@@ -913,7 +913,7 @@ def brier_npi_data(request, nottingham_prognostic_index):
     elif t == 1825:
         bs = 0.233822955042198
     else:
-        assert False
+        raise AssertionError()
 
     yield pred, y, t, bs
 
