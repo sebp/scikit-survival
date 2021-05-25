@@ -215,7 +215,7 @@ class TestStackingSurvivalAnalysis(object):
 
         with pytest.raises(AttributeError,
                            match="'_PredictDummy' object has no attribute 'predict_proba'"):
-            getattr(meta, "predict_proba")
+            meta.predict_proba  # pylint: disable=pointless-statement
 
     @staticmethod
     def test_score(make_whas500):
