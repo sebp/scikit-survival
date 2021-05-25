@@ -285,7 +285,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
     def _check_min_samples_leaf(self, n_samples):
         if isinstance(self.min_samples_leaf, (numbers.Integral, np.integer)):
-            if not 1 <= self.min_samples_leaf:
+            if self.min_samples_leaf < 1:
                 raise ValueError("min_samples_leaf must be at least 1 "
                                  "or in (0, 0.5], got %s"
                                  % self.min_samples_leaf)
@@ -301,7 +301,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
     def _check_min_samples_split(self, n_samples):
         if isinstance(self.min_samples_split, (numbers.Integral, np.integer)):
-            if not 2 <= self.min_samples_split:
+            if self.min_samples_split < 2:
                 raise ValueError("min_samples_split must be an integer "
                                  "greater than 1 or a float in (0.0, 1.0]; "
                                  "got the integer %s"
@@ -338,7 +338,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             else:
                 max_features = 0
 
-        if not (0 < max_features <= self.n_features_):
+        if not 0 < max_features <= self.n_features_:
             raise ValueError("max_features must be in (0, n_features]")
 
         self.max_features_ = max_features
