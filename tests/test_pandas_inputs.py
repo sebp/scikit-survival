@@ -17,12 +17,12 @@ def is_survival_mixin(x):
 def all_survival_estimators():
     root = dirname(sksurv.__file__)
     all_classes = []
-    for importer, modname, ispkg in pkgutil.walk_packages(path=[root], prefix="sksurv."):
+    for _importer, modname, _ispkg in pkgutil.walk_packages(path=[root], prefix="sksurv."):
         # meta-estimators require base estimators
         if modname.startswith("sksurv.meta"):
             continue
         module = import_module(modname)
-        for name, cls in inspect.getmembers(module, is_survival_mixin):
+        for _name, cls in inspect.getmembers(module, is_survival_mixin):
             if inspect.isabstract(cls):
                 continue
             all_classes.append(cls)
