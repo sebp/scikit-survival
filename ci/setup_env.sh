@@ -15,15 +15,15 @@ fi
 conda config --set always_yes yes --set changeps1 no
 
 conda create -n sksurv-test \
-  python="${CONDA_PYTHON_VERSION}" \
-  numpy="${NUMPY_VERSION}" \
-  pandas="${PANDAS_VERSION}" \
-  scikit-learn="${SKLEARN_VERSION}" \
+  python="${CONDA_PYTHON_VERSION:?}" \
+  numpy="${NUMPY_VERSION:?}" \
+  pandas="${PANDAS_VERSION:?}" \
+  scikit-learn="${SKLEARN_VERSION:?}" \
   "${COMPILER[@]}"
 
-echo "numpy ${NUMPY_VERSION}.*" > "${CONDA}/envs/sksurv-test/conda-meta/pinned"
-echo "pandas ${PANDAS_VERSION}.*" >> "${CONDA}/envs/sksurv-test/conda-meta/pinned"
-echo "scikit-learn ${SKLEARN_VERSION}.*" >> "${CONDA}/envs/sksurv-test/conda-meta/pinned"
+echo "numpy ${NUMPY_VERSION:?}.*" > "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
+echo "pandas ${PANDAS_VERSION:?}.*" >> "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
+echo "scikit-learn ${SKLEARN_VERSION:?}.*" >> "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
 
 # Useful for debugging any issues with conda
 conda info -a
