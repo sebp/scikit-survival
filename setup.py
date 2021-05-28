@@ -183,7 +183,7 @@ def setup_package():
         url='https://github.com/sebp/scikit-survival',
         project_urls={
             "Bug Tracker": "https://github.com/sebp/scikit-survival/issues",
-            "Documentation": "https://scikit-survival.readthedocs.io/en/latest/",
+            "Documentation": "https://scikit-survival.readthedocs.io",
             "Source Code": "https://github.com/sebp/scikit-survival",
         },
         author='Sebastian Pölsterl',
