@@ -12,6 +12,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+from datetime import datetime
 import inspect
 import os
 from pathlib import Path
@@ -75,7 +76,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'scikit-survival'
-copyright = '2015-2021, Sebastian Pölsterl'
+current_year = datetime.utcnow().year
+copyright = f'2015-{current_year}, Sebastian Pölsterl and contributors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
