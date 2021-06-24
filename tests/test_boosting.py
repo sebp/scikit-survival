@@ -74,7 +74,7 @@ class TestGradientBoosting:
             model.predict(whas500_data.x[:, :2])
 
     @staticmethod
-    @pytest.mark.slow
+    @pytest.mark.slow()
     def test_fit_dropout(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
@@ -369,7 +369,7 @@ class TestSparseGradientBoosting:
 
     @staticmethod
     @pytest.mark.parametrize('loss', ['coxph', 'squared', 'ipcwls'])
-    @pytest.mark.slow
+    @pytest.mark.slow()
     def test_dropout(whas500_sparse_data, loss):
         model = GradientBoostingSurvivalAnalysis(loss=loss, n_estimators=100, max_depth=1, min_samples_split=10,
                                                  dropout_rate=0.03, random_state=0)

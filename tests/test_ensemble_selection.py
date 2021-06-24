@@ -42,7 +42,7 @@ def _create_survival_ensemble(**kwargs):
 
 class TestEnsembleSelectionSurvivalAnalysis:
     @staticmethod
-    @pytest.mark.slow
+    @pytest.mark.slow()
     def test_fit(make_whas500):
         whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
         meta = _create_survival_ensemble()
@@ -61,7 +61,7 @@ class TestEnsembleSelectionSurvivalAnalysis:
         assert round(abs(c_index - 0.7863312), 6) == 0
 
     @staticmethod
-    @pytest.mark.slow
+    @pytest.mark.slow()
     def test_fit_spearman_correlation(make_whas500):
         whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
         meta = _create_survival_ensemble(correlation="spearman")
@@ -75,7 +75,7 @@ class TestEnsembleSelectionSurvivalAnalysis:
                                    (0.7863312, 59088, 16053, 8, 14))
 
     @staticmethod
-    @pytest.mark.slow
+    @pytest.mark.slow()
     def test_fit_kendall_correlation(make_whas500):
         whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
         meta = _create_survival_ensemble(correlation="kendall")
@@ -89,7 +89,7 @@ class TestEnsembleSelectionSurvivalAnalysis:
                                    (0.7663043, 57570, 17545, 34, 14))
 
     @staticmethod
-    @pytest.mark.slow
+    @pytest.mark.slow()
     def test_fit_custom_kernel(make_whas500):
         whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
         alphas = numpy.exp(numpy.linspace(numpy.log(0.001), numpy.log(0.5), 5))
@@ -246,7 +246,7 @@ def _create_regression_ensemble():
 
 class TestEnsembleSelectionRegressor:
     @staticmethod
-    @pytest.mark.slow
+    @pytest.mark.slow()
     def test_fit_and_predict(make_whas500):
         whas500 = make_whas500(with_mean=True, with_std=True, to_numeric=True)
         meta = _create_regression_ensemble()

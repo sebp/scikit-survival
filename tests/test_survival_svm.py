@@ -284,7 +284,7 @@ class TestFastSurvivalSVM:
         assert 'avltree' == ssvm.optimizer
 
     @staticmethod
-    @pytest.mark.slow
+    @pytest.mark.slow()
     def test_fit_and_predict_ranking(make_whas500, optimizer_any):
         whas500 = make_whas500(to_numeric=True)
         ssvm = FastSurvivalSVM(optimizer=optimizer_any, random_state=0)
@@ -303,7 +303,7 @@ class TestFastSurvivalSVM:
         assert round(abs(0.7860650174985695 - c), 6) == 0
 
     @staticmethod
-    @pytest.mark.slow
+    @pytest.mark.slow()
     def test_fit_and_predict_hybrid(make_whas500, optimizer_regression):
         whas500 = make_whas500(to_numeric=True)
 
@@ -324,7 +324,7 @@ class TestFastSurvivalSVM:
         assert round(abs(780.52617631863893 - rmse), 7) == 0
 
     @staticmethod
-    @pytest.mark.slow
+    @pytest.mark.slow()
     def test_fit_and_predict_hybrid_no_intercept(make_whas500, optimizer_regression):
         whas500 = make_whas500(to_numeric=True)
 
@@ -343,7 +343,7 @@ class TestFastSurvivalSVM:
         assert round(abs(1128.4460587629746 - rmse), 7) == 0
 
     @staticmethod
-    @pytest.mark.slow
+    @pytest.mark.slow()
     def test_fit_and_predict_regression(make_whas500, optimizer_regression):
         whas500 = make_whas500(to_numeric=True)
 
@@ -364,7 +364,7 @@ class TestFastSurvivalSVM:
         assert round(abs(1206.6556186869332 - rmse), 7) == 0
 
     @staticmethod
-    @pytest.mark.slow
+    @pytest.mark.slow()
     def test_fit_and_predict_regression_no_intercept(make_whas500, optimizer_regression):
         whas500 = make_whas500(to_numeric=True)
 
@@ -383,7 +383,7 @@ class TestFastSurvivalSVM:
         assert round(abs(15838.510668936022 - rmse), 7) == 0
 
     @staticmethod
-    @pytest.mark.slow
+    @pytest.mark.slow()
     def test_fit_timeit(make_whas500, optimizer_any):
         whas500 = make_whas500(to_numeric=True)
         rnd = numpy.random.RandomState(0)
@@ -495,7 +495,7 @@ class TestKernelSurvivalSVM:
         assert round(abs(rmse - 15837.658418546907), 4) == 0
 
     @staticmethod
-    @pytest.mark.slow
+    @pytest.mark.slow()
     @pytest.mark.parametrize('optimizer', ['rbtree', 'avltree'])
     def test_fit_and_predict_rbf(make_whas500, optimizer):
         whas500 = make_whas500(to_numeric=True)
@@ -510,7 +510,7 @@ class TestKernelSurvivalSVM:
         assert c >= 0.965
 
     @staticmethod
-    @pytest.mark.slow
+    @pytest.mark.slow()
     @pytest.mark.filterwarnings("ignore:Optimization did not converge")
     def test_fit_and_predict_regression_rbf(make_whas500):
         whas500 = make_whas500(to_numeric=True)
@@ -526,7 +526,7 @@ class TestKernelSurvivalSVM:
         assert round(abs(rmse - 783.525277), 6) == 0
 
     @staticmethod
-    @pytest.mark.slow
+    @pytest.mark.slow()
     @pytest.mark.filterwarnings("ignore:Optimization did not converge")
     def test_fit_and_predict_hybrid_rbf(make_whas500):
         whas500 = make_whas500(to_numeric=True)
@@ -542,7 +542,7 @@ class TestKernelSurvivalSVM:
         assert abs(880.20361811281487 - rmse) <= 75
 
     @staticmethod
-    @pytest.mark.slow
+    @pytest.mark.slow()
     @pytest.mark.filterwarnings("ignore:Optimization did not converge")
     def test_fit_and_predict_clinical_kernel(make_whas500):
         whas500 = make_whas500(to_numeric=True)
@@ -561,7 +561,7 @@ class TestKernelSurvivalSVM:
         assert c >= 0.854
 
     @staticmethod
-    @pytest.mark.slow
+    @pytest.mark.slow()
     @pytest.mark.filterwarnings("ignore:Optimization did not converge")
     def test_compare_builtin_kernel(make_whas500):
         whas500 = make_whas500(to_numeric=True)
@@ -587,7 +587,7 @@ class TestKernelSurvivalSVM:
                                    expected_cindex)
 
     @staticmethod
-    @pytest.mark.slow
+    @pytest.mark.slow()
     @pytest.mark.filterwarnings("ignore:Optimization did not converge")
     def test_compare_clinical_kernel(make_whas500):
         whas500 = make_whas500(to_numeric=True)

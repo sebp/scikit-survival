@@ -468,7 +468,7 @@ class TestMinlipOsqp:
                                    (0.5990741854033906, 79720, 53352, 0, 42))
 
     @staticmethod
-    @pytest.mark.slow
+    @pytest.mark.slow()
     def test_breast_cancer_rbf_osqp(gbsg2):
         x, y = gbsg2
         x = scale(x)
@@ -483,7 +483,7 @@ class TestMinlipOsqp:
                                    (0.6106092942166647, 81255, 51817, 0, 42))
 
     @staticmethod
-    @pytest.mark.slow
+    @pytest.mark.slow()
     def test_kernel_precomputed(gbsg2):
         x, y = gbsg2
         from sklearn.metrics.pairwise import pairwise_kernels
@@ -532,7 +532,7 @@ class TestMinlipCvxpy:
                                    (0.5990741854033906, 79720, 53352, 0, 42))
 
     @staticmethod
-    @pytest.mark.slow
+    @pytest.mark.slow()
     def test_breast_cancer_rbf_ecos(gbsg2):
         x, y = gbsg2
         x = scale(x)
@@ -563,7 +563,7 @@ class TestMinlipCvxpy:
             m.fit(x, y)
 
     @staticmethod
-    @pytest.mark.slow
+    @pytest.mark.slow()
     def test_kernel_precomputed(gbsg2):
         x, y = gbsg2
         from sklearn.metrics.pairwise import pairwise_kernels
