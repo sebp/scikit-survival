@@ -1,15 +1,15 @@
 import numpy
 import pytest
-from sklearn.model_selection import KFold, ParameterGrid
 from sklearn.dummy import DummyRegressor
 from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import KFold, ParameterGrid
 
 from sksurv.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis
 from sksurv.kernels import ClinicalKernelTransform
 from sksurv.linear_model import IPCRidge
 from sksurv.meta import EnsembleSelection, EnsembleSelectionRegressor
 from sksurv.metrics import concordance_index_censored
-from sksurv.svm import FastSurvivalSVM, FastKernelSurvivalSVM
+from sksurv.svm import FastKernelSurvivalSVM, FastSurvivalSVM
 from sksurv.testing import assert_cindex_almost_equal
 from sksurv.util import check_arrays_survival
 
@@ -40,7 +40,7 @@ def _create_survival_ensemble(**kwargs):
     return meta
 
 
-class TestEnsembleSelectionSurvivalAnalysis(object):
+class TestEnsembleSelectionSurvivalAnalysis:
     @staticmethod
     @pytest.mark.slow
     def test_fit(make_whas500):
@@ -244,7 +244,7 @@ def _create_regression_ensemble():
     return meta
 
 
-class TestEnsembleSelectionRegressor(object):
+class TestEnsembleSelectionRegressor:
     @staticmethod
     @pytest.mark.slow
     def test_fit_and_predict(make_whas500):
@@ -291,7 +291,7 @@ class TestEnsembleSelectionRegressor(object):
             ('dummy_1', DummySurvivalRegressor(strategy="median")),
         ]
 
-        def _score(est, X_test, y_test, **predict_params):
+        def _score(est, X_test, y_test, **predict_params):  # pylint: disable=unused-argument
             return 'invalid'
 
         meta = EnsembleSelectionRegressor(base_estimators, n_estimators=1, min_score=5, cv=5,

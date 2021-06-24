@@ -14,8 +14,8 @@ import numbers
 
 from joblib import Parallel, delayed
 import numpy
-from scipy.stats import rankdata, kendalltau, spearmanr
-from sklearn.base import clone, BaseEstimator
+from scipy.stats import kendalltau, rankdata, spearmanr
+from sklearn.base import BaseEstimator, clone
 from sklearn.model_selection import check_cv
 
 from .base import _fit_and_score
@@ -45,7 +45,7 @@ class EnsembleAverage(BaseEstimator):
     def get_base_params(self):
         return self.base_estimators[0].get_params()
 
-    def fit(self, X, y=None, **kwargs):  # pragma: no cover
+    def fit(self, X, y=None, **kwargs):  # pragma: no cover; # pylint: disable=unused-argument
         return self
 
     def predict(self, X):
@@ -57,18 +57,18 @@ class EnsembleAverage(BaseEstimator):
 
 
 class MeanEstimator(BaseEstimator):
-    def fit(self, X, y=None, **kwargs):  # pragma: no cover
+    def fit(self, X, y=None, **kwargs):  # pragma: no cover; # pylint: disable=unused-argument
         return self
 
-    def predict(self, X):
+    def predict(self, X):  # pylint: disable=no-self-use
         return X.mean(axis=X.ndim - 1)
 
 
 class MeanRankEstimator(BaseEstimator):
-    def fit(self, X, y=None, **kwargs):  # pragma: no cover
+    def fit(self, X, y=None, **kwargs):  # pragma: no cover; # pylint: disable=unused-argument
         return self
 
-    def predict(self, X):
+    def predict(self, X):  # pylint: disable=no-self-use
         # convert predictions of individual models into ranks
         ranks = numpy.apply_along_axis(rankdata, 0, X)
         # average predicted ranks
@@ -114,8 +114,7 @@ class BaseEnsembleSelection(Stacking):
     def __len__(self):
         if hasattr(self, "fitted_models_"):
             return len(self.fitted_models_)
-        else:
-            return 0
+        return 0
 
     def _check_params(self):
         if self.n_estimators <= 0:
@@ -149,7 +148,7 @@ class BaseEnsembleSelection(Stacking):
             raise ValueError("correlation must be one of 'pearson', 'kendall', and 'spearman', "
                              "but got %r" % self.correlation)
 
-    def _create_base_ensemble(self, out, n_estimators, n_folds):
+    def _create_base_ensemble(self, out, n_estimators, n_folds):  # pylint: disable=no-self-use
         """For each base estimator collect models trained on each fold"""
         ensemble_scores = numpy.empty((n_estimators, n_folds))
         base_ensemble = numpy.empty_like(ensemble_scores, dtype=numpy.object)

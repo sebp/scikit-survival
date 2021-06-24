@@ -11,27 +11,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numbers
-import warnings
 
 import numpy
-
+from scipy.sparse import csc_matrix, csr_matrix, issparse
 from sklearn.base import BaseEstimator
-from sklearn.ensemble._gradient_boosting import _random_sample_mask
 from sklearn.ensemble._base import BaseEnsemble
 from sklearn.ensemble._gb import BaseGradientBoosting, VerboseReporter
+from sklearn.ensemble._gradient_boosting import _random_sample_mask
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.tree._tree import DTYPE
-from sklearn.utils import check_consistent_length, check_random_state, column_or_1d, check_array
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils import check_array, check_consistent_length, check_random_state, column_or_1d
 from sklearn.utils.extmath import squared_norm
-
-from scipy.sparse import csc_matrix, csr_matrix, issparse
+from sklearn.utils.validation import check_is_fitted
 
 from ..base import SurvivalAnalysisMixin
+from ..linear_model.coxph import BreslowEstimator
 from ..util import check_arrays_survival
-from .survival_loss import LOSS_FUNCTIONS, CensoredSquaredLoss, \
-    CoxPH, IPCWLeastSquaresError
-
+from .survival_loss import LOSS_FUNCTIONS, CensoredSquaredLoss, CoxPH, IPCWLeastSquaresError
 
 __all__ = ['ComponentwiseGradientBoostingSurvivalAnalysis', 'GradientBoostingSurvivalAnalysis']
 
@@ -66,7 +62,7 @@ class ComponentwiseLeastSquares(BaseEstimator):
         return X[:, self.component] * self.coef_
 
 
-def _fit_stage_componentwise(X, residuals, sample_weight, **fit_params):
+def _fit_stage_componentwise(X, residuals, sample_weight, **fit_params):  # pylint: disable=unused-argument
     """Fit component-wise weighted least squares model"""
     n_features = X.shape[1]
 
@@ -278,6 +274,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         self
         """
         X, event, time = check_arrays_survival(X, y)
+        X = self._validate_data(X)
 
         n_samples, n_features = X.shape
 
@@ -293,7 +290,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         self.estimators_ = []
         self.n_features_ = n_features
-        self.loss_ = LOSS_FUNCTIONS[self.loss](1)
+        self.loss_ = LOSS_FUNCTIONS[self.loss]()
         if isinstance(self.loss_, (CensoredSquaredLoss, IPCWLeastSquaresError)):
             time = numpy.log(time)
 
@@ -304,6 +301,12 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
                                                 dtype=numpy.float64)
 
         self._fit(X, event, time, sample_weight, random_state)
+
+        if isinstance(self.loss_, CoxPH):
+            risk_scores = self.predict(X)
+            self._baseline_model = BreslowEstimator().fit(risk_scores, event, time)
+        else:
+            self._baseline_model = None
 
         return self
 
@@ -326,11 +329,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
             Predicted risk scores.
         """
         check_is_fitted(self, 'estimators_')
-        X = check_array(X)
-
-        if X.shape[1] != self.n_features_:
-            raise ValueError('Dimensions of X are inconsistent with training data: '
-                             'expected %d features, but got %s' % (self.n_features_, X.shape[1]))
+        X = self._validate_data(X, reset=False)
 
         n_samples = X.shape[0]
         Xi = numpy.column_stack((numpy.ones(n_samples), X))
@@ -340,6 +339,121 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
             pred += self.learning_rate * estimator.predict(Xi)
 
         return self.loss_._scale_raw_prediction(pred)
+
+    def _get_baseline_model(self):
+        if self._baseline_model is None:
+            raise ValueError("`fit` must be called with the loss option set to 'coxph'.")
+        return self._baseline_model
+
+    def predict_cumulative_hazard_function(self, X):
+        """Predict cumulative hazard function.
+
+        Only available if :meth:`fit` has been called with `loss = "coxph"`.
+
+        The cumulative hazard function for an individual
+        with feature vector :math:`x` is defined as
+
+        .. math::
+
+            H(t \\mid x) = \\exp(f(x)) H_0(t) ,
+
+        where :math:`f(\\cdot)` is the additive ensemble of base learners,
+        and :math:`H_0(t)` is the baseline hazard function,
+        estimated by Breslow's estimator.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            Data matrix.
+
+        Returns
+        -------
+        cum_hazard : ndarray of :class:`sksurv.functions.StepFunction`, shape = (n_samples,)
+            Predicted cumulative hazard functions.
+
+        Examples
+        --------
+        >>> import matplotlib.pyplot as plt
+        >>> from sksurv.datasets import load_whas500
+        >>> from sksurv.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis
+
+        Load the data.
+
+        >>> X, y = load_whas500()
+        >>> X = X.astype(float)
+
+        Fit the model.
+
+        >>> estimator = ComponentwiseGradientBoostingSurvivalAnalysis(loss="coxph").fit(X, y)
+
+        Estimate the cumulative hazard function for the first 10 samples.
+
+        >>> chf_funcs = estimator.predict_cumulative_hazard_function(X.iloc[:10])
+
+        Plot the estimated cumulative hazard functions.
+
+        >>> for fn in chf_funcs:
+        ...     plt.step(fn.x, fn(fn.x), where="post")
+        ...
+        >>> plt.ylim(0, 1)
+        >>> plt.show()
+        """
+        return self._get_baseline_model().get_cumulative_hazard_function(self.predict(X))
+
+    def predict_survival_function(self, X):
+        """Predict survival function.
+
+        Only available if :meth:`fit` has been called with `loss = "coxph"`.
+
+        The survival function for an individual
+        with feature vector :math:`x` is defined as
+
+        .. math::
+
+            S(t \\mid x) = S_0(t)^{\\exp(f(x)} ,
+
+        where :math:`f(\\cdot)` is the additive ensemble of base learners,
+        and :math:`S_0(t)` is the baseline survival function,
+        estimated by Breslow's estimator.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            Data matrix.
+
+        Returns
+        -------
+        survival : ndarray of :class:`sksurv.functions.StepFunction`, shape = (n_samples,)
+            Predicted survival functions.
+
+        Examples
+        --------
+        >>> import matplotlib.pyplot as plt
+        >>> from sksurv.datasets import load_whas500
+        >>> from sksurv.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis
+
+        Load the data.
+
+        >>> X, y = load_whas500()
+        >>> X = X.astype(float)
+
+        Fit the model.
+
+        >>> estimator = ComponentwiseGradientBoostingSurvivalAnalysis(loss="coxph").fit(X, y)
+
+        Estimate the survival function for the first 10 samples.
+
+        >>> surv_funcs = estimator.predict_survival_function(X.iloc[:10])
+
+        Plot the estimated survival functions.
+
+        >>> for fn in surv_funcs:
+        ...     plt.step(fn.x, fn(fn.x), where="post")
+        ...
+        >>> plt.ylim(0, 1)
+        >>> plt.show()
+        """
+        return self._get_baseline_model().get_survival_function(self.predict(X))
 
     @property
     def coef_(self):
@@ -484,9 +598,6 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         Best nodes are defined as relative reduction in impurity.
         If None then unlimited number of leaf nodes.
 
-    presort : deprecated, optional, default: 'deprecated'
-        This parameter is deprecated and will be removed in a future version.
-
     subsample : float, optional, default: 1.0
         The fraction of samples to be used for fitting the individual regression
         trees. If smaller than 1.0, this results in Stochastic Gradient
@@ -557,7 +668,6 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                  max_depth=3, min_impurity_split=None,
                  min_impurity_decrease=0., random_state=None,
                  max_features=None, max_leaf_nodes=None,
-                 presort='deprecated',
                  subsample=1.0, dropout_rate=0.0,
                  verbose=0,
                  ccp_alpha=0.0):
@@ -576,10 +686,15 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                          random_state=random_state,
                          max_features=max_features,
                          max_leaf_nodes=max_leaf_nodes,
-                         presort=presort,
                          verbose=verbose,
                          ccp_alpha=ccp_alpha)
         self.dropout_rate = dropout_rate
+
+    def _warn_mae_for_criterion(self):
+        pass
+
+    def _validate_y(self, y, sample_weight):
+        pass
 
     @property
     def _predict_risk_score(self):
@@ -614,16 +729,10 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         self.max_features_ = max_features
 
-        if self.presort != 'deprecated':
-            warnings.warn("The parameter 'presort' is deprecated and has no "
-                          "effect. It will be removed in v0.24. You can "
-                          "suppress this warning by not passing any value "
-                          "to the 'presort' parameter.", DeprecationWarning)
-
         if self.loss not in LOSS_FUNCTIONS:
             raise ValueError("Loss {!r} not supported.".format(self.loss))
 
-        self.loss_ = LOSS_FUNCTIONS[self.loss](1)
+        self.loss_ = LOSS_FUNCTIONS[self.loss]()
 
     def _check_max_features(self):
         if isinstance(self.max_features, str):
@@ -651,7 +760,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         return max_features
 
     def _fit_stage(self, i, X, y, raw_predictions, sample_weight, sample_mask,
-                   random_state, scale, X_idx_sorted, X_csc=None, X_csr=None):
+                   random_state, scale, X_csc=None, X_csr=None):
         """Fit another stage of ``n_classes_`` trees to the boosting model. """
 
         assert sample_mask.dtype == numpy.bool
@@ -683,7 +792,6 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                 max_features=self.max_features,
                 max_leaf_nodes=self.max_leaf_nodes,
                 random_state=random_state,
-                presort=self.presort,
                 ccp_alpha=self.ccp_alpha)
 
             if self.subsample < 1.0:
@@ -692,7 +800,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
             X = X_csr if X_csr is not None else X
             tree.fit(X, residual, sample_weight=sample_weight,
-                     check_input=False, X_idx_sorted=X_idx_sorted)
+                     check_input=False)
 
             # add tree to ensemble
             self.estimators_[i, k] = tree
@@ -723,7 +831,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         return raw_predictions
 
     def _fit_stages(self, X, y, raw_predictions, sample_weight, random_state,
-                    begin_at_stage=0, monitor=None, X_idx_sorted=None):
+                    begin_at_stage=0, monitor=None):
         """Iteratively fits the stages.
 
         For each stage it computes the progress (OOB, train score)
@@ -766,7 +874,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
             # fit next stage of trees
             raw_predictions = self._fit_stage(
                 i, X, y, raw_predictions, sample_weight, sample_mask,
-                random_state, scale, X_idx_sorted, X_csc, X_csr)
+                random_state, scale, X_csc, X_csr)
 
             # track deviance (= loss)
             if do_oob:
@@ -853,12 +961,10 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         # The rng state must be preserved if warm_start is True
         self._rng = check_random_state(self.random_state)
 
-        X_idx_sorted = None
-
         # fit the boosting stages
         y = numpy.fromiter(zip(event, time), dtype=[('event', numpy.bool), ('time', numpy.float64)])
         n_stages = self._fit_stages(X, y, raw_predictions, sample_weight, self._rng,
-                                    begin_at_stage, monitor, X_idx_sorted)
+                                    begin_at_stage, monitor)
         # change shape of arrays after fit (early-stopping or additional tests)
         if n_stages != self.estimators_.shape[0]:
             self.estimators_ = self.estimators_[:n_stages]
@@ -867,6 +973,13 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                 self.oob_improvement_ = self.oob_improvement_[:n_stages]
 
         self.n_estimators_ = n_stages
+
+        if isinstance(self.loss_, CoxPH):
+            risk_scores = self.predict(X)
+            self._baseline_model = BreslowEstimator().fit(risk_scores, event, time)
+        else:
+            self._baseline_model = None
+
         return self
 
     def _dropout_predict_stage(self, X, i, K, score):
@@ -898,8 +1011,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         # otherwise consider scaling factor of individual trees
         if not hasattr(self, "scale_"):
             return super()._raw_predict(X)
-        else:
-            return self._dropout_raw_predict(X)
+        return self._dropout_raw_predict(X)
 
     def _init_decision_function(self, X):  # pragma: no cover
         return super()._init_decision_function(X).reshape(-1, 1)
@@ -927,7 +1039,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         """
         check_is_fitted(self, 'estimators_')
 
-        X = check_array(X, dtype=DTYPE, order="C")
+        X = check_array(X, dtype=DTYPE, order="C", accept_sparse="csr")
         score = self._raw_predict(X)
         if score.shape[1] == 1:
             score = score.ravel()
@@ -967,3 +1079,118 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         for raw_predictions in aiter:
             y = self.loss_._scale_raw_prediction(raw_predictions)
             yield y.ravel()
+
+    def _get_baseline_model(self):
+        if self._baseline_model is None:
+            raise ValueError("`fit` must be called with the loss option set to 'coxph'.")
+        return self._baseline_model
+
+    def predict_cumulative_hazard_function(self, X):
+        """Predict cumulative hazard function.
+
+        Only available if :meth:`fit` has been called with `loss = "coxph"`.
+
+        The cumulative hazard function for an individual
+        with feature vector :math:`x` is defined as
+
+        .. math::
+
+            H(t \\mid x) = \\exp(f(x)) H_0(t) ,
+
+        where :math:`f(\\cdot)` is the additive ensemble of base learners,
+        and :math:`H_0(t)` is the baseline hazard function,
+        estimated by Breslow's estimator.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            Data matrix.
+
+        Returns
+        -------
+        cum_hazard : ndarray of :class:`sksurv.functions.StepFunction`, shape = (n_samples,)
+            Predicted cumulative hazard functions.
+
+        Examples
+        --------
+        >>> import matplotlib.pyplot as plt
+        >>> from sksurv.datasets import load_whas500
+        >>> from sksurv.ensemble import GradientBoostingSurvivalAnalysis
+
+        Load the data.
+
+        >>> X, y = load_whas500()
+        >>> X = X.astype(float)
+
+        Fit the model.
+
+        >>> estimator = GradientBoostingSurvivalAnalysis(loss="coxph").fit(X, y)
+
+        Estimate the cumulative hazard function for the first 10 samples.
+
+        >>> chf_funcs = estimator.predict_cumulative_hazard_function(X.iloc[:10])
+
+        Plot the estimated cumulative hazard functions.
+
+        >>> for fn in chf_funcs:
+        ...     plt.step(fn.x, fn(fn.x), where="post")
+        ...
+        >>> plt.ylim(0, 1)
+        >>> plt.show()
+        """
+        return self._get_baseline_model().get_cumulative_hazard_function(self.predict(X))
+
+    def predict_survival_function(self, X):
+        """Predict survival function.
+
+        Only available if :meth:`fit` has been called with `loss = "coxph"`.
+
+        The survival function for an individual
+        with feature vector :math:`x` is defined as
+
+        .. math::
+
+            S(t \\mid x) = S_0(t)^{\\exp(f(x)} ,
+
+        where :math:`f(\\cdot)` is the additive ensemble of base learners,
+        and :math:`S_0(t)` is the baseline survival function,
+        estimated by Breslow's estimator.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            Data matrix.
+
+        Returns
+        -------
+        survival : ndarray of :class:`sksurv.functions.StepFunction`, shape = (n_samples,)
+            Predicted survival functions.
+
+        Examples
+        --------
+        >>> import matplotlib.pyplot as plt
+        >>> from sksurv.datasets import load_whas500
+        >>> from sksurv.ensemble import GradientBoostingSurvivalAnalysis
+
+        Load the data.
+
+        >>> X, y = load_whas500()
+        >>> X = X.astype(float)
+
+        Fit the model.
+
+        >>> estimator = GradientBoostingSurvivalAnalysis(loss="coxph").fit(X, y)
+
+        Estimate the survival function for the first 10 samples.
+
+        >>> surv_funcs = estimator.predict_survival_function(X.iloc[:10])
+
+        Plot the estimated survival functions.
+
+        >>> for fn in surv_funcs:
+        ...     plt.step(fn.x, fn(fn.x), where="post")
+        ...
+        >>> plt.ylim(0, 1)
+        >>> plt.show()
+        """
+        return self._get_baseline_model().get_survival_function(self.predict(X))

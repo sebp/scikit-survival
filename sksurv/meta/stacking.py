@@ -66,16 +66,16 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, BaseEstimator):
 
     def get_params(self, deep=True):
         if not deep:
-            return super(Stacking, self).get_params(deep=False)
-        else:
-            out = self.named_estimators.copy()
-            for name, estimator in self.named_estimators.items():
-                for key, value in estimator.get_params(deep=True).items():
-                    out['%s__%s' % (name, key)] = value
+            return super().get_params(deep=False)
 
-            for param in self._extra_params:
-                out[param] = getattr(self, param)
-            return out
+        out = self.named_estimators.copy()
+        for name, estimator in self.named_estimators.items():
+            for key, value in estimator.get_params(deep=True).items():
+                out['%s__%s' % (name, key)] = value
+
+        for param in self._extra_params:
+            out[param] = getattr(self, param)
+        return out
 
     def _split_fit_params(self, fit_params):
         fit_params_steps = {step: {} for step, _ in self.base_estimators}

@@ -1,10 +1,11 @@
 import os.path
 
 import numpy
-from numpy.testing import assert_array_almost_equal, assert_array_equal, assert_almost_equal
+from numpy.testing import assert_almost_equal, assert_array_almost_equal, assert_array_equal
 import pytest
 
 from sksurv.datasets import load_gbsg2
+from sksurv.exceptions import NoComparablePairException
 from sksurv.functions import StepFunction
 from sksurv.linear_model import CoxPHSurvivalAnalysis
 from sksurv.metrics import (
@@ -14,13 +15,12 @@ from sksurv.metrics import (
     cumulative_dynamic_auc,
     integrated_brier_score,
 )
-from sksurv.exceptions import NoComparablePairException
 from sksurv.nonparametric import kaplan_meier_estimator
 from sksurv.preprocessing import OneHotEncoder
 from sksurv.util import Surv
 
 
-@pytest.fixture
+@pytest.fixture()
 def whas500_pred():
     WHAS500_DATA_FILE = os.path.join(os.path.dirname(__file__), 'data', 'whas500_predictions.csv')
 
@@ -31,7 +31,7 @@ def whas500_pred():
     return event, time, risk
 
 
-@pytest.fixture
+@pytest.fixture()
 def no_comparable_pairs():
     y = numpy.array([(False, 849.), (False, 28.), (False, 55.), (False, 727.),
                      (False, 505.), (False, 1558.), (False, 1292.), (False, 1737.),
@@ -261,6 +261,16 @@ def test_concordance_index_no_comparable(no_comparable_pairs):
         concordance_index_censored(y["event"], y["time"], scores)
 
 
+@pytest.mark.parametrize("dim", [2, 3, 10])
+def test_concordance_index_not_1d(whas500_pred, dim):
+    event, time, risk = whas500_pred
+
+    risk = numpy.tile(risk[:, numpy.newaxis], (1, dim))
+
+    with pytest.raises(ValueError, match="Expected 1D array, got 2D array instead:"):
+        concordance_index_censored(event, time, risk)
+
+
 def assert_uno_c_almost_equal(y_train, y_test, estimate, expected, tau=None):
     result = concordance_index_ipcw(y_train, y_test, estimate, tau=tau)
     assert_array_equal(result[1:], expected[1:])
@@ -352,7 +362,7 @@ def uno_c_data(request, whas500_pred):
     y_train = y if y_train is None else y_train
     y_test = y if y_test is None else y_test
 
-    yield y_train, y_test, estimate, expected, tau
+    return y_train, y_test, estimate, expected, tau
 
 
 def test_uno_c(uno_c_data):
@@ -421,9 +431,9 @@ def uno_c_failure_data(request):
         match = "censoring survival function is zero " \
                 "at one or more time points"
     else:
-        assert False
+        raise AssertionError()
 
-    yield y_train, y_test, estimate, match
+    return y_train, y_test, estimate, match
 
 
 def test_uno_c_failure(uno_c_failure_data):
@@ -454,6 +464,17 @@ def test_uno_c_no_comparable(no_comparable_pairs):
         concordance_index_ipcw(y, y, scores)
 
 
+@pytest.mark.parametrize("dim", [2, 3, 10])
+def test_uno_c_not_1d(whas500_pred, dim):
+    event, time, risk = whas500_pred
+    y = Surv.from_arrays(event, time)
+
+    risk = numpy.tile(risk[:, numpy.newaxis], (1, dim))
+
+    with pytest.raises(ValueError, match="Expected 1D array, got 2D array instead:"):
+        concordance_index_ipcw(y, y, risk)
+
+
 @pytest.fixture()
 def uno_auc_data_15():
     y = Surv.from_arrays(
@@ -479,6 +500,21 @@ def uno_auc_data_20():
     return y_train, y_test, estimate
 
 
+@pytest.fixture()
+def uno_auc_time_dependent_20(uno_auc_data_20):
+    y_train, y_test, _ = uno_auc_data_20
+
+    estimate = numpy.array([
+        [0.566, 0.576, 0.506, 1.871, -0.04, 0.281, 0.335, -1.181, 1.368, -0.192, 0.955, 0.221, 0.057, -0.996, -1.27],
+        [-2.658, -1.121, 1.903, -0.7, -1.013, -0.472, -0.668, -0.537, 1.659, 0.657, -1.317, -1.103, 2.159, 0.625,
+         -0.067],
+        [-1.004, -1.67, 0.775, -2.512, 1.179, 0.073, 0.103, -0.379, -0.082, -0.617, 1.287, -0.449, -0.477, 0.24,
+         0.838],
+    ]).T
+
+    return y_train, y_test, estimate
+
+
 @pytest.fixture(params=[
     'single_time',
     'two_times',
@@ -487,8 +523,11 @@ def uno_auc_data_20():
     'train_test',
     'tied_test_time',
     'tied_test_score',
+    'tied_test_score_max',
+    'tied_test_score_min',
+    'time_dependent',
 ])
-def uno_auc_data(request, uno_auc_data_15, uno_auc_data_20):
+def uno_auc_data(request, uno_auc_data_15, uno_auc_data_20, uno_auc_time_dependent_20):  # noqa: C901
     p = request.param
 
     y_test = None
@@ -532,12 +571,31 @@ def uno_auc_data(request, uno_auc_data_15, uno_auc_data_20):
         times = [15, 66]
         iauc = 0.495604291
         expected = numpy.array([0.4242424, 0.539036])
+    elif p == 'tied_test_score_max':
+        y_train, y_test, estimate = uno_auc_data_20
+        o = numpy.argsort(estimate)
+        estimate[o[0]] = estimate[o[1]]
+        times = [15, 66]
+        iauc = 0.385509
+        expected = numpy.array([0.3030303, 0.4357061])
+    elif p == 'tied_test_score_min':
+        y_train, y_test, estimate = uno_auc_data_20
+        o = numpy.argsort(estimate)
+        estimate[o[-1]] = estimate[o[-2]]
+        times = [15, 66]
+        iauc = 0.374134
+        expected = numpy.array([0.3030303, 0.4174082])
+    elif p == 'time_dependent':
+        y_train, y_test, estimate = uno_auc_time_dependent_20
+        times = [15, 30, 72]
+        iauc = 0.5522067
+        expected = numpy.array([0.3636364, 0.5247813, 0.7603000])
     else:
-        assert False
+        raise AssertionError()
 
     if y_test is None:
         y_test = y_train
-    yield y_train, y_test, estimate, times, expected, iauc
+    return y_train, y_test, estimate, times, expected, iauc
 
 
 def test_uno_auc(uno_auc_data):
@@ -545,7 +603,53 @@ def test_uno_auc(uno_auc_data):
 
     auc, iauc = cumulative_dynamic_auc(y_train, y_test, estimate, times)
     assert_array_almost_equal(auc, expect_auc)
-    assert_almost_equal(iauc, expect_iauc)
+    assert round(abs(iauc - expect_iauc), 6) == 0
+
+
+@pytest.fixture(params=[
+    'time_dependent_without_censoring',
+    'time_dependent_with_ties_without_censoring',
+])
+def uno_auc_time_dependent_without_censoring_data(request):
+    from sklearn.metrics import roc_auc_score
+
+    p = request.param
+
+    y = Surv.from_arrays(
+        time=[7, 9, 11, 12, 13, 15, 28, 39, 41, 76],
+        event=[True, True, True, True, True, True, True, True, True, True])
+    times = [10, 14, 40]
+
+    if p == 'time_dependent_without_censoring':
+        estimate = numpy.array([
+            [1, 6, 18, 56, 32, 3, 99, 7, 67, 541],
+            [6, 9, 11, 5, 3, 12, 56, 56.1, 81, 77],
+            [13, 11, 12, 76, 55, 134, 70, 78, 75, 99],
+        ])
+    elif p == 'time_dependent_with_ties_without_censoring':
+        estimate = numpy.array([
+            [1, 6, 7, 56, 32, 3, 99, 7, 79, 17],
+            [3, 6, 11, 5, 17, 12, 17, 56.1, 81, 77],
+            [13, 11, 12, 17, 17, 134, 70, 78, 13, 99],
+        ])
+    else:
+        raise AssertionError()
+
+    expected_auc = numpy.array(
+        [roc_auc_score(y["time"] > t, e) for t, e in zip(times, estimate)]
+    )
+    km_delta = numpy.array([1 - 0.8, 0.8 - 0.5, 0.5 - 0.2])
+    expected_iauc = numpy.sum(km_delta * expected_auc) / 0.8
+
+    return y, times, -estimate.T, expected_auc, expected_iauc
+
+
+def test_uno_auc_time_dependent_without_censoring(uno_auc_time_dependent_without_censoring_data):
+    y, times, estimate, expected, iauc = uno_auc_time_dependent_without_censoring_data
+
+    auc, iauc = cumulative_dynamic_auc(y, y, estimate, times)
+    assert_array_almost_equal(auc, expected)
+    assert round(abs(iauc - iauc), 6) == 0
 
 
 @pytest.fixture(params=[
@@ -564,10 +668,10 @@ def uno_auc_whas500_data(request, whas500_pred):
     elif p == 'whas500':
         times = (200, 400, 600, 800, 1000, 1200, 1400)
     else:
-        assert False
+        raise AssertionError()
     iauc = 0.8045058
     expected = numpy.array([0.7720669, 0.7765915, 0.7962623, 0.8759295, 0.8759295, 0.8759513, 0.9147647])
-    yield y_train, y_test, estimate, times, expected, iauc
+    return y_train, y_test, estimate, times, expected, iauc
 
 
 def test_uno_auc_whas500(uno_auc_whas500_data):
@@ -579,8 +683,6 @@ def test_uno_auc_whas500(uno_auc_whas500_data):
 
 
 @pytest.fixture(params=[
-    'estimate_2d',
-    'estimate_3d',
     'test_time_too_big_1',
     'test_time_too_big_2',
     'ipcw_undefined_1',
@@ -593,15 +695,7 @@ def uno_auc_censoring_failure_data(request, uno_auc_data_20):
 
     estimate = None
     times = 33
-    if p == 'estimate_2d':
-        y_train, y_test, estimate = uno_auc_data_20
-        estimate = numpy.atleast_2d(estimate)
-        match = "Expected 1D array, got 2D array instead"
-    elif p == 'estimate_3d':
-        y_train, y_test, estimate = uno_auc_data_20
-        estimate = numpy.atleast_3d(estimate)
-        match = r"Found array with dim 3\. Estimator expected <= 2\."
-    elif p == 'test_time_too_big_1':
+    if p == 'test_time_too_big_1':
         y_train, y_test, _ = uno_auc_data_20
         y_test['time'][11] = 100
         match = "time must be smaller than largest observed time point:"
@@ -632,11 +726,11 @@ def uno_auc_censoring_failure_data(request, uno_auc_data_20):
         y_test['event'] = False
         match = "all samples are censored"
     else:
-        assert False
+        raise AssertionError()
 
     if estimate is None:
         estimate = numpy.random.randn(y_test.shape[0])
-    yield y_train, y_test, times, estimate, match
+    return y_train, y_test, times, estimate, match
 
 
 def test_uno_auc_censoring_failure(uno_auc_censoring_failure_data):
@@ -714,9 +808,9 @@ def uno_auc_times_failure_data(request, uno_auc_data_20):
         times = []
         match = r'Found array with 0 sample\(s\)'
     else:
-        assert False
+        raise AssertionError()
 
-    yield y_train, y_test, times, match
+    return y_train, y_test, times, match
 
 
 def test_uno_auc_times_failure(uno_auc_times_failure_data):
@@ -728,7 +822,50 @@ def test_uno_auc_times_failure(uno_auc_times_failure_data):
         cumulative_dynamic_auc(y_train, y_test, estimate, times)
 
 
-@pytest.fixture
+@pytest.fixture(params=[
+    'estimate_2d_1col',
+    'estimate_2d_2cols',
+    'estimate_2d_4cols',
+    'estimate_3d',
+])
+def uno_auc_shape_failure_data(request, uno_auc_data_20):
+    p = request.param
+
+    estimate = None
+    times = 33
+    if p == 'estimate_2d_1col':
+        y_train, y_test, estimate = uno_auc_data_20
+        estimate = numpy.atleast_2d(estimate)
+        match = r"Found input variables with inconsistent numbers of samples: \[15, 1\]"
+    elif p == 'estimate_2d_2cols':
+        y_train, y_test, estimate = uno_auc_data_20
+        times = [11, 33, 55]
+        estimate = numpy.tile(estimate, (2, 1)).T
+        match = "expected estimate with 3 columns, but got 2"
+    elif p == 'estimate_2d_4cols':
+        y_train, y_test, estimate = uno_auc_data_20
+        times = [11, 33, 55]
+        estimate = numpy.tile(estimate, (4, 1)).T
+        match = "expected estimate with 3 columns, but got 4"
+    elif p == 'estimate_3d':
+        y_train, y_test, estimate = uno_auc_data_20
+        estimate = numpy.atleast_3d(estimate)
+        match = "Found array with dim 3. Estimator expected <= 2."
+    else:
+        raise AssertionError()
+
+    return y_train, y_test, times, estimate, match
+
+
+def test_uno_auc_shape_failure(uno_auc_shape_failure_data):
+    y_train, y_test, times, estimate, match = uno_auc_shape_failure_data
+
+    with pytest.raises(ValueError,
+                       match=match):
+        cumulative_dynamic_auc(y_train, y_test, estimate, times)
+
+
+@pytest.fixture()
 def nottingham_prognostic_index():
     def _get_npi(times):
         X, y = load_gbsg2()
@@ -776,9 +913,9 @@ def brier_npi_data(request, nottingham_prognostic_index):
     elif t == 1825:
         bs = 0.233822955042198
     else:
-        assert False
+        raise AssertionError()
 
-    yield pred, y, t, bs
+    return pred, y, t, bs
 
 
 def test_brier_nottingham(brier_npi_data):
@@ -828,7 +965,7 @@ def test_brier_wrong_estimate_shape(nottingham_prognostic_index):
         brier_score(y, y, pred, times=[720, 960, 1825])
 
     with pytest.raises(ValueError,
-                       match="expected estimate with 686 samples, but got 10"):
+                       match=r"Found input variables with inconsistent numbers of samples: \[686, 10\]"):
         brier_score(y, y, pred[:10], times=[720, 1825])
 
 

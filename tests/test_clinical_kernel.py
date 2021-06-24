@@ -1,12 +1,11 @@
-from numpy.testing import assert_array_almost_equal
-
 import numpy
+from numpy.testing import assert_array_almost_equal
 import pandas
 import pytest
 from sklearn.base import clone
 from sklearn.metrics.pairwise import pairwise_kernels
 
-from sksurv.kernels import clinical_kernel, ClinicalKernelTransform
+from sksurv.kernels import ClinicalKernelTransform, clinical_kernel
 
 
 def _get_expected_matrix(with_ordinal=True, with_nominal=True, with_continuous=True):
@@ -51,7 +50,7 @@ def _get_expected_matrix(with_ordinal=True, with_nominal=True, with_continuous=T
     return expected
 
 
-@pytest.fixture
+@pytest.fixture()
 def make_data():
     data = {'age': [20, 23, 26, 54, 100],
             'lymph node size': [2, 1, 3, 4, 1],
@@ -84,7 +83,7 @@ def make_data():
     return _make_data
 
 
-class TestClinicalKernel(object):
+class TestClinicalKernel:
 
     @staticmethod
     def test_clinical_kernel_1(make_data):

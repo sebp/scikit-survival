@@ -10,11 +10,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import pandas
-import numpy
 import os.path
 import re
 
+import numpy
+import pandas
 from pandas.api.types import is_categorical_dtype, is_object_dtype
 
 _ILLEGAL_CHARACTER_PAT = re.compile(r"[^-_=\w\d\(\)<>\.]")
@@ -134,8 +134,7 @@ def _write_data(data, fp):
     def to_str(x):
         if pandas.isnull(x):
             return '?'
-        else:
-            return str(x)
+        return str(x)
 
     data = data.applymap(to_str)
     n_rows = data.shape[0]

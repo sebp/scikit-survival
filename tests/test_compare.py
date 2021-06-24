@@ -4,8 +4,8 @@ import pandas
 from pandas.testing import assert_frame_equal
 import pytest
 
-from sksurv.datasets import load_veterans_lung_cancer
 from sksurv.compare import compare_survival
+from sksurv.datasets import load_veterans_lung_cancer
 
 
 def test_logrank_rossi(rossi):

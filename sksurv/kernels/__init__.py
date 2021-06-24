@@ -1,1 +1,1 @@
-from .clinical import clinical_kernel, ClinicalKernelTransform  # noqa: F401
+from .clinical import ClinicalKernelTransform, clinical_kernel  # noqa: F401

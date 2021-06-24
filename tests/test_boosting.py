@@ -1,5 +1,7 @@
+from os.path import dirname, join
+
 import numpy
-from numpy.testing import assert_array_equal, assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 import pandas
 import pytest
 from sklearn.metrics import mean_squared_error
@@ -8,13 +10,18 @@ from sksurv.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis, Gradi
 from sksurv.testing import assert_cindex_almost_equal
 from sksurv.util import Surv
 
+CGBOOST_CUMHAZ_FILE = join(dirname(__file__), 'data', 'compnentwise-gradient-boosting-coxph-cumhazard.csv')
+CGBOOST_SURV_FILE = join(dirname(__file__), 'data', 'compnentwise-gradient-boosting-coxph-surv.csv')
+GBOOST_CUMHAZ_FILE = join(dirname(__file__), 'data', 'gradient-boosting-coxph-cumhazard.csv')
+GBOOST_SURV_FILE = join(dirname(__file__), 'data', 'gradient-boosting-coxph-surv.csv')
 
-def early_stopping_monitor(i, est, locals_):
+
+def early_stopping_monitor(i, est, locals_):  # pylint: disable=unused-argument
     """Returns True on the 10th iteration. """
     return i == 9
 
 
-class TestGradientBoosting(object):
+class TestGradientBoosting:
 
     @staticmethod
     def test_fit(make_whas500):
@@ -34,8 +41,8 @@ class TestGradientBoosting(object):
 
         assert (100,) == model.train_score_.shape
 
-        with pytest.raises(ValueError, match="Number of features of the model must match the input. "
-                                             "Model n_features is 14 and input n_features is 2 "):
+        with pytest.raises(ValueError, match="X has 2 features, but DecisionTreeRegressor is "
+                                             "expecting 14 features as input."):
             model.predict(whas500_data.x[:, :2])
 
     @staticmethod
@@ -62,8 +69,8 @@ class TestGradientBoosting(object):
         assert (50,) == model.train_score_.shape
         assert (50,) == model.oob_improvement_.shape
 
-        with pytest.raises(ValueError, match="Number of features of the model must match the input. "
-                                             "Model n_features is 14 and input n_features is 2 "):
+        with pytest.raises(ValueError, match="X has 2 features, but DecisionTreeRegressor is "
+                                             "expecting 14 features as input."):
             model.predict(whas500_data.x[:, :2])
 
     @staticmethod
@@ -111,6 +118,27 @@ class TestGradientBoosting(object):
                                    (0.90256690042449006, 67826, 7321, 2, 14))
 
     @staticmethod
+    @pytest.mark.parametrize("fn,expected_file",
+                             [("predict_survival_function", GBOOST_SURV_FILE),
+                              ("predict_cumulative_hazard_function", GBOOST_CUMHAZ_FILE)])
+    def test_predict_function(make_whas500, fn, expected_file):
+        whas500_data = make_whas500(with_std=False, to_numeric=True)
+
+        model = GradientBoostingSurvivalAnalysis(n_estimators=100, max_depth=2, random_state=0)
+        train_x, train_y = whas500_data.x[10:], whas500_data.y[10:]
+        model.fit(train_x, train_y)
+
+        test_x = whas500_data.x[:10]
+        surv_fn = getattr(model, fn)(test_x)
+
+        times = numpy.unique(train_y["lenfol"][train_y["fstat"]])
+        actual = numpy.row_stack([fn_gb(times) for fn_gb in surv_fn])
+
+        expected = numpy.loadtxt(expected_file, delimiter=",")
+
+        assert_array_almost_equal(actual, expected)
+
+    @staticmethod
     def test_max_features(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
@@ -153,16 +181,6 @@ class TestGradientBoosting(object):
             model.fit(whas500_data.x, whas500_data.y)
 
     @staticmethod
-    @pytest.mark.parametrize('presort', ['auto', True, False, None])
-    def test_presort(make_whas500, presort):
-        whas500_data = make_whas500(with_std=False, to_numeric=True)
-
-        model = GradientBoostingSurvivalAnalysis(n_estimators=10, presort=presort, random_state=0)
-
-        with pytest.deprecated_call(match="The parameter 'presort' is deprecated "):
-            model.fit(whas500_data.x, whas500_data.y)
-
-    @staticmethod
     def test_ccp_alpha(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
@@ -191,8 +209,8 @@ class TestGradientBoosting(object):
         clf = GradientBoostingSurvivalAnalysis()
         msg = "ccp_alpha must be greater than or equal to 0"
 
+        clf.set_params(ccp_alpha=-1.0)
         with pytest.raises(ValueError, match=msg):
-            clf.set_params(ccp_alpha=-1.0)
             clf.fit(whas500_data.x, whas500_data.y)
 
     @staticmethod
@@ -222,6 +240,12 @@ class TestGradientBoosting(object):
         cindex = model.score(whas500_data.x, whas500_data.y)
         assert round(abs(cindex - 0.8979161399), 7) == 0
 
+        with pytest.raises(ValueError, match="`fit` must be called with the loss option set to 'coxph'"):
+            model.predict_survival_function(whas500_data.x)
+
+        with pytest.raises(ValueError, match="`fit` must be called with the loss option set to 'coxph'"):
+            model.predict_cumulative_hazard_function(whas500_data.x)
+
     @staticmethod
     def test_squared_loss(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
@@ -242,6 +266,12 @@ class TestGradientBoosting(object):
         cindex = model.score(whas500_data.x, whas500_data.y)
         assert round(abs(cindex - 0.9021810004), 7) == 0
 
+        with pytest.raises(ValueError, match="`fit` must be called with the loss option set to 'coxph'"):
+            model.predict_survival_function(whas500_data.x)
+
+        with pytest.raises(ValueError, match="`fit` must be called with the loss option set to 'coxph'"):
+            model.predict_cumulative_hazard_function(whas500_data.x)
+
     @staticmethod
     def test_ipcw_loss_staged_predict(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
@@ -254,6 +284,7 @@ class TestGradientBoosting(object):
         y_pred = model.predict(whas500_data.x)
 
         # test if prediction for last stage equals ``predict``
+        y = None
         for y in model.staged_predict(whas500_data.x):
             assert y.shape == y_pred.shape
 
@@ -265,6 +296,7 @@ class TestGradientBoosting(object):
         y_pred = model.predict(whas500_data.x)
 
         # test if prediction for last stage equals ``predict``
+        y = None
         for y in model.staged_predict(whas500_data.x):
             assert y.shape == y_pred.shape
 
@@ -282,6 +314,7 @@ class TestGradientBoosting(object):
         y_pred = model.predict(whas500_data.x)
 
         # test if prediction for last stage equals ``predict``
+        y = None
         for y in model.staged_predict(whas500_data.x):
             assert y.shape == y_pred.shape
 
@@ -293,6 +326,7 @@ class TestGradientBoosting(object):
         y_pred = model.predict(whas500_data.x)
 
         # test if prediction for last stage equals ``predict``
+        y = None
         for y in model.staged_predict(whas500_data.x):
             assert y.shape == y_pred.shape
 
@@ -313,7 +347,7 @@ class TestGradientBoosting(object):
         assert est.oob_improvement_.shape[0] == 10
 
 
-class TestSparseGradientBoosting(object):
+class TestSparseGradientBoosting:
 
     @staticmethod
     @pytest.mark.parametrize('loss', ['coxph', 'squared', 'ipcwls'])
@@ -326,7 +360,7 @@ class TestSparseGradientBoosting(object):
         assert model.train_score_.shape == (100,)
         assert model.oob_improvement_.shape == (100,)
 
-        sparse_predict = model.predict(whas500_sparse_data.x_dense)
+        sparse_predict = model.predict(whas500_sparse_data.x_sparse)
 
         model.fit(whas500_sparse_data.x_sparse, whas500_sparse_data.y)
         dense_predict = model.predict(whas500_sparse_data.x_dense)
@@ -344,7 +378,7 @@ class TestSparseGradientBoosting(object):
         assert model.estimators_.shape[0] == 100
         assert model.train_score_.shape == (100,)
 
-        sparse_predict = model.predict(whas500_sparse_data.x_dense)
+        sparse_predict = model.predict(whas500_sparse_data.x_sparse)
 
         model.fit(whas500_sparse_data.x_dense, whas500_sparse_data.y)
         dense_predict = model.predict(whas500_sparse_data.x_dense)
@@ -352,7 +386,7 @@ class TestSparseGradientBoosting(object):
         assert_array_almost_equal(sparse_predict, dense_predict)
 
 
-class TestComponentwiseGradientBoosting(object):
+class TestComponentwiseGradientBoosting:
 
     @staticmethod
     def test_fit(make_whas500):
@@ -377,8 +411,8 @@ class TestComponentwiseGradientBoosting(object):
 
         assert (100,) == model.train_score_.shape
 
-        with pytest.raises(ValueError, match='Dimensions of X are inconsistent with training data: '
-                                             'expected 14 features, but got 2'):
+        with pytest.raises(ValueError, match="X has 2 features, but ComponentwiseGradientBoostingSurvivalAnalysis is "
+                                             "expecting 14 features as input."):
             model.predict(whas500_data.x[:, :2])
 
     @staticmethod
@@ -405,8 +439,8 @@ class TestComponentwiseGradientBoosting(object):
         assert (100,) == model.train_score_.shape
         assert (100,) == model.oob_improvement_.shape
 
-        with pytest.raises(ValueError, match='Dimensions of X are inconsistent with training data: '
-                                             'expected 14 features, but got 2'):
+        with pytest.raises(ValueError, match="X has 2 features, but ComponentwiseGradientBoostingSurvivalAnalysis is "
+                                             "expecting 14 features as input."):
             model.predict(whas500_data.x[:, :2])
 
     @staticmethod
@@ -431,6 +465,27 @@ class TestComponentwiseGradientBoosting(object):
         expected_coef['mitype'] = -0.075817
 
         assert_array_almost_equal(expected_coef.values, model.coef_)
+
+    @staticmethod
+    @pytest.mark.parametrize("fn,expected_file",
+                             [("predict_survival_function", CGBOOST_SURV_FILE),
+                              ("predict_cumulative_hazard_function", CGBOOST_CUMHAZ_FILE)])
+    def test_predict_function(make_whas500, fn, expected_file):
+        whas500_data = make_whas500(with_std=False, to_numeric=True)
+
+        model = ComponentwiseGradientBoostingSurvivalAnalysis(n_estimators=100, random_state=0)
+        train_x, train_y = whas500_data.x[10:], whas500_data.y[10:]
+        model.fit(train_x, train_y)
+
+        test_x = whas500_data.x[:10]
+        surv_fn = getattr(model, fn)(test_x)
+
+        times = numpy.unique(train_y["lenfol"][train_y["fstat"]])
+        actual = numpy.row_stack([fn_gb(times) for fn_gb in surv_fn])
+
+        expected = numpy.loadtxt(expected_file, delimiter=",")
+
+        assert_array_almost_equal(actual, expected)
 
     @staticmethod
     def test_feature_importances(make_whas500):
@@ -468,6 +523,12 @@ class TestComponentwiseGradientBoosting(object):
         cindex = model.score(whas500_data.x, whas500_data.y)
         assert round(abs(cindex - 0.7773356931), 7) == 0
 
+        with pytest.raises(ValueError, match="`fit` must be called with the loss option set to 'coxph'"):
+            model.predict_survival_function(whas500_data.x)
+
+        with pytest.raises(ValueError, match="`fit` must be called with the loss option set to 'coxph'"):
+            model.predict_cumulative_hazard_function(whas500_data.x)
+
     @staticmethod
     def test_squared_loss(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
@@ -487,6 +548,12 @@ class TestComponentwiseGradientBoosting(object):
 
         cindex = model.score(whas500_data.x, whas500_data.y)
         assert round(abs(cindex - 0.7777082862), 7) == 0
+
+        with pytest.raises(ValueError, match="`fit` must be called with the loss option set to 'coxph'"):
+            model.predict_survival_function(whas500_data.x)
+
+        with pytest.raises(ValueError, match="`fit` must be called with the loss option set to 'coxph'"):
+            model.predict_cumulative_hazard_function(whas500_data.x)
 
 
 @pytest.fixture(params=[GradientBoostingSurvivalAnalysis, ComponentwiseGradientBoostingSurvivalAnalysis])

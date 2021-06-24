@@ -14,9 +14,7 @@ import logging
 
 import numpy
 import pandas
-
 from pandas.api.types import is_categorical_dtype
-
 
 __all__ = ['categorical_to_numeric', 'encode_categorical', 'standardize']
 
@@ -24,8 +22,7 @@ __all__ = ['categorical_to_numeric', 'encode_categorical', 'standardize']
 def _apply_along_column(array, func1d, **kwargs):
     if isinstance(array, pandas.DataFrame):
         return array.apply(func1d, **kwargs)
-    else:
-        return numpy.apply_along_axis(func1d, 0, array, **kwargs)
+    return numpy.apply_along_axis(func1d, 0, array, **kwargs)
 
 
 def standardize_column(series_or_array, with_std=True):
@@ -90,6 +87,9 @@ def _encode_categorical_series(series, allow_drop=True):
     enc, levels = values
     if enc is None:
         return pandas.Series(index=series.index, name=series.name, dtype=series.dtype)
+
+    if not allow_drop and enc.shape[1] == 1:
+        return series
 
     names = []
     for key in range(1, enc.shape[1]):
@@ -162,7 +162,7 @@ def _get_dummies_1d(data, allow_drop=True):
         logging.getLogger(__package__).warning(
             "dropped categorical variable '%s', because it has only %d values", data.name, number_of_cols)
         return
-    elif number_of_cols == 0:
+    if number_of_cols == 0:
         return None, levels
 
     dummy_mat = numpy.eye(number_of_cols).take(cat.codes, axis=0)
@@ -199,12 +199,11 @@ def categorical_to_numeric(table):
                 classes.sort(kind="mergesort")
                 nc = column.replace(classes, numpy.arange(classes.shape[0]))
             return nc
-        elif column.dtype == bool:
+        if column.dtype == bool:
             return column.astype(numpy.int64)
 
         return column
 
     if isinstance(table, pandas.Series):
         return pandas.Series(transform(table), name=table.name, index=table.index)
-    else:
-        return table.apply(transform, axis=0, result_type='expand')
+    return table.apply(transform, axis=0, result_type='expand')

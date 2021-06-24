@@ -12,7 +12,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-class SurvivalAnalysisMixin(object):
+class SurvivalAnalysisMixin:
 
     def score(self, X, y):
         """Returns the concordance index of the prediction.

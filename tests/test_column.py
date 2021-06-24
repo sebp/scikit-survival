@@ -2,14 +2,14 @@ from collections import OrderedDict
 
 import numpy
 from numpy.testing import assert_array_almost_equal, assert_array_equal
-import pandas.util.testing as tm
 import pandas
+import pandas.util.testing as tm
 import pytest
 
 from sksurv import column
 
 
-@pytest.fixture
+@pytest.fixture()
 def numeric_data():
     data = pandas.DataFrame(numpy.arange(50, dtype=float).reshape(10, 5))
 
@@ -26,7 +26,7 @@ def numeric_data():
     return data, expected
 
 
-@pytest.fixture
+@pytest.fixture()
 def non_numeric_data_frame():
     data = pandas.DataFrame({'q1': ['no', 'no', 'yes', 'yes', 'no', 'no', None, 'yes', 'no', None],
                              'q2': ['maybe', 'no', 'yes', 'maybe', 'yes', 'no', None, 'maybe', 'no',
@@ -37,7 +37,7 @@ def non_numeric_data_frame():
     return data
 
 
-class TestColumn(object):
+class TestColumn:
     @staticmethod
     def test_standardize_numeric(numeric_data):
         numeric_data_frame, expected = numeric_data
@@ -121,7 +121,7 @@ class TestColumn(object):
                            result[:, numeric_data_frame.shape[1]:][non_nan_idx, :])
 
 
-class TestEncodeCategorical(object):
+class TestEncodeCategorical:
     @staticmethod
     def test_series_categorical():
         input_series = pandas.Series(pandas.Categorical.from_codes([1, 1, 0, 2, 0, 1, 2, 1, 2, 0, 0, 1, 2, 2],
@@ -146,14 +146,14 @@ class TestEncodeCategorical(object):
 
     @staticmethod
     def test_case1():
-        a = numpy.concatenate((
+        a = numpy.r_[
             numpy.repeat(["large"], 10),
             numpy.repeat(["small"], 5),
             numpy.repeat(["tiny"], 13),
-            numpy.repeat(["medium"], 3)))
-        b = numpy.concatenate((
+            numpy.repeat(["medium"], 3)]
+        b = numpy.r_[
             numpy.repeat(["yes"], 8),
-            numpy.repeat(["no"], 23)))
+            numpy.repeat(["no"], 23)]
 
         rnd = numpy.random.RandomState(0)
         c = rnd.randn(len(a))
@@ -167,9 +167,9 @@ class TestEncodeCategorical(object):
 
         actual_df = column.encode_categorical(df)
 
-        eb = numpy.concatenate((
+        eb = numpy.r_[
             numpy.repeat([1.], 8),
-            numpy.repeat([0.], 23)))
+            numpy.repeat([0.], 23)]
 
         a_tiny = numpy.zeros(31, dtype=float)
         a_tiny[15:28] = 1
@@ -194,11 +194,11 @@ class TestEncodeCategorical(object):
 
     @staticmethod
     def test_duplicate_index():
-        a = numpy.concatenate((
+        a = numpy.r_[
             numpy.repeat(["large"], 10),
             numpy.repeat(["small"], 6),
             numpy.repeat(["tiny"], 13),
-            numpy.repeat(["medium"], 3)))
+            numpy.repeat(["medium"], 3)]
         rnd = numpy.random.RandomState(0)
         c = rnd.randn(len(a))
 
@@ -251,10 +251,10 @@ class TestEncodeCategorical(object):
 
     @staticmethod
     def test_with_missing():
-        b = numpy.concatenate((
+        b = numpy.r_[
             numpy.repeat(["yes"], 5),
             numpy.repeat([None], 10),
-            numpy.repeat(["no"], 16)))
+            numpy.repeat(["no"], 16)]
 
         rnd = numpy.random.RandomState(0)
         c = rnd.randn(len(b))
@@ -264,10 +264,10 @@ class TestEncodeCategorical(object):
 
         actual_df = column.encode_categorical(df)
 
-        eb = numpy.concatenate((
+        eb = numpy.r_[
             numpy.repeat([1.], 5),
             numpy.repeat([numpy.nan], 10),
-            numpy.repeat([0.], 16)))
+            numpy.repeat([0.], 16)]
 
         d = OrderedDict()
         d['a_binary=yes'] = eb
@@ -280,10 +280,10 @@ class TestEncodeCategorical(object):
 
     @staticmethod
     def test_drop_all_missing():
-        b = numpy.concatenate((
+        b = numpy.r_[
             numpy.repeat(["yes"], 5),
             numpy.repeat([None], 10),
-            numpy.repeat(["no"], 16)))
+            numpy.repeat(["no"], 16)]
 
         all_missing = numpy.repeat([None], len(b))
 
@@ -292,10 +292,10 @@ class TestEncodeCategorical(object):
 
         actual_df = column.encode_categorical(df)
 
-        eb = numpy.concatenate((
+        eb = numpy.r_[
             numpy.repeat([1.], 5),
             numpy.repeat([numpy.nan], 10),
-            numpy.repeat([0.], 16)))
+            numpy.repeat([0.], 16)]
 
         expected_df = pandas.DataFrame({"a_binary=yes": eb})
 
@@ -305,10 +305,10 @@ class TestEncodeCategorical(object):
 
     @staticmethod
     def test_retain_all_missing():
-        b = numpy.concatenate((
+        b = numpy.r_[
             numpy.repeat(["yes"], 5),
             numpy.repeat([None], 10),
-            numpy.repeat(["no"], 16)))
+            numpy.repeat(["no"], 16)]
 
         all_missing = numpy.repeat([None], len(b))
 
@@ -317,13 +317,27 @@ class TestEncodeCategorical(object):
 
         actual_df = column.encode_categorical(df, allow_drop=False)
 
-        eb = numpy.concatenate((
+        eb = numpy.r_[
             numpy.repeat([1.], 5),
             numpy.repeat([numpy.nan], 10),
-            numpy.repeat([0.], 16)))
+            numpy.repeat([0.], 16)]
 
         expected_df = pandas.DataFrame({"a_binary=yes": eb,
                                         "bogus": all_missing.copy()})
+
+        assert actual_df.shape == expected_df.shape
+        tm.assert_frame_equal(actual_df.isnull(), expected_df.isnull())
+        tm.assert_frame_equal(actual_df.dropna(), expected_df.dropna(), check_exact=True)
+
+    @staticmethod
+    def test_retain_only_one_level():
+        b = numpy.r_[numpy.repeat(["yes"], 10)]
+
+        df = pandas.DataFrame({"categorical_col_with_only_one_level": b})
+
+        expected_df = df.copy(deep=True)
+
+        actual_df = column.encode_categorical(df, allow_drop=False)
 
         assert actual_df.shape == expected_df.shape
         tm.assert_frame_equal(actual_df.isnull(), expected_df.isnull())
@@ -355,14 +369,14 @@ def test_bool_series_to_numeric():
 
 
 def test_data_frame_to_numeric():
-    a = numpy.concatenate((
+    a = numpy.r_[
         numpy.repeat(["large"], 10),
         numpy.repeat(["small"], 5),
         numpy.repeat(["tiny"], 13),
-        numpy.repeat(["medium"], 3)))
-    b = numpy.concatenate((
+        numpy.repeat(["medium"], 3)]
+    b = numpy.r_[
         numpy.repeat(["yes"], 8),
-        numpy.repeat(["no"], 23)))
+        numpy.repeat(["no"], 23)]
 
     rnd = numpy.random.RandomState(0)
     c = rnd.randn(len(a))
@@ -371,14 +385,14 @@ def test_data_frame_to_numeric():
                                  "a_binary": b,
                                  "a_number": c.copy()})
 
-    a_num = numpy.concatenate((
+    a_num = numpy.r_[
         numpy.repeat([0], 10),
         numpy.repeat([2], 5),
         numpy.repeat([3], 13),
-        numpy.repeat([1], 3))).astype(numpy.int64)
-    b_num = numpy.concatenate((
+        numpy.repeat([1], 3)].astype(numpy.int64)
+    b_num = numpy.r_[
         numpy.repeat([1], 8),
-        numpy.repeat([0], 23))).astype(numpy.int64)
+        numpy.repeat([0], 23)].astype(numpy.int64)
     expected = pandas.DataFrame({"a_category": a_num,
                                  "a_binary": b_num,
                                  "a_number": c.copy()})

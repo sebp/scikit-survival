@@ -26,4 +26,4 @@ jobs:
         if: ${{ failure() }}
     strategy:
       matrix:
-        tox_env: [flake8, docs]
+        tox_env: [flake8, isort, docs]

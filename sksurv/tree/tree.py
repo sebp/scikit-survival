@@ -1,13 +1,14 @@
 from math import ceil
 import numbers
 import warnings
+
 import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.tree import _tree
+from sklearn.tree._classes import DENSE_SPLITTERS
 from sklearn.tree._splitter import Splitter
 from sklearn.tree._tree import BestFirstTreeBuilder, DepthFirstTreeBuilder, Tree
-from sklearn.tree._classes import DENSE_SPLITTERS
-from sklearn.utils.validation import check_array, check_is_fitted, check_random_state
+from sklearn.utils.validation import check_is_fitted, check_random_state
 
 from ..base import SurvivalAnalysisMixin
 from ..functions import StepFunction
@@ -105,9 +106,6 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         than or equal to this value. This is passed as the `min_impurity_decrease`
         parameter in sklearn's tree builder.
 
-    presort : deprecated, optional, default: 'deprecated'
-        This parameter is deprecated and will be removed in a future version.
-
     Attributes
     ----------
     event_times_ : array of shape = (n_event_times,)
@@ -149,8 +147,8 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
                  max_features=None,
                  random_state=None,
                  max_leaf_nodes=None,
-                 min_logrank_split=0.,
-                 presort='deprecated'):
+                 min_logrank_split=0.):
+
         self.splitter = splitter
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
@@ -160,10 +158,9 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         self.random_state = random_state
         self.max_leaf_nodes = max_leaf_nodes
         self.min_logrank_split = min_logrank_split
-        self.presort = presort
 
     def fit(self, X, y, sample_weight=None, check_input=True,
-            X_idx_sorted=None):
+            X_idx_sorted="deprecated"):
         """Build a survival tree from the training set (X, y).
 
         Parameters
@@ -180,11 +177,8 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             Allow to bypass several input checking.
             Don't use this parameter unless you know what you do.
 
-        X_idx_sorted : array-like, shape = (n_samples, n_features), optional
-            The indexes of the sorted training input samples. If many tree
-            are grown on the same dataset, this allows the ordering to be
-            cached between trees. If None, the data will be sorted here.
-            Don't use this parameter unless you know what to do.
+        X_idx_sorted : deprecated, default="deprecated"
+            This parameter is deprecated and has no effect
 
         Returns
         -------
@@ -204,7 +198,17 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             y_numeric, self.event_times_ = y
 
         n_samples, self.n_features_ = X.shape
+        self.n_features_in_ = self.n_features_
         params = self._check_params(n_samples)
+
+        if not isinstance(X_idx_sorted, str) or X_idx_sorted != "deprecated":
+            warnings.warn(
+                "The parameter 'X_idx_sorted' is deprecated and has no "
+                "effect. It will be removed in sklearn 1.1 (renaming of 0.26). "
+                "You can suppress this warning by not passing any value to the "
+                "'X_idx_sorted' parameter.",
+                FutureWarning
+            )
 
         self.n_outputs_ = self.event_times_.shape[0]
         # one "class" for CHF, one for survival function
@@ -243,7 +247,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
                                            params["min_logrank_split"],  # min_impurity_decrease
                                            params["min_impurity_split"])
 
-        builder.build(self.tree_, X, y_numeric, sample_weight, X_idx_sorted)
+        builder.build(self.tree_, X, y_numeric, sample_weight)
 
         return self
 
@@ -271,12 +275,6 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         if min_logrank_split < 0:
             raise ValueError("min_logrank_split must be non-negative")
 
-        if self.presort != 'deprecated':
-            warnings.warn("The parameter 'presort' is deprecated and has no "
-                          "effect. It will be removed in v0.24. You can "
-                          "suppress this warning by not passing any value "
-                          "to the 'presort' parameter.", DeprecationWarning)
-
         return {
             "max_depth": max_depth,
             "max_leaf_nodes": max_leaf_nodes,
@@ -300,7 +298,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
     def _check_min_samples_leaf(self, n_samples):
         if isinstance(self.min_samples_leaf, (numbers.Integral, np.integer)):
-            if not 1 <= self.min_samples_leaf:
+            if self.min_samples_leaf < 1:
                 raise ValueError("min_samples_leaf must be at least 1 "
                                  "or in (0, 0.5], got %s"
                                  % self.min_samples_leaf)
@@ -316,7 +314,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
     def _check_min_samples_split(self, n_samples):
         if isinstance(self.min_samples_split, (numbers.Integral, np.integer)):
-            if not 2 <= self.min_samples_split:
+            if self.min_samples_split < 2:
                 raise ValueError("min_samples_split must be an integer "
                                  "greater than 1 or a float in (0.0, 1.0]; "
                                  "got the integer %s"
@@ -353,7 +351,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             else:
                 max_features = 0
 
-        if not (0 < max_features <= self.n_features_):
+        if not 0 < max_features <= self.n_features_:
             raise ValueError("max_features must be in (0, n_features]")
 
         self.max_features_ = max_features
@@ -361,14 +359,10 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
     def _validate_X_predict(self, X, check_input):
         """Validate X whenever one tries to predict"""
         if check_input:
-            X = check_array(X, dtype=DTYPE)
-
-        n_features = X.shape[1]
-        if self.n_features_ != n_features:
-            raise ValueError("Number of features of the model must "
-                             "match the input. Model n_features is %s and "
-                             "input n_features is %s."
-                             % (self.n_features_, n_features))
+            X = self._validate_data(X, dtype=DTYPE, reset=False)
+        else:
+            # The number of features is checked regardless of `check_input`
+            self._check_n_features(X, reset=False)
 
         return X
 
@@ -403,7 +397,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         chf = self.predict_cumulative_hazard_function(X, check_input, return_array=True)
         return chf.sum(1)
 
-    def predict_cumulative_hazard_function(self, X, check_input=True, return_array="warn"):
+    def predict_cumulative_hazard_function(self, X, check_input=True, return_array=False):
         """Predict cumulative hazard function.
 
         The cumulative hazard function (CHF) for an individual
@@ -450,7 +444,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         Estimate the cumulative hazard function for the first 5 samples.
 
-        >>> chf_funcs = estimator.predict_cumulative_hazard_function(X.iloc[:5], return_array=False)
+        >>> chf_funcs = estimator.predict_cumulative_hazard_function(X.iloc[:5])
 
         Plot the estimated cumulative hazard functions.
 
@@ -460,12 +454,6 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         >>> plt.ylim(0, 1)
         >>> plt.show()
         """
-        if return_array == "warn":
-            warnings.warn(
-                "predict_cumulative_hazard_function will return an array of StepFunction instances in 0.14. "
-                "Use return_array=True to keep the old behavior.",
-                FutureWarning)
-
         check_is_fitted(self, 'tree_')
         X = self._validate_X_predict(X, check_input)
 
@@ -475,7 +463,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             return arr
         return _array_to_step_function(self.event_times_, arr)
 
-    def predict_survival_function(self, X, check_input=True, return_array="warn"):
+    def predict_survival_function(self, X, check_input=True, return_array=False):
         """Predict survival function.
 
         The survival function for an individual
@@ -523,7 +511,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         Estimate the survival function for the first 5 samples.
 
-        >>> surv_funcs = estimator.predict_survival_function(X.iloc[:5], return_array=False)
+        >>> surv_funcs = estimator.predict_survival_function(X.iloc[:5])
 
         Plot the estimated survival functions.
 
@@ -533,12 +521,6 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         >>> plt.ylim(0, 1)
         >>> plt.show()
         """
-        if return_array == "warn":
-            warnings.warn(
-                "predict_survival_function will return an array of StepFunction instances in 0.14. "
-                "Use return_array=True to keep the old behavior.",
-                FutureWarning)
-
         check_is_fitted(self, 'tree_')
         X = self._validate_X_predict(X, check_input)
 

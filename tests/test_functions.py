@@ -1,11 +1,11 @@
-from numpy.testing import assert_array_equal
 import numpy
+from numpy.testing import assert_array_equal
 import pytest
 
 from sksurv.functions import StepFunction
 
 
-@pytest.fixture
+@pytest.fixture()
 def a_step_function():
     x = numpy.array([0, 1, 1.2, 1.75, 2, 2.1, 3, 3.94, 5.4, 9])
     y = numpy.array([11, 9, 9.12, 7.5, 7.25, 5.14, 3, 2.94, 2.4, 1.9])
@@ -13,7 +13,7 @@ def a_step_function():
     return f
 
 
-class TestStepFunction(object):
+class TestStepFunction:
 
     @staticmethod
     def test_exact(a_step_function):

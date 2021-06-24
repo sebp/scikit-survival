@@ -1,21 +1,19 @@
-from itertools import product
-
 import numpy
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 import pytest
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.preprocessing import scale
 
+from sksurv.column import encode_categorical
 from sksurv.datasets import load_gbsg2
 from sksurv.exceptions import NoComparablePairException
-from sksurv.column import encode_categorical
 from sksurv.svm._minlip import create_difference_matrix
-from sksurv.svm.minlip import MinlipSurvivalAnalysis, HingeLossSurvivalSVM
+from sksurv.svm.minlip import HingeLossSurvivalSVM, MinlipSurvivalAnalysis
 from sksurv.testing import assert_cindex_almost_equal
 from sksurv.util import Surv
 
 
-@pytest.fixture
+@pytest.fixture()
 def toy_data():
     x = numpy.array([[1., 1.],
                      [10.2, 15.],
@@ -33,7 +31,7 @@ def toy_data():
     return x, y
 
 
-@pytest.fixture
+@pytest.fixture()
 def toy_test_data():
     x = numpy.array([[1., 1.],
                      [40, 30],
@@ -43,14 +41,14 @@ def toy_test_data():
     return x
 
 
-@pytest.fixture
+@pytest.fixture()
 def gbsg2():
     x, y = load_gbsg2()
     x = encode_categorical(x)
     return x.values, y
 
 
-class TestDifferenceMatrix(object):
+class TestDifferenceMatrix:
 
     @staticmethod
     def test_toy_create_difference_matrix_direct_neighbor_without_censoring(toy_data):
@@ -231,7 +229,7 @@ class TestDifferenceMatrix(object):
         assert_array_equal(expected, mat.toarray())
 
 
-class TestToyOsqpExample(object):
+class TestToyOsqpExample:
 
     @property
     def minlip_model(self):
@@ -341,7 +339,7 @@ class TestToyOsqpExample(object):
         assert_array_almost_equal(expected, p, decimal=5)
 
 
-class TestToyEcosExample(object):
+class TestToyEcosExample:
 
     @property
     def minlip_model(self):
@@ -454,7 +452,7 @@ class TestToyEcosExample(object):
         assert_array_almost_equal(expected, p, decimal=5)
 
 
-class TestMinlipOsqp(object):
+class TestMinlipOsqp:
 
     @staticmethod
     def test_breast_cancer_osqp(gbsg2):
@@ -518,7 +516,7 @@ class TestMinlipOsqp(object):
             m.fit(x, y)
 
 
-class TestMinlipCvxpy(object):
+class TestMinlipCvxpy:
 
     @staticmethod
     def test_breast_cancer_ecos(gbsg2):
@@ -597,10 +595,9 @@ class TestMinlipCvxpy(object):
             m.fit(x, y)
 
 
-@pytest.mark.parametrize(["model_cls", "solver", "pairs"],
-                         list(product((MinlipSurvivalAnalysis, HingeLossSurvivalSVM),
-                                      ("ecos", "osqp"),
-                                      ("all", "nearest", "next"))))
+@pytest.mark.parametrize("model_cls", [MinlipSurvivalAnalysis, HingeLossSurvivalSVM])
+@pytest.mark.parametrize("solver", ["ecos", "osqp"])
+@pytest.mark.parametrize("pairs", ["all", "nearest", "next"])
 def test_fit_uncomparable(whas500_uncomparable, model_cls, solver, pairs):
     ssvm = model_cls(solver=solver, pairs=pairs)
     with pytest.raises(NoComparablePairException):

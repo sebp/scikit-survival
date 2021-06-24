@@ -1,11 +1,11 @@
 from abc import ABCMeta, abstractmethod
+import warnings
+
 import numpy
-from scipy import sparse
-from scipy import linalg
+from scipy import linalg, sparse
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import pairwise_kernels
-import warnings
 
 from ..base import SurvivalAnalysisMixin
 from ..exceptions import NoComparablePairException
@@ -136,7 +136,7 @@ class EcosSolver(QPSolver):
         x = results["x"][1:]
         return x[numpy.newaxis]
 
-    def _check_success(self, results):
+    def _check_success(self, results):  # pylint: disable=no-self-use
         exit_flag = results["info"]["exitFlag"]
         if exit_flag in (EcosSolver.EXIT_OPTIMAL,
                          EcosSolver.EXIT_OPTIMAL + EcosSolver.EXIT_INACC_OFFSET):
@@ -274,10 +274,9 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         self.timeit = timeit
         self.max_iter = max_iter
 
-    @property
-    def _pairwise(self):
+    def _more_tags(self):
         # tell sklearn.utils.metaestimators._safe_split function that we expect kernel matrix
-        return self.kernel == "precomputed"
+        return {"pairwise": self.kernel == "precomputed"}
 
     def _get_kernel(self, X, Y=None):
         if callable(self.kernel):

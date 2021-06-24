@@ -13,15 +13,15 @@
 from abc import ABCMeta, abstractmethod
 import warnings
 
-import numpy
 import numexpr
+import numpy
 from scipy.optimize import minimize
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import pairwise_kernels
-from sklearn.utils import check_X_y, check_array, check_consistent_length, check_random_state
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils import check_array, check_consistent_length, check_random_state, check_X_y
 from sklearn.utils.extmath import safe_sparse_dot, squared_norm
+from sklearn.utils.validation import check_is_fitted
 
 from ..base import SurvivalAnalysisMixin
 from ..bintrees import AVLTree, RBTree
@@ -30,7 +30,7 @@ from ..util import check_arrays_survival
 from ._prsvm import survival_constraints_simple, survival_constraints_with_support_vectors
 
 
-class Counter(object, metaclass=ABCMeta):
+class Counter(metaclass=ABCMeta):
     @abstractmethod
     def __init__(self, x, y, status, time=None):
         self.x, self.y = check_X_y(x, y)
@@ -177,7 +177,7 @@ class SurvivalCounter(Counter):
         return l_plus, xv_plus, l_minus, xv_minus
 
 
-class RankSVMOptimizer(object, metaclass=ABCMeta):
+class RankSVMOptimizer(metaclass=ABCMeta):
     """Abstract base class for all optimizers"""
     def __init__(self, alpha, rank_ratio, timeit=False):
         self.alpha = alpha
@@ -431,7 +431,7 @@ class LargeScaleOptimizer(RankSVMOptimizer):
         l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(wf)  # pylint: disable=unused-variable
         x = self._counter.x
 
-        xw = self._xw  # noqa: F841
+        xw = self._xw  # noqa: F841; # pylint: disable=unused-variable
         z = numexpr.evaluate('(l_plus + l_minus) * xw - xv_plus - xv_minus - l_minus + l_plus')
 
         grad = wf + self._rank_penalty * numpy.dot(x.T, z)
@@ -444,7 +444,7 @@ class LargeScaleOptimizer(RankSVMOptimizer):
             # intercept
             if self._fit_intercept:
                 grad_intercept = self._regr_penalty * (xcs.sum() + xc.shape[0] * bias - self.y_compressed.sum())
-                grad = numpy.concatenate(([grad_intercept], grad))
+                grad = numpy.r_[grad_intercept, grad]
 
         return grad
 
@@ -468,7 +468,7 @@ class LargeScaleOptimizer(RankSVMOptimizer):
                 hessp += self._regr_penalty * xsum * s_bias
                 hessp_intercept = (self._regr_penalty * xc.shape[0] * s_bias
                                    + self._regr_penalty * numpy.dot(xsum, s_feat))
-                hessp = numpy.concatenate(([hessp_intercept], hessp))
+                hessp = numpy.r_[hessp_intercept, hessp]
 
         return hessp
 
@@ -578,11 +578,11 @@ class NonlinearLargeScaleOptimizer(RankSVMOptimizer):
             if self._fit_intercept:
                 grad_intercept = self._regr_penalty * (K_comp_beta.sum()
                                                        + K_comp.shape[0] * bias - self.y_compressed.sum())
-                gradient = numpy.concatenate(([grad_intercept], gradient))
+                gradient = numpy.r_[grad_intercept, gradient]
 
         return gradient
 
-    def _hessian_func(self, beta, s):
+    def _hessian_func(self, _beta, s):
         s_bias, s_feat = self._split_coefficents(s)
 
         K = self._counter.x
@@ -602,7 +602,7 @@ class NonlinearLargeScaleOptimizer(RankSVMOptimizer):
                 hessian += self._regr_penalty * xsum * s_bias
                 hessian_intercept = (self._regr_penalty * K_comp.shape[0] * s_bias
                                      + self._regr_penalty * numpy.dot(xsum, s_feat))
-                hessian = numpy.concatenate(([hessian_intercept], hessian))
+                hessian = numpy.r_[hessian_intercept, hessian]
 
         return hessian
 
@@ -944,7 +944,8 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     Attributes
     ----------
     coef_ : ndarray, shape = (n_samples,)
-        Coefficients of the features in the decision function.
+        Weights assigned to the samples in training data to represent
+        the decision function in kernel space.
 
     fit_X_ : ndarray
         Training data.
@@ -977,10 +978,9 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         self.coef0 = coef0
         self.kernel_params = kernel_params
 
-    @property
-    def _pairwise(self):
+    def _more_tags(self):
         # tell sklearn.utils.metaestimators._safe_split function that we expect kernel matrix
-        return self.kernel == "precomputed"
+        return {"pairwise": self.kernel == "precomputed"}
 
     def _get_kernel(self, X, Y=None):
         if callable(self.kernel):

@@ -5,17 +5,17 @@ from numpy.testing import assert_array_almost_equal
 import pandas
 import pytest
 from scipy.optimize import check_grad
-from sksurv.datasets import load_breast_cancer
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
 from sksurv.column import standardize
-from sksurv.linear_model.coxph import CoxPHSurvivalAnalysis, CoxPHOptimizer
+from sksurv.datasets import load_breast_cancer
+from sksurv.linear_model.coxph import CoxPHOptimizer, CoxPHSurvivalAnalysis
 from sksurv.preprocessing import OneHotEncoder
 
 
-@pytest.fixture
+@pytest.fixture()
 def coef_rossi_coxph_breslow():
     return pandas.Series({"fin": -0.37902189,
                           "age": -0.05724593,
@@ -26,7 +26,7 @@ def coef_rossi_coxph_breslow():
                           "prio": 0.09111154})
 
 
-@pytest.fixture
+@pytest.fixture()
 def coef_rossi_coxph_efron():
     return pandas.Series({"fin": -0.379422166485887,
                           "age": -0.0574377426840626,
@@ -52,7 +52,7 @@ def assert_gradient_correctness(cph):
     assert round(err, 4) == 0
 
 
-class TestCoxPH(object):
+class TestCoxPH:
 
     @staticmethod
     def test_likelihood_breslow(rossi, coef_rossi_coxph_breslow):

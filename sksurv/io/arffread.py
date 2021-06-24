@@ -11,8 +11,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numpy
-from scipy.io.arff import loadarff as scipy_loadarff
 import pandas
+from scipy.io.arff import loadarff as scipy_loadarff
 
 __all__ = ["loadarff"]
 

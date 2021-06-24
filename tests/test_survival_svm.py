@@ -1,5 +1,5 @@
 from functools import partial
-from os.path import join, dirname
+from os.path import dirname, join
 import warnings
 
 import numpy
@@ -12,17 +12,21 @@ from sklearn.preprocessing import normalize
 
 from sksurv.bintrees import AVLTree, RBTree
 from sksurv.column import encode_categorical
-from sksurv.datasets import load_whas500, get_x_y
+from sksurv.datasets import get_x_y, load_whas500
 from sksurv.exceptions import NoComparablePairException
 from sksurv.io import loadarff
 from sksurv.kernels import ClinicalKernelTransform
 from sksurv.metrics import concordance_index_censored
 from sksurv.svm._prsvm import survival_constraints_simple
 from sksurv.svm.naive_survival_svm import NaiveSurvivalSVM
-from sksurv.svm.survival_svm import FastSurvivalSVM, FastKernelSurvivalSVM, SurvivalCounter, \
-    OrderStatisticTreeSurvivalCounter
-from sksurv.util import Surv
+from sksurv.svm.survival_svm import (
+    FastKernelSurvivalSVM,
+    FastSurvivalSVM,
+    OrderStatisticTreeSurvivalCounter,
+    SurvivalCounter,
+)
 from sksurv.testing import assert_cindex_almost_equal
+from sksurv.util import Surv
 
 WHAS500_NOTIES_FILE = join(dirname(__file__), 'data', 'whas500-noties.arff')
 
@@ -47,7 +51,7 @@ def optimizer_regression(request):
     return request.param
 
 
-class TestFastSurvivalSVM(object):
+class TestFastSurvivalSVM:
 
     @staticmethod
     def test_alpha_negative(fake_data):
@@ -179,7 +183,7 @@ class TestFastSurvivalSVM(object):
             ssvm.fit(x, y)
 
     @staticmethod
-    @pytest.mark.parametrize("optimizer", ("simple", "avltree", "direct-count", "PRSVM", "rbtree"))
+    @pytest.mark.parametrize("optimizer", ["simple", "avltree", "direct-count", "PRSVM", "rbtree"])
     def test_fit_uncomparable(whas500_uncomparable, optimizer):
         ssvm = FastSurvivalSVM(optimizer=optimizer)
         with pytest.raises(NoComparablePairException):
@@ -391,7 +395,7 @@ class TestFastSurvivalSVM(object):
         assert 'timings' in ssvm.optimizer_result_
 
 
-class TestKernelSurvivalSVM(object):
+class TestKernelSurvivalSVM:
 
     @staticmethod
     def test_default_optimizer(make_whas500):
@@ -417,7 +421,7 @@ class TestKernelSurvivalSVM(object):
         ssvm = FastKernelSurvivalSVM(optimizer="rbtree", kernel='linear', random_state=0)
         ssvm.fit(whas500.x, whas500.y)
 
-        assert not ssvm._pairwise
+        assert not ssvm._more_tags()["pairwise"]
         assert whas500.x.shape[0] == ssvm.coef_.shape[0]
 
         i = numpy.arange(250)
@@ -432,7 +436,7 @@ class TestKernelSurvivalSVM(object):
         x = numpy.dot(whas500.x, whas500.x.T)
         ssvm.fit(x, whas500.y)
 
-        assert ssvm._pairwise
+        assert ssvm._get_tags()["pairwise"]
         assert whas500.x.shape[0] == ssvm.coef_.shape[0]
 
         i = numpy.arange(250)
@@ -448,7 +452,7 @@ class TestKernelSurvivalSVM(object):
 
         ssvm.fit(whas500.x, whas500.y)
 
-        assert not ssvm._pairwise
+        assert not ssvm._get_tags()["pairwise"]
         assert round(abs(ssvm.intercept_ - 6.416017539824949), 5) == 0
 
         i = numpy.arange(250)
@@ -468,7 +472,7 @@ class TestKernelSurvivalSVM(object):
         x = numpy.dot(whas500.x, whas500.x.T)
         ssvm.fit(x, whas500.y)
 
-        assert ssvm._pairwise
+        assert ssvm._get_tags()["pairwise"]
         assert round(abs(ssvm.intercept_ - 6.416017539824949), 5) == 0
 
         i = numpy.arange(250)
@@ -499,7 +503,7 @@ class TestKernelSurvivalSVM(object):
                                      tol=2e-6, max_iter=75, random_state=0)
         ssvm.fit(whas500.x, whas500.y)
 
-        assert not ssvm._pairwise
+        assert not ssvm._get_tags()["pairwise"]
         assert whas500.x.shape[0] == ssvm.coef_.shape[0]
 
         c = ssvm.score(whas500.x, whas500.y)
@@ -514,7 +518,7 @@ class TestKernelSurvivalSVM(object):
                                      tol=1e-6, max_iter=50, fit_intercept=True, random_state=0)
         ssvm.fit(whas500.x, whas500.y)
 
-        assert not ssvm._pairwise
+        assert not ssvm._get_tags()["pairwise"]
         assert round(abs(ssvm.intercept_ - 4.9267218894089533), 7) == 0
 
         pred = ssvm.predict(whas500.x)
@@ -530,7 +534,7 @@ class TestKernelSurvivalSVM(object):
                                      max_iter=50, fit_intercept=True, random_state=0)
         ssvm.fit(whas500.x, whas500.y)
 
-        assert not ssvm._pairwise
+        assert not ssvm._get_tags()["pairwise"]
         assert abs(5.0289145697617164 - ssvm.intercept_) <= 0.04
 
         pred = ssvm.predict(whas500.x)
@@ -550,7 +554,7 @@ class TestKernelSurvivalSVM(object):
                                      tol=7e-7, max_iter=100, random_state=0)
         ssvm.fit(whas500.x, whas500.y)
 
-        assert not ssvm._pairwise
+        assert not ssvm._get_tags()["pairwise"]
         assert whas500.x.shape[0] == ssvm.coef_.shape[0]
 
         c = ssvm.score(whas500.x, whas500.y)
@@ -646,7 +650,7 @@ class TestKernelSurvivalSVM(object):
             ssvm.predict(x_new)
 
     @staticmethod
-    @pytest.mark.parametrize("optimizer", ("avltree", "rbtree"))
+    @pytest.mark.parametrize("optimizer", ["avltree", "rbtree"])
     def test_fit_uncomparable(whas500_uncomparable, optimizer):
         ssvm = FastKernelSurvivalSVM(optimizer=optimizer)
         with pytest.raises(NoComparablePairException):
@@ -669,18 +673,31 @@ def make_survival_counter(request):
     return _make_survival_counter
 
 
-class TestSurvivalCounter(object):
+@pytest.fixture()
+def counter_data_01():
+    w = numpy.array([-0.9, -0.7, -0.1, 0.15, 0.2, 1.6])
+    y = numpy.array([2,       0,    4,    3,   5,   1])
+    event = numpy.array([True, True, False, True, False, True])
+    x = numpy.eye(6)
+    v = numpy.arange(6)
+    return x, y, event, w, v
 
-    def setup_01(self):
-        w = numpy.array([-0.9, -0.7, -0.1, 0.15, 0.2, 1.6])
-        y = numpy.array([2,       0,    4,    3,   5,   1])
-        event = numpy.array([True, True, False, True, False, True])
-        x = numpy.eye(6)
-        v = numpy.arange(6)
-        return x, y, event, w, v
 
-    def test_calculate_01(self, make_survival_counter):
-        x, y, event, w, v = self.setup_01()
+@pytest.fixture()
+def counter_data_02():
+    w = numpy.array([-0.9, -0.7, -0.1, 0.15, 0.2, 0.3, 0.8, 1.6, 1.85, 2.3])
+    y = numpy.array([3,       0,    4,    6,   8,   5,   1,   7,    2,   9])
+    event = numpy.array([0,   0,    0,    1,   0,   1,   1,   0,    1,   0], dtype=bool)
+    x = numpy.eye(10)
+    v = numpy.arange(10)
+    return x, y, event, w, v
+
+
+class TestSurvivalCounter:
+
+    @staticmethod
+    def test_calculate_01(make_survival_counter, counter_data_01):
+        x, y, event, w, v = counter_data_01
         counter = make_survival_counter(x, y, event, n_relevance_levels=6)
         counter.update_sort_order(w)
 
@@ -691,8 +708,9 @@ class TestSurvivalCounter(object):
         assert_array_equal(numpy.array([2, 0, 4, 2, 3, 0]), l_minus)
         assert_array_equal(numpy.array([6, 0, 9, 6, 9, 0]), xv_minus)
 
-    def test_calculate_01_reverse(self, make_survival_counter):
-        x, y, event, w, v = self.setup_01()
+    @staticmethod
+    def test_calculate_01_reverse(make_survival_counter, counter_data_01):
+        x, y, event, w, v = counter_data_01
         counter = make_survival_counter(x, y[::-1], event[::-1], n_relevance_levels=6)
         counter.update_sort_order(w[::-1])
 
@@ -703,16 +721,9 @@ class TestSurvivalCounter(object):
         assert_array_equal(numpy.array([0, 3, 2, 4, 0, 2]), l_minus)
         assert_array_equal(numpy.array([0, 9, 6, 9, 0, 6]), xv_minus)
 
-    def setup_02(self):
-        w = numpy.array([-0.9, -0.7, -0.1, 0.15, 0.2, 0.3, 0.8, 1.6, 1.85, 2.3])
-        y = numpy.array([3,       0,    4,    6,   8,   5,   1,   7,    2,   9])
-        event = numpy.array([0,   0,    0,    1,   0,   1,   1,   0,    1,   0], dtype=bool)
-        x = numpy.eye(10)
-        v = numpy.arange(10)
-        return x, y, event, w, v
-
-    def test_calculate_02(self, make_survival_counter):
-        x, y, event, w, v = self.setup_02()
+    @staticmethod
+    def test_calculate_02(make_survival_counter, counter_data_02):
+        x, y, event, w, v = counter_data_02
         counter = make_survival_counter(x, y, event, n_relevance_levels=10)
         counter.update_sort_order(w)
 
@@ -723,8 +734,9 @@ class TestSurvivalCounter(object):
         assert_array_equal(numpy.array([2, 0, 2, 3, 4, 2, 0, 2, 0, 1]), l_minus)
         assert_array_equal(numpy.array([14, 0, 14, 19, 22, 14, 0, 14, 0, 8]), xv_minus)
 
-    def test_calculate_02_reverse(self, make_survival_counter):
-        x, y, event, w, v = self.setup_02()
+    @staticmethod
+    def test_calculate_02_reverse(make_survival_counter, counter_data_02):
+        x, y, event, w, v = counter_data_02
         counter = make_survival_counter(x, y[::-1], event[::-1], n_relevance_levels=10)
         counter.update_sort_order(w[::-1])
 
@@ -736,7 +748,7 @@ class TestSurvivalCounter(object):
         assert_array_equal(numpy.array([8, 0, 14, 0, 14, 22, 19, 14, 0, 14]), xv_minus)
 
 
-@pytest.fixture
+@pytest.fixture()
 def whas500_without_ties():
     # naive survival SVM does resolve ties in survival time differently,
     # therefore use data without ties
@@ -746,7 +758,7 @@ def whas500_without_ties():
     return x, y
 
 
-@pytest.fixture
+@pytest.fixture()
 def whas500_with_ties():
     # naive survival SVM does resolve ties in survival time differently,
     # therefore use data without ties
@@ -755,7 +767,7 @@ def whas500_with_ties():
     return x, y
 
 
-class TestNaiveSurvivalSVM(object):
+class TestNaiveSurvivalSVM:
 
     @staticmethod
     def test_survival_squared_hinge_loss(whas500_without_ties):

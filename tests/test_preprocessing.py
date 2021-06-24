@@ -1,4 +1,5 @@
 from collections import OrderedDict
+
 import numpy as np
 import pandas as pd
 import pandas.util.testing as tm
@@ -22,7 +23,7 @@ def _encoded_data(data):
     return expected_data
 
 
-@pytest.fixture
+@pytest.fixture()
 def create_data():
     def _create_data(n_samples=117):
         rnd = np.random.RandomState(51365192)
@@ -49,7 +50,7 @@ def create_data():
     return _create_data
 
 
-class TestOneHotEncoder(object):
+class TestOneHotEncoder:
     @staticmethod
     def test_fit(create_data):
         data, expected_data = create_data()

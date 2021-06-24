@@ -1,6 +1,6 @@
-from .survival_svm import FastKernelSurvivalSVM, FastSurvivalSVM
+from .minlip import HingeLossSurvivalSVM, MinlipSurvivalAnalysis
 from .naive_survival_svm import NaiveSurvivalSVM
-from .minlip import MinlipSurvivalAnalysis, HingeLossSurvivalSVM
+from .survival_svm import FastKernelSurvivalSVM, FastSurvivalSVM
 
 __all__ = ['FastKernelSurvivalSVM',
            'FastSurvivalSVM',

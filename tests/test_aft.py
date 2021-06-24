@@ -5,7 +5,7 @@ from sksurv.linear_model import IPCRidge
 from sksurv.testing import assert_cindex_almost_equal
 
 
-class TestIPCRidge(object):
+class TestIPCRidge:
 
     @staticmethod
     def test_fit(make_whas500):

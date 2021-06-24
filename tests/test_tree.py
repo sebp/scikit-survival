@@ -1,14 +1,15 @@
 from queue import LifoQueue
+
 import numpy
-from numpy.testing import assert_array_equal, assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 import pandas
 import pytest
-from sklearn.tree._tree import TREE_UNDEFINED
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import OrdinalEncoder
+from sklearn.tree._tree import TREE_UNDEFINED
 
 from sksurv.compare import compare_survival
-from sksurv.datasets import load_veterans_lung_cancer, load_breast_cancer
+from sksurv.datasets import load_breast_cancer, load_veterans_lung_cancer
 from sksurv.nonparametric import kaplan_meier_estimator, nelson_aalen_estimator
 from sksurv.tree import SurvivalTree
 
@@ -251,7 +252,7 @@ def test_tree_split_all_censored(veterans):
     assert_array_equal(tree.tree_.n_node_samples, expected_size)
 
 
-@pytest.mark.slow
+@pytest.mark.slow()
 def test_toy_data(toy_data):
     X, y = toy_data
     tree = SurvivalTree(max_depth=4, max_features=1.0, min_samples_leaf=20)
@@ -340,7 +341,7 @@ def test_fit_int_time(breast_cancer):
     assert_array_almost_equal(tree_f.tree_.threshold, tree_i.tree_.threshold)
 
 
-@pytest.mark.parametrize("func", ("predict_survival_function", "predict_cumulative_hazard_function"))
+@pytest.mark.parametrize("func", ["predict_survival_function", "predict_cumulative_hazard_function"])
 def test_predict_step_function(breast_cancer, func):
     X, y = breast_cancer
 
@@ -364,20 +365,7 @@ def test_predict_step_function(breast_cancer, func):
         assert_array_almost_equal(fn.y, arr)
 
 
-@pytest.mark.parametrize("func", ("predict_survival_function", "predict_cumulative_hazard_function"))
-def test_predict_step_function_warning(toy_data, func):
-    X, y = toy_data
-    tree = SurvivalTree(max_depth=1)
-    tree.fit(X, y)
-
-    pred_fn = getattr(tree, func)
-
-    with pytest.warns(FutureWarning,
-                      match="{} will return an array of StepFunction instances in 0.14".format(func)):
-        pred_fn(X)
-
-
-@pytest.mark.parametrize("func", ("predict_survival_function", "predict_cumulative_hazard_function"))
+@pytest.mark.parametrize("func", ["predict_survival_function", "predict_cumulative_hazard_function"])
 def test_pipeline_predict(breast_cancer, func):
     X_num, y = breast_cancer
     X_num = X_num.loc[:, ["er", "grade"]].values
@@ -402,10 +390,9 @@ def test_predict_wrong_features(toy_data, n_features):
     tree = SurvivalTree(max_depth=1)
     tree.fit(X, y)
 
-    with pytest.raises(ValueError, match="Number of features of the model must "
-                                         "match the input. Model n_features is 4 and "
-                                         "input n_features is {}.".format(n_features)):
-        X_new = numpy.random.randn(12, n_features)
+    X_new = numpy.random.randn(12, n_features)
+    with pytest.raises(ValueError, match="X has {} features, but SurvivalTree is "
+                                         "expecting 4 features as input.".format(n_features)):
         tree.predict(X_new)
 
 
@@ -494,6 +481,23 @@ def test_max_leaf_nodes_too_small(fake_data, val):
         tree.fit(X, y)
 
 
+@pytest.mark.parametrize("val", [0, 1, None, "sort"])
+def test_X_idx_sorted(fake_data, val):
+    X, y = fake_data
+    tree = SurvivalTree()
+
+    if val == "sort":
+        X_idx_sorted = numpy.argsort(X, axis=0)
+    else:
+        X_idx_sorted = val
+
+    with pytest.warns(
+            FutureWarning,
+            match="The parameter 'X_idx_sorted' is deprecated and has no effect."
+    ):
+        tree.fit(X, y, X_idx_sorted=X_idx_sorted)
+
+
 @pytest.mark.parametrize("val", [-1, -0.1])
 def test_min_logrank_split_negative(fake_data, val):
     X, y = fake_data
@@ -501,13 +505,4 @@ def test_min_logrank_split_negative(fake_data, val):
 
     with pytest.raises(ValueError,
                        match="min_logrank_split must be non-negative"):
-        tree.fit(X, y)
-
-
-@pytest.mark.parametrize("val", [-1, "False", "True", "", numpy.nan])
-def test_presort(fake_data, val):
-    X, y = fake_data
-    tree = SurvivalTree(presort=val)
-
-    with pytest.deprecated_call(match="The parameter 'presort' is deprecated "):
         tree.fit(X, y)

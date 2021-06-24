@@ -107,7 +107,7 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
                          fit_intercept=False)
         self.alpha = alpha
 
-    def _get_survival_pairs(self, X, y, random_state):
+    def _get_survival_pairs(self, X, y, random_state):  # pylint: disable=no-self-use
         X, event, time = check_arrays_survival(X, y)
 
         idx = numpy.arange(X.shape[0], dtype=int)

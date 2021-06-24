@@ -10,7 +10,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from numpy.testing import assert_array_equal, assert_almost_equal
+from numpy.testing import assert_almost_equal, assert_array_equal
+
 from sksurv.metrics import concordance_index_censored
 
 

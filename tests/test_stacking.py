@@ -4,14 +4,14 @@ import pytest
 from sklearn.base import BaseEstimator
 from sklearn.datasets import load_iris
 from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score, roc_auc_score
 from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
 
 from sksurv.linear_model import CoxPHSurvivalAnalysis
-from sksurv.meta import Stacking, MeanEstimator
-from sksurv.testing import assert_cindex_almost_equal
+from sksurv.meta import MeanEstimator, Stacking
 from sksurv.svm import FastSurvivalSVM
+from sksurv.testing import assert_cindex_almost_equal
 
 
 class _NoFitEstimator(BaseEstimator):
@@ -39,7 +39,7 @@ class _PredictProbaDummy(BaseEstimator):
         pass
 
 
-class TestStackingClassifier(object):
+class TestStackingClassifier:
     @staticmethod
     @pytest.mark.parametrize('estimator', [_NoFitEstimator, _NoPredictDummy])
     def test_base_estimator(estimator):
@@ -163,7 +163,7 @@ class TestStackingClassifier(object):
         assert_array_almost_equal(numpy.array([1.0, 0.9986, 0.9986]), scores)
 
 
-class TestStackingSurvivalAnalysis(object):
+class TestStackingSurvivalAnalysis:
     @staticmethod
     def test_fit(make_whas500):
         whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
@@ -215,7 +215,7 @@ class TestStackingSurvivalAnalysis(object):
 
         with pytest.raises(AttributeError,
                            match="'_PredictDummy' object has no attribute 'predict_proba'"):
-            getattr(meta, "predict_proba")
+            meta.predict_proba  # pylint: disable=pointless-statement
 
     @staticmethod
     def test_score(make_whas500):

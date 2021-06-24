@@ -12,11 +12,11 @@ jobs:
     strategy:
       matrix:
         config:
-          - py36_pandas021_numpy114_sklearn022
-          - py37_pandas024_numpy116_sklearn022
-          - py38_pandas025_numpy118_sklearn022
-          - py38_pandas10_numpy118_sklearn023
-          - py38_pandas11_numpy119_sklearn023
+          - py37_pandas025_numpy117_sklearn024
+          - py38_pandas025_numpy118_sklearn024
+          - py38_pandas10_numpy118_sklearn024
+          - py38_pandas11_numpy119_sklearn024
+          - py39_pandas12_numpy119_sklearn024
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -76,4 +76,4 @@ jobs:
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           coverage-reports: tests/coverage.xml
-        if: env.NO_SLOW == 'false'
+        if: ${{ env.NO_SLOW == 'false' && github.event_name != 'pull_request' }}

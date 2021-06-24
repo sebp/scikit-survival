@@ -2,7 +2,9 @@ from importlib import import_module
 import inspect
 from os.path import dirname
 import pkgutil
+
 import pytest
+
 import sksurv
 from sksurv.base import SurvivalAnalysisMixin
 from sksurv.datasets import load_whas500
@@ -15,12 +17,14 @@ def is_survival_mixin(x):
 def all_survival_estimators():
     root = dirname(sksurv.__file__)
     all_classes = []
-    for importer, modname, ispkg in pkgutil.walk_packages(path=[root], prefix="sksurv."):
+    for _importer, modname, _ispkg in pkgutil.walk_packages(path=[root], prefix="sksurv."):
         # meta-estimators require base estimators
         if modname.startswith("sksurv.meta"):
             continue
         module = import_module(modname)
-        for name, cls in inspect.getmembers(module, is_survival_mixin):
+        for _name, cls in inspect.getmembers(module, is_survival_mixin):
+            if inspect.isabstract(cls):
+                continue
             all_classes.append(cls)
     return set(all_classes)
 

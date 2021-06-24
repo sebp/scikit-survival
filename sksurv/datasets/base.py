@@ -1,10 +1,10 @@
-from pkg_resources import resource_filename
 import warnings
 
 import numpy
 import pandas
+from pkg_resources import resource_filename
 
-from ..column import standardize, categorical_to_numeric
+from ..column import categorical_to_numeric, standardize
 from ..io import loadarff
 from ..util import safe_concat
 
