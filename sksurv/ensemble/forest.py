@@ -335,6 +335,11 @@ class RandomSurvivalForest(_BaseSurvivalForest):
         Best nodes are defined as relative reduction in impurity.
         If None then unlimited number of leaf nodes.
 
+    min_logrank_split: float, optional, default: 0.
+        A node will be split if this split induces an absolute logrank stat greater
+        than or equal to this value. This is passed as the `min_impurity_decrease`
+        parameter in sklearn's tree builder.
+
     bootstrap : boolean, optional, default: True
         Whether bootstrap samples are used when building trees. If False, the
         whole datset is used to build each tree.
@@ -422,6 +427,7 @@ class RandomSurvivalForest(_BaseSurvivalForest):
                  min_weight_fraction_leaf=0.,
                  max_features="auto",
                  max_leaf_nodes=None,
+                 min_logrank_split=0.,
                  bootstrap=True,
                  oob_score=False,
                  n_jobs=None,
@@ -438,6 +444,7 @@ class RandomSurvivalForest(_BaseSurvivalForest):
                               "min_weight_fraction_leaf",
                               "max_features",
                               "max_leaf_nodes",
+                              "min_logrank_split",
                               "random_state"),
             bootstrap=bootstrap,
             oob_score=oob_score,
@@ -453,6 +460,7 @@ class RandomSurvivalForest(_BaseSurvivalForest):
         self.min_weight_fraction_leaf = min_weight_fraction_leaf
         self.max_features = max_features
         self.max_leaf_nodes = max_leaf_nodes
+        self.min_logrank_split = min_logrank_split
 
     def predict_cumulative_hazard_function(self, X, return_array=False):
         """Predict cumulative hazard function.
@@ -648,6 +656,11 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
         Best nodes are defined as relative reduction in impurity.
         If None then unlimited number of leaf nodes.
 
+    min_logrank_split: float, optional, default: 0.
+        A node will be split if this split induces an absolute logrank stat greater
+        than or equal to this value. This is passed as the `min_impurity_decrease`
+        parameter in sklearn's tree builder.
+
     bootstrap : boolean, optional, default: True
         Whether bootstrap samples are used when building trees. If False, the
         whole datset is used to build each tree.
@@ -703,6 +716,7 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
                  min_weight_fraction_leaf=0.,
                  max_features="auto",
                  max_leaf_nodes=None,
+                 min_logrank_split=0.,
                  bootstrap=True,
                  oob_score=False,
                  n_jobs=None,
@@ -719,6 +733,7 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
                               "min_weight_fraction_leaf",
                               "max_features",
                               "max_leaf_nodes",
+                              "min_logrank_split",
                               "random_state"),
             bootstrap=bootstrap,
             oob_score=oob_score,
@@ -734,6 +749,7 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
         self.min_weight_fraction_leaf = min_weight_fraction_leaf
         self.max_features = max_features
         self.max_leaf_nodes = max_leaf_nodes
+        self.min_logrank_split = min_logrank_split
 
     def predict_cumulative_hazard_function(self, X, return_array=False):
         """Predict cumulative hazard function.
