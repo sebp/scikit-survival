@@ -272,7 +272,7 @@ def test_toy_data(toy_data, min_logrank):
     assert_array_equal(tree.tree_.feature, stats.loc[:, "feature"].values)
     assert_array_equal(tree.tree_.n_node_samples, stats.loc[:, "n_node_samples"].values)
     assert_array_almost_equal(tree.tree_.threshold, stats.loc[:, "threshold"].values, 5)
-    assert stats.loc[stats["feature"] > 0, "criterion"].min() > min_logrank
+    assert stats.loc[stats["feature"] > 0, "criterion"].min() >= min_logrank
 
 
 def test_breast_cancer_1(breast_cancer):
