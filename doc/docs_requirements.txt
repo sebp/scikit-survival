@@ -1,9 +1,8 @@
 # This file purposely does not contain libraries that depend on C modules.
 # See https://docs.readthedocs.io/en/latest/faq.html#i-get-import-errors-on-libraries-that-depend-on-c-modules
-Jinja2<3
 ipython
 nbsphinx
 docutils==0.16
 setuptools_scm
 sphinx ~=3.2.0
-pydata-sphinx-theme ~=0.4.0
+pydata-sphinx-theme ~=0.6.0

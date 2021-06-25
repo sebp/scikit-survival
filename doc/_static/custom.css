@@ -1,3 +1,9 @@
+.navbar-brand {
+    padding-top: .3125rem;
+    padding-bottom: .3125rem;
+    height: 45px;
+}
+
 .tile {
     position: relative;
     display: block;
@@ -31,6 +37,14 @@
     right: 0;
     line-height: 1.4;
     transition: all .2s
+}
+
+.tile h3.tile-title  {
+    color: rgba(var(--pst-color-link),1);
+}
+
+.tile h3.tile-title:hover {
+    color:rgba(var(--pst-color-link-hover),1);
 }
 
 .tile h3.tile-title:before {
