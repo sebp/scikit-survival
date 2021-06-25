@@ -4,6 +4,7 @@ import numpy
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 import pandas
 import pytest
+from scipy.stats import norm
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.tree._tree import TREE_UNDEFINED
@@ -73,22 +74,24 @@ def assert_curve_almost_equal(x, y):
 
 class LogrankTreeBuilder:
 
-    def __init__(self, max_depth=4, min_leaf=20):
+    def __init__(self, max_depth=4, min_leaf=20, min_logrank=0.0):
         self.max_depth = max_depth
         self.min_leaf = min_leaf
+        self.min_logrank = min_logrank
 
     def build(self, X, y):
-        val, feat, stat = self._get_best_split(X, y)
+        val, feat, stat, crit = self._get_best_split(X, y)
         splits = LifoQueue()
-        splits.put((val, feat, stat, 0, numpy.arange(X.shape[0])))
+        splits.put((val, feat, stat, crit, 0, numpy.arange(X.shape[0])))
 
         node_stats = []
         while splits.qsize() > 0:
-            val, feat, stat, lvl, idx = splits.get()
+            val, feat, stat, crit, lvl, idx = splits.get()
             s = {"feature": feat,
                  "threshold": val,
                  "n_node_samples": idx.shape[0],
                  "statistic": stat,
+                 "criterion": crit,
                  "depth": lvl}
             node_stats.append(s)
 
@@ -101,9 +104,9 @@ class LogrankTreeBuilder:
 
             if lvl == self.max_depth - 1:
                 splits.put([TREE_UNDEFINED, TREE_UNDEFINED,
-                            -numpy.infty, lvl + 1, right])
+                            -numpy.infty, -numpy.infty, lvl + 1, right])
                 splits.put([TREE_UNDEFINED, TREE_UNDEFINED,
-                            -numpy.infty, lvl + 1, left])
+                            -numpy.infty, -numpy.infty, lvl + 1, left])
                 continue
 
             X_right = X[right, :]
@@ -122,9 +125,11 @@ class LogrankTreeBuilder:
 
     def _get_best_split(self, X, y):
         min_leaf = self.min_leaf
+        min_logrank = self.min_logrank
         best_val = TREE_UNDEFINED
         best_feat = TREE_UNDEFINED
         best_stat = -numpy.infty
+        best_criterion = -numpy.infty
 
         if y[y.dtype.names[0]].sum() == 0:
             return best_val, best_feat, best_stat
@@ -138,12 +143,14 @@ class LogrankTreeBuilder:
                 t = (v + values[i + 1]) * 0.5
                 groups = (vals <= t).astype(int)
                 if groups.sum() >= min_leaf and (X.shape[0] - groups.sum()) >= min_leaf:
-                    s, _ = compare_survival(y, groups)
-                    if s > best_stat:
+                    s, p = compare_survival(y, groups)
+                    abs_z = abs(norm.ppf(p/2))
+                    if s > best_stat and abs_z >= min_logrank:
                         best_feat = j
                         best_val = t
                         best_stat = s
-        return best_val, best_feat, best_stat
+                        best_criterion = abs_z
+        return best_val, best_feat, best_stat, best_criterion
 
 
 def test_tree_one_split(veterans):
@@ -253,17 +260,19 @@ def test_tree_split_all_censored(veterans):
 
 
 @pytest.mark.slow()
-def test_toy_data(toy_data):
+@pytest.mark.parametrize("min_logrank", [0.0, 1.96])
+def test_toy_data(toy_data, min_logrank):
     X, y = toy_data
-    tree = SurvivalTree(max_depth=4, max_features=1.0, min_samples_leaf=20)
+    tree = SurvivalTree(max_depth=4, max_features=1.0, min_samples_leaf=20, min_logrank_split=min_logrank)
     tree.fit(X, y)
 
-    stats = LogrankTreeBuilder(max_depth=4, min_leaf=20).build(X, y)
+    stats = LogrankTreeBuilder(max_depth=4, min_leaf=20, min_logrank=min_logrank).build(X, y)
 
     assert tree.tree_.capacity == stats.shape[0]
     assert_array_equal(tree.tree_.feature, stats.loc[:, "feature"].values)
     assert_array_equal(tree.tree_.n_node_samples, stats.loc[:, "n_node_samples"].values)
     assert_array_almost_equal(tree.tree_.threshold, stats.loc[:, "threshold"].values, 5)
+    assert stats.loc[stats["feature"] > 0, "criterion"].min() > min_logrank
 
 
 def test_breast_cancer_1(breast_cancer):
