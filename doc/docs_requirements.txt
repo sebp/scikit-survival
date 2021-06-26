@@ -4,5 +4,5 @@ ipython
 nbsphinx
 docutils==0.16
 setuptools_scm
-sphinx ~=3.2.0
+sphinx ~=3.5.0
 pydata-sphinx-theme ~=0.6.0
