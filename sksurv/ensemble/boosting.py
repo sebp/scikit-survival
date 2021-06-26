@@ -127,7 +127,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
     Attributes
     ----------
-    coef\_ : array, shape = (n_features + 1,)
+    coef_ : array, shape = (n_features + 1,)
         The aggregated coefficients. The first element `coef\_[0]` corresponds
         to the intercept. If loss is `coxph`, the intercept will always be zero.
 
@@ -457,13 +457,6 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
     @property
     def coef_(self):
-        """Return the aggregated coefficients.
-
-        Returns
-        -------
-        coef_ : ndarray, shape = (n_features + 1,)
-            Coefficients of features. The first element denotes the intercept.
-        """
         coef = numpy.zeros(self.n_features_ + 1, dtype=float)
 
         for estimator in self.estimators_:
@@ -624,12 +617,12 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
     Attributes
     ----------
-    n_estimators\_ : int
+    n_estimators_ : int
         The number of estimators as selected by early stopping (if
         ``n_iter_no_change`` is specified). Otherwise it is set to
         ``n_estimators``.
 
-    feature_importances\_ : ndarray, shape = (n_features,)
+    feature_importances_ : ndarray, shape = (n_features,)
         The feature importances (the higher, the more important the feature).
 
     estimators_ : ndarray of DecisionTreeRegressor, shape = (n_estimators, 1)
@@ -1194,3 +1187,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         >>> plt.show()
         """
         return self._get_baseline_model().get_survival_function(self.predict(X))
+
+
+# Remove inherited API doc to avoid sphinx's duplicate object description error
+GradientBoostingSurvivalAnalysis.feature_importances_.__doc__ = None
