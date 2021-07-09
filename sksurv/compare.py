@@ -75,6 +75,7 @@ def compare_survival(y, group_indicator, return_stats=False):
     observed = numpy.zeros(n_groups, dtype=numpy.int_)
     expected = numpy.zeros(n_groups, dtype=numpy.float_)
     covar = numpy.zeros((n_groups, n_groups), dtype=numpy.float_)
+    group_eye = numpy.eye(n_groups, dtype=bool)
     k = 0
     while k < n_samples:
         ti = time[k]
@@ -92,11 +93,9 @@ def compare_survival(y, group_indicator, return_stats=False):
             expected += at_risk * (total_events / total_at_risk)
             if total_at_risk > 1:
                 multiplier = total_events * (total_at_risk - total_events) / (total_at_risk * (total_at_risk - 1))
-                for g1 in range(n_groups):
-                    temp = at_risk[g1] * multiplier
-                    covar[g1, g1] += temp
-                    for g2 in range(n_groups):
-                        covar[g1, g2] -= temp * at_risk[g2] / total_at_risk
+                temp = at_risk * multiplier
+                covar[group_eye] += temp
+                covar -= (temp[:, None] * at_risk[None, :] / total_at_risk)
 
     df = n_groups - 1
     zz = observed[:df] - expected[:df]
