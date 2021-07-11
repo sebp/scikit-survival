@@ -7,7 +7,7 @@ dependencies:
   - cython>=0.29
   - ecos
   - numexpr
-  - numpy=1.19
+  - numpy=1.20
   - osqp!=0.6.0,!=0.6.1
   - pytest
   - pytest-cov
