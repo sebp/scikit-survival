@@ -21,9 +21,9 @@ conda create -n sksurv-test \
   scikit-learn="${SKLEARN_VERSION:?}" \
   "${COMPILER[@]}"
 
-echo "numpy ${NUMPY_VERSION:?}.*" > "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
-echo "pandas ${PANDAS_VERSION:?}.*" >> "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
-echo "scikit-learn ${SKLEARN_VERSION:?}.*" >> "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
+echo "numpy ${NUMPY_VERSION:?}" > "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
+echo "pandas ${PANDAS_VERSION:?}" >> "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
+echo "scikit-learn ${SKLEARN_VERSION:?}" >> "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
 
 # Useful for debugging any issues with conda
 conda info -a
