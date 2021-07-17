@@ -18,8 +18,7 @@ conda create -n sksurv-test \
   python="${CONDA_PYTHON_VERSION:?}" \
   numpy="${NUMPY_VERSION:?}" \
   pandas="${PANDAS_VERSION:?}" \
-  scikit-learn="${SKLEARN_VERSION:?}" \
-  "${COMPILER[@]}"
+  scikit-learn="${SKLEARN_VERSION:?}"
 
 echo "numpy ${NUMPY_VERSION:?}" > "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
 echo "pandas ${PANDAS_VERSION:?}" >> "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
