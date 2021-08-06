@@ -362,7 +362,7 @@ class RandomSurvivalForest(_BaseSurvivalForest):
         and add more estimators to the ensemble, otherwise, just fit a whole
         new forest.
 
-    max_samples : int or float, default=None
+    max_samples : int or float, optional, default: None
         If bootstrap is True, the number of samples to draw from X
         to train each base estimator.
         - If None (default), then draw `X.shape[0]` samples.
@@ -683,7 +683,7 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
         and add more estimators to the ensemble, otherwise, just fit a whole
         new forest.
 
-    max_samples : int or float, default=None
+    max_samples : int or float, optional, default: None
         If bootstrap is True, the number of samples to draw from X
         to train each base estimator.
         - If None (default), then draw `X.shape[0]` samples.
