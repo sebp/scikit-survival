@@ -24,11 +24,6 @@ def pytest_configure(config):
 
 
 @pytest.fixture()
-def pandas_version_under_0p24():
-    return parse_version(pandas.__version__) < parse_version('0.24.0')
-
-
-@pytest.fixture()
 def fake_data():
     x = numpy.random.randn(100, 11)
     y = Surv.from_arrays(numpy.ones(100, dtype=bool), numpy.arange(1, 101, dtype=float))
