@@ -385,3 +385,9 @@ if on_rtd:
                 return MockModule()
 
     sys.modules.update((mod_name, MockModule()) for mod_name in MOCK_MODULES)
+
+else:
+    from sklearn.ensemble._gb import BaseGradientBoosting
+
+    # Remove inherited API doc to avoid sphinx's duplicate object description error
+    BaseGradientBoosting.feature_importances_.__doc__ = None
