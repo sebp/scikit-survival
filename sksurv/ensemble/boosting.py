@@ -1187,7 +1187,3 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         >>> plt.show()
         """
         return self._get_baseline_model().get_survival_function(self.predict(X))
-
-
-# Remove inherited API doc to avoid sphinx's duplicate object description error
-GradientBoostingSurvivalAnalysis.feature_importances_.__doc__ = None
