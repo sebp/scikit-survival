@@ -4,7 +4,6 @@ import tempfile
 
 import numpy
 import pandas
-from pkg_resources import parse_version
 import pytest
 from scipy.sparse import coo_matrix
 
