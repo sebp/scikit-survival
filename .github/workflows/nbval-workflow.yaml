@@ -43,7 +43,7 @@ jobs:
         run: |
           python3 ci/list-requirements.py requirements/dev.txt > /tmp/conda-req.txt
           conda install -c sebp -n sksurv-test --file /tmp/conda-req.txt
-          conda install -n sksurv-test ipykernel 'matplotlib==3.3.1' nbformat 'seaborn==0.10.1'
+          conda install -n sksurv-test ipykernel 'matplotlib==3.3.4' nbformat 'seaborn==0.10.1'
           conda run -n sksurv-test pip install nbval
           conda list -n sksurv-test
       - name: Build package
