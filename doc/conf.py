@@ -367,11 +367,6 @@ if on_rtd:
         'sksurv.svm._prsvm',
         'sksurv.tree._criterion']
 
-    MOCK_VERSIONS = {
-        'pandas': '0.25.0',
-        'sklearn': '0.22.0',
-    }
-
     from unittest.mock import Mock
 
     class MockModule(Mock):
@@ -390,5 +385,3 @@ if on_rtd:
                 return MockModule()
 
     sys.modules.update((mod_name, MockModule()) for mod_name in MOCK_MODULES)
-    for mod, ver in MOCK_VERSIONS.items():
-        setattr(sys.modules[mod], '__version__', ver)
