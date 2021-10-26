@@ -3,12 +3,16 @@ import os.path
 import numpy
 from numpy.testing import assert_almost_equal, assert_array_almost_equal, assert_array_equal
 import pytest
+from sklearn.model_selection import train_test_split
 
 from sksurv.datasets import load_gbsg2
 from sksurv.exceptions import NoComparablePairException
 from sksurv.functions import StepFunction
 from sksurv.linear_model import CoxPHSurvivalAnalysis
 from sksurv.metrics import (
+    as_concordance_index_ipcw_scorer,
+    as_cumulative_dynamic_auc_scorer,
+    as_integrated_brier_score_scorer,
     brier_score,
     concordance_index_censored,
     concordance_index_ipcw,
@@ -17,6 +21,7 @@ from sksurv.metrics import (
 )
 from sksurv.nonparametric import kaplan_meier_estimator
 from sksurv.preprocessing import OneHotEncoder
+from sksurv.svm import FastSurvivalSVM
 from sksurv.util import Surv
 
 
@@ -1011,3 +1016,96 @@ def test_ibs_single_time_point(nottingham_prognostic_index):
     with pytest.raises(ValueError,
                        match="At least two time points must be given"):
         integrated_brier_score(y, y, pred, times=1825)
+
+
+@pytest.fixture(params=["cindex", "auc", "brier"])
+def scorers_data(request, make_whas500):
+    t = request.param
+
+    whas500_data = make_whas500(to_numeric=True)
+    data = train_test_split(
+        whas500_data.x, whas500_data.y, random_state=0, stratify=whas500_data.y["fstat"]
+    )
+    times = numpy.percentile(whas500_data.y["lenfol"], numpy.linspace(5, 81, 15))
+
+    if t == "cindex":
+        def func(*args, **kwargs):
+            ret = concordance_index_ipcw(*args, **kwargs)
+            return ret[0]
+
+        wrapper_cls = as_concordance_index_ipcw_scorer
+        args = {}
+    elif t == "auc":
+        def func(*args, **kwargs):
+            ret = cumulative_dynamic_auc(*args, **kwargs)
+            return ret[1]
+
+        wrapper_cls = as_cumulative_dynamic_auc_scorer
+        args = {"times": times}
+    elif t == "brier":
+        func = integrated_brier_score
+        wrapper_cls = as_integrated_brier_score_scorer
+        args = {"times": times}
+    else:
+        raise AssertionError()
+
+    return func, wrapper_cls, args, data
+
+
+def test_scorers(scorers_data):
+    score_func, wrapper_cls, score_args, data = scorers_data
+    X_train, X_test, y_train, y_test = data
+
+    est_std = CoxPHSurvivalAnalysis().fit(X_train, y_train)
+    if issubclass(wrapper_cls, as_integrated_brier_score_scorer):
+        times = score_args["times"]
+        pred = numpy.row_stack(
+            fn(times) for fn in est_std.predict_survival_function(X_test)
+        )
+        sign = -1
+    else:
+        pred = est_std.predict(X_test)
+        sign = 1
+
+    expected = sign * score_func(y_train, y_test, pred, **score_args)
+
+    est_wrap = wrapper_cls(CoxPHSurvivalAnalysis(), **score_args)
+    est_wrap.fit(X_train, y_train)
+    actual = est_wrap.score(X_test, y_test)
+
+    assert round(abs(actual - expected), 6) == 0
+
+    assert_array_almost_equal(est_wrap.predict(X_test), est_std.predict(X_test))
+
+    chf_expected = est_std.predict_cumulative_hazard_function(X_test)
+    chf_actual = est_wrap.predict_cumulative_hazard_function(X_test)
+    assert_array_almost_equal([v.x for v in chf_expected], [v.x for v in chf_actual])
+    assert_array_almost_equal([v.y for v in chf_expected], [v.y for v in chf_actual])
+
+    surv_expected = est_std.predict_survival_function(X_test)
+    surv_actual = est_wrap.predict_survival_function(X_test)
+    assert_array_almost_equal([v.x for v in surv_expected], [v.x for v in surv_actual])
+    assert_array_almost_equal([v.y for v in surv_expected], [v.y for v in surv_actual])
+
+
+def test_brier_scorer_no_predict_survival_function(make_whas500):
+    with pytest.raises(
+        AttributeError,
+        match=r"FastSurvivalSVM\(\) object has no attribute 'predict_survival_function'"
+    ):
+        as_integrated_brier_score_scorer(
+            FastSurvivalSVM(), times=[100, 200, 300]
+        )
+
+
+@pytest.mark.parametrize("pred_func", ["predict_cumulative_hazard_function", "predict_survival_function"])
+def test_scorer_no_predict_function(make_whas500, pred_func):
+    whas500_data = make_whas500(to_numeric=True)
+    scorer = as_concordance_index_ipcw_scorer(FastSurvivalSVM())
+    scorer.fit(whas500_data.x, whas500_data.y)
+
+    with pytest.raises(
+        AttributeError,
+        match="'FastSurvivalSVM' object has no attribute {!r}".format(pred_func)
+    ):
+        getattr(scorer, pred_func)

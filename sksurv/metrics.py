@@ -11,13 +11,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numpy
+from sklearn.base import BaseEstimator
 from sklearn.utils import check_array, check_consistent_length
+from sklearn.utils.metaestimators import if_delegate_has_method
+from sklearn.utils.validation import check_is_fitted
 
 from .exceptions import NoComparablePairException
 from .nonparametric import CensoringDistributionEstimator, SurvivalFunctionEstimator
 from .util import check_y_survival
 
 __all__ = [
+    'as_concordance_index_ipcw_scorer',
+    'as_cumulative_dynamic_auc_scorer',
+    'as_integrated_brier_score_scorer',
     'brier_score',
     'concordance_index_censored',
     'concordance_index_ipcw',
@@ -297,6 +303,11 @@ def concordance_index_ipcw(survival_train, survival_test, estimate, tau=None, ti
     concordance_index_censored
         Simpler estimator of the concordance index.
 
+    as_concordance_index_ipcw_scorer
+        Wrapper class that uses :func:`concordance_index_ipcw`
+        in its ``score`` method instead of the default
+        :func:`concordance_index_censored`.
+
     References
     ----------
     .. [1] Uno, H., Cai, T., Pencina, M. J., D’Agostino, R. B., & Wei, L. J. (2011).
@@ -421,6 +432,13 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
     mean_auc : float
         Summary measure referring to the mean cumulative/dynamic AUC
         over the specified time range `(times[0], times[-1])`.
+
+    See also
+    --------
+    as_cumulative_dynamic_auc_scorer
+        Wrapper class that uses :func:`cumulative_dynamic_auc`
+        in its ``score`` method instead of the default
+        :func:`concordance_index_censored`.
 
     References
     ----------
@@ -585,6 +603,7 @@ def brier_score(survival_train, survival_test, estimate, times):
     See also
     --------
     integrated_brier_score
+        Computes the average Brier score over all time points.
 
     References
     ----------
@@ -700,6 +719,12 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
     See also
     --------
     brier_score
+        Computes the Brier score at specified time points.
+
+    as_integrated_brier_score_scorer
+        Wrapper class that uses :func:`integrated_brier_score`
+        in its ``score`` method instead of the default
+        :func:`concordance_index_censored`.
 
     References
     ----------
@@ -717,3 +742,241 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
     ibs_value = numpy.trapz(brier_scores, times) / (times[-1] - times[0])
 
     return ibs_value
+
+
+class _ScoreOverrideMixin:
+    def __init__(self, estimator, predict_func, score_func, score_index, greater_is_better):
+        if not hasattr(estimator, predict_func):
+            raise AttributeError("{!r} object has no attribute {!r}".format(estimator, predict_func))
+
+        self.estimator = estimator
+        self._predict_func = predict_func
+        self._score_func = score_func
+        self._score_index = score_index
+        self._sign = 1 if greater_is_better else -1
+
+    def _get_score_params(self):
+        """Return dict of parameters passed to ``score_func``."""
+        params = self.get_params(deep=False)
+        del params["estimator"]
+        return params
+
+    def fit(self, X, y, **fit_params):
+        self._train_y = numpy.array(y, copy=True)
+        self.estimator_ = self.estimator.fit(X, y, **fit_params)
+        return self
+
+    def _do_predict(self, X):
+        predict_func = getattr(self.estimator_, self._predict_func)
+        return predict_func(X)
+
+    def score(self, X, y):
+        """Returns the score on the given data.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Input data, where n_samples is the number of samples and
+            n_features is the number of features.
+
+        y : array-like of shape (n_samples,)
+            Target relative to X for classification or regression;
+            None for unsupervised learning.
+
+        Returns
+        -------
+        score : float
+        """
+        estimate = self._do_predict(X)
+        score = self._score_func(
+            survival_train=self._train_y,
+            survival_test=y,
+            estimate=estimate,
+            **self._get_score_params(),
+        )
+        if self._score_index is not None:
+            score = score[self._score_index]
+        return self._sign * score
+
+    @if_delegate_has_method(delegate="estimator_")
+    def predict(self, X):
+        """Call predict on the estimator.
+
+        Only available if estimator supports ``predict``.
+
+        Parameters
+        ----------
+        X : indexable, length n_samples
+            Must fulfill the input assumptions of the
+            underlying estimator.
+        """
+        check_is_fitted(self, "estimator_")
+        return self.estimator_.predict(X)
+
+    @if_delegate_has_method(delegate="estimator_")
+    def predict_cumulative_hazard_function(self, X):
+        """Call predict_cumulative_hazard_function on the estimator.
+
+        Only available if estimator supports ``predict_cumulative_hazard_function``.
+
+        Parameters
+        ----------
+        X : indexable, length n_samples
+            Must fulfill the input assumptions of the
+            underlying estimator.
+        """
+        check_is_fitted(self, "estimator_")
+        return self.estimator_.predict_cumulative_hazard_function(X)
+
+    @if_delegate_has_method(delegate="estimator_")
+    def predict_survival_function(self, X):
+        """Call predict_survival_function on the estimator.
+
+        Only available if estimator supports ``predict_survival_function``.
+
+        Parameters
+        ----------
+        X : indexable, length n_samples
+            Must fulfill the input assumptions of the
+            underlying estimator.
+        """
+        check_is_fitted(self, "estimator_")
+        return self.estimator_.predict_survival_function(X)
+
+
+class as_cumulative_dynamic_auc_scorer(_ScoreOverrideMixin, BaseEstimator):
+    """Wraps an estimator to use :func:`cumulative_dynamic_auc` as ``score`` function.
+
+    See the :ref:`User Guide </user_guide/evaluating-survival-models.ipynb#Using-Metrics-in-Hyper-parameter-Search>`
+    for using it for hyper-parameter optimization.
+
+    Parameters
+    ----------
+    estimator : object
+        Instance of an estimator.
+
+    times : array-like, shape = (n_times,)
+        The time points for which the area under the
+        time-dependent ROC curve is computed. Values must be
+        within the range of follow-up times of the test data
+        `survival_test`.
+
+    tied_tol : float, optional, default: 1e-8
+        The tolerance value for considering ties.
+        If the absolute difference between risk scores is smaller
+        or equal than `tied_tol`, risk scores are considered tied.
+
+    Attributes
+    ----------
+    estimator_ : estimator
+        Estimator that was fit.
+
+    See also
+    --------
+    cumulative_dynamic_auc
+    """
+
+    def __init__(self, estimator, times, tied_tol=1e-8):
+        super().__init__(
+            estimator=estimator,
+            predict_func="predict",
+            score_func=cumulative_dynamic_auc,
+            score_index=1,
+            greater_is_better=True,
+        )
+        self.times = times
+        self.tied_tol = tied_tol
+
+
+class as_concordance_index_ipcw_scorer(_ScoreOverrideMixin, BaseEstimator):
+    """Wraps an estimator to use :func:`concordance_index_ipcw` as ``score`` function.
+
+    See the :ref:`User Guide </user_guide/evaluating-survival-models.ipynb#Using-Metrics-in-Hyper-parameter-Search>`
+    for using it for hyper-parameter optimization.
+
+    Parameters
+    ----------
+    estimator : object
+        Instance of an estimator.
+
+    tau : float, optional
+        Truncation time. The survival function for the underlying
+        censoring time distribution :math:`D` needs to be positive
+        at `tau`, i.e., `tau` should be chosen such that the
+        probability of being censored after time `tau` is non-zero:
+        :math:`P(D > \\tau) > 0`. If `None`, no truncation is performed.
+
+    tied_tol : float, optional, default: 1e-8
+        The tolerance value for considering ties.
+        If the absolute difference between risk scores is smaller
+        or equal than `tied_tol`, risk scores are considered tied.´
+
+    Attributes
+    ----------
+    estimator_ : estimator
+        Estimator that was fit.
+
+    See also
+    --------
+    concordance_index_ipcw
+    """
+
+    def __init__(self, estimator, tau=None, tied_tol=1e-8):
+        super().__init__(
+            estimator=estimator,
+            predict_func="predict",
+            score_func=concordance_index_ipcw,
+            score_index=0,
+            greater_is_better=True,
+        )
+        self.tau = tau
+        self.tied_tol = tied_tol
+
+
+class as_integrated_brier_score_scorer(_ScoreOverrideMixin, BaseEstimator):
+    """Wraps an estimator to use the negative of :func:`integrated_brier_score` as ``score`` function.
+
+    The estimator needs to be able to estimate survival functions via
+    a ``predict_survival_function`` method.
+
+    See the :ref:`User Guide </user_guide/evaluating-survival-models.ipynb#Using-Metrics-in-Hyper-parameter-Search>`
+    for using it for hyper-parameter optimization.
+
+    Parameters
+    ----------
+    estimator : object
+        Instance of an estimator that provides ``predict_survival_function``.
+
+    times : array-like, shape = (n_times,)
+        The time points for which to estimate the Brier score.
+        Values must be within the range of follow-up times of
+        the test data `survival_test`.
+
+    Attributes
+    ----------
+    estimator_ : estimator
+        Estimator that was fit.
+
+    See also
+    --------
+    integrated_brier_score
+    """
+
+    def __init__(self, estimator, times):
+        super().__init__(
+            estimator=estimator,
+            predict_func="predict_survival_function",
+            score_func=integrated_brier_score,
+            score_index=None,
+            greater_is_better=False,
+        )
+        self.times = times
+
+    def _do_predict(self, X):
+        predict_func = getattr(self.estimator_, self._predict_func)
+        surv_fns = predict_func(X)
+        times = self.times
+        estimates = numpy.empty((len(surv_fns), len(times)))
+        for i, fn in enumerate(surv_fns):
+            estimates[i, :] = fn(times)
+        return estimates
