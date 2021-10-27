@@ -1,6 +1,32 @@
 Release Notes
 =============
 
+scikit-survival 0.16.0 (2021-1X-XX)
+-----------------------------------
+
+Bug fixes
+^^^^^^^^^
+- Columns are dropped in :func:`sksurv.column.encode_categorical`
+  despite ``allow_drop=False`` (:issue:`199`).
+
+Enhancements
+^^^^^^^^^^^^
+- Add :class:`sksurv.ensemble.ExtraSurvivalTrees` ensemble (:issue:`195`).
+- Faster speed for :func:`sksurv.compare.compare_survival` (:issue:`215`).
+- Add wrapper classes :class:`sksurv.metrics.as_concordance_index_ipcw_scorer`,
+  :class:`sksurv.metrics.as_cumulative_dynamic_auc_scorer`, and
+  :class:`sksurv.metrics.as_integrated_brier_score_scorer` to override the
+  default ``score`` method of estimators (:issue:`192`).
+
+Documentation
+^^^^^^^^^^^^^
+- Remove comments and code suggesting log-transforming times prior to training Survival SVM (:issue:`203`).
+- Add documentation for ``max_samples`` parameter to :class:`sksurv.ensemble.ExtraSurvivalTrees`
+  and :class:`sksurv.ensemble.RandomSurvivalForest` (:issue:`217`).
+- Add section on time-dependent Brier score (:issue:`220`).
+- Add section on using alternative metrics for hyper-parameter optimization.
+
+
 scikit-survival 0.15.0 (2021-03-20)
 -----------------------------------
 
