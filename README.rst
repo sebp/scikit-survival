@@ -1,3 +1,5 @@
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fsebp%2Fscikit-survival.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fsebp%2Fscikit-survival?ref=badge_shield)
+
 |License| |Docs| |DOI|
 
 |build-linux| |build-macos| |build-windows| |Codecov| |Codacy|
@@ -147,3 +149,6 @@ Please cite the following paper if you are using **scikit-survival**.
    :alt: Windows Build Status on AppVeyor
 
 .. _survival analysis: https://en.wikipedia.org/wiki/Survival_analysis
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fsebp%2Fscikit-survival.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fsebp%2Fscikit-survival?ref=badge_large)
