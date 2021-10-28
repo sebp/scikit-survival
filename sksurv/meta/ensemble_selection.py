@@ -151,7 +151,7 @@ class BaseEnsembleSelection(Stacking):
     def _create_base_ensemble(self, out, n_estimators, n_folds):  # pylint: disable=no-self-use
         """For each base estimator collect models trained on each fold"""
         ensemble_scores = numpy.empty((n_estimators, n_folds))
-        base_ensemble = numpy.empty_like(ensemble_scores, dtype=numpy.object)
+        base_ensemble = numpy.empty_like(ensemble_scores, dtype=object)
         for model, fold, score, est in out:
             ensemble_scores[model, fold] = score
             base_ensemble[model, fold] = est
@@ -160,7 +160,7 @@ class BaseEnsembleSelection(Stacking):
 
     def _create_cv_ensemble(self, base_ensemble, idx_models_included, model_names=None):
         """For each selected base estimator, average models trained on each fold"""
-        fitted_models = numpy.empty(len(idx_models_included), dtype=numpy.object)
+        fitted_models = numpy.empty(len(idx_models_included), dtype=object)
         for i, idx in enumerate(idx_models_included):
             model_name = self.base_estimators[idx][0] if model_names is None else model_names[idx]
             avg_model = EnsembleAverage(base_ensemble[idx, :], name=model_name)

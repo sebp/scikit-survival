@@ -53,7 +53,7 @@ def make_whas500():
 @pytest.fixture()
 def whas500_sparse_data():
     x, y = load_whas500()
-    x_dense = categorical_to_numeric(x.select_dtypes(exclude=[numpy.float_]))
+    x_dense = categorical_to_numeric(x.select_dtypes(exclude=[float]))
 
     data = []
     index_i = []

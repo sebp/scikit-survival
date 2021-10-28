@@ -254,7 +254,7 @@ def _make_and_write_data(fp, n_samples, n_features, with_index, with_labels, see
         arr = x
 
     if with_index:
-        index = numpy.arange(n_samples, dtype=numpy.float_)
+        index = numpy.arange(n_samples, dtype=float)
         numpy.random.RandomState(0).shuffle(index)
     else:
         index = None

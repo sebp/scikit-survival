@@ -40,7 +40,7 @@ def test_logrank_veterans():
         index=["adeno", "large", "smallcell", "squamous"])
     expected_stats.index.name = "group"
     expected_stats["counts"] = numpy.array([27, 27, 48, 35], dtype=numpy.intp)
-    expected_stats["observed"] = numpy.array([26, 26, 45, 31], dtype=numpy.int_)
+    expected_stats["observed"] = numpy.array([26, 26, 45, 31], dtype=int)
     expected_stats["expected"] = [15.6937646143605, 34.5494783863493, 30.1020793268148, 47.6546776724754]
     expected_stats["statistic"] = expected_stats["observed"] - expected_stats["expected"]
     assert_frame_equal(stats, expected_stats)
@@ -187,7 +187,7 @@ def test_logrank_four():
 
 
 def test_groups():
-    y = numpy.empty(shape=7, dtype=[("event", numpy.bool_), ("time", numpy.float_)])
+    y = numpy.empty(shape=7, dtype=[("event", bool), ("time", float)])
     y["time"] = numpy.arange(1, 8)
     y["event"] = True
     group = numpy.ones(7)

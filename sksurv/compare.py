@@ -71,10 +71,10 @@ def compare_survival(y, group_indicator, return_stats=False):
     event = event[o]
     time = time[o]
 
-    at_risk = numpy.zeros(n_groups, dtype=numpy.int_)
-    observed = numpy.zeros(n_groups, dtype=numpy.int_)
-    expected = numpy.zeros(n_groups, dtype=numpy.float_)
-    covar = numpy.zeros((n_groups, n_groups), dtype=numpy.float_)
+    at_risk = numpy.zeros(n_groups, dtype=int)
+    observed = numpy.zeros(n_groups, dtype=int)
+    expected = numpy.zeros(n_groups, dtype=float)
+    covar = numpy.zeros((n_groups, n_groups), dtype=float)
 
     covar_indices = numpy.diag_indices(n_groups)
 

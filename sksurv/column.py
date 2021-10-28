@@ -28,7 +28,7 @@ def _apply_along_column(array, func1d, **kwargs):
 def standardize_column(series_or_array, with_std=True):
     d = series_or_array.dtype
     if issubclass(d.type, numpy.number):
-        output = series_or_array.astype(numpy.float_)
+        output = series_or_array.astype(float)
         m = series_or_array.mean()
         output -= m
 

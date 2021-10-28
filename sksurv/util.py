@@ -48,9 +48,9 @@ class Surv:
         if name_time == name_event:
             raise ValueError('name_time must be different from name_event')
 
-        time = numpy.asanyarray(time, dtype=numpy.float_)
+        time = numpy.asanyarray(time, dtype=float)
         y = numpy.empty(time.shape[0],
-                        dtype=[(name_event, numpy.bool_), (name_time, numpy.float_)])
+                        dtype=[(name_event, bool), (name_time, float)])
         y[name_time] = time
 
         event = numpy.asanyarray(event)
@@ -65,7 +65,7 @@ class Surv:
                 raise ValueError('event indicator must be binary')
 
             if numpy.all(events == numpy.array([0, 1], dtype=events.dtype)):
-                y[name_event] = event.astype(numpy.bool_)
+                y[name_event] = event.astype(bool)
             else:
                 raise ValueError('non-boolean event indicator must contain 0 and 1 only')
 

@@ -194,7 +194,7 @@ class TestFastSurvivalSVM:
         y = numpy.array([True, True, False, True, False, False, False, False])
         time = numpy.array([20, 46, 56, 63, 77, 90, 100, 104])
 
-        expected_order = numpy.arange(len(time)).astype(numpy.int)
+        expected_order = numpy.arange(len(time)).astype(int)
 
         expected = numpy.array([
             [-1, 1, 0, 0, 0, 0, 0, 0],

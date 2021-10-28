@@ -244,7 +244,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
             self.tol, self.verbose)
         assert numpy.isfinite(coef).all()
 
-        if numpy.all(numpy.absolute(coef) < numpy.finfo(numpy.float).eps):
+        if numpy.all(numpy.absolute(coef) < numpy.finfo(float).eps):
             warnings.warn('all coefficients are zero, consider decreasing alpha.',
                           stacklevel=2)
 
@@ -291,7 +291,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         for i, val in enumerate(self.alphas_):
             if val > alpha:
                 coef_idx = i
-            elif alpha - val < numpy.finfo(numpy.float).eps:
+            elif alpha - val < numpy.finfo(float).eps:
                 coef_idx = i
                 exact = True
                 break

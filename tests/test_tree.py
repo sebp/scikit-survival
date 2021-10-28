@@ -55,11 +55,11 @@ def toy_data():
         assert g.sum() > 0
         time[g] = 1 + rnd.lognormal(mean=s, sigma=3, size=g.sum()).astype(int)
 
-    event = numpy.ones(n_samples, dtype=numpy.bool)
+    event = numpy.ones(n_samples, dtype=bool)
     event[rnd.binomial(1, 0.333, size=n_samples).astype(bool)] = False
 
     y = numpy.fromiter(zip(event, time),
-                       dtype=[("status", numpy.bool), ("time", numpy.float)])
+                       dtype=[("status", bool), ("time", float)])
     return X, y
 
 

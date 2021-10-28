@@ -62,7 +62,7 @@ class BreslowEstimator:
         risk_score = risk_score[order]
         uniq_times, n_events, n_at_risk, _ = _compute_counts(event, time, order)
 
-        divisor = numpy.empty(n_at_risk.shape, dtype=numpy.float_)
+        divisor = numpy.empty(n_at_risk.shape, dtype=float)
         value = numpy.sum(risk_score)
         divisor[0] = value
         k = 0
@@ -95,7 +95,7 @@ class BreslowEstimator:
         """
         risk_score = numpy.exp(linear_predictor)
         n_samples = risk_score.shape[0]
-        funcs = numpy.empty(n_samples, dtype=numpy.object_)
+        funcs = numpy.empty(n_samples, dtype=object)
         for i in range(n_samples):
             funcs[i] = StepFunction(x=self.cum_baseline_hazard_.x,
                                     y=self.cum_baseline_hazard_.y,
@@ -117,7 +117,7 @@ class BreslowEstimator:
         """
         risk_score = numpy.exp(linear_predictor)
         n_samples = risk_score.shape[0]
-        funcs = numpy.empty(n_samples, dtype=numpy.object_)
+        funcs = numpy.empty(n_samples, dtype=object)
         for i in range(n_samples):
             funcs[i] = StepFunction(x=self.baseline_survival_.x,
                                     y=numpy.power(self.baseline_survival_.y, risk_score[i]))
@@ -395,7 +395,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         X = self._validate_data(X)
 
         if isinstance(self.alpha, (numbers.Real, numbers.Integral)):
-            alphas = numpy.empty(X.shape[1], dtype=numpy.float_)
+            alphas = numpy.empty(X.shape[1], dtype=float)
             alphas[:] = self.alpha
         else:
             alphas = self.alpha

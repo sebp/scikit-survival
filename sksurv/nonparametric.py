@@ -60,8 +60,8 @@ def _compute_counts(event, time, order=None):
         order = numpy.argsort(time, kind="mergesort")
 
     uniq_times = numpy.empty(n_samples, dtype=time.dtype)
-    uniq_events = numpy.empty(n_samples, dtype=numpy.int_)
-    uniq_counts = numpy.empty(n_samples, dtype=numpy.int_)
+    uniq_events = numpy.empty(n_samples, dtype=int)
+    uniq_counts = numpy.empty(n_samples, dtype=int)
 
     i = 0
     prev_val = time[order[0]]
@@ -130,8 +130,8 @@ def _compute_counts_truncated(event, time_enter, time_exit):
     n_samples = event.shape[0]
 
     uniq_times = numpy.sort(numpy.unique(numpy.r_[time_enter, time_exit]), kind="mergesort")
-    total_counts = numpy.empty(len(uniq_times), dtype=numpy.int_)
-    event_counts = numpy.empty(len(uniq_times), dtype=numpy.int_)
+    total_counts = numpy.empty(len(uniq_times), dtype=int)
+    event_counts = numpy.empty(len(uniq_times), dtype=int)
 
     order_enter = numpy.argsort(time_enter, kind="mergesort")
     order_exit = numpy.argsort(time_exit, kind="mergesort")

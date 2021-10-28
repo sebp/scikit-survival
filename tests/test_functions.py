@@ -28,7 +28,7 @@ class TestStepFunction:
 
     @staticmethod
     def test_out_of_bounds(a_step_function):
-        eps = numpy.finfo(numpy.float_).eps * 8
+        eps = numpy.finfo(float).eps * 8
         values = [a_step_function.x[0] - 100,
                   a_step_function.x[-1] + 100,
                   a_step_function.x[0] - eps,

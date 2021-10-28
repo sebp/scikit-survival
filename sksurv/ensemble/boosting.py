@@ -192,7 +192,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         n_samples = X.shape[0]
         # account for intercept
         Xi = numpy.column_stack((numpy.ones(n_samples), X))
-        y = numpy.fromiter(zip(event, time), dtype=[('event', numpy.bool), ('time', numpy.float64)])
+        y = numpy.fromiter(zip(event, time), dtype=[('event', bool), ('time', numpy.float64)])
         y_pred = numpy.zeros(n_samples)
 
         do_oob = self.subsample < 1.0
@@ -756,7 +756,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                    random_state, scale, X_csc=None, X_csr=None):
         """Fit another stage of ``n_classes_`` trees to the boosting model. """
 
-        assert sample_mask.dtype == numpy.bool
+        assert sample_mask.dtype == bool
         loss = self.loss_
 
         # whether to use dropout in next iteration
@@ -834,7 +834,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         """
         n_samples = X.shape[0]
         do_oob = self.subsample < 1.0
-        sample_mask = numpy.ones((n_samples, ), dtype=numpy.bool)
+        sample_mask = numpy.ones((n_samples, ), dtype=bool)
         n_inbag = max(1, int(self.subsample * n_samples))
         loss_ = self.loss_
 
@@ -955,7 +955,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         self._rng = check_random_state(self.random_state)
 
         # fit the boosting stages
-        y = numpy.fromiter(zip(event, time), dtype=[('event', numpy.bool), ('time', numpy.float64)])
+        y = numpy.fromiter(zip(event, time), dtype=[('event', bool), ('time', numpy.float64)])
         n_stages = self._fit_stages(X, y, raw_predictions, sample_weight, self._rng,
                                     begin_at_stage, monitor)
         # change shape of arrays after fit (early-stopping or additional tests)

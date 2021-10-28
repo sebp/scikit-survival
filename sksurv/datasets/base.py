@@ -23,7 +23,7 @@ def _get_x_y_survival(dataset, col_event, col_time, val_outcome):
         y = None
         x_frame = dataset
     else:
-        y = numpy.empty(dtype=[(col_event, numpy.bool), (col_time, numpy.float64)],
+        y = numpy.empty(dtype=[(col_event, bool), (col_time, numpy.float64)],
                         shape=dataset.shape[0])
         y[col_event] = (dataset[col_event] == val_outcome).values
         y[col_time] = dataset[col_time].values

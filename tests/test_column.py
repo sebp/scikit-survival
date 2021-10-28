@@ -210,7 +210,7 @@ class TestEncodeCategorical:
 
         actual_df = column.encode_categorical(df)
 
-        expected_df = pandas.DataFrame(numpy.zeros((32, 3), dtype=numpy.float_),
+        expected_df = pandas.DataFrame(numpy.zeros((32, 3), dtype=float),
                                        index=index,
                                        columns=["a_category=medium", "a_category=small", "a_category=tiny"])
         # tiny

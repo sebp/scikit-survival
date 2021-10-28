@@ -286,7 +286,7 @@ class SimpleOptimizer(RankSVMOptimizer):
 
     def _gradient_func(self, w):
         # sum over columns without running into overflow problems
-        col_sum = self.Asv.sum(axis=0, dtype=numpy.int_)
+        col_sum = self.Asv.sum(axis=0, dtype=int)
         v = col_sum.A.squeeze()
 
         z = numpy.dot(self.data_x.T, (self.Asv.T.dot(self.Asv.dot(self.xw)) - v))
@@ -326,7 +326,7 @@ class PRSVMOptimizer(RankSVMOptimizer):
 
     def _gradient_func(self, w):
         # sum over columns without running into overflow problems
-        col_sum = self.Aw.sum(axis=0, dtype=numpy.int_)
+        col_sum = self.Aw.sum(axis=0, dtype=int)
         v = col_sum.A.squeeze()
         z = numpy.dot(self.data_x.T, self.Aw.T.dot(self.AXw) - v)
         return w + self.alpha * z
