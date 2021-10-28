@@ -1060,7 +1060,7 @@ def test_scorers(scorers_data):
     if issubclass(wrapper_cls, as_integrated_brier_score_scorer):
         times = score_args["times"]
         pred = numpy.row_stack(
-            fn(times) for fn in est_std.predict_survival_function(X_test)
+            [fn(times) for fn in est_std.predict_survival_function(X_test)]
         )
         sign = -1
     else:
