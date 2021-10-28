@@ -34,7 +34,7 @@ def test_pandas_inputs(estimator_cls):
     X, y = load_whas500()
     X = X.iloc[:50]
     y = y[:50]
-    X = X.loc[:, ["age", "bmi", "chf", "gender"]]
+    X = X.loc[:, ["age", "bmi", "chf", "gender"]].astype(float)
 
     estimator = estimator_cls()
     if "kernel" in estimator.get_params():
