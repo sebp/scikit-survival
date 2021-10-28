@@ -197,7 +197,7 @@ def categorical_to_numeric(table):
             except ValueError:
                 classes = column.dropna().unique()
                 classes.sort(kind="mergesort")
-                nc = column.replace(classes, numpy.arange(classes.shape[0]))
+                nc = column.replace(classes, numpy.arange(classes.shape[0], dtype=numpy.int64))
             return nc
         if column.dtype == bool:
             return column.astype(numpy.int64)
