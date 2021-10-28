@@ -3,7 +3,7 @@ from collections import OrderedDict
 import numpy
 from numpy.testing import assert_array_equal
 import pandas
-import pandas.util.testing as tm
+import pandas.testing as tm
 import pytest
 
 from sksurv.util import Surv, safe_concat

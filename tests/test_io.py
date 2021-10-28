@@ -3,7 +3,7 @@ from io import StringIO
 
 import numpy
 import pandas
-import pandas.util.testing as tm
+import pandas.testing as tm
 import pytest
 
 from sksurv.io import loadarff, writearff
