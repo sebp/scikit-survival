@@ -117,7 +117,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
 
         Xt = X.copy()
         for col, cat in self.categories_.items():
-            Xt[col].cat.set_categories(cat, inplace=True)
+            Xt[col] = Xt[col].cat.set_categories(cat)
 
         new_data = self._encode(Xt, self.feature_names_)
         return new_data.loc[:, self.encoded_columns_]
