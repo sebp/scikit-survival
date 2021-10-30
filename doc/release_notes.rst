@@ -1,13 +1,30 @@
 Release Notes
 =============
 
-scikit-survival 0.16.0 (2021-1X-XX)
+scikit-survival 0.16.0 (2021-10-30)
 -----------------------------------
+
+This release adds support for changing the evaluation metric that
+is used in estimators' ``score`` method. This is particular useful
+for hyper-parameter optimization using scikit-learn's ``GridSearchCV``.
+You can now use :class:`sksurv.metrics.as_concordance_index_ipcw_scorer`,
+:class:`sksurv.metrics.as_cumulative_dynamic_auc_scorer`, or
+:class:`sksurv.metrics.as_integrated_brier_score_scorer` to adjust the
+``score`` method to your needs. A detailed example is available in the
+:ref:`User Guide </user_guide/evaluating-survival-models.ipynb#Using-Metrics-in-Hyper-parameter-Search>`.
+
+Moreover, this release adds :class:`sksurv.ensemble.ExtraSurvivalTrees`
+to fit an ensemble of randomized survival trees, and improves the speed
+of :func:`sksurv.compare.compare_survival` significantly.
+The documentation has been extended by a section on
+the :ref:`time-dependent Brier score </user_guide/evaluating-survival-models.ipynb#Time-dependent-Brier-Score>`.
 
 Bug fixes
 ^^^^^^^^^
 - Columns are dropped in :func:`sksurv.column.encode_categorical`
   despite ``allow_drop=False`` (:issue:`199`).
+- Ensure :func:`sksurv.column.categorical_to_numeric` always
+  returns series with int64 dtype.
 
 Enhancements
 ^^^^^^^^^^^^
@@ -17,6 +34,8 @@ Enhancements
   :class:`sksurv.metrics.as_cumulative_dynamic_auc_scorer`, and
   :class:`sksurv.metrics.as_integrated_brier_score_scorer` to override the
   default ``score`` method of estimators (:issue:`192`).
+- Remove use of deprecated numpy dtypes.
+- Remove use of ``inplace`` in pandas' ``set_categories``.
 
 Documentation
 ^^^^^^^^^^^^^
