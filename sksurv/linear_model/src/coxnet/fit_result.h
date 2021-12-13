@@ -15,7 +15,7 @@
 #ifndef GLMNET_FIT_RESULT_H
 #define GLMNET_FIT_RESULT_H
 
-#include <cstdint>
+#include <cstddef>
 #include "error.h"
 
 
