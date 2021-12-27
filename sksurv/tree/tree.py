@@ -109,7 +109,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
     max_features_ : int,
         The inferred value of max_features.
 
-    n_features_ : int
+    n_features_in_ : int
         The number of features when ``fit`` is performed.
 
     tree_ : Tree object
@@ -189,8 +189,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         else:
             y_numeric, self.event_times_ = y
 
-        n_samples, self.n_features_ = X.shape
-        self.n_features_in_ = self.n_features_
+        n_samples, self.n_features_in_ = X.shape
         params = self._check_params(n_samples)
 
         if not isinstance(X_idx_sorted, str) or X_idx_sorted != "deprecated":
@@ -218,7 +217,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
                 params["min_weight_leaf"],
                 random_state)
 
-        self.tree_ = Tree(self.n_features_, self.n_classes_, self.n_outputs_)
+        self.tree_ = Tree(self.n_features_in_, self.n_classes_, self.n_outputs_)
 
         # Use BestFirst if max_leaf_nodes given; use DepthFirst otherwise
         if params["max_leaf_nodes"] < 0:
@@ -320,25 +319,25 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
     def _check_max_features(self):
         if isinstance(self.max_features, str):
             if self.max_features in ("auto", "sqrt"):
-                max_features = max(1, int(np.sqrt(self.n_features_)))
+                max_features = max(1, int(np.sqrt(self.n_features_in_)))
             elif self.max_features == "log2":
-                max_features = max(1, int(np.log2(self.n_features_)))
+                max_features = max(1, int(np.log2(self.n_features_in_)))
             else:
                 raise ValueError(
                     'Invalid value for max_features. Allowed string '
                     'values are "auto", "sqrt" or "log2".')
         elif self.max_features is None:
-            max_features = self.n_features_
+            max_features = self.n_features_in_
         elif isinstance(self.max_features, (numbers.Integral, np.integer)):
             max_features = self.max_features
         else:  # float
             if self.max_features > 0.0:
                 max_features = max(1,
-                                   int(self.max_features * self.n_features_))
+                                   int(self.max_features * self.n_features_in_))
             else:
                 max_features = 0
 
-        if not 0 < max_features <= self.n_features_:
+        if not 0 < max_features <= self.n_features_in_:
             raise ValueError("max_features must be in (0, n_features]")
 
         self.max_features_ = max_features

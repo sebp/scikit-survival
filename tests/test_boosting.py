@@ -165,7 +165,7 @@ class TestGradientBoosting:
 
         model.set_params(max_features=-1)
         with pytest.raises(ValueError,
-                           match=r"max_features must be in \(0, n_features\]"):
+                           match=r"max_features must be in \(0, n_features_in_\]"):
             model.fit(whas500_data.x, whas500_data.y)
 
         model.set_params(max_features=-1.125)

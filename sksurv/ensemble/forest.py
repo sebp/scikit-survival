@@ -87,7 +87,7 @@ class _BaseSurvivalForest(BaseForest,
         """
         X, event, time = check_arrays_survival(X, y)
 
-        self.n_features_ = X.shape[1]
+        self.n_features_in_ = X.shape[1]
         time = time.astype(np.float64)
         self.event_times_ = np.unique(time[event])
         self.n_outputs_ = self.event_times_.shape[0]
@@ -378,7 +378,7 @@ class RandomSurvivalForest(_BaseSurvivalForest):
     event_times_ : array of shape = (n_event_times,)
         Unique time points where events occurred.
 
-    n_features_ : int
+    n_features_in_ : int
         The number of features when ``fit`` is performed.
 
     oob_score_ : float
@@ -699,7 +699,7 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
     event_times_ : array of shape = (n_event_times,)
         Unique time points where events occurred.
 
-    n_features_ : int
+    n_features_in_ : int
         The number of features when ``fit`` is performed.
 
     oob_score_ : float

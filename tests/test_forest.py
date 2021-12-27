@@ -47,7 +47,7 @@ def test_fit_int_time(make_whas500, forest_cls):
     forest_i = forest_cls(oob_score=True, random_state=2).fit(whas500.x[50:], y_int[50:])
 
     assert len(forest_f.estimators_) == len(forest_i.estimators_)
-    assert forest_f.n_features_ == forest_i.n_features_
+    assert forest_f.n_features_in_ == forest_i.n_features_in_
     assert forest_f.oob_score_ == forest_i.oob_score_
     assert_array_almost_equal(forest_f.event_times_, forest_i.event_times_)
 
