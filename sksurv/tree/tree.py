@@ -222,22 +222,24 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         # Use BestFirst if max_leaf_nodes given; use DepthFirst otherwise
         if params["max_leaf_nodes"] < 0:
-            builder = DepthFirstTreeBuilder(splitter,
-                                            params["min_samples_split"],
-                                            params["min_samples_leaf"],
-                                            params["min_weight_leaf"],
-                                            params["max_depth"],
-                                            0.0,  # min_impurity_decrease
-                                            params["min_impurity_split"])
+            builder = DepthFirstTreeBuilder(
+                splitter,
+                params["min_samples_split"],
+                params["min_samples_leaf"],
+                params["min_weight_leaf"],
+                params["max_depth"],
+                0.0,  # min_impurity_decrease
+            )
         else:
-            builder = BestFirstTreeBuilder(splitter,
-                                           params["min_samples_split"],
-                                           params["min_samples_leaf"],
-                                           params["min_weight_leaf"],
-                                           params["max_depth"],
-                                           params["max_leaf_nodes"],
-                                           0.0,  # min_impurity_decrease
-                                           params["min_impurity_split"])
+            builder = BestFirstTreeBuilder(
+                splitter,
+                params["min_samples_split"],
+                params["min_samples_leaf"],
+                params["min_weight_leaf"],
+                params["max_depth"],
+                params["max_leaf_nodes"],
+                0.0,  # min_impurity_decrease
+            )
 
         builder.build(self.tree_, X, y_numeric, sample_weight)
 
@@ -261,14 +263,12 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             raise ValueError("min_weight_fraction_leaf must in [0, 0.5]")
 
         min_weight_leaf = self.min_weight_fraction_leaf * n_samples
-        min_impurity_split = 1e-7
 
         return {
             "max_depth": max_depth,
             "max_leaf_nodes": max_leaf_nodes,
             "min_samples_leaf": min_samples_leaf,
             "min_samples_split": min_samples_split,
-            "min_impurity_split": min_impurity_split,
             "min_weight_leaf": min_weight_leaf,
         }
 

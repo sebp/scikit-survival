@@ -544,10 +544,6 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         of the input variables.
         Ignored if ``max_leaf_nodes`` is not None.
 
-    min_impurity_split : float,
-        Threshold for early stopping in tree growth. A node will split
-        if its impurity is above the threshold, otherwise it is a leaf.
-
     min_impurity_decrease : float, optional, default: 0.
         A node will be split if this split induces a decrease of the impurity
         greater than or equal to this value.
@@ -658,7 +654,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                  criterion='friedman_mse',
                  min_samples_split=2,
                  min_samples_leaf=1, min_weight_fraction_leaf=0.,
-                 max_depth=3, min_impurity_split=None,
+                 max_depth=3,
                  min_impurity_decrease=0., random_state=None,
                  max_features=None, max_leaf_nodes=None,
                  subsample=1.0, dropout_rate=0.0,
@@ -673,7 +669,6 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                          min_samples_leaf=min_samples_leaf,
                          min_weight_fraction_leaf=min_weight_fraction_leaf,
                          max_depth=max_depth,
-                         min_impurity_split=min_impurity_split,
                          min_impurity_decrease=min_impurity_decrease,
                          init=None,
                          random_state=random_state,
@@ -780,7 +775,6 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                 min_samples_split=self.min_samples_split,
                 min_samples_leaf=self.min_samples_leaf,
                 min_weight_fraction_leaf=self.min_weight_fraction_leaf,
-                min_impurity_split=self.min_impurity_split,
                 min_impurity_decrease=self.min_impurity_decrease,
                 max_features=self.max_features,
                 max_leaf_nodes=self.max_leaf_nodes,
