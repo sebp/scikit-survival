@@ -153,11 +153,11 @@ class _BaseSurvivalForest(BaseForest,
             self.estimators_.extend(trees)
 
         if self.oob_score:
-            self._set_oob_score(X, (event, time))
+            self._set_oob_score_and_attributes(X, (event, time))
 
         return self
 
-    def _set_oob_score(self, X, y):
+    def _set_oob_score_and_attributes(self, X, y):
         """Calculate out of bag predictions and score."""
         X = check_array(X, dtype=DTYPE)
 
