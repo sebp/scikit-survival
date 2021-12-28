@@ -303,7 +303,7 @@ class TestCoxPH:
     def test_predict_cumulative_hazard_function(rossi):
         cph = CoxPHSurvivalAnalysis()
         xc = standardize(rossi.x, with_std=False)
-        cph.fit(xc, rossi.y)
+        cph.fit(xc.values, rossi.y)
 
         test_idx = [9, 3, 313, 122, 431]
         f = cph.predict_cumulative_hazard_function(xc.values[test_idx, :])
@@ -374,7 +374,7 @@ class TestCoxPH:
             assert_array_almost_equal(actual_y, expected_y[i, :])
 
         pipe = make_pipeline(StandardScaler(with_std=False), CoxPHSurvivalAnalysis())
-        pipe.fit(rossi.x, rossi.y)
+        pipe.fit(rossi.x.values, rossi.y)
         f = pipe.predict_cumulative_hazard_function(rossi.x.values[test_idx, :])
         assert len(f) == len(test_idx)
 
@@ -388,7 +388,7 @@ class TestCoxPH:
     def test_predict_survival_function(rossi):
         cph = CoxPHSurvivalAnalysis()
         xc = standardize(rossi.x, with_std=False)
-        cph.fit(xc, rossi.y)
+        cph.fit(xc.values, rossi.y)
 
         test_idx = [9, 3, 313, 122, 431]
         f = cph.predict_survival_function(xc.values[test_idx, :])
@@ -459,7 +459,7 @@ class TestCoxPH:
             assert_array_almost_equal(actual_y, expected_y[i, :])
 
         pipe = make_pipeline(StandardScaler(with_std=False), CoxPHSurvivalAnalysis())
-        pipe.fit(rossi.x, rossi.y)
+        pipe.fit(rossi.x.values, rossi.y)
         f = pipe.predict_survival_function(rossi.x.values[test_idx, :])
         assert len(f) == len(test_idx)
 

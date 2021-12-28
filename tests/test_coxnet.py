@@ -74,7 +74,7 @@ def make_fit_example():
         x, y = get_x_y(pandas.read_csv(EXAMPLE_FILE), ["status", "time"],
                        pos_label=1)
         coxnet = CoxnetSurvivalAnalysis(**kwargs)
-        coxnet.fit(x.values, y)
+        coxnet.fit(x, y)
 
         return x, coxnet
 

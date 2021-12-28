@@ -273,8 +273,8 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         -------
         self
         """
+        X = self._validate_data(X, ensure_min_samples=2)
         X, event, time = check_arrays_survival(X, y)
-        X = self._validate_data(X)
 
         n_samples = X.shape[0]
 
@@ -302,12 +302,22 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         self._fit(X, event, time, sample_weight, random_state)
 
         if isinstance(self.loss_, CoxPH):
-            risk_scores = self.predict(X)
+            risk_scores = self._predict(X)
             self._baseline_model = BreslowEstimator().fit(risk_scores, event, time)
         else:
             self._baseline_model = None
 
         return self
+
+    def _predict(self, X):
+        n_samples = X.shape[0]
+        Xi = numpy.column_stack((numpy.ones(n_samples), X))
+        pred = numpy.zeros(n_samples, dtype=float)
+
+        for estimator in self.estimators_:
+            pred += self.learning_rate * estimator.predict(Xi)
+
+        return self.loss_._scale_raw_prediction(pred)
 
     def predict(self, X):
         """Predict risk scores.
@@ -330,14 +340,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         check_is_fitted(self, 'estimators_')
         X = self._validate_data(X, reset=False)
 
-        n_samples = X.shape[0]
-        Xi = numpy.column_stack((numpy.ones(n_samples), X))
-        pred = numpy.zeros(n_samples, dtype=float)
-
-        for estimator in self.estimators_:
-            pred += self.learning_rate * estimator.predict(Xi)
-
-        return self.loss_._scale_raw_prediction(pred)
+        return self._predict(X)
 
     def _get_baseline_model(self):
         if self._baseline_model is None:
@@ -918,10 +921,12 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         self : object
             Returns self.
         """
-        X, event, time = check_arrays_survival(X, y, accept_sparse=['csr', 'csc', 'coo'], dtype=DTYPE)
-        n_samples, self.n_features_in_ = X.shape
+        X = self._validate_data(
+            X, ensure_min_samples=2, order='C', accept_sparse=['csr', 'csc', 'coo'], dtype=DTYPE,
+        )
+        _, event, time = check_arrays_survival(X, y, accept_sparse=True)
+        n_samples = X.shape[0]
 
-        X = X.astype(DTYPE)
         sample_weight_is_none = sample_weight is None
         if sample_weight_is_none:
             sample_weight = numpy.ones(n_samples, dtype=numpy.float32)
@@ -961,7 +966,10 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         self.n_estimators_ = n_stages
 
         if isinstance(self.loss_, CoxPH):
-            risk_scores = self.predict(X)
+            X_pred = X
+            if issparse(X):
+                X_pred = X.asformat('csr')
+            risk_scores = self._predict(X_pred)
             self._baseline_model = BreslowEstimator().fit(risk_scores, event, time)
         else:
             self._baseline_model = None
@@ -1005,6 +1013,13 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
     def _decision_function(self, X):  # pragma: no cover
         return self._raw_predict(X)
 
+    def _predict(self, X):
+        score = self._raw_predict(X)
+        if score.shape[1] == 1:
+            score = score.ravel()
+
+        return self.loss_._scale_raw_prediction(score)
+
     def predict(self, X):
         """Predict risk scores.
 
@@ -1025,12 +1040,8 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         """
         check_is_fitted(self, 'estimators_')
 
-        X = check_array(X, dtype=DTYPE, order="C", accept_sparse="csr")
-        score = self._raw_predict(X)
-        if score.shape[1] == 1:
-            score = score.ravel()
-
-        return self.loss_._scale_raw_prediction(score)
+        X = self._validate_data(X, reset=False, order="C", accept_sparse="csr", dtype=DTYPE)
+        return self._predict(X)
 
     def staged_predict(self, X):
         """Predict risk scores at each stage for X.

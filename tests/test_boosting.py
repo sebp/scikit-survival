@@ -41,7 +41,7 @@ class TestGradientBoosting:
 
         assert (100,) == model.train_score_.shape
 
-        with pytest.raises(ValueError, match="X has 2 features, but DecisionTreeRegressor is "
+        with pytest.raises(ValueError, match="X has 2 features, but GradientBoostingSurvivalAnalysis is "
                                              "expecting 14 features as input."):
             model.predict(whas500_data.x[:, :2])
 
@@ -69,7 +69,7 @@ class TestGradientBoosting:
         assert (50,) == model.train_score_.shape
         assert (50,) == model.oob_improvement_.shape
 
-        with pytest.raises(ValueError, match="X has 2 features, but DecisionTreeRegressor is "
+        with pytest.raises(ValueError, match="X has 2 features, but GradientBoostingSurvivalAnalysis is "
                                              "expecting 14 features as input."):
             model.predict(whas500_data.x[:, :2])
 
@@ -363,7 +363,7 @@ class TestSparseGradientBoosting:
         sparse_predict = model.predict(whas500_sparse_data.x_sparse)
 
         model.fit(whas500_sparse_data.x_sparse, whas500_sparse_data.y)
-        dense_predict = model.predict(whas500_sparse_data.x_dense)
+        dense_predict = model.predict(whas500_sparse_data.x_dense.values)
 
         assert_array_almost_equal(sparse_predict, dense_predict)
 

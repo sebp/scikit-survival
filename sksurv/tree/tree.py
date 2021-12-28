@@ -179,6 +179,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         random_state = check_random_state(self.random_state)
 
         if check_input:
+            X = self._validate_data(X, ensure_min_samples=2)
             X, event, time = check_arrays_survival(X, y)
             time = time.astype(np.float64)
             self.event_times_ = np.unique(time[event])

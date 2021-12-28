@@ -139,8 +139,8 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         self._baseline_models = None
 
     def _pre_fit(self, X, y):
+        X = self._validate_data(X, ensure_min_samples=2)
         X, event, time = check_arrays_survival(X, y, copy=self.copy_X)
-        X = self._validate_data(X)
         # center feature matrix
         X_offset = numpy.average(X, axis=0)
         X -= X_offset
