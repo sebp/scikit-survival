@@ -51,7 +51,7 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
            present", Journal of Multivariate Analysis, vol. 45, no. 1, pp. 89-103, 1993.
            doi:10.1006/jmva.1993.1028.
     """
-    def __init__(self, alpha=1.0, fit_intercept=True, normalize=False,
+    def __init__(self, alpha=1.0, fit_intercept=True, normalize="deprecated",
                  copy_X=True, max_iter=None, tol=1e-3, solver="auto"):
         super().__init__(alpha=alpha, fit_intercept=fit_intercept,
                          normalize=normalize, copy_X=copy_X,
