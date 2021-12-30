@@ -359,6 +359,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         -------
         self
         """
+        X = self._validate_data(X, ensure_min_samples=2)
         X, event, time = check_arrays_survival(X, y)
         self._fit(X, event, time)
 
@@ -380,6 +381,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         y : ndarray, shape = (n_samples,)
             Predicted risk.
         """
+        X = self._validate_data(X, reset=False)
         K = self._get_kernel(X, self.X_fit_)
         pred = -numpy.dot(self.coef_, K.T)
         return pred.ravel()

@@ -664,6 +664,9 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
     def predict(self, X):
         """Predict risk score"""
 
+    def _validate_for_fit(self, X):
+        return self._validate_data(X, ensure_min_samples=2)
+
     def fit(self, X, y):
         """Build a survival support vector machine model from training data.
 
@@ -681,6 +684,7 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
         -------
         self
         """
+        X = self._validate_for_fit(X)
         X, event, time = check_arrays_survival(X, y)
 
         if self.alpha <= 0:
@@ -866,7 +870,7 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
             Predicted ranks.
         """
         check_is_fitted(self, "coef_")
-        X = check_array(X)
+        X = self._validate_data(X, reset=False)
 
         val = numpy.dot(X, self.coef_)
         if hasattr(self, "intercept_"):
@@ -1013,6 +1017,11 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
 
         return optimizer
 
+    def _validate_for_fit(self, X):
+        if self.kernel != "precomputed":
+            return super()._validate_for_fit(X)
+        return X
+
     def _fit(self, X, time, event, samples_order):
         # don't reorder X here, because it might be a precomputed kernel matrix
         kernel_mat = self._get_kernel(X)
@@ -1050,6 +1059,7 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         y : ndarray, shape = (n_samples,)
             Predicted ranks.
         """
+        X = self._validate_data(X, reset=False)
         kernel_mat = self._get_kernel(X, self.fit_X_)
 
         val = numpy.dot(kernel_mat, self.coef_)

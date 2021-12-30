@@ -4,9 +4,9 @@ from os.path import dirname
 import pkgutil
 
 import numpy
+from numpy.testing import assert_array_equal
 import pandas
 import pytest
-from numpy.testing import assert_array_equal
 
 import sksurv
 from sksurv.base import SurvivalAnalysisMixin
