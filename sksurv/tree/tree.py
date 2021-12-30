@@ -12,7 +12,7 @@ from sklearn.utils.validation import check_is_fitted, check_random_state
 
 from ..base import SurvivalAnalysisMixin
 from ..functions import StepFunction
-from ..util import check_arrays_survival
+from ..util import check_array_survival
 from ._criterion import LogrankCriterion
 
 __all__ = ["SurvivalTree"]
@@ -180,7 +180,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         if check_input:
             X = self._validate_data(X, ensure_min_samples=2)
-            X, event, time = check_arrays_survival(X, y)
+            event, time = check_array_survival(X, y)
             time = time.astype(np.float64)
             self.event_times_ = np.unique(time[event])
 

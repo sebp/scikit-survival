@@ -11,7 +11,7 @@ from sksurv.meta import EnsembleSelection, EnsembleSelectionRegressor
 from sksurv.metrics import concordance_index_censored
 from sksurv.svm import FastKernelSurvivalSVM, FastSurvivalSVM
 from sksurv.testing import assert_cindex_almost_equal
-from sksurv.util import check_arrays_survival
+from sksurv.util import check_array_survival
 
 
 def score_cindex(est, X_test, y_test, **predict_params):
@@ -219,7 +219,7 @@ class DummySurvivalRegressor(DummyRegressor):
         super().__init__(strategy=strategy, constant=constant, quantile=quantile)
 
     def fit(self, X, y, sample_weight=None):
-        X, _, time = check_arrays_survival(X, y)
+        _, time = check_array_survival(X, y)
         return super().fit(X, time)
 
 

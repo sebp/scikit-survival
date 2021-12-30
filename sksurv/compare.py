@@ -3,8 +3,9 @@ from collections import OrderedDict
 import numpy
 import pandas
 from scipy import stats
+from sklearn.utils.validation import check_array
 
-from .util import check_arrays_survival
+from .util import check_array_survival
 
 __all__ = ["compare_survival"]
 
@@ -55,8 +56,8 @@ def compare_survival(y, group_indicator, return_stats=False):
            Communications In Statistics 10 (1981): 763-794.
     """
 
-    group_indicator, event, time = check_arrays_survival(
-        group_indicator, y, dtype="O", ensure_2d=False)
+    event, time = check_array_survival(group_indicator, y)
+    group_indicator = check_array(group_indicator, dtype="O", ensure_2d=False)
 
     n_samples = time.shape[0]
     groups, group_counts = numpy.unique(group_indicator, return_counts=True)

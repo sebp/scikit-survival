@@ -9,7 +9,7 @@ from sklearn.metrics.pairwise import pairwise_kernels
 
 from ..base import SurvivalAnalysisMixin
 from ..exceptions import NoComparablePairException
-from ..util import check_arrays_survival
+from ..util import check_array_survival
 from ._minlip import create_difference_matrix
 
 __all__ = ['MinlipSurvivalAnalysis', 'HingeLossSurvivalSVM']
@@ -360,7 +360,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         self
         """
         X = self._validate_data(X, ensure_min_samples=2)
-        X, event, time = check_arrays_survival(X, y)
+        event, time = check_array_survival(X, y)
         self._fit(X, event, time)
 
         return self

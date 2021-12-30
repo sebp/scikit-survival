@@ -26,7 +26,7 @@ from sklearn.utils.validation import check_is_fitted
 
 from ..base import SurvivalAnalysisMixin
 from ..linear_model.coxph import BreslowEstimator
-from ..util import check_arrays_survival
+from ..util import check_array_survival
 from .survival_loss import LOSS_FUNCTIONS, CensoredSquaredLoss, CoxPH, IPCWLeastSquaresError
 
 __all__ = ['ComponentwiseGradientBoostingSurvivalAnalysis', 'GradientBoostingSurvivalAnalysis']
@@ -274,7 +274,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         self
         """
         X = self._validate_data(X, ensure_min_samples=2)
-        X, event, time = check_arrays_survival(X, y)
+        event, time = check_array_survival(X, y)
 
         n_samples = X.shape[0]
 
@@ -924,7 +924,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         X = self._validate_data(
             X, ensure_min_samples=2, order='C', accept_sparse=['csr', 'csc', 'coo'], dtype=DTYPE,
         )
-        _, event, time = check_arrays_survival(X, y, accept_sparse=True)
+        event, time = check_array_survival(X, y)
         n_samples = X.shape[0]
 
         sample_weight_is_none = sample_weight is None

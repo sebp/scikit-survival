@@ -21,7 +21,7 @@ from sklearn.utils.validation import _get_feature_names
 
 from ..base import SurvivalAnalysisMixin
 from ..exceptions import NoComparablePairException
-from ..util import check_arrays_survival
+from ..util import check_array_survival
 
 
 class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
@@ -113,7 +113,7 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
         feature_names = _get_feature_names(X)
 
         X = self._validate_data(X, ensure_min_samples=2)
-        X, event, time = check_arrays_survival(X, y)
+        event, time = check_array_survival(X, y)
 
         idx = numpy.arange(X.shape[0], dtype=int)
         random_state.shuffle(idx)

@@ -19,7 +19,7 @@ from sklearn.preprocessing import normalize as f_normalize
 from sklearn.utils.validation import assert_all_finite, check_is_fitted, check_non_negative, column_or_1d
 
 from ..base import SurvivalAnalysisMixin
-from ..util import check_arrays_survival
+from ..util import check_array_survival
 from ._coxnet import call_fit_coxnet
 from .coxph import BreslowEstimator
 
@@ -139,8 +139,8 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         self._baseline_models = None
 
     def _pre_fit(self, X, y):
-        X = self._validate_data(X, ensure_min_samples=2)
-        X, event, time = check_arrays_survival(X, y, copy=self.copy_X)
+        X = self._validate_data(X, ensure_min_samples=2, dtype=numpy.float64, copy=self.copy_X)
+        event, time = check_array_survival(X, y)
         # center feature matrix
         X_offset = numpy.average(X, axis=0)
         X -= X_offset

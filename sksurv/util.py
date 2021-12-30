@@ -15,7 +15,7 @@ import pandas
 from pandas.api.types import is_categorical_dtype
 from sklearn.utils import check_array, check_consistent_length
 
-__all__ = ['check_arrays_survival', 'check_y_survival', 'safe_concat', 'Surv']
+__all__ = ['check_array_survival', 'check_y_survival', 'safe_concat', 'Surv']
 
 
 class Surv:
@@ -163,7 +163,7 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False):
     return tuple(return_val)
 
 
-def check_arrays_survival(X, y, **kwargs):
+def check_array_survival(X, y):
     """Check that all arrays have consistent first dimensions.
 
     Parameters
@@ -181,9 +181,6 @@ def check_arrays_survival(X, y, **kwargs):
 
     Returns
     -------
-    X : array, shape=[n_samples, n_features]
-        Feature vectors.
-
     event : array, shape=[n_samples,], dtype=bool
         Binary event indicator.
 
@@ -191,10 +188,8 @@ def check_arrays_survival(X, y, **kwargs):
         Time of event or censoring.
     """
     event, time = check_y_survival(y)
-    kwargs.setdefault("dtype", numpy.float64)
-    X = check_array(X, ensure_min_samples=2, **kwargs)
     check_consistent_length(X, event, time)
-    return X, event, time
+    return event, time
 
 
 def safe_concat(objs, *args, **kwargs):

@@ -21,7 +21,7 @@ from ..base import SurvivalAnalysisMixin
 from ..metrics import concordance_index_censored
 from ..tree import SurvivalTree
 from ..tree.tree import _array_to_step_function
-from ..util import check_arrays_survival
+from ..util import check_array_survival
 
 __all__ = ["RandomSurvivalForest", "ExtraSurvivalTrees"]
 
@@ -86,7 +86,7 @@ class _BaseSurvivalForest(BaseForest,
         self
         """
         X = self._validate_data(X, ensure_min_samples=2)
-        X, event, time = check_arrays_survival(X, y)
+        event, time = check_array_survival(X, y)
 
         self.n_features_in_ = X.shape[1]
         time = time.astype(np.float64)

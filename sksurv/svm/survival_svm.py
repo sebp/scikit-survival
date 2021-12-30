@@ -26,7 +26,7 @@ from sklearn.utils.validation import check_is_fitted
 from ..base import SurvivalAnalysisMixin
 from ..bintrees import AVLTree, RBTree
 from ..exceptions import NoComparablePairException
-from ..util import check_arrays_survival
+from ..util import check_array_survival
 from ._prsvm import survival_constraints_simple, survival_constraints_with_support_vectors
 
 
@@ -685,7 +685,7 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
         self
         """
         X = self._validate_for_fit(X)
-        X, event, time = check_arrays_survival(X, y)
+        event, time = check_array_survival(X, y)
 
         if self.alpha <= 0:
             raise ValueError("alpha must be positive")

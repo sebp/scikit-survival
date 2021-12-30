@@ -15,7 +15,7 @@ from sklearn.linear_model import Ridge
 
 from ..base import SurvivalAnalysisMixin
 from ..nonparametric import ipc_weights
-from ..util import check_arrays_survival
+from ..util import check_array_survival
 
 
 class IPCRidge(Ridge, SurvivalAnalysisMixin):
@@ -78,7 +78,7 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
         -------
         self
         """
-        _, event, time = check_arrays_survival(X, y)
+        event, time = check_array_survival(X, y)
 
         weights = ipc_weights(event, time)
         super().fit(X, numpy.log(time), sample_weight=weights)

@@ -22,7 +22,7 @@ from sklearn.utils.validation import check_array, check_is_fitted
 from ..base import SurvivalAnalysisMixin
 from ..functions import StepFunction
 from ..nonparametric import _compute_counts
-from ..util import check_arrays_survival
+from ..util import check_array_survival
 
 __all__ = ['CoxPHSurvivalAnalysis']
 
@@ -391,8 +391,8 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         -------
         self
         """
-        X = self._validate_data(X, ensure_min_samples=2)
-        X, event, time = check_arrays_survival(X, y)
+        X = self._validate_data(X, ensure_min_samples=2, dtype=numpy.float64)
+        event, time = check_array_survival(X, y)
 
         if isinstance(self.alpha, (numbers.Real, numbers.Integral)):
             alphas = numpy.empty(X.shape[1], dtype=float)
