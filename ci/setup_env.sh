@@ -4,7 +4,7 @@ set -xe
 OS="$1"
 
 if [ "x${OS}" = "xLinux" ]; then
-  COMPILER=(gcc_linux-64 gxx_linux-64)
+  COMPILER=()
 elif [ "x${OS}" = "xmacOS" ]; then
   COMPILER=(clang_osx-64 clangxx_osx-64)
 else
