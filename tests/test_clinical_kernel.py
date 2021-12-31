@@ -140,7 +140,8 @@ class TestClinicalKernel:
         t = ClinicalKernelTransform()
 
         t.fit(data)
-        mat = t.transform(t.X_fit_)
+        df_test = pandas.DataFrame(t.X_fit_, columns=data.columns)
+        mat = t.transform(df_test)
 
         assert_array_almost_equal(expected, mat, 4)
 
@@ -159,13 +160,32 @@ class TestClinicalKernel:
         assert_array_almost_equal(expected, mat, 4)
 
     @staticmethod
-    def test_kernel_transform_feature_mismatch(make_data):
+    def test_kernel_transform_num_features_mismatch(make_data):
         data, _ = make_data()
         t = ClinicalKernelTransform()
         t.fit(data)
 
-        with pytest.raises(ValueError, match='expected array with 4 features, but got 17'):
-            t.transform(numpy.zeros((2, 17), dtype=float))
+        array_test = numpy.zeros((2, 17), dtype=float)
+
+        error_msg = r"X has 17 features, but ClinicalKernelTransform is expecting 4 features as input\."
+        warn_msg = "X does not have valid feature names, but ClinicalKernelTransform was fitted with feature names"
+        with pytest.raises(ValueError, match=error_msg), pytest.warns(UserWarning, match=warn_msg):
+            t.transform(array_test)
+
+    @staticmethod
+    def test_kernel_transform_feature_names_mismatch(make_data):
+        data, _ = make_data()
+        t = ClinicalKernelTransform()
+        t.fit(data)
+
+        df_test = pandas.DataFrame(
+            numpy.zeros((2, data.shape[1] + 1), dtype=float), columns=data.columns.tolist() + ["XYZ"]
+        )
+
+        error_msg = r"X has 5 features, but ClinicalKernelTransform is expecting 4 features as input\."
+        warn_msg = r"The feature names should match those that were passed during fit\."
+        with pytest.raises(ValueError, match=error_msg), pytest.warns(FutureWarning, match=warn_msg):
+            t.transform(df_test)
 
     @staticmethod
     def test_pairwise(make_data):
