@@ -123,7 +123,7 @@ Please cite the following paper if you are using **scikit-survival**.
   :alt: codecov
 
 .. |Codacy| image:: https://api.codacy.com/project/badge/Grade/17242004cdf6422c9a1052bf1ec63104
-   :target: https://www.codacy.com/app/sebp/scikit-survival?utm_source=github.com&utm_medium=referral&utm_content=sebp/scikit-survival&utm_campaign=badger
+   :target: https://www.codacy.com/gh/sebp/scikit-survival/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sebp/scikit-survival&amp;utm_campaign=Badge_Grade
    :alt: Codacy Badge
 
 .. |Docs| image:: https://readthedocs.org/projects/scikit-survival/badge/?version=latest
