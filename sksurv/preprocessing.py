@@ -11,7 +11,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.validation import _check_feature_names_in, check_is_fitted
 
 from .column import encode_categorical
 
@@ -91,6 +91,8 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         Xt : pandas.DataFrame
             Encoded data.
         """
+        self._check_feature_names(X, reset=True)
+        self._check_n_features(X, reset=True)
         columns_to_encode = X.select_dtypes(include=["object", "category"]).columns
         x_dummy = self._encode(X, columns_to_encode)
 
@@ -113,6 +115,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
             Encoded data.
         """
         check_is_fitted(self, "encoded_columns_")
+        self._check_n_features(X, reset=False)
         check_columns_exist(X.columns, self.feature_names_)
 
         Xt = X.copy()
@@ -121,3 +124,26 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
 
         new_data = self._encode(Xt, self.feature_names_)
         return new_data.loc[:, self.encoded_columns_]
+
+    def get_feature_names_out(self, input_features=None):
+        """Get output feature names for transformation.
+
+        Parameters
+        ----------
+        input_features : array-like of str or None, default=None
+            Input features.
+
+            - If `input_features` is `None`, then `feature_names_in_` is
+              used as feature names in.
+            - If `input_features` is an array-like, then `input_features` must
+              match `feature_names_in_` if `feature_names_in_` is defined.
+
+        Returns
+        -------
+        feature_names_out : ndarray of str objects
+            Transformed feature names.
+        """
+        check_is_fitted(self, "encoded_columns_")
+        input_features = _check_feature_names_in(self, input_features)
+
+        return self.encoded_columns_.values.copy()
