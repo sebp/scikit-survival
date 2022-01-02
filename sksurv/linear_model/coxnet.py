@@ -114,6 +114,13 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     deviance_ratio_ : ndarray, shape=(n_alphas,)
         The fraction of (null) deviance explained.
 
+    n_features_in_ : int
+        Number of features seen during ``fit``.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
+
     References
     ----------
     .. [1] Simon N, Friedman J, Hastie T, Tibshirani R.

@@ -148,6 +148,13 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         ``oob_improvement_[0]`` is the improvement in
         loss of the first stage over the ``init`` estimator.
 
+    n_features_in_ : int
+        Number of features seen during ``fit``.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
+
     References
     ----------
     .. [1] Hothorn, T., Bühlmann, P., Dudoit, S., Molinaro, A., van der Laan, M. J.,
@@ -636,6 +643,13 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         relative to the previous iteration.
         ``oob_improvement_[0]`` is the improvement in
         loss of the first stage over the ``init`` estimator.
+
+    n_features_in_ : int
+        Number of features seen during ``fit``.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
 
     References
     ----------

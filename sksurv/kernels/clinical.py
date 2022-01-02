@@ -128,6 +128,15 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         If set to ``False``, it behaves like a regular estimator, i.e., you need to
         call fit() before transform().
 
+    Attributes
+    ----------
+    n_features_in_ : int
+        Number of features seen during ``fit``.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
+
     References
     ----------
     .. [1] Daemen, A., De Moor, B.,

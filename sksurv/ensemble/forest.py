@@ -380,7 +380,11 @@ class RandomSurvivalForest(_BaseSurvivalForest):
         Unique time points where events occurred.
 
     n_features_in_ : int
-        The number of features when ``fit`` is performed.
+        Number of features seen during ``fit``.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
 
     oob_score_ : float
         Concordance index of the training dataset obtained
@@ -702,6 +706,10 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
 
     n_features_in_ : int
         The number of features when ``fit`` is performed.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
 
     oob_score_ : float
         Concordance index of the training dataset obtained

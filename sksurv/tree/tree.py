@@ -110,7 +110,11 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         The inferred value of max_features.
 
     n_features_in_ : int
-        The number of features when ``fit`` is performed.
+        Number of features seen during ``fit``.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
 
     tree_ : Tree object
         The underlying Tree object. Please refer to

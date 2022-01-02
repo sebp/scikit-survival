@@ -50,6 +50,13 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
     encoded_columns_ : list
         Name of columns after encoding.
         Includes names of non-categorical columns.
+
+    n_features_in_ : int
+        Number of features seen during ``fit``.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
     """
     def __init__(self, allow_drop=True):
         self.allow_drop = allow_drop

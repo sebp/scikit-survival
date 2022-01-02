@@ -252,6 +252,13 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     coef_ : ndarray, shape = (n_samples,)
         Coefficients of the features in the decision function.
 
+    n_features_in_ : int
+        Number of features seen during ``fit``.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
+
     References
     ----------
     .. [1] Van Belle, V., Pelckmans, K., Suykens, J. A. K., and Van Huffel, S.
@@ -465,6 +472,13 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
 
     coef_ : ndarray, shape = (n_samples,)
         Coefficients of the features in the decision function.
+
+    n_features_in_ : int
+        Number of features seen during ``fit``.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
 
     References
     ----------

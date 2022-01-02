@@ -342,6 +342,13 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     baseline_survival_ : :class:`sksurv.functions.StepFunction`
         Estimated baseline survival function.
 
+    n_features_in_ : int
+        Number of features seen during ``fit``.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
+
     See also
     --------
     sksurv.linear_model.CoxnetSurvivalAnalysis
