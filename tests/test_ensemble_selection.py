@@ -1,4 +1,5 @@
 import numpy
+from numpy.testing import assert_array_equal
 import pytest
 from sklearn.dummy import DummyRegressor
 from sklearn.metrics import mean_squared_error
@@ -11,6 +12,7 @@ from sksurv.meta import EnsembleSelection, EnsembleSelectionRegressor
 from sksurv.metrics import concordance_index_censored
 from sksurv.svm import FastKernelSurvivalSVM, FastSurvivalSVM
 from sksurv.testing import assert_cindex_almost_equal
+from sksurv.tree import SurvivalTree
 from sksurv.util import check_array_survival
 
 
@@ -121,6 +123,37 @@ class TestEnsembleSelectionSurvivalAnalysis:
                                    (0.7978084, 59938, 15178, 33, 14))
 
     @staticmethod
+    def test_feature_names_in(make_whas500):
+        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
+
+        base_estimators = [
+            ('tree%d' % i, SurvivalTree(max_depth=1, max_features=1, random_state=i))
+            for i in range(10)
+        ]
+
+        cv = KFold(n_splits=3, shuffle=True, random_state=0)
+        meta = EnsembleSelection(base_estimators, n_estimators=0.5, scorer=score_cindex, cv=cv)
+
+        meta.fit(whas500.x_data_frame, whas500.y)
+        feature_names = whas500.x_data_frame.columns.values
+        assert meta.n_features_in_ == len(feature_names)
+        assert_array_equal(meta.feature_names_in_, feature_names)
+
+        warn_msg = "X does not have valid feature names, but SurvivalTree was fitted with feature names"
+        with pytest.warns(UserWarning, match=warn_msg):
+            meta.predict(whas500.x[:10])
+
+        meta.fit(whas500.x, whas500.y)
+        assert meta.n_features_in_ == len(feature_names)
+
+        with pytest.raises(AttributeError, match="object has no attribute 'feature_names_in_'"):
+            meta.feature_names_in_  # pylint: disable=pointless-statement
+
+        warn_msg = "X has feature names, but SurvivalTree was fitted without feature names"
+        with pytest.warns(UserWarning, match=warn_msg):
+            meta.predict(whas500.x_data_frame.iloc[:10])
+
+    @staticmethod
     def test_min_score(make_whas500):
         whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
         base_estimators = [('gbm', ComponentwiseGradientBoostingSurvivalAnalysis()),
@@ -217,6 +250,8 @@ def _score_rmse(est, X_test, y_test, **predict_params):
 class DummySurvivalRegressor(DummyRegressor):
     def __init__(self, strategy="mean", constant=None, quantile=None):
         super().__init__(strategy=strategy, constant=constant, quantile=quantile)
+        if hasattr(DummyRegressor, "n_features_in_"):
+            delattr(DummyRegressor, "n_features_in_")
 
     def fit(self, X, y, sample_weight=None):
         _, time = check_array_survival(X, y)
@@ -252,16 +287,20 @@ class TestEnsembleSelectionRegressor:
         meta = _create_regression_ensemble()
         assert len(meta) == 0
 
-        meta.fit(whas500.x[:400], whas500.y[:400])
+        meta.fit(whas500.x_data_frame.iloc[:400], whas500.y[:400])
         assert meta.scores_.shape[0] >= len(meta)
         assert len(meta) == 5
         assert meta.scores_.shape[0] == 9
 
-        p = meta.predict(whas500.x[400:])
+        feature_names = whas500.x_data_frame.columns.values
+        assert meta.n_features_in_ == len(feature_names)
+        assert_array_equal(meta.feature_names_in_, feature_names)
+
+        p = meta.predict(whas500.x_data_frame.iloc[400:])
         score = numpy.sqrt(mean_squared_error(whas500.y[400:]['lenfol'], p))
         assert abs(score - 423.82894756865056) <= 0.1
 
-        c_index = meta.score(whas500.x[:400], whas500.y[:400])
+        c_index = meta.score(whas500.x_data_frame.iloc[:400], whas500.y[:400])
         assert round(abs(c_index - 0.767067946974157), 6) == 0
 
     @staticmethod

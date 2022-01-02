@@ -148,13 +148,23 @@ class BaseEnsembleSelection(Stacking):
             raise ValueError("correlation must be one of 'pearson', 'kendall', and 'spearman', "
                              "but got %r" % self.correlation)
 
-    def _create_base_ensemble(self, out, n_estimators, n_folds):  # pylint: disable=no-self-use
+    def _create_base_ensemble(self, out, n_estimators, n_folds):
         """For each base estimator collect models trained on each fold"""
+        if hasattr(self, "feature_names_in_"):
+            # Delete the attribute when the estimator is fitted on a new dataset
+            # that has no feature names.
+            delattr(self, "feature_names_in_")
+
         ensemble_scores = numpy.empty((n_estimators, n_folds))
         base_ensemble = numpy.empty_like(ensemble_scores, dtype=object)
         for model, fold, score, est in out:
             ensemble_scores[model, fold] = score
             base_ensemble[model, fold] = est
+
+            if hasattr(est, "n_features_in_"):
+                self.n_features_in_ = est.n_features_in_
+            if hasattr(est, "feature_names_in_"):
+                self.feature_names_in_ = est.feature_names_in_
 
         self.final_estimator_ = self.meta_estimator
 
@@ -352,6 +362,13 @@ class EnsembleSelection(BaseEnsembleSelection):
     fitted_models_ : ndarray
         Selected models during training based on `scorer`.
 
+    n_features_in_ : int
+        Number of features seen during ``fit``.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
+
     References
     ----------
 
@@ -482,6 +499,13 @@ class EnsembleSelectionRegressor(BaseEnsembleSelection):
 
     fitted_models_ : ndarray
         Selected models during training based on `scorer`.
+
+    n_features_in_ : int
+        Number of features seen during ``fit``.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
 
     References
     ----------
