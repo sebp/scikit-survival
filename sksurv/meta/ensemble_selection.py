@@ -156,6 +156,8 @@ class BaseEnsembleSelection(Stacking):
             ensemble_scores[model, fold] = score
             base_ensemble[model, fold] = est
 
+        self.final_estimator_ = self.meta_estimator
+
         return ensemble_scores, base_ensemble
 
     def _create_cv_ensemble(self, base_ensemble, idx_models_included, model_names=None):
