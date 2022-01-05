@@ -151,22 +151,11 @@ class TestStackingClassifier:
         assert acc >= 0.98
 
     @staticmethod
-    def test_predict_proba(iris_data_with_estimator):
+    @pytest.mark.parametrize("method", ["predict_proba", "predict_log_proba"])
+    def test_predict_proba(iris_data_with_estimator, method):
         x, y, meta = iris_data_with_estimator(multi_class="multinomial", solver="lbfgs")
         meta.fit(x, y)
-        p = meta.predict_proba(x)
-
-        scores = numpy.empty(3)
-        for i, c in enumerate(meta.meta_estimator.classes_):
-            scores[i] = roc_auc_score(numpy.asarray(y == c, dtype=int), p[:, i])
-
-        assert_array_almost_equal(numpy.array([1.0, 0.9986, 0.9986]), scores)
-
-    @staticmethod
-    def test_predict_log_proba(iris_data_with_estimator):
-        x, y, meta = iris_data_with_estimator(multi_class="multinomial", solver="lbfgs")
-        meta.fit(x, y)
-        p = meta.predict_log_proba(x)
+        p = getattr(meta, method)(x)
 
         scores = numpy.empty(3)
         for i, c in enumerate(meta.meta_estimator.classes_):
