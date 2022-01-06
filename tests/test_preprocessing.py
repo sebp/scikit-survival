@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 import numpy as np
+from numpy.testing import assert_array_equal
 import pandas as pd
 import pandas.testing as tm
 import pytest
@@ -84,6 +85,45 @@ class TestOneHotEncoder:
         tm.assert_frame_equal(actual_data, expected_data)
 
     @staticmethod
+    def test_get_feature_names_out(create_data):
+        data, expected_data = create_data()
+
+        t = OneHotEncoder()
+        t.fit(data)
+
+        out_names = t.get_feature_names_out()
+        assert_array_equal(out_names, expected_data.columns.values)
+
+    @staticmethod
+    def test_get_feature_names_out_shuffled(create_data):
+        data, _ = create_data()
+        order = np.array(['binary_1', 'N0', 'N3', 'trinary', 'binary_2', 'N1', 'N2', 'many'])
+        expected_columns = np.array([
+            'binary_1=No',
+            'N0',
+            'N3',
+            'trinary=Blue',
+            'trinary=Red',
+            'binary_2=West',
+            'N1',
+            'N2',
+            'many=Two',
+            'many=Three',
+            'many=Four',
+            'many=Five',
+            'many=Six',
+        ])
+
+        t = OneHotEncoder()
+        t.fit(data.loc[:, order])
+
+        out_names = t.get_feature_names_out()
+        assert_array_equal(out_names, expected_columns)
+
+        with pytest.raises(ValueError, match="input_features is not equal to feature_names_in_"):
+            t.get_feature_names_out(data.columns.tolist())
+
+    @staticmethod
     def test_transform_other_columns(create_data):
         data, _ = create_data()
 
@@ -95,7 +135,8 @@ class TestOneHotEncoder:
             t.transform(data_renamed)
 
         data_dropped = data.drop('trinary', axis=1)
-        with pytest.raises(ValueError, match=r"1 features are missing from data: \['trinary'\]"):
+        error_msg = "X has 8 features, but OneHotEncoder is expecting 9 features as input"
+        with pytest.raises(ValueError, match=error_msg):
             t.transform(data_dropped)
 
         data_renamed = data.rename(columns={"binary_1": "renamed_1", "many": "too_many"})

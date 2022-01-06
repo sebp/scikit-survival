@@ -13,13 +13,15 @@
 import itertools
 
 import numpy
+import pandas
 from scipy.special import comb
 from sklearn.svm import LinearSVC
 from sklearn.utils import check_random_state
+from sklearn.utils.validation import _get_feature_names
 
 from ..base import SurvivalAnalysisMixin
 from ..exceptions import NoComparablePairException
-from ..util import check_arrays_survival
+from ..util import check_array_survival
 
 
 class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
@@ -108,7 +110,10 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
         self.alpha = alpha
 
     def _get_survival_pairs(self, X, y, random_state):  # pylint: disable=no-self-use
-        X, event, time = check_arrays_survival(X, y)
+        feature_names = _get_feature_names(X)
+
+        X = self._validate_data(X, ensure_min_samples=2)
+        event, time = check_array_survival(X, y)
 
         idx = numpy.arange(X.shape[0], dtype=int)
         random_state.shuffle(idx)
@@ -133,6 +138,9 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
 
         x_pairs.resize((k, X.shape[1]), refcheck=False)
         y_pairs.resize(k, refcheck=False)
+
+        if feature_names is not None:
+            x_pairs = pandas.DataFrame(x_pairs, columns=feature_names)
         return x_pairs, y_pairs
 
     def fit(self, X, y, sample_weight=None):

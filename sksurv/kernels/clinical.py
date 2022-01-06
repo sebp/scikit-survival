@@ -128,6 +128,15 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         If set to ``False``, it behaves like a regular estimator, i.e., you need to
         call fit() before transform().
 
+    Attributes
+    ----------
+    n_features_in_ : int
+        Number of features seen during ``fit``.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
+
     References
     ----------
     .. [1] Daemen, A., De Moor, B.,
@@ -219,6 +228,9 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         if X.ndim != 2:
             raise ValueError("expected 2d array, but got %d" % X.ndim)
 
+        self._check_feature_names(X, reset=True)
+        self._check_n_features(X, reset=True)
+
         if self.fit_once:
             self.X_fit_ = X
         else:
@@ -231,7 +243,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        y : array-like, shape = (n_samples_y, n_features)
+        Y : array-like, shape = (n_samples_y, n_features)
 
         Returns
         -------
@@ -240,11 +252,12 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         """
         check_is_fitted(self, 'X_fit_')
 
-        n_samples_x, n_features = self.X_fit_.shape
+        self._check_feature_names(Y, reset=False)
+        self._check_n_features(Y, reset=False)
+
+        n_samples_x = self.X_fit_.shape[0]
 
         Y = numpy.asarray(Y)
-        if Y.shape[1] != n_features:
-            raise ValueError('expected array with %d features, but got %d' % (n_features, Y.shape[1]))
 
         n_samples_y = Y.shape[0]
 
@@ -259,7 +272,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
                             self.X_fit_[:, self._nominal_columns],
                             mat)
 
-        mat /= n_features
+        mat /= self.n_features_in_
 
         return mat
 

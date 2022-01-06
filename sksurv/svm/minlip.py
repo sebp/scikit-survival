@@ -9,7 +9,7 @@ from sklearn.metrics.pairwise import pairwise_kernels
 
 from ..base import SurvivalAnalysisMixin
 from ..exceptions import NoComparablePairException
-from ..util import check_arrays_survival
+from ..util import check_array_survival
 from ._minlip import create_difference_matrix
 
 __all__ = ['MinlipSurvivalAnalysis', 'HingeLossSurvivalSVM']
@@ -252,6 +252,13 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     coef_ : ndarray, shape = (n_samples,)
         Coefficients of the features in the decision function.
 
+    n_features_in_ : int
+        Number of features seen during ``fit``.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
+
     References
     ----------
     .. [1] Van Belle, V., Pelckmans, K., Suykens, J. A. K., and Van Huffel, S.
@@ -359,7 +366,8 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         -------
         self
         """
-        X, event, time = check_arrays_survival(X, y)
+        X = self._validate_data(X, ensure_min_samples=2)
+        event, time = check_array_survival(X, y)
         self._fit(X, event, time)
 
         return self
@@ -380,6 +388,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         y : ndarray, shape = (n_samples,)
             Predicted risk.
         """
+        X = self._validate_data(X, reset=False)
         K = self._get_kernel(X, self.X_fit_)
         pred = -numpy.dot(self.coef_, K.T)
         return pred.ravel()
@@ -463,6 +472,13 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
 
     coef_ : ndarray, shape = (n_samples,)
         Coefficients of the features in the decision function.
+
+    n_features_in_ : int
+        Number of features seen during ``fit``.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
 
     References
     ----------

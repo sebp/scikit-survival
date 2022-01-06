@@ -11,14 +11,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numpy
-from sklearn.base import BaseEstimator, MetaEstimatorMixin
-from sklearn.utils import tosequence
-from sklearn.utils.metaestimators import if_delegate_has_method
+from sklearn.base import MetaEstimatorMixin, clone
+from sklearn.utils.metaestimators import _BaseComposition, if_delegate_has_method
 
 from ..base import SurvivalAnalysisMixin
 
 
-class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, BaseEstimator):
+class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
     """Meta estimator that combines multiple base learners.
 
     By default, base estimators' output corresponds to the array returned
@@ -37,21 +36,37 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, BaseEstimator):
 
     probabilities : bool, optional, default: True
         Whether to allow using `predict_proba` method of base learners, if available.
-    """
 
+    Attributes
+    ----------
+    estimators_ : list of estimators
+        The elements of the estimators parameter, having been fitted on the
+        training data.
+
+    named_estimators_ : dict
+        Attribute to access any fitted sub-estimators by name.
+
+    final_estimator_ : estimator
+        The estimator which combines the output of `estimators_`.
+
+    n_features_in_ : int
+        Number of features seen during ``fit``.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
+    """
     def __init__(self, meta_estimator, base_estimators, probabilities=True):
         self.meta_estimator = meta_estimator
+        self.base_estimators = base_estimators
         self.probabilities = probabilities
 
-        self.named_estimators = dict(base_estimators)
-        names, estimators = zip(*base_estimators)
-        if len(self.named_estimators) != len(base_estimators):
+        self._extra_params = ["meta_estimator", "base_estimators", "probabilities"]
+
+    def _validate_estimators(self):
+        names, estimators = zip(*self.base_estimators)
+        if len(set(names)) != len(self.base_estimators):
             raise ValueError("Names provided are not unique: %s" % (names,))
-
-        # shallow copy of steps
-        self.base_estimators = tosequence(zip(names, estimators))
-
-        self._extra_params = ["meta_estimator", "probabilities"]
 
         for t in estimators:
             if not hasattr(t, "fit") or not (hasattr(t, "predict") or hasattr(t, "predict_proba")):
@@ -59,23 +74,56 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, BaseEstimator):
                                 "fit and predict/predict_proba"
                                 " '%s' (type %s) doesn't)" % (t, type(t)))
 
-        if not hasattr(meta_estimator, "fit"):
+        if not hasattr(self.meta_estimator, "fit"):
             raise TypeError("meta estimator should implement fit "
                             "'%s' (type %s) doesn't)"
-                            % (meta_estimator, type(meta_estimator)))
+                            % (self.meta_estimator, type(self.meta_estimator)))
+
+    def set_params(self, **params):
+        """
+        Set the parameters of an estimator from the ensemble.
+
+        Valid parameter keys can be listed with `get_params()`. Note that you
+        can directly set the parameters of the estimators contained in
+        `estimators`.
+
+        Parameters
+        ----------
+        **params : keyword arguments
+            Specific parameters using e.g.
+            `set_params(parameter_name=new_value)`. In addition, to setting the
+            parameters of the estimator, the individual estimator of the
+            estimators can also be set, or can be removed by setting them to
+            'drop'.
+
+        Returns
+        -------
+        self : object
+            Estimator instance.
+        """
+        super()._set_params("base_estimators", **params)
+        return self
 
     def get_params(self, deep=True):
-        if not deep:
-            return super().get_params(deep=False)
+        """
+        Get the parameters of an estimator from the ensemble.
 
-        out = self.named_estimators.copy()
-        for name, estimator in self.named_estimators.items():
-            for key, value in estimator.get_params(deep=True).items():
-                out['%s__%s' % (name, key)] = value
+        Returns the parameters given in the constructor as well as the
+        estimators contained within the `estimators` parameter.
 
-        for param in self._extra_params:
-            out[param] = getattr(self, param)
-        return out
+        Parameters
+        ----------
+        deep : bool, default=True
+            Setting it to True gets the various estimators and the parameters
+            of the estimators as well.
+
+        Returns
+        -------
+        params : dict
+            Parameter and estimator names mapped to their values or parameter
+            names mapped to their values.
+        """
+        return super()._get_params("base_estimators", deep=deep)
 
     def _split_fit_params(self, fit_params):
         fit_params_steps = {step: {} for step, _ in self.base_estimators}
@@ -85,14 +133,32 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, BaseEstimator):
         return fit_params_steps
 
     def _fit_estimators(self, X, y=None, **fit_params):
+        if hasattr(self, "feature_names_in_"):
+            # Delete the attribute when the estimator is fitted on a new dataset
+            # that has no feature names.
+            delattr(self, "feature_names_in_")
+
         fit_params_steps = self._split_fit_params(fit_params)
+        names = []
+        estimators = []
         for name, estimator in self.base_estimators:
-            estimator.fit(X, y, **fit_params_steps[name])
+            est = clone(estimator).fit(X, y, **fit_params_steps[name])
+
+            if hasattr(est, "n_features_in_"):
+                self.n_features_in_ = est.n_features_in_
+            if hasattr(est, "feature_names_in_"):
+                self.feature_names_in_ = est.feature_names_in_
+
+            estimators.append(est)
+            names.append(name)
+
+        self.named_estimators = dict(zip(names, estimators))
+        self.estimators_ = estimators
 
     def _predict_estimators(self, X):
         Xt = None
         start = 0
-        for _, estimator in self.base_estimators:
+        for estimator in self.estimators_:
 
             if self.probabilities and hasattr(estimator, "predict_proba"):
                 p = estimator.predict_proba(X)
@@ -129,10 +195,10 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, BaseEstimator):
         -------
         self
         """
-        X = numpy.asarray(X)
+        self._validate_estimators()
         self._fit_estimators(X, y, **fit_params)
         Xt = self._predict_estimators(X)
-        self.meta_estimator.fit(Xt, y)
+        self.final_estimator_ = self.meta_estimator.fit(Xt, y)
 
         return self
 
@@ -155,9 +221,8 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, BaseEstimator):
             on the return value of meta estimator's `predict`
             method.
         """
-        X = numpy.asarray(X)
         Xt = self._predict_estimators(X)
-        return self.meta_estimator.predict(Xt)
+        return self.final_estimator_.predict(Xt)
 
     @if_delegate_has_method(delegate='meta_estimator')
     def predict_proba(self, X):
@@ -178,9 +243,8 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, BaseEstimator):
             on the return value of meta estimator's `predict`
             method.
         """
-        X = numpy.asarray(X)
         Xt = self._predict_estimators(X)
-        return self.meta_estimator.predict_proba(Xt)
+        return self.final_estimator_.predict_proba(Xt)
 
     @if_delegate_has_method(delegate='meta_estimator')
     def predict_log_proba(self, X):
@@ -201,6 +265,5 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, BaseEstimator):
             on the return value of meta estimator's `predict`
             method.
         """
-        X = numpy.asarray(X)
         Xt = self._predict_estimators(X)
-        return self.meta_estimator.predict_log_proba(Xt)
+        return self.final_estimator_.predict_log_proba(Xt)

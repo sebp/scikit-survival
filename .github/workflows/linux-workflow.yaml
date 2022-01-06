@@ -12,11 +12,11 @@ jobs:
     strategy:
       matrix:
         config:
-          - py37_pandas025_numpy117_sklearn024
-          - py38_pandas10_numpy118_sklearn024
-          - py38_pandas11_numpy119_sklearn024
-          - py39_pandas12_numpy120_sklearn024
-          - py39_pandas13_numpy121_sklearn024
+          - py37_pandas025_numpy117_sklearn10
+          - py38_pandas10_numpy118_sklearn10
+          - py38_pandas11_numpy119_sklearn10
+          - py39_pandas12_numpy120_sklearn10
+          - py39_pandas13_numpy121_sklearn10
     steps:
       - name: Checkout
         uses: actions/checkout@v2

@@ -26,7 +26,7 @@ from sklearn.utils.validation import check_is_fitted
 from ..base import SurvivalAnalysisMixin
 from ..bintrees import AVLTree, RBTree
 from ..exceptions import NoComparablePairException
-from ..util import check_arrays_survival
+from ..util import check_array_survival
 from ._prsvm import survival_constraints_simple, survival_constraints_with_support_vectors
 
 
@@ -664,6 +664,9 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
     def predict(self, X):
         """Predict risk score"""
 
+    def _validate_for_fit(self, X):
+        return self._validate_data(X, ensure_min_samples=2)
+
     def fit(self, X, y):
         """Build a survival support vector machine model from training data.
 
@@ -681,7 +684,8 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
         -------
         self
         """
-        X, event, time = check_arrays_survival(X, y)
+        X = self._validate_for_fit(X)
+        event, time = check_array_survival(X, y)
 
         if self.alpha <= 0:
             raise ValueError("alpha must be positive")
@@ -821,6 +825,13 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     optimizer_result_ : :class:`scipy.optimize.optimize.OptimizeResult`
         Stats returned by the optimizer. See :class:`scipy.optimize.optimize.OptimizeResult`.
 
+    n_features_in_ : int
+        Number of features seen during ``fit``.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
+
     See also
     --------
     FastKernelSurvivalSVM
@@ -866,7 +877,7 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
             Predicted ranks.
         """
         check_is_fitted(self, "coef_")
-        X = check_array(X)
+        X = self._validate_data(X, reset=False)
 
         val = numpy.dot(X, self.coef_)
         if hasattr(self, "intercept_"):
@@ -953,6 +964,13 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     optimizer_result_ : :class:`scipy.optimize.optimize.OptimizeResult`
         Stats returned by the optimizer. See :class:`scipy.optimize.optimize.OptimizeResult`.
 
+    n_features_in_ : int
+        Number of features seen during ``fit``.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
+
     See also
     --------
     FastSurvivalSVM
@@ -1013,6 +1031,11 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
 
         return optimizer
 
+    def _validate_for_fit(self, X):
+        if self.kernel != "precomputed":
+            return super()._validate_for_fit(X)
+        return X
+
     def _fit(self, X, time, event, samples_order):
         # don't reorder X here, because it might be a precomputed kernel matrix
         kernel_mat = self._get_kernel(X)
@@ -1050,6 +1073,7 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         y : ndarray, shape = (n_samples,)
             Predicted ranks.
         """
+        X = self._validate_data(X, reset=False)
         kernel_mat = self._get_kernel(X, self.fit_X_)
 
         val = numpy.dot(kernel_mat, self.coef_)

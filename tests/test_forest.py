@@ -47,7 +47,7 @@ def test_fit_int_time(make_whas500, forest_cls):
     forest_i = forest_cls(oob_score=True, random_state=2).fit(whas500.x[50:], y_int[50:])
 
     assert len(forest_f.estimators_) == len(forest_i.estimators_)
-    assert forest_f.n_features_ == forest_i.n_features_
+    assert forest_f.n_features_in_ == forest_i.n_features_in_
     assert forest_f.oob_score_ == forest_i.oob_score_
     assert_array_almost_equal(forest_f.event_times_, forest_i.event_times_)
 
@@ -238,16 +238,16 @@ def test_pipeline_predict(breast_cancer, forest_cls, func):
     'max_samples, exc_type, exc_msg',
     [(int(1e9), ValueError,
       "`max_samples` must be in range 1 to 500 but got value 1000000000"),
-     (1.0, ValueError,
-      r"`max_samples` must be in range \(0, 1\) but got value 1.0"),
+     (1.0 + 1e-7, ValueError,
+      r"`max_samples` must be in range \(0\.0, 1\.0] but got value 1.0"),
      (2.0, ValueError,
-      r"`max_samples` must be in range \(0, 1\) but got value 2.0"),
+      r"`max_samples` must be in range \(0\.0, 1\.0] but got value 2.0"),
      (0.0, ValueError,
-      r"`max_samples` must be in range \(0, 1\) but got value 0.0"),
+      r"`max_samples` must be in range \(0\.0, 1\.0] but got value 0.0"),
      (numpy.nan, ValueError,
-      r"`max_samples` must be in range \(0, 1\) but got value nan"),
+      r"`max_samples` must be in range \(0\.0, 1\.0] but got value nan"),
      (numpy.inf, ValueError,
-      r"`max_samples` must be in range \(0, 1\) but got value inf"),
+      r"`max_samples` must be in range \(0\.0, 1\.0] but got value inf"),
      ('str max_samples?!', TypeError,
       r"`max_samples` should be int or float, but got "
       r"type '\<class 'str'\>'"),

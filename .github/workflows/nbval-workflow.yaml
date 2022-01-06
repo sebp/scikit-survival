@@ -16,7 +16,7 @@ jobs:
       - name: Set dependencies
         id: dependencies
         env:
-          DEPS_CONFIG: py38_pandas11_numpy119_sklearn024
+          DEPS_CONFIG: py38_pandas11_numpy119_sklearn10
         run: |
           source ci/deps/${DEPS_CONFIG}.sh
           echo "CONDA_PYTHON_VERSION=${CONDA_PYTHON_VERSION}" >> $GITHUB_ENV

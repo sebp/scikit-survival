@@ -26,7 +26,7 @@ from sklearn.utils.validation import check_is_fitted
 
 from ..base import SurvivalAnalysisMixin
 from ..linear_model.coxph import BreslowEstimator
-from ..util import check_arrays_survival
+from ..util import check_array_survival
 from .survival_loss import LOSS_FUNCTIONS, CensoredSquaredLoss, CoxPH, IPCWLeastSquaresError
 
 __all__ = ['ComponentwiseGradientBoostingSurvivalAnalysis', 'GradientBoostingSurvivalAnalysis']
@@ -147,6 +147,13 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         relative to the previous iteration.
         ``oob_improvement_[0]`` is the improvement in
         loss of the first stage over the ``init`` estimator.
+
+    n_features_in_ : int
+        Number of features seen during ``fit``.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
 
     References
     ----------
@@ -273,10 +280,10 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         -------
         self
         """
-        X, event, time = check_arrays_survival(X, y)
-        X = self._validate_data(X)
+        X = self._validate_data(X, ensure_min_samples=2)
+        event, time = check_array_survival(X, y)
 
-        n_samples, n_features = X.shape
+        n_samples = X.shape[0]
 
         if sample_weight is None:
             sample_weight = numpy.ones(n_samples, dtype=numpy.float32)
@@ -289,7 +296,6 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         self._check_params()
 
         self.estimators_ = []
-        self.n_features_ = n_features
         self.loss_ = LOSS_FUNCTIONS[self.loss]()
         if isinstance(self.loss_, (CensoredSquaredLoss, IPCWLeastSquaresError)):
             time = numpy.log(time)
@@ -303,12 +309,22 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         self._fit(X, event, time, sample_weight, random_state)
 
         if isinstance(self.loss_, CoxPH):
-            risk_scores = self.predict(X)
+            risk_scores = self._predict(X)
             self._baseline_model = BreslowEstimator().fit(risk_scores, event, time)
         else:
             self._baseline_model = None
 
         return self
+
+    def _predict(self, X):
+        n_samples = X.shape[0]
+        Xi = numpy.column_stack((numpy.ones(n_samples), X))
+        pred = numpy.zeros(n_samples, dtype=float)
+
+        for estimator in self.estimators_:
+            pred += self.learning_rate * estimator.predict(Xi)
+
+        return self.loss_._scale_raw_prediction(pred)
 
     def predict(self, X):
         """Predict risk scores.
@@ -331,14 +347,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         check_is_fitted(self, 'estimators_')
         X = self._validate_data(X, reset=False)
 
-        n_samples = X.shape[0]
-        Xi = numpy.column_stack((numpy.ones(n_samples), X))
-        pred = numpy.zeros(n_samples, dtype=float)
-
-        for estimator in self.estimators_:
-            pred += self.learning_rate * estimator.predict(Xi)
-
-        return self.loss_._scale_raw_prediction(pred)
+        return self._predict(X)
 
     def _get_baseline_model(self):
         if self._baseline_model is None:
@@ -457,7 +466,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
     @property
     def coef_(self):
-        coef = numpy.zeros(self.n_features_ + 1, dtype=float)
+        coef = numpy.zeros(self.n_features_in_ + 1, dtype=float)
 
         for estimator in self.estimators_:
             coef[estimator.component] += self.learning_rate * estimator.coef_
@@ -466,7 +475,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
     @property
     def feature_importances_(self):
-        imp = numpy.empty(self.n_features_ + 1, dtype=object)
+        imp = numpy.empty(self.n_features_in_ + 1, dtype=object)
         for i in range(imp.shape[0]):
             imp[i] = []
 
@@ -543,10 +552,6 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         for best performance; the best value depends on the interaction
         of the input variables.
         Ignored if ``max_leaf_nodes`` is not None.
-
-    min_impurity_split : float,
-        Threshold for early stopping in tree growth. A node will split
-        if its impurity is above the threshold, otherwise it is a leaf.
 
     min_impurity_decrease : float, optional, default: 0.
         A node will be split if this split induces a decrease of the impurity
@@ -639,6 +644,13 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         ``oob_improvement_[0]`` is the improvement in
         loss of the first stage over the ``init`` estimator.
 
+    n_features_in_ : int
+        Number of features seen during ``fit``.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
+
     References
     ----------
     .. [1] J. H. Friedman, "Greedy function approximation: A gradient boosting machine,"
@@ -658,7 +670,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                  criterion='friedman_mse',
                  min_samples_split=2,
                  min_samples_leaf=1, min_weight_fraction_leaf=0.,
-                 max_depth=3, min_impurity_split=None,
+                 max_depth=3,
                  min_impurity_decrease=0., random_state=None,
                  max_features=None, max_leaf_nodes=None,
                  subsample=1.0, dropout_rate=0.0,
@@ -673,7 +685,6 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                          min_samples_leaf=min_samples_leaf,
                          min_weight_fraction_leaf=min_weight_fraction_leaf,
                          max_depth=max_depth,
-                         min_impurity_split=min_impurity_split,
                          min_impurity_decrease=min_impurity_decrease,
                          init=None,
                          random_state=random_state,
@@ -730,24 +741,24 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
     def _check_max_features(self):
         if isinstance(self.max_features, str):
             if self.max_features == "auto":
-                max_features = self.n_features_
+                max_features = self.n_features_in_
             elif self.max_features == "sqrt":
-                max_features = max(1, int(numpy.sqrt(self.n_features_)))
+                max_features = max(1, int(numpy.sqrt(self.n_features_in_)))
             elif self.max_features == "log2":
-                max_features = max(1, int(numpy.log2(self.n_features_)))
+                max_features = max(1, int(numpy.log2(self.n_features_in_)))
             else:
                 raise ValueError("Invalid value for max_features: %r. "
                                  "Allowed string values are 'auto', 'sqrt' "
                                  "or 'log2'." % self.max_features)
         elif self.max_features is None:
-            max_features = self.n_features_
+            max_features = self.n_features_in_
         elif isinstance(self.max_features, (numbers.Integral, numpy.integer)):
             if self.max_features < 1:
-                raise ValueError("max_features must be in (0, n_features]")
+                raise ValueError("max_features must be in (0, n_features_in_]")
             max_features = self.max_features
         else:  # float
             if 0. < self.max_features <= 1.:
-                max_features = max(int(self.max_features * self.n_features_), 1)
+                max_features = max(int(self.max_features * self.n_features_in_), 1)
             else:
                 raise ValueError("max_features must be in (0, 1.0]")
         return max_features
@@ -780,7 +791,6 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                 min_samples_split=self.min_samples_split,
                 min_samples_leaf=self.min_samples_leaf,
                 min_weight_fraction_leaf=self.min_weight_fraction_leaf,
-                min_impurity_split=self.min_impurity_split,
                 min_impurity_decrease=self.min_impurity_decrease,
                 max_features=self.max_features,
                 max_leaf_nodes=self.max_leaf_nodes,
@@ -925,10 +935,12 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         self : object
             Returns self.
         """
-        X, event, time = check_arrays_survival(X, y, accept_sparse=['csr', 'csc', 'coo'], dtype=DTYPE)
-        n_samples, self.n_features_ = X.shape
+        X = self._validate_data(
+            X, ensure_min_samples=2, order='C', accept_sparse=['csr', 'csc', 'coo'], dtype=DTYPE,
+        )
+        event, time = check_array_survival(X, y)
+        n_samples = X.shape[0]
 
-        X = X.astype(DTYPE)
         sample_weight_is_none = sample_weight is None
         if sample_weight_is_none:
             sample_weight = numpy.ones(n_samples, dtype=numpy.float32)
@@ -968,7 +980,10 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         self.n_estimators_ = n_stages
 
         if isinstance(self.loss_, CoxPH):
-            risk_scores = self.predict(X)
+            X_pred = X
+            if issparse(X):
+                X_pred = X.asformat('csr')
+            risk_scores = self._predict(X_pred)
             self._baseline_model = BreslowEstimator().fit(risk_scores, event, time)
         else:
             self._baseline_model = None
@@ -1012,6 +1027,13 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
     def _decision_function(self, X):  # pragma: no cover
         return self._raw_predict(X)
 
+    def _predict(self, X):
+        score = self._raw_predict(X)
+        if score.shape[1] == 1:
+            score = score.ravel()
+
+        return self.loss_._scale_raw_prediction(score)
+
     def predict(self, X):
         """Predict risk scores.
 
@@ -1032,12 +1054,8 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         """
         check_is_fitted(self, 'estimators_')
 
-        X = check_array(X, dtype=DTYPE, order="C", accept_sparse="csr")
-        score = self._raw_predict(X)
-        if score.shape[1] == 1:
-            score = score.ravel()
-
-        return self.loss_._scale_raw_prediction(score)
+        X = self._validate_data(X, reset=False, order="C", accept_sparse="csr", dtype=DTYPE)
+        return self._predict(X)
 
     def staged_predict(self, X):
         """Predict risk scores at each stage for X.

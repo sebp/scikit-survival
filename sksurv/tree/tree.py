@@ -12,7 +12,7 @@ from sklearn.utils.validation import check_is_fitted, check_random_state
 
 from ..base import SurvivalAnalysisMixin
 from ..functions import StepFunction
-from ..util import check_arrays_survival
+from ..util import check_array_survival
 from ._criterion import LogrankCriterion
 
 __all__ = ["SurvivalTree"]
@@ -109,8 +109,12 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
     max_features_ : int,
         The inferred value of max_features.
 
-    n_features_ : int
-        The number of features when ``fit`` is performed.
+    n_features_in_ : int
+        Number of features seen during ``fit``.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
 
     tree_ : Tree object
         The underlying Tree object. Please refer to
@@ -179,7 +183,8 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         random_state = check_random_state(self.random_state)
 
         if check_input:
-            X, event, time = check_arrays_survival(X, y)
+            X = self._validate_data(X, ensure_min_samples=2)
+            event, time = check_array_survival(X, y)
             time = time.astype(np.float64)
             self.event_times_ = np.unique(time[event])
 
@@ -189,8 +194,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         else:
             y_numeric, self.event_times_ = y
 
-        n_samples, self.n_features_ = X.shape
-        self.n_features_in_ = self.n_features_
+        n_samples, self.n_features_in_ = X.shape
         params = self._check_params(n_samples)
 
         if not isinstance(X_idx_sorted, str) or X_idx_sorted != "deprecated":
@@ -218,26 +222,28 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
                 params["min_weight_leaf"],
                 random_state)
 
-        self.tree_ = Tree(self.n_features_, self.n_classes_, self.n_outputs_)
+        self.tree_ = Tree(self.n_features_in_, self.n_classes_, self.n_outputs_)
 
         # Use BestFirst if max_leaf_nodes given; use DepthFirst otherwise
         if params["max_leaf_nodes"] < 0:
-            builder = DepthFirstTreeBuilder(splitter,
-                                            params["min_samples_split"],
-                                            params["min_samples_leaf"],
-                                            params["min_weight_leaf"],
-                                            params["max_depth"],
-                                            0.0,  # min_impurity_decrease
-                                            params["min_impurity_split"])
+            builder = DepthFirstTreeBuilder(
+                splitter,
+                params["min_samples_split"],
+                params["min_samples_leaf"],
+                params["min_weight_leaf"],
+                params["max_depth"],
+                0.0,  # min_impurity_decrease
+            )
         else:
-            builder = BestFirstTreeBuilder(splitter,
-                                           params["min_samples_split"],
-                                           params["min_samples_leaf"],
-                                           params["min_weight_leaf"],
-                                           params["max_depth"],
-                                           params["max_leaf_nodes"],
-                                           0.0,  # min_impurity_decrease
-                                           params["min_impurity_split"])
+            builder = BestFirstTreeBuilder(
+                splitter,
+                params["min_samples_split"],
+                params["min_samples_leaf"],
+                params["min_weight_leaf"],
+                params["max_depth"],
+                params["max_leaf_nodes"],
+                0.0,  # min_impurity_decrease
+            )
 
         builder.build(self.tree_, X, y_numeric, sample_weight)
 
@@ -261,14 +267,12 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             raise ValueError("min_weight_fraction_leaf must in [0, 0.5]")
 
         min_weight_leaf = self.min_weight_fraction_leaf * n_samples
-        min_impurity_split = 1e-7
 
         return {
             "max_depth": max_depth,
             "max_leaf_nodes": max_leaf_nodes,
             "min_samples_leaf": min_samples_leaf,
             "min_samples_split": min_samples_split,
-            "min_impurity_split": min_impurity_split,
             "min_weight_leaf": min_weight_leaf,
         }
 
@@ -320,25 +324,25 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
     def _check_max_features(self):
         if isinstance(self.max_features, str):
             if self.max_features in ("auto", "sqrt"):
-                max_features = max(1, int(np.sqrt(self.n_features_)))
+                max_features = max(1, int(np.sqrt(self.n_features_in_)))
             elif self.max_features == "log2":
-                max_features = max(1, int(np.log2(self.n_features_)))
+                max_features = max(1, int(np.log2(self.n_features_in_)))
             else:
                 raise ValueError(
                     'Invalid value for max_features. Allowed string '
                     'values are "auto", "sqrt" or "log2".')
         elif self.max_features is None:
-            max_features = self.n_features_
+            max_features = self.n_features_in_
         elif isinstance(self.max_features, (numbers.Integral, np.integer)):
             max_features = self.max_features
         else:  # float
             if self.max_features > 0.0:
                 max_features = max(1,
-                                   int(self.max_features * self.n_features_))
+                                   int(self.max_features * self.n_features_in_))
             else:
                 max_features = 0
 
-        if not 0 < max_features <= self.n_features_:
+        if not 0 < max_features <= self.n_features_in_:
             raise ValueError("max_features must be in (0, n_features]")
 
         self.max_features_ = max_features

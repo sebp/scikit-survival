@@ -21,7 +21,7 @@ from ..base import SurvivalAnalysisMixin
 from ..metrics import concordance_index_censored
 from ..tree import SurvivalTree
 from ..tree.tree import _array_to_step_function
-from ..util import check_arrays_survival
+from ..util import check_array_survival
 
 __all__ = ["RandomSurvivalForest", "ExtraSurvivalTrees"]
 
@@ -85,9 +85,10 @@ class _BaseSurvivalForest(BaseForest,
         -------
         self
         """
-        X, event, time = check_arrays_survival(X, y)
+        X = self._validate_data(X, ensure_min_samples=2)
+        event, time = check_array_survival(X, y)
 
-        self.n_features_ = X.shape[1]
+        self.n_features_in_ = X.shape[1]
         time = time.astype(np.float64)
         self.event_times_ = np.unique(time[event])
         self.n_outputs_ = self.event_times_.shape[0]
@@ -153,11 +154,11 @@ class _BaseSurvivalForest(BaseForest,
             self.estimators_.extend(trees)
 
         if self.oob_score:
-            self._set_oob_score(X, (event, time))
+            self._set_oob_score_and_attributes(X, (event, time))
 
         return self
 
-    def _set_oob_score(self, X, y):
+    def _set_oob_score_and_attributes(self, X, y):
         """Calculate out of bag predictions and score."""
         X = check_array(X, dtype=DTYPE)
 
@@ -378,8 +379,12 @@ class RandomSurvivalForest(_BaseSurvivalForest):
     event_times_ : array of shape = (n_event_times,)
         Unique time points where events occurred.
 
-    n_features_ : int
-        The number of features when ``fit`` is performed.
+    n_features_in_ : int
+        Number of features seen during ``fit``.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
 
     oob_score_ : float
         Concordance index of the training dataset obtained
@@ -699,8 +704,12 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
     event_times_ : array of shape = (n_event_times,)
         Unique time points where events occurred.
 
-    n_features_ : int
+    n_features_in_ : int
         The number of features when ``fit`` is performed.
+
+    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
 
     oob_score_ : float
         Concordance index of the training dataset obtained
