@@ -1,6 +1,45 @@
 Release Notes
 =============
 
+scikit-survival 0.17.0 (2022-01-09)
+-----------------------------------
+
+This release adds support for scikit-learn 1.0, which includes
+support for feature names.
+If you pass a pandas dataframe to ``fit``, the estimator will
+set a `feature_names_in_` attribute containing the feature names.
+When a dataframe is passed to ``predict``, it is checked that the
+column names are consistent with those passed to ``fit``. See the
+`scikit-learn release highlights <https://scikit-learn.org/stable/auto_examples/release_highlights/plot_release_highlights_1_0_0.html#feature-names-support>`_
+for details.
+
+Bug fixes
+^^^^^^^^^
+- Fix a variety of build problems with LLVM (:issue:`243`).
+
+Enhancements
+^^^^^^^^^^^^
+- Add support for ``feature_names_in_`` and ``n_features_in_``
+  to all estimators and transforms.
+- Add :meth:`sksurv.preprocessing.OneHotEncoder.get_feature_names_out`.
+- Update bundeled version of Eigen to 3.3.9.
+
+Backwards incompatible changes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- Drop ``min_impurity_split`` parameter from
+  :class:`sksurv.ensemble.GradientBoostingSurvivalAnalysis`.
+- ``base_estimators`` and ``meta_estimator`` attributes of
+  :class:`sksurv.meta.Stacking` do not contain fitted models anymore,
+  use ``estimators_`` and ``final_estimator_``, respectively.
+
+Deprecations
+^^^^^^^^^^^^
+- The ``normalize`` parameter of :class:`sksurv.linear_model.IPCRidge`
+  is deprecated and will be removed in a future version. Instead, use
+  a sciki-learn pipeline:
+  ``make_pipeline(StandardScaler(with_mean=False), IPCRidge())``.
+
+
 scikit-survival 0.16.0 (2021-10-30)
 -----------------------------------
 
