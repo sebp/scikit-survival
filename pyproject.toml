@@ -1,8 +1,8 @@
 [build-system]
 requires = [
-    "setuptools>=42",
+    "setuptools>=45",
     "wheel",
-    "setuptools_scm[toml]>=3.4",
+    "setuptools_scm[toml]>=6.4",
     "Cython>=0.29.16",
     "numpy==1.14.6; python_version=='3.7' and platform_system!='AIX'",
     "numpy==1.17.3; python_version=='3.8' and platform_system!='AIX'",

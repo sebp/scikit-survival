@@ -212,7 +212,6 @@ def setup_package():
                      ],
         zip_safe=False,
         include_package_data=True,
-        use_scm_version=True,
         python_requires='>=3.7',
         install_requires=parse_requirements('requirements/prod.txt'),
         cmdclass={"clean": clean},
