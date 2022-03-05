@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+scikit-survival 0.17.1 (2022-03-05)
+-----------------------------------
+
+This release adds support for Python 3.10.
+
+
 scikit-survival 0.17.0 (2022-01-09)
 -----------------------------------
 
