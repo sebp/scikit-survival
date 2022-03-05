@@ -10,16 +10,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from distutils.version import LooseVersion
 import os
 from pathlib import Path
 import shutil
 import sys
 
+from packaging.version import Version
 from pkg_resources import parse_requirements as _parse_requirements
 from setuptools import Command, Extension, find_packages, setup
 
-CYTHON_MIN_VERSION = '0.29'
+CYTHON_MIN_VERSION = Version('0.29')
 
 
 # adapted from bottleneck's setup.py
@@ -112,7 +112,7 @@ def _check_cython_version():
         # Re-raise with more informative error message instead:
         raise ModuleNotFoundError(message)
 
-    if LooseVersion(Cython.__version__) < CYTHON_MIN_VERSION:
+    if Version(Cython.__version__) < CYTHON_MIN_VERSION:
         message += (" The current version of Cython is {} installed in {}."
                     .format(Cython.__version__, Cython.__path__))
         raise ValueError(message)
