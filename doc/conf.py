@@ -13,6 +13,7 @@
 # serve to show the default.
 
 from datetime import datetime
+from importlib.metadata import version as get_version
 import inspect
 import os
 from pathlib import Path
@@ -21,7 +22,8 @@ import sys
 
 from nbconvert.preprocessors import Preprocessor
 import nbsphinx
-from setuptools_scm import get_version
+
+import sksurv
 
 # on_rtd is whether we are on readthedocs.org, this line of code grabbed from docs.readthedocs.org
 # https://docs.readthedocs.io/en/latest/faq.html?highlight=environ#how-do-i-change-behavior-for-read-the-docs
@@ -86,9 +88,8 @@ copyright = f'2015-{current_year}, Sebastian Pölsterl and contributors'
 #
 # The full version, including alpha/beta/rc tags.
 if on_rtd:
-    release = get_version(root='..', relative_to=__file__)
+    release = get_version(project)
 else:
-    import sksurv
     release = sksurv.__version__
 
 # The short X.Y.Z version.
