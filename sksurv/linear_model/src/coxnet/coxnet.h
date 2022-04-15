@@ -136,7 +136,7 @@ Coxnet<T, S, U>::update ()
 
         while (k < n_samples && ti == time[k]) {
             /* abort if values are too large */
-            if (!isfinite(exp_xw[k])) {
+            if (!std::isfinite(exp_xw[k])) {
                 m_params.error_type = WEIGHT_TOO_LARGE;
             }
             v += exp_xw[k] * norm_factor;
