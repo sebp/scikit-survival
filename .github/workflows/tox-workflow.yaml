@@ -25,5 +25,6 @@ jobs:
         run: cat .tox/py39-${{ matrix.tox_env }}/log/*.log
         if: ${{ failure() }}
     strategy:
+      fail-fast: false
       matrix:
         tox_env: [flake8, isort, docs]
