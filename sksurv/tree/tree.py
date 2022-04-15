@@ -12,7 +12,7 @@ from sklearn.utils.validation import check_is_fitted, check_random_state
 
 from ..base import SurvivalAnalysisMixin
 from ..functions import StepFunction
-from ..util import check_array_survival
+from ..util import build_survival_tree_array
 from ._criterion import LogrankCriterion
 
 __all__ = ["SurvivalTree"]
@@ -167,7 +167,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         y : structured array, shape = (n_samples,)
             A structured array containing the binary event indicator
             as first field, and time of event or time of censoring as
-            second field.
+            second field, and optionally the time of entry as third field.
 
         check_input : boolean, default: True
             Allow to bypass several input checking.
@@ -180,17 +180,13 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         -------
         self
         """
-        random_state = check_random_state(self.random_state)
+        if len(y) == 0:
+            raise ValueError("Empty y array.")
 
+        random_state = check_random_state(self.random_state)
         if check_input:
             X = self._validate_data(X, ensure_min_samples=2)
-            event, time = check_array_survival(X, y)
-            time = time.astype(np.float64)
-            self.event_times_ = np.unique(time[event])
-
-            y_numeric = np.empty((X.shape[0], 2), dtype=np.float64)
-            y_numeric[:, 0] = time
-            y_numeric[:, 1] = event.astype(np.float64)
+            y_numeric, self.event_times_ = build_survival_tree_array(X, y)
         else:
             y_numeric, self.event_times_ = y
 
@@ -211,7 +207,9 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         self.n_classes_ = np.ones(self.n_outputs_, dtype=np.intp) * 2
 
         # Build tree
-        criterion = LogrankCriterion(self.n_outputs_, n_samples, self.event_times_)
+        #with_entry_times = (y_numeric.shape[1] == 3)
+        with_entry_times = False
+        criterion = LogrankCriterion(self.n_outputs_, n_samples, self.event_times_, with_entry_times)
 
         splitter = self.splitter
         if not isinstance(self.splitter, Splitter):

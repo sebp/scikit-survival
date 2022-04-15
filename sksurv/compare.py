@@ -55,7 +55,6 @@ def compare_survival(y, group_indicator, return_stats=False):
            A Class of Hypothesis Tests for One and Two Samples of Censored Survival Data.
            Communications In Statistics 10 (1981): 763-794.
     """
-
     event, time = check_array_survival(group_indicator, y)
     group_indicator = check_array(group_indicator, dtype="O", ensure_2d=False)
 

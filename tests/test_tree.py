@@ -496,3 +496,21 @@ def test_X_idx_sorted(fake_data, val):
             match="The parameter 'X_idx_sorted' is deprecated and has no effect."
     ):
         tree.fit(X, y, X_idx_sorted=X_idx_sorted)
+
+def test_left_truncation(breast_cancer):
+    X, y_orig = breast_cancer
+    shift = 1000
+
+    dt = numpy.dtype(y_orig.dtype.descr + [('entry', '<f8')])
+    y_shifted = numpy.zeros(y_orig.shape, dtype=dt)
+    y_shifted['e.tdm'] = y_orig['e.tdm']
+    y_shifted['t.tdm'] = shift + y_orig['t.tdm']
+    y_shifted['entry'] = shift * numpy.ones(y_orig.shape, dtype=numpy.float64)
+
+    tree_without_entries = SurvivalTree().fit(X, y_orig)
+    tree_with_entries = SurvivalTree().fit(X, y_shifted)
+
+    array = tree_without_entries.predict_survival_function(X[:1], return_array=True)[0]
+    shifted_array = tree_with_entries.predict_survival_function(X[:1], return_array=True)[0]
+    assert_array_equal(array, shifted_array)
+    assert_array_equal(tree_without_entries.event_times_ + shift, tree_with_entries.event_times_)

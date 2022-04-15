@@ -21,7 +21,7 @@ from ..base import SurvivalAnalysisMixin
 from ..metrics import concordance_index_censored
 from ..tree import SurvivalTree
 from ..tree.tree import _array_to_step_function
-from ..util import check_array_survival
+from ..util import build_survival_tree_array
 
 __all__ = ["RandomSurvivalForest", "ExtraSurvivalTrees"]
 
@@ -78,24 +78,17 @@ class _BaseSurvivalForest(BaseForest,
 
         y : structured array, shape = (n_samples,)
             A structured array containing the binary event indicator
-            as first field, and time of event or time of censoring as
-            second field.
+            as first field, time of event or time of censoring as
+            second field, and optionally time of entry as third field.
 
         Returns
         -------
         self
         """
         X = self._validate_data(X, ensure_min_samples=2)
-        event, time = check_array_survival(X, y)
-
         self.n_features_in_ = X.shape[1]
-        time = time.astype(np.float64)
-        self.event_times_ = np.unique(time[event])
+        y_numeric, self.event_times_, event = build_survival_tree_array(X, y, with_event=True)
         self.n_outputs_ = self.event_times_.shape[0]
-
-        y_numeric = np.empty((X.shape[0], 2), dtype=np.float64)
-        y_numeric[:, 0] = time
-        y_numeric[:, 1] = event.astype(np.float64)
 
         # Get bootstrap sample size
         n_samples_bootstrap = _get_n_samples_bootstrap(
@@ -154,7 +147,7 @@ class _BaseSurvivalForest(BaseForest,
             self.estimators_.extend(trees)
 
         if self.oob_score:
-            self._set_oob_score_and_attributes(X, (event, time))
+            self._set_oob_score_and_attributes(X, (event, y_numeric[:, 0]))
 
         return self
 

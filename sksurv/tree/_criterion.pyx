@@ -19,7 +19,7 @@ ctypedef struct Timepoint:
 
     SIZE_t index
     double time
-    double event
+    double event # <0: entry, 0: censored, >0: death
 
 
 ctypedef struct Riskset:
@@ -32,7 +32,6 @@ cdef int compare_timepoint_desc(const void* a, const void* b) nogil:
     """Comparison function for sort by time (descending order)."""
     cdef double ta = (<Timepoint *> a).time
     cdef double tb = (<Timepoint *> b).time
-
     if ta > tb:
         return -1
     if ta < tb:
@@ -53,6 +52,13 @@ cdef inline Timepoint* set_time_point(Timepoint * tp_ptr, SIZE_t i, const DOUBLE
     return tp_ptr
 
 
+cdef inline Timepoint* set_entry_time_point(Timepoint * tp_ptr, SIZE_t i, const DOUBLE_t[:, ::1] y) nogil:
+    tp_ptr.index = i
+    tp_ptr.time = y[i, 2]
+    tp_ptr.event = -1.
+    return tp_ptr
+
+
 cdef void compute_risksets(const Timepoint * time_arr, SIZE_t n_samples,
                            const DOUBLE_t[::1] event_times,
                            Riskset * riskset) nogil:
@@ -62,30 +68,43 @@ cdef void compute_risksets(const Timepoint * time_arr, SIZE_t n_samples,
     cdef SIZE_t n_event_times = event_times.shape[0]
     cdef SIZE_t idx = 0  # index over time_arr
     cdef SIZE_t idx_tp = n_event_times - 1  # index over event_times and riskset
+    cdef SIZE_t at_risk = 0  # population at risk
 
-    while idx_tp >= 0 and idx < n_samples:
+    while idx_tp >= 0 and idx < 2 * n_samples:
         time_idx = time_arr[idx].time
+        time_event = time_arr[idx].event
         tp = event_times[idx_tp]
         if time_idx < tp:
-            set_risk_set(&riskset[idx_tp], 0, idx)
+            set_risk_set(&riskset[idx_tp], 0, at_risk)
             idx_tp -= 1  # move to next smaller event time point
             continue
+
         if time_idx > tp:
             idx += 1  # move to to next smaller sample time point
+            if time_event < 0.0:
+                at_risk -= 1
+            else:
+                at_risk += 1
             continue
 
         total_events = 0
-        while idx < n_samples and tp == time_arr[idx].time:
-            if time_arr[idx].event != 0.0:
+        while idx < 2 * n_samples and tp == time_arr[idx].time:
+            if time_arr[idx].event > 0.0:
                 total_events += 1
+                
+            if time_arr[idx].event < 0.0:
+                at_risk -= 1
+            else:
+                at_risk += 1
             idx += 1
 
-        set_risk_set(&riskset[idx_tp], total_events, idx)
+
+        set_risk_set(&riskset[idx_tp], total_events, at_risk)
         idx_tp -= 1  # move to next smaller event time point
 
-    # for remaining smaller time points, everyone is at risk
+    # for remaining smaller time points, keep same population
     while idx_tp >= 0:
-        set_risk_set(&riskset[idx_tp], 0, n_samples)
+        set_risk_set(&riskset[idx_tp], 0, at_risk)
         idx_tp -= 1
 
 
@@ -96,8 +115,9 @@ cdef class LogrankCriterion(Criterion):
     cdef SIZE_t n_event_times
     cdef Riskset * riskset_total
     cdef Riskset * riskset_left
+    cdef bint with_entries
 
-    def __cinit__(self, SIZE_t n_outputs, SIZE_t n_samples, const DOUBLE_t[::1] event_times):
+    def __cinit__(self, SIZE_t n_outputs, SIZE_t n_samples, const DOUBLE_t[::1] event_times, bint with_entries):
         # Default values
         self.sample_weight = NULL
 
@@ -114,6 +134,7 @@ cdef class LogrankCriterion(Criterion):
         self.weighted_n_node_samples = 0.0
         self.weighted_n_left = 0.0
         self.weighted_n_right = 0.0
+        self.with_entries = with_entries # Coercing it to int, to avoid GIL check.
 
         # Allocate accumulators. Make sure they are NULL, not uninitialized,
         # before an exception can be raised (which triggers __dealloc__).
@@ -153,22 +174,29 @@ cdef class LogrankCriterion(Criterion):
         cdef SIZE_t p
         cdef SIZE_t k
         cdef DOUBLE_t w = 1.0
+        cdef SIZE_t time_arr_size = self.n_node_samples
         cdef Timepoint * time_arr
 
-        time_arr = < Timepoint * > malloc(self.n_node_samples * sizeof(Timepoint))
+        if self.with_entries:
+            # Double the size since each individual will also have an entry time.
+            time_arr_size *= 2
+        time_arr = < Timepoint * > malloc(time_arr_size * sizeof(Timepoint))
+        
         if time_arr is NULL:
             raise MemoryError()
 
         for k, p in enumerate(range(start, end)):
             i = samples[p]
             set_time_point(&time_arr[k], i, self.y)
+            if self.with_entries:
+                set_entry_time_point(&time_arr[self.n_node_samples + k], i, self.y)
 
             if sample_weight is not NULL:
                 w = sample_weight[i]
 
             self.weighted_n_node_samples += w
 
-        qsort(time_arr, self.n_node_samples, sizeof(Timepoint), compare_timepoint_desc)
+        qsort(time_arr, time_arr_size, sizeof(Timepoint), compare_timepoint_desc)
 
         if self.riskset_total is not NULL:
             free(self.riskset_total)
@@ -221,9 +249,14 @@ cdef class LogrankCriterion(Criterion):
         cdef SIZE_t idx_left
         cdef SIZE_t k
         cdef DOUBLE_t w = 1.0
+        cdef SIZE_t time_arr_size = self.n_node_samples
         cdef Timepoint * time_arr
 
-        time_arr = < Timepoint * > malloc(n_samples_left * sizeof(Timepoint))
+        if self.with_entries:
+            # Double the size since each individual will also have an entry time.
+            time_arr_size *= 2
+        time_arr = < Timepoint * > malloc(time_arr_size * sizeof(Timepoint))
+
         if time_arr is NULL:
             raise MemoryError()
 
@@ -232,13 +265,15 @@ cdef class LogrankCriterion(Criterion):
         for k, idx_left in enumerate(range(pos, new_pos)):
             i = samples[idx_left]
             set_time_point(&time_arr[k], i, self.y)
+            if self.with_entries:
+                set_entry_time_point(&time_arr[self.n_node_samples + k], i, self.y)
 
             if sample_weight is not NULL:
                 w = sample_weight[i]
 
             self.weighted_n_left += w
 
-        qsort(time_arr, n_samples_left, sizeof(Timepoint), compare_timepoint_desc)
+        qsort(time_arr, time_arr_size, sizeof(Timepoint), compare_timepoint_desc)
 
         memset(self.riskset_left, 0, self.n_event_times * sizeof(Riskset))
 
@@ -282,7 +317,8 @@ cdef class LogrankCriterion(Criterion):
             total_at_risk = <double> rs_total.n_at_risk
 
             if total_at_risk == 0:
-                break  # we reached the end
+                # TODO: maybe continue?
+                break
             at_risk = rs_left.n_at_risk / total_at_risk
             numer += rs_left.n_events - rs_total.n_events * at_risk
             if total_at_risk > 1.0:
@@ -319,7 +355,10 @@ cdef class LogrankCriterion(Criterion):
         cdef Riskset * rs
 
         rs = &self.riskset_total[0]
-        ratio = rs.n_events / (<double> rs.n_at_risk)
+        if rs.n_at_risk != 0:
+          ratio = rs.n_events / (<double> rs.n_at_risk)
+        else:
+          ratio = 0
         dest[0] = ratio  # Nelson-Aalen estimator
         dest[1] = 1.0 - ratio  # Kaplan-Meier estimator
 

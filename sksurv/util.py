@@ -107,9 +107,10 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False):
     ----------
     y_or_event : structured array with two fields, or boolean array
         If a structured array, it must contain the binary event indicator
-        as first field, and time of event or time of censoring as
-        second field. Otherwise, it is assumed that a boolean array
-        representing the event indicator is passed.
+        as first field, time of event or time of censoring as
+        second field, and optionally time of entry as third field. Otherwise,
+        it is assumed that a boolean array representing the event indicator is
+        passed.
 
     *args : list of array-likes
         Any number of array-like objects representing time information.
@@ -125,18 +126,25 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False):
 
     time : array, shape=[n_samples,], dtype=float
         Time of event or censoring.
+
+    entry : array, shape=[n_samples,], dtype=float
+        (Optional) Time of entry.
     """
     if len(args) == 0:
         y = y_or_event
 
-        if not isinstance(y, numpy.ndarray) or y.dtype.fields is None or len(y.dtype.fields) != 2:
-            raise ValueError('y must be a structured array with the first field'
-                             ' being a binary class event indicator and the second field'
-                             ' the time of the event/censoring')
+        if not isinstance(y, numpy.ndarray) or y.dtype.fields is None:
+            raise ValueError('y must be a structured array')
 
-        event_field, time_field = y.dtype.names
-        y_event = y[event_field]
-        time_args = (y[time_field],)
+        if not 2 <= len(y.dtype.fields) <= 3:
+            raise ValueError('y must contain two or three fields, with the '
+                             'first field being a binary class event '
+                             'indicator, the second field the time of the '
+                             'event/censoring, and the third optional field '
+                             'the time of entry.')
+
+        y_event = y[y.dtype.names[0]]
+        time_args = (y[arg] for arg in y.dtype.names[1:])
     else:
         y_event = numpy.asanyarray(y_or_event)
         time_args = args
@@ -190,6 +198,48 @@ def check_array_survival(X, y):
     event, time = check_y_survival(y)
     check_consistent_length(X, event, time)
     return event, time
+
+
+def build_survival_tree_array(X, y, with_event=False):
+    """Builds the numeric array and event times used in survival trees.
+
+    Parameters
+    ----------
+    X : array-like
+        Data matrix containing feature vectors.
+
+    y : structured array with two or three fields
+        A structured array containing the binary event indicator
+        as first field, time of event or time of censoring as
+        second field, and optionally time of entry as third field.
+
+    with_event (optional) : If set, returns the event vector.
+
+    Returns
+    -------
+    y_numeric : array, shape=[n_samples, 2 or 3], dtype=float64
+        Each row contains the event time, the event indicator, and optionally,
+        the entry time.
+
+    event_times : array, dtype=float
+        Unique times at which events happened.
+
+    event : array, dtype=bool
+        The event vector.
+    """
+
+    event, time, *entry = check_y_survival(y)
+    check_consistent_length(X, event, time, *entry)
+
+    y_numeric = numpy.empty((X.shape[0], 2 + len(entry)), dtype=numpy.float64)
+    y_numeric[:, 0] = time.astype(numpy.float64)
+    y_numeric[:, 1] = event.astype(numpy.float64)
+    if entry:
+        y_numeric[:, 2] = entry[0].astype(numpy.float64)
+
+    if with_event:
+        return y_numeric, numpy.unique(y_numeric[:, 0][event]), event
+    return y_numeric, numpy.unique(y_numeric[:, 0][event])
 
 
 def safe_concat(objs, *args, **kwargs):
