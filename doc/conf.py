@@ -308,94 +308,15 @@ nbsphinx_from_notebook_node = nbsphinx.Exporter.from_notebook_node
 nbsphinx.Exporter.from_notebook_node = _from_notebook_node
 
 
-# ------------------------
-# Mock dependencies on RTD
-# ------------------------
-
-
-if on_rtd:
-    MOCK_MODULES = [
-        # external dependencies
-        'ecos',
-        'joblib',
-        'numexpr',
-        'numpy',
-        'osqp',
-        'pandas',
-        'pandas.api.types',
-        'scipy',
-        'scipy.integrate',
-        'scipy.io.arff',
-        'scipy.linalg',
-        'scipy.optimize',
-        'scipy.sparse',
-        'scipy.special',
-        'scipy.stats',
-        'sklearn',
-        'sklearn.base',
-        'sklearn.dummy',
-        'sklearn.ensemble',
-        'sklearn.ensemble._base',
-        'sklearn.ensemble._forest',
-        'sklearn.ensemble._gb',
-        'sklearn.ensemble._gb_losses',
-        'sklearn.ensemble._gradient_boosting',
-        'sklearn.ensemble.base',
-        'sklearn.ensemble.forest',
-        'sklearn.ensemble.gradient_boosting',
-        'sklearn.exceptions',
-        'sklearn.externals.joblib',
-        'sklearn.linear_model',
-        'sklearn.metrics',
-        'sklearn.metrics.pairwise',
-        'sklearn.model_selection',
-        'sklearn.pipeline',
-        'sklearn.preprocessing',
-        'sklearn.svm',
-        'sklearn.tree',
-        'sklearn.tree._classes',
-        'sklearn.tree._splitter',
-        'sklearn.tree._tree',
-        'sklearn.tree.tree',
-        'sklearn.utils',
-        'sklearn.utils._joblib',
-        'sklearn.utils.extmath',
-        'sklearn.utils.fixes',
-        'sklearn.utils.metaestimators',
-        'sklearn.utils.validation',
-        # our C modules
-        'sksurv.bintrees._binarytrees',
-        'sksurv.ensemble._coxph_loss',
-        'sksurv.kernels._clinical_kernel',
-        'sksurv.linear_model._coxnet',
-        'sksurv.svm._minlip',
-        'sksurv.svm._prsvm',
-        'sksurv.tree._criterion']
-
-    from unittest.mock import Mock
-
-    class MockModule(Mock):
-        """mock imports"""
-
-        @classmethod
-        def __getattr__(cls, name):
-            if name in ('__file__', '__path__'):
-                return '/dev/null'
-            elif name[0] == name[0].upper() and name[0] != "_":
-                # Not very good, we assume Uppercase names are classes...
-                mocktype = type(name, (), {})
-                mocktype.__module__ = __name__
-                return mocktype
-            else:
-                return MockModule()
-
-    sys.modules.update((mod_name, MockModule()) for mod_name in MOCK_MODULES)
-
-else:
+def patch_sklearn():
     from sklearn.ensemble._gb import BaseGradientBoosting
     from sklearn.utils.metaestimators import _BaseComposition
 
     # Remove inherited API doc to avoid sphinx's duplicate object description error
     BaseGradientBoosting.feature_importances_.__doc__ = None
-    # Avoid "no attribute steps" for sksurv.meta.Stacking and its subclasses
-    _BaseComposition.steps = [None]
+
+    # Avoid "no attribute 'steps'" for sksurv.meta.Stacking and its subclasses
+    _BaseComposition.steps = []
+
+
+patch_sklearn()
