@@ -31,8 +31,6 @@ jobs:
         with:
           path: ${{ steps.dependencies.outputs.conda_pkgs }}
           key: ${{ runner.os }}-conda-${{ hashFiles(steps.dependencies.outputs.requirements) }}
-          restore-keys: |
-            ${{ runner.os }}-conda-
       - name: Create Conda Environment
         run: |
           sudo chown -R $USER $CONDA
