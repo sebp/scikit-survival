@@ -36,14 +36,12 @@ jobs:
       - name: Create Conda Environment
         run: |
           sudo chown -R $USER $CONDA
-          conda config --set always_yes yes --set changeps1 no
-          conda update -q conda
           ci/setup_env.sh ${{ runner.os }}
       - name: Install Dependencies
         run: |
           python3 ci/list-requirements.py requirements/dev.txt > /tmp/conda-req.txt
-          conda install -c sebp -n sksurv-test --file /tmp/conda-req.txt
-          conda install -n sksurv-test ipykernel 'matplotlib==3.5.1' nbformat 'seaborn==0.11.2'
+          conda install --experimental-solver=libmamba -c sebp -n sksurv-test --file /tmp/conda-req.txt
+          conda install --experimental-solver=libmamba -n sksurv-test ipykernel 'matplotlib==3.5.1' nbformat 'seaborn==0.11.2'
           conda run -n sksurv-test pip install nbval
           conda list -n sksurv-test
       - name: Build package
