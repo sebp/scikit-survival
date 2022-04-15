@@ -2,7 +2,7 @@
 # See https://docs.readthedocs.io/en/latest/faq.html#i-get-import-errors-on-libraries-that-depend-on-c-modules
 ipython
 nbsphinx
-docutils==0.16
+docutils
 setuptools_scm
-sphinx ~=3.5.0
-pydata-sphinx-theme ~=0.6.0
+sphinx ~=4.4.0
+pydata-sphinx-theme ~=0.8.1

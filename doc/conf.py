@@ -393,6 +393,9 @@ if on_rtd:
 
 else:
     from sklearn.ensemble._gb import BaseGradientBoosting
+    from sklearn.utils.metaestimators import _BaseComposition
 
     # Remove inherited API doc to avoid sphinx's duplicate object description error
     BaseGradientBoosting.feature_importances_.__doc__ = None
+    # Avoid "no attribute steps" for sksurv.meta.Stacking and its subclasses
+    _BaseComposition.steps = [None]
