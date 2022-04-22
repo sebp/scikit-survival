@@ -3,13 +3,14 @@ graft sksurv/linear_model/src/eigen/Eigen
 
 prune doc/_build
 prune doc/api/generated
+prune .binder
 prune .github
 prune ci
-exclude appveyor.yml .codecov.yml .coveragerc .gitmodules .zenodo.json
+exclude appveyor.yml .codecov.yml .coveragerc .readthedocs.yaml .zenodo.json
 
 global-exclude __pycache__
 global-exclude .ipynb_checkpoints
-global-exclude .gitignore
+global-exclude .git*
 # Cython generated files
 global-exclude _*.c
 global-exclude _*.cpp
