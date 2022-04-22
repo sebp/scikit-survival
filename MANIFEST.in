@@ -10,7 +10,10 @@ exclude appveyor.yml .codecov.yml .coveragerc .gitmodules .zenodo.json
 global-exclude __pycache__
 global-exclude .ipynb_checkpoints
 global-exclude .gitignore
-global-exclude *.pyc
+# Cython generated files
+global-exclude _*.c
+global-exclude _*.cpp
+global-exclude *.py[oc]
 global-exclude *.bak
 global-exclude *.swp
 global-exclude *~
