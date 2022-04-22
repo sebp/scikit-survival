@@ -91,7 +91,7 @@ EXTENSIONS = {
                 "language": "c++",
                 "include_dirs": ["sksurv/linear_model/src",
                                  "sksurv/linear_model/src/eigen"],
-                "extra_compile_args": ["-std=c++11"]},
+                "extra_compile_args": ["-std=c++14"]},
 }
 
 
