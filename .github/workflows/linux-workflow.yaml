@@ -56,9 +56,9 @@ jobs:
       - name: Build package
         run: |
           source activate sksurv-test
-          pip wheel --wheel-dir dist/ --no-binary scikit-survival --no-deps -e .
+          python -m build .
           pip install --exists-action=w --pre --no-index --find-links dist/ scikit-survival
-          rm -fr build dist
+          rm -fr build dist sksurv
       - name: Run Tests
         run: |
           source activate sksurv-test

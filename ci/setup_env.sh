@@ -33,5 +33,7 @@ conda info -a
 # shellcheck disable=SC1091
 source activate sksurv-test
 
+pip install build
+
 # delete any version that is already installed
 pip uninstall --yes scikit-survival || exit 0
