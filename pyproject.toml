@@ -1,6 +1,7 @@
 [build-system]
 requires = [
     "setuptools>=45",
+    "packaging",
     "wheel",
     "setuptools_scm[toml]>=6.4",
     "Cython>=0.29.16",
