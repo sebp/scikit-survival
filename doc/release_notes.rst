@@ -1,6 +1,27 @@
 Release Notes
 =============
 
+scikit-survival 0.17.2 (2022-04-24)
+-----------------------------------
+
+This release fixes several issues with packaging scikit-survival.
+
+Bug fixes
+^^^^^^^^^
+- Added backward support for gcc-c++ (:issue:`255`).
+- Do not install C/C++ and Cython source files.
+- Add ``packaging`` to build requirements in ``pyproject.toml``.
+- Exclude generated API docs from source distribution.
+- Add Python 3.10 to classifiers.
+
+Documentation
+^^^^^^^^^^^^^
+- Use `permutation_importance <https://scikit-learn.org/stable/modules/generated/sklearn.inspection.permutation_importance.html#sklearn.inspection.permutation_importance>`_
+  from sklearn instead of eli5.
+- Build documentation with Sphinx 4.4.0.
+- Fix missing documentation for classes in ``sksurv.meta``.
+
+
 scikit-survival 0.17.1 (2022-03-05)
 -----------------------------------
 
