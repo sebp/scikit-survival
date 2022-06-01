@@ -68,7 +68,7 @@ def _check_times(test_time, times):
 
     if times.max() >= test_time.max() or times.min() < test_time.min():
         raise ValueError(
-            'all times must be within follow-up time of test data: [{}; {}['.format(
+            'all times must be within follow-up time of test data: [{}; {}]'.format(
                 test_time.min(), test_time.max()))
 
     return times
