@@ -32,7 +32,7 @@ this unique characteristic of such a dataset into account.
 Requirements
 ============
 
-- Python 3.7 or later
+- Python 3.8 or later
 - ecos
 - joblib
 - numexpr

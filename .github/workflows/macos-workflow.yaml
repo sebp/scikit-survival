@@ -12,7 +12,6 @@ jobs:
     strategy:
       matrix:
         config:
-          - py37_pandas025_numpy117_sklearn10
           - py38_pandas10_numpy118_sklearn10
           - py38_pandas11_numpy119_sklearn10
           - py39_pandas13_numpy121_sklearn11

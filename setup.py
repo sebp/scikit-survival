@@ -204,7 +204,6 @@ def setup_package():
                      'Programming Language :: Cython',
                      'Programming Language :: Python',
                      'Programming Language :: Python :: 3',
-                     'Programming Language :: Python :: 3.7',
                      'Programming Language :: Python :: 3.8',
                      'Programming Language :: Python :: 3.9',
                      'Programming Language :: Python :: 3.10',
@@ -213,7 +212,7 @@ def setup_package():
                      ],
         zip_safe=False,
         package_data={"sksurv.datasets": ["data/*.arff"]},
-        python_requires='>=3.7',
+        python_requires='>=3.8',
         install_requires=parse_requirements('requirements/prod.txt'),
         cmdclass={"clean": clean},
     )
