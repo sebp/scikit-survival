@@ -171,10 +171,9 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
             if pf.shape[0] != n_features:
                 raise ValueError("penalty_factor must be array of length n_features (%d), "
                                  "but got %d" % (n_features, pf.shape[0]))
-            assert_all_finite(pf)
+            assert_all_finite(pf, input_name="penalty_factor")
             check_non_negative(pf, "penalty_factor")
             penalty_factor = pf * n_features / pf.sum()
-            assert_all_finite(penalty_factor)
         return penalty_factor
 
     def _check_alphas(self):
@@ -186,9 +185,8 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
             alphas = numpy.empty(int(self.n_alphas), dtype=numpy.float64)
         else:
             alphas = column_or_1d(self.alphas, warn=True)
-            assert_all_finite(alphas)
+            assert_all_finite(alphas, input_name="alphas")
             check_non_negative(alphas, "alphas")
-            assert_all_finite(alphas)
         return alphas, create_path
 
     def _check_alpha_min_ratio(self, n_samples, n_features):

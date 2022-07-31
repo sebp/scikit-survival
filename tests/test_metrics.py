@@ -244,18 +244,23 @@ def test_concordance_index_all_finite():
     time = numpy.array([1, 5, 10, 12, 7, 65], dtype=float)
     estimate = numpy.array([12, 8, 1, 89, 56, 13], dtype=float)
 
-    msg = r"Input contains NaN, infinity or a value too large for .+"
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(
+        ValueError, match="Input event_indicator contains NaN",
+    ):
         concordance_index_censored(event, time, estimate)
 
     event[2] = False
     time[3] = numpy.nan
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(
+        ValueError, match="Input event_time contains NaN",
+    ):
         concordance_index_censored(event, time, estimate)
 
-    time[3] = numpy.nan
+    time[3] = 10
     estimate[5] = numpy.inf
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(
+        ValueError, match="Input estimate contains infinity or a value too large",
+    ):
         concordance_index_censored(event, time, estimate)
 
 
@@ -763,15 +768,15 @@ def uno_auc_times_failure_data(request, uno_auc_data_20):
     if p == 'nan':
         y_train, y_test, _ = uno_auc_data_20
         times = (0.2, numpy.nan)
-        match = r"Input contains NaN, infinity or a value too large for dtype\('float64'\)."
+        match = r"Input times contains NaN"
     elif p == 'infinite_1':
         y_train, y_test, _ = uno_auc_data_20
         times = (0.2, numpy.infty)
-        match = r"Input contains NaN, infinity or a value too large for dtype\('float64'\)."
+        match = r"Input times contains infinity or a value too large for dtype\('float64'\)."
     elif p == 'infinite_2':
         y_train, y_test, _ = uno_auc_data_20
         times = (0.2, -numpy.infty)
-        match = r"Input contains NaN, infinity or a value too large for dtype\('float64'\)."
+        match = r"Input times contains infinity or a value too large for dtype\('float64'\)."
     elif p == 'too_big_1':
         y_train, y_test, _ = uno_auc_data_20
         idx = numpy.argmax(y_test['time'])

@@ -32,10 +32,17 @@ def negative_float_array(request):
     return penalty
 
 
-@pytest.fixture(params=[-numpy.infty, numpy.infty, numpy.nan])
+@pytest.fixture(params=[-numpy.infty, numpy.infty])
 def infinite_float_array(request):
     penalty = numpy.zeros(30)
     penalty[11] = request.param
+    return penalty
+
+
+@pytest.fixture()
+def nan_float_array():
+    penalty = numpy.zeros(30)
+    penalty[11] = numpy.nan
     return penalty
 
 
@@ -643,10 +650,16 @@ class TestCoxnetSurvivalAnalysis:
             make_fit_example(alpha_min_ratio=0.0001, penalty_factor=negative_float_array)
 
     @staticmethod
-    def test_invalid_penalty_factor_value(make_fit_example, infinite_float_array):
+    def test_infinite_penalty_factor_value(make_fit_example, infinite_float_array):
         with pytest.raises(ValueError,
-                           match="Input contains NaN, infinity or a value too large"):
+                           match="Input penalty_factor contains infinity or a value too large"):
             make_fit_example(alpha_min_ratio=0.0001, penalty_factor=infinite_float_array)
+
+    @staticmethod
+    def test_nan_penalty_factor_value(make_fit_example, nan_float_array):
+        with pytest.raises(ValueError,
+                           match="Input penalty_factor contains NaN"):
+            make_fit_example(alpha_min_ratio=0.0001, penalty_factor=nan_float_array)
 
     @staticmethod
     def test_negative_alphas(make_fit_example, negative_float_array):
@@ -655,10 +668,16 @@ class TestCoxnetSurvivalAnalysis:
             make_fit_example(alpha_min_ratio=0.0001, alphas=negative_float_array)
 
     @staticmethod
-    def test_invalid_alphas(make_fit_example, infinite_float_array):
+    def test_infinite_alphas(make_fit_example, infinite_float_array):
         with pytest.raises(ValueError,
-                           match="Input contains NaN, infinity or a value too large"):
+                           match="Input alphas contains infinity or a value too large"):
             make_fit_example(alpha_min_ratio=0.0001, alphas=infinite_float_array)
+
+    @staticmethod
+    def test_nan_alphas(make_fit_example, nan_float_array):
+        with pytest.raises(ValueError,
+                           match="Input alphas contains NaN"):
+            make_fit_example(alpha_min_ratio=0.0001, alphas=nan_float_array)
 
     @staticmethod
     def test_invalid_alpha_min_ratio_string(make_fit_example):

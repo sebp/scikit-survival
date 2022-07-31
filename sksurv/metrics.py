@@ -33,7 +33,7 @@ __all__ = [
 
 
 def _check_estimate_1d(estimate, test_time):
-    estimate = check_array(estimate, ensure_2d=False)
+    estimate = check_array(estimate, ensure_2d=False, input_name="estimate")
     if estimate.ndim != 1:
         raise ValueError(
             'Expected 1D array, got {:d}D array instead:\narray={}.\n'.format(
@@ -44,8 +44,8 @@ def _check_estimate_1d(estimate, test_time):
 
 def _check_inputs(event_indicator, event_time, estimate):
     check_consistent_length(event_indicator, event_time, estimate)
-    event_indicator = check_array(event_indicator, ensure_2d=False)
-    event_time = check_array(event_time, ensure_2d=False)
+    event_indicator = check_array(event_indicator, ensure_2d=False, input_name="event_indicator")
+    event_time = check_array(event_time, ensure_2d=False, input_name="event_time")
     estimate = _check_estimate_1d(estimate, event_time)
 
     if not numpy.issubdtype(event_indicator.dtype, numpy.bool_):
@@ -63,7 +63,7 @@ def _check_inputs(event_indicator, event_time, estimate):
 
 
 def _check_times(test_time, times):
-    times = check_array(numpy.atleast_1d(times), ensure_2d=False, dtype=test_time.dtype)
+    times = check_array(numpy.atleast_1d(times), ensure_2d=False, dtype=test_time.dtype, input_name="times")
     times = numpy.unique(times)
 
     if times.max() >= test_time.max() or times.min() < test_time.min():
@@ -75,7 +75,7 @@ def _check_times(test_time, times):
 
 
 def _check_estimate_2d(estimate, test_time, time_points):
-    estimate = check_array(estimate, ensure_2d=False, allow_nd=False)
+    estimate = check_array(estimate, ensure_2d=False, allow_nd=False, input_name="estimate")
     time_points = _check_times(test_time, time_points)
     check_consistent_length(test_time, estimate)
 
