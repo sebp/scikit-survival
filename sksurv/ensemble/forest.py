@@ -14,7 +14,6 @@ from sklearn.ensemble._forest import (
     _parallel_build_trees,
 )
 from sklearn.tree._tree import DTYPE
-from sklearn.utils.fixes import _joblib_parallel_args
 from sklearn.utils.validation import check_array, check_is_fitted, check_random_state
 
 from ..base import SurvivalAnalysisMixin
@@ -143,7 +142,7 @@ class _BaseSurvivalForest(BaseForest,
             # parallel_backend contexts set at a higher level,
             # since correctness does not rely on using threads.
             trees = Parallel(n_jobs=self.n_jobs, verbose=self.verbose,
-                             **_joblib_parallel_args(prefer='threads'))(
+                             prefer='threads')(
                 delayed(_parallel_build_trees)(
                     t, self, X, (y_numeric, self.event_times_), sample_weight, i, len(trees),
                     verbose=self.verbose,
@@ -217,7 +216,7 @@ class _BaseSurvivalForest(BaseForest,
         # Parallel loop
         lock = threading.Lock()
         Parallel(n_jobs=n_jobs, verbose=self.verbose,
-                 **_joblib_parallel_args(require="sharedmem"))(
+                 require="sharedmem")(
             delayed(_accumulate_prediction)(_get_fn(e, predict_fn), X, [y_hat], lock)
             for e in self.estimators_)
 
