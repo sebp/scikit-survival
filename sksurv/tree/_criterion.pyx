@@ -115,12 +115,6 @@ cdef class LogrankCriterion(Criterion):
         self.weighted_n_left = 0.0
         self.weighted_n_right = 0.0
 
-        # Allocate accumulators. Make sure they are NULL, not uninitialized,
-        # before an exception can be raised (which triggers __dealloc__).
-        self.sum_total = NULL  # not used
-        self.sum_left = NULL  # not used
-        self.sum_right = NULL  # not used
-
         self.riskset_total = NULL
         self.riskset_left = NULL
 
