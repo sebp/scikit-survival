@@ -91,6 +91,6 @@ The current minimum dependencies to run scikit-survival are:
 - numpy 1.16 or later
 - osqp
 - pandas 0.25 or later
-- scikit-learn 1.0
+- scikit-learn 1.1
 - scipy 1.0 or later
 - C/C++ compiler
