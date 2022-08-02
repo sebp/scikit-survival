@@ -210,7 +210,7 @@ class TestGradientBoosting:
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         clf = GradientBoostingSurvivalAnalysis()
-        msg = "ccp_alpha must be greater than or equal to 0"
+        msg = "ccp_alpha == -1.0, must be >= 0.0"
 
         clf.set_params(ccp_alpha=-1.0)
         with pytest.raises(ValueError, match=msg):
