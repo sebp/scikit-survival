@@ -74,8 +74,8 @@ def _check_times(test_time, times):
     return times
 
 
-def _check_estimate_2d(estimate, test_time, time_points):
-    estimate = check_array(estimate, ensure_2d=False, allow_nd=False, input_name="estimate")
+def _check_estimate_2d(estimate, test_time, time_points, estimator):
+    estimate = check_array(estimate, ensure_2d=False, allow_nd=False, input_name="estimate", estimator=estimator)
     time_points = _check_times(test_time, time_points)
     check_consistent_length(test_time, estimate)
 
@@ -453,7 +453,9 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
            Statistical Methods in Medical Research, 2014.
     """
     test_event, test_time = check_y_survival(survival_test)
-    estimate, times = _check_estimate_2d(estimate, test_time, times)
+    estimate, times = _check_estimate_2d(
+        estimate, test_time, times, estimator="cumulative_dynamic_auc"
+    )
 
     n_samples = estimate.shape[0]
     n_times = times.shape[0]
@@ -612,7 +614,9 @@ def brier_score(survival_train, survival_test, estimate, times):
            Statistics in Medicine, vol. 18, no. 17-18, pp. 2529–2545, 1999.
     """
     test_event, test_time = check_y_survival(survival_test)
-    estimate, times = _check_estimate_2d(estimate, test_time, times)
+    estimate, times = _check_estimate_2d(
+        estimate, test_time, times, estimator="brier_score"
+    )
     if estimate.ndim == 1 and times.shape[0] == 1:
         estimate = estimate.reshape(-1, 1)
 

@@ -860,7 +860,7 @@ def uno_auc_shape_failure_data(request, uno_auc_data_20):
     elif p == 'estimate_3d':
         y_train, y_test, estimate = uno_auc_data_20
         estimate = numpy.atleast_3d(estimate)
-        match = "Found array with dim 3. Estimator expected <= 2."
+        match = "Found array with dim 3. cumulative_dynamic_auc expected <= 2."
     else:
         raise AssertionError()
 
