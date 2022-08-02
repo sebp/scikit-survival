@@ -144,7 +144,7 @@ class _BaseSurvivalForest(BaseForest,
             trees = Parallel(n_jobs=self.n_jobs, verbose=self.verbose,
                              prefer='threads')(
                 delayed(_parallel_build_trees)(
-                    t, self, X, (y_numeric, self.event_times_), sample_weight, i, len(trees),
+                    t, self.bootstrap, X, (y_numeric, self.event_times_), sample_weight, i, len(trees),
                     verbose=self.verbose,
                     n_samples_bootstrap=n_samples_bootstrap)
                 for i, t in enumerate(trees))
