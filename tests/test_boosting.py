@@ -31,6 +31,9 @@ class TestGradientBoosting:
                                                  random_state=0)
         model.fit(whas500_data.x, whas500_data.y)
 
+        with pytest.warns(FutureWarning):
+            assert model.loss_.__class__.__name__ == "CoxPH"
+
         assert model.max_features_ == 14
         assert not hasattr(model, "oob_improvement_")
 
@@ -227,6 +230,9 @@ class TestGradientBoosting:
         model = GradientBoostingSurvivalAnalysis(loss="ipcwls", n_estimators=100, max_depth=3, random_state=0)
         model.fit(whas500_data.x, whas500_data.y)
 
+        with pytest.warns(FutureWarning):
+            assert model.loss_.__class__.__name__ == "IPCWLeastSquaresError"
+
         time_predicted = model.predict(whas500_data.x)
         time_true = whas500_data.y["lenfol"]
         event_true = whas500_data.y["fstat"]
@@ -252,6 +258,9 @@ class TestGradientBoosting:
 
         model = GradientBoostingSurvivalAnalysis(loss="squared", n_estimators=100, max_depth=3, random_state=0)
         model.fit(whas500_data.x, whas500_data.y)
+
+        with pytest.warns(FutureWarning):
+            assert model.loss_.__class__.__name__ == "CensoredSquaredLoss"
 
         time_predicted = model.predict(whas500_data.x)
         time_true = whas500_data.y["lenfol"]
@@ -394,6 +403,9 @@ class TestComponentwiseGradientBoosting:
 
         model = ComponentwiseGradientBoostingSurvivalAnalysis(n_estimators=100)
         model.fit(whas500_data.x, whas500_data.y)
+
+        assert model.loss_.__class__.__name__ == "CoxPH"
+
         p = model.predict(whas500_data.x)
 
         assert_cindex_almost_equal(whas500_data.y['fstat'], whas500_data.y['lenfol'], p,
@@ -510,6 +522,8 @@ class TestComponentwiseGradientBoosting:
         model = ComponentwiseGradientBoostingSurvivalAnalysis(loss="ipcwls", n_estimators=100, random_state=0)
         model.fit(whas500_data.x, whas500_data.y)
 
+        assert model.loss_.__class__.__name__ == "IPCWLeastSquaresError"
+
         time_predicted = model.predict(whas500_data.x)
         time_true = whas500_data.y["lenfol"]
         event_true = whas500_data.y["fstat"]
@@ -535,6 +549,8 @@ class TestComponentwiseGradientBoosting:
 
         model = ComponentwiseGradientBoostingSurvivalAnalysis(loss="squared", n_estimators=100, random_state=0)
         model.fit(whas500_data.x, whas500_data.y)
+
+        assert model.loss_.__class__.__name__ == "CensoredSquaredLoss"
 
         time_predicted = model.predict(whas500_data.x)
         time_true = whas500_data.y["lenfol"]
