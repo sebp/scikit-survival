@@ -1087,11 +1087,11 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         # if dropout wasn't used during training, proceed as usual,
         # otherwise consider scaling factor of individual trees
         if not hasattr(self, "scale_"):
-            aiter = self._staged_raw_predict(X)
+            predictions_iter = self._staged_raw_predict(X)
         else:
-            aiter = self._dropout_staged_raw_predict(X)
+            predictions_iter = self._dropout_staged_raw_predict(X)
 
-        for raw_predictions in aiter:
+        for raw_predictions in predictions_iter:
             y = self._loss._scale_raw_prediction(raw_predictions)
             yield y.ravel()
 

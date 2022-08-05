@@ -40,7 +40,7 @@ class clean(Command):
             if "__pycache__" in root.name:
                 continue
 
-            for f in map(lambda x: root / x, files):
+            for f in (root / x for x in files):
                 ext = f.suffix
                 if ext == ".pyc" or ext == ".so":
                     self.delete_files.append(f)
