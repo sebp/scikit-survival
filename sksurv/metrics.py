@@ -13,7 +13,7 @@
 import numpy
 from sklearn.base import BaseEstimator
 from sklearn.utils import check_array, check_consistent_length
-from sklearn.utils.metaestimators import if_delegate_has_method
+from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import check_is_fitted
 
 from .exceptions import NoComparablePairException
@@ -748,6 +748,19 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
     return ibs_value
 
 
+def _estimator_has(attr):
+    """Check that meta_estimator has `attr`.
+
+    Used together with `available_if`."""
+
+    def check(self):
+        # raise original `AttributeError` if `attr` does not exist
+        getattr(self.estimator_, attr)
+        return True
+
+    return check
+
+
 class _ScoreOverrideMixin:
     def __init__(self, estimator, predict_func, score_func, score_index, greater_is_better):
         if not hasattr(estimator, predict_func):
@@ -802,7 +815,7 @@ class _ScoreOverrideMixin:
             score = score[self._score_index]
         return self._sign * score
 
-    @if_delegate_has_method(delegate="estimator_")
+    @available_if(_estimator_has('predict'))
     def predict(self, X):
         """Call predict on the estimator.
 
@@ -817,7 +830,7 @@ class _ScoreOverrideMixin:
         check_is_fitted(self, "estimator_")
         return self.estimator_.predict(X)
 
-    @if_delegate_has_method(delegate="estimator_")
+    @available_if(_estimator_has('predict_cumulative_hazard_function'))
     def predict_cumulative_hazard_function(self, X):
         """Call predict_cumulative_hazard_function on the estimator.
 
@@ -832,7 +845,7 @@ class _ScoreOverrideMixin:
         check_is_fitted(self, "estimator_")
         return self.estimator_.predict_cumulative_hazard_function(X)
 
-    @if_delegate_has_method(delegate="estimator_")
+    @available_if(_estimator_has('predict_survival_function'))
     def predict_survival_function(self, X):
         """Call predict_survival_function on the estimator.
 

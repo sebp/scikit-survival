@@ -3,8 +3,8 @@ import platform
 import sys
 
 from pkg_resources import DistributionNotFound, get_distribution
-from sklearn.pipeline import Pipeline
-from sklearn.utils.metaestimators import if_delegate_has_method
+from sklearn.pipeline import Pipeline, _final_estimator_has
+from sklearn.utils.metaestimators import available_if
 
 
 def _get_version(name):
@@ -68,7 +68,7 @@ def show_versions():
         print(fmt.format(dep, version))
 
 
-@if_delegate_has_method(delegate='_final_estimator')
+@available_if(_final_estimator_has('predict_cumulative_hazard_function'))
 def predict_cumulative_hazard_function(self, X, **kwargs):
     """Predict cumulative hazard function.
 
@@ -98,7 +98,7 @@ def predict_cumulative_hazard_function(self, X, **kwargs):
     return self.steps[-1][-1].predict_cumulative_hazard_function(Xt, **kwargs)
 
 
-@if_delegate_has_method(delegate='_final_estimator')
+@available_if(_final_estimator_has('predict_survival_function'))
 def predict_survival_function(self, X, **kwargs):
     """Predict survival function.
 
