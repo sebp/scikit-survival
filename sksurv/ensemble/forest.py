@@ -321,7 +321,6 @@ class RandomSurvivalForest(_BaseSurvivalForest):
             - If float, then `max_features` is a fraction and
               `int(max_features * n_features)` features are considered at each
               split.
-            - If "auto", then `max_features=sqrt(n_features)`.
             - If "sqrt", then `max_features=sqrt(n_features)`.
             - If "log2", then `max_features=log2(n_features)`.
             - If None, then `max_features=n_features`.
@@ -432,7 +431,7 @@ class RandomSurvivalForest(_BaseSurvivalForest):
                  min_samples_split=6,
                  min_samples_leaf=3,
                  min_weight_fraction_leaf=0.,
-                 max_features="auto",
+                 max_features="sqrt",
                  max_leaf_nodes=None,
                  bootstrap=True,
                  oob_score=False,
@@ -646,7 +645,6 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
             - If float, then `max_features` is a fraction and
               `int(max_features * n_features)` features are considered at each
               split.
-            - If "auto", then `max_features=sqrt(n_features)`.
             - If "sqrt", then `max_features=sqrt(n_features)`.
             - If "log2", then `max_features=log2(n_features)`.
             - If None, then `max_features=n_features`.
@@ -725,7 +723,7 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
                  min_samples_split=6,
                  min_samples_leaf=3,
                  min_weight_fraction_leaf=0.,
-                 max_features="auto",
+                 max_features="sqrt",
                  max_leaf_nodes=None,
                  bootstrap=True,
                  oob_score=False,
