@@ -145,7 +145,7 @@ class TestGradientBoosting:
     def test_max_features(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
-        model = GradientBoostingSurvivalAnalysis(n_estimators=10, max_features="auto", max_depth=3, random_state=0)
+        model = GradientBoostingSurvivalAnalysis(n_estimators=10, max_features=1.0, max_depth=3, random_state=0)
         model.fit(whas500_data.x, whas500_data.y)
 
         assert model.max_features_ == whas500_data.x.shape[1]
