@@ -196,3 +196,12 @@ def test_groups():
                        match="At least two groups must be specified, "
                              "but only one was provided."):
         compare_survival(y, group)
+
+    group = numpy.empty((y.shape[0], 2, 4), dtype="str")
+    group[:, 0, :] = "a"
+    group[:, 1, :] = "b"
+    with pytest.raises(
+        ValueError,
+        match=r"Found array with dim 3\. compare_survival expected <= 2\."
+    ):
+        compare_survival(y, group)

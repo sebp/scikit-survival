@@ -14,7 +14,7 @@ from sklearn.ensemble._forest import (
     _parallel_build_trees,
 )
 from sklearn.tree._tree import DTYPE
-from sklearn.utils.validation import check_array, check_is_fitted, check_random_state
+from sklearn.utils.validation import check_is_fitted, check_random_state
 
 from ..base import SurvivalAnalysisMixin
 from ..metrics import concordance_index_censored
@@ -84,7 +84,7 @@ class _BaseSurvivalForest(BaseForest,
         -------
         self
         """
-        X = self._validate_data(X, ensure_min_samples=2)
+        X = self._validate_data(X, dtype=DTYPE, ensure_min_samples=2)
         event, time = check_array_survival(X, y)
 
         self.n_features_in_ = X.shape[1]
@@ -159,8 +159,6 @@ class _BaseSurvivalForest(BaseForest,
 
     def _set_oob_score_and_attributes(self, X, y):
         """Calculate out of bag predictions and score."""
-        X = check_array(X, dtype=DTYPE)
-
         n_samples = X.shape[0]
         event, time = y
 

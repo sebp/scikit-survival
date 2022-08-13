@@ -363,6 +363,23 @@ class TestCoxPH:
                            match=r"Length alphas \(0\) must match number of features \(7\)"):
             cph.fit(rossi.x.values, rossi.y)
 
+        alphas = numpy.empty(rossi.x.shape[1], dtype=str)
+        alphas[:] = "failure"
+        cph.set_params(alpha=alphas)
+        with pytest.raises(
+            ValueError,
+            match="dtype='numeric' is not compatible with arrays of bytes/strings"
+        ):
+            cph.fit(rossi.x.values, rossi.y)
+
+        alphas = numpy.random.randn(rossi.x.shape[1], 3, 4)
+        cph.set_params(alpha=alphas)
+        with pytest.raises(
+            ValueError,
+            match=r"Found array with dim 3\. CoxPHSurvivalAnalysis expected <= 2\."
+        ):
+            cph.fit(rossi.x.values, rossi.y)
+
         alphas = numpy.ones(rossi.x.shape[1])
         alphas[-2] = -1e-4
         cph.set_params(alpha=alphas)

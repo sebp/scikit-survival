@@ -20,7 +20,7 @@ from sklearn.ensemble._gb import BaseGradientBoosting, VerboseReporter
 from sklearn.ensemble._gradient_boosting import _random_sample_mask
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.tree._tree import DTYPE
-from sklearn.utils import check_array, check_consistent_length, check_random_state, column_or_1d
+from sklearn.utils import check_consistent_length, check_random_state, column_or_1d
 from sklearn.utils.extmath import squared_norm
 from sklearn.utils.validation import check_is_fitted
 
@@ -1010,7 +1010,9 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         return raw_predictions
 
     def _dropout_staged_raw_predict(self, X):
-        X = check_array(X, dtype=DTYPE, order="C")
+        X = self._validate_data(
+            X, dtype=DTYPE, order='C', accept_sparse='csr'
+        )
         raw_predictions = self._raw_predict_init(X)
 
         n_estimators, K = self.estimators_.shape

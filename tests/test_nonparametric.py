@@ -138,6 +138,24 @@ class TestKaplanMeier:
         assert_array_almost_equal(prob, true_y)
 
     @staticmethod
+    def test_wrong_dtype(simple_data_km):
+        time, event, _, _ = simple_data_km
+
+        ys = Surv.from_arrays(event, time)
+        est = SurvivalFunctionEstimator().fit(ys)
+        with pytest.raises(
+            ValueError,
+            match="dtype='numeric' is not compatible with arrays of bytes/strings"
+        ):
+            est.predict_proba(numpy.array(["should", "not", "work"]))
+
+        with pytest.raises(
+            ValueError,
+            match=r"Found array with dim 3\. SurvivalFunctionEstimator expected <= 2\."
+        ):
+            est.predict_proba(numpy.random.randn(10, 9, 5))
+
+    @staticmethod
     def test_truncated_enter_larger_exit_error():
         rnd = numpy.random.RandomState(2016)
         time_exit = rnd.uniform(1, 100, size=25)
