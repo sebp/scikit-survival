@@ -282,6 +282,7 @@ class TestFastSurvivalSVM:
             warnings.simplefilter("ignore", category=ConvergenceWarning)
             ssvm.fit(whas500.x, whas500.y)
         assert 'avltree' == ssvm.optimizer
+        assert 1 < ssvm.n_iter_ <= 25
 
     @staticmethod
     @pytest.mark.slow()
@@ -405,6 +406,7 @@ class TestKernelSurvivalSVM:
             warnings.simplefilter("ignore", category=ConvergenceWarning)
             ssvm.fit(whas500.x, whas500.y)
         assert 'rbtree' == ssvm.optimizer
+        assert 1 < ssvm.n_iter_ <= 25
 
     @staticmethod
     def test_unknown_optimizer(fake_data):
@@ -775,6 +777,8 @@ class TestNaiveSurvivalSVM:
 
         nrsvm = NaiveSurvivalSVM(loss='squared_hinge', dual=False, tol=8e-7, max_iter=1000, random_state=0)
         nrsvm.fit(x, y)
+
+        assert nrsvm.n_iter_ > 10
 
         rsvm = FastSurvivalSVM(optimizer='avltree', tol=8e-7, max_iter=1000, random_state=0)
         rsvm.fit(x, y)
