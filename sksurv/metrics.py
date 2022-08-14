@@ -13,7 +13,7 @@
 import numpy
 from sklearn.base import BaseEstimator
 from sklearn.utils import check_array, check_consistent_length
-from sklearn.utils.metaestimators import if_delegate_has_method
+from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import check_is_fitted
 
 from .exceptions import NoComparablePairException
@@ -33,7 +33,7 @@ __all__ = [
 
 
 def _check_estimate_1d(estimate, test_time):
-    estimate = check_array(estimate, ensure_2d=False)
+    estimate = check_array(estimate, ensure_2d=False, input_name="estimate")
     if estimate.ndim != 1:
         raise ValueError(
             'Expected 1D array, got {:d}D array instead:\narray={}.\n'.format(
@@ -44,8 +44,8 @@ def _check_estimate_1d(estimate, test_time):
 
 def _check_inputs(event_indicator, event_time, estimate):
     check_consistent_length(event_indicator, event_time, estimate)
-    event_indicator = check_array(event_indicator, ensure_2d=False)
-    event_time = check_array(event_time, ensure_2d=False)
+    event_indicator = check_array(event_indicator, ensure_2d=False, input_name="event_indicator")
+    event_time = check_array(event_time, ensure_2d=False, input_name="event_time")
     estimate = _check_estimate_1d(estimate, event_time)
 
     if not numpy.issubdtype(event_indicator.dtype, numpy.bool_):
@@ -63,7 +63,7 @@ def _check_inputs(event_indicator, event_time, estimate):
 
 
 def _check_times(test_time, times):
-    times = check_array(numpy.atleast_1d(times), ensure_2d=False, dtype=test_time.dtype)
+    times = check_array(numpy.atleast_1d(times), ensure_2d=False, dtype=test_time.dtype, input_name="times")
     times = numpy.unique(times)
 
     if times.max() >= test_time.max() or times.min() < test_time.min():
@@ -74,8 +74,8 @@ def _check_times(test_time, times):
     return times
 
 
-def _check_estimate_2d(estimate, test_time, time_points):
-    estimate = check_array(estimate, ensure_2d=False, allow_nd=False)
+def _check_estimate_2d(estimate, test_time, time_points, estimator):
+    estimate = check_array(estimate, ensure_2d=False, allow_nd=False, input_name="estimate", estimator=estimator)
     time_points = _check_times(test_time, time_points)
     check_consistent_length(test_time, estimate)
 
@@ -453,7 +453,9 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
            Statistical Methods in Medical Research, 2014.
     """
     test_event, test_time = check_y_survival(survival_test)
-    estimate, times = _check_estimate_2d(estimate, test_time, times)
+    estimate, times = _check_estimate_2d(
+        estimate, test_time, times, estimator="cumulative_dynamic_auc"
+    )
 
     n_samples = estimate.shape[0]
     n_times = times.shape[0]
@@ -612,7 +614,9 @@ def brier_score(survival_train, survival_test, estimate, times):
            Statistics in Medicine, vol. 18, no. 17-18, pp. 2529–2545, 1999.
     """
     test_event, test_time = check_y_survival(survival_test)
-    estimate, times = _check_estimate_2d(estimate, test_time, times)
+    estimate, times = _check_estimate_2d(
+        estimate, test_time, times, estimator="brier_score"
+    )
     if estimate.ndim == 1 and times.shape[0] == 1:
         estimate = estimate.reshape(-1, 1)
 
@@ -744,6 +748,19 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
     return ibs_value
 
 
+def _estimator_has(attr):
+    """Check that meta_estimator has `attr`.
+
+    Used together with `available_if`."""
+
+    def check(self):
+        # raise original `AttributeError` if `attr` does not exist
+        getattr(self.estimator_, attr)
+        return True
+
+    return check
+
+
 class _ScoreOverrideMixin:
     def __init__(self, estimator, predict_func, score_func, score_index, greater_is_better):
         if not hasattr(estimator, predict_func):
@@ -798,7 +815,7 @@ class _ScoreOverrideMixin:
             score = score[self._score_index]
         return self._sign * score
 
-    @if_delegate_has_method(delegate="estimator_")
+    @available_if(_estimator_has('predict'))
     def predict(self, X):
         """Call predict on the estimator.
 
@@ -813,7 +830,7 @@ class _ScoreOverrideMixin:
         check_is_fitted(self, "estimator_")
         return self.estimator_.predict(X)
 
-    @if_delegate_has_method(delegate="estimator_")
+    @available_if(_estimator_has('predict_cumulative_hazard_function'))
     def predict_cumulative_hazard_function(self, X):
         """Call predict_cumulative_hazard_function on the estimator.
 
@@ -828,7 +845,7 @@ class _ScoreOverrideMixin:
         check_is_fitted(self, "estimator_")
         return self.estimator_.predict_cumulative_hazard_function(X)
 
-    @if_delegate_has_method(delegate="estimator_")
+    @available_if(_estimator_has('predict_survival_function'))
     def predict_survival_function(self, X):
         """Call predict_survival_function on the estimator.
 

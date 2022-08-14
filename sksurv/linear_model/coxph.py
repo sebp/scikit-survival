@@ -407,7 +407,9 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         else:
             alphas = self.alpha
 
-        alphas = check_array(alphas, ensure_2d=False, ensure_min_samples=0)
+        alphas = check_array(
+            alphas, ensure_2d=False, ensure_min_samples=0, estimator=self, input_name="alpha"
+        )
         if numpy.any(alphas < 0):
             raise ValueError("alpha must be positive, but was %r" % self.alpha)
         if alphas.shape[0] != X.shape[1]:

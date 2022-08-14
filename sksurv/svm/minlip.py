@@ -58,7 +58,8 @@ class OsqpSolver(QPSolver):
             # non of solved, solved inaccurate
             raise RuntimeError("OSQP solver failed: {}".format(results.info.status))
 
-        return results.x[numpy.newaxis]
+        n_iter = results.info.iter
+        return results.x[numpy.newaxis], n_iter
 
     def _get_options(self):
         solver_opts = {
@@ -134,7 +135,8 @@ class EcosSolver(QPSolver):
 
         # drop solution for t
         x = results["x"][1:]
-        return x[numpy.newaxis]
+        n_iter = results["info"]["iter"]
+        return x[numpy.newaxis], n_iter
 
     def _check_success(self, results):  # pylint: disable=no-self-use
         exit_flag = results["info"]["exitFlag"]
@@ -259,6 +261,9 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
 
+    n_iter_ : int
+        Number of iterations run by the optimization routine to fit the model.
+
     References
     ----------
     .. [1] Van Belle, V., Pelckmans, K., Suykens, J. A. K., and Van Huffel, S.
@@ -342,8 +347,9 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
             timer = timeit.Timer(_inner)
             self.timings_ = timer.repeat(self.timeit, number=1)
 
-        coef = solver.solve(**problem_data)
+        coef, n_iter = solver.solve(**problem_data)
         self._update_coef(coef, D)
+        self.n_iter_ = n_iter
         self.X_fit_ = x
 
     def _update_coef(self, coef, D):
@@ -479,6 +485,9 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
     feature_names_in_ : ndarray of shape (`n_features_in_`,)
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
+
+    n_iter_ : int
+        Number of iterations run by the optimization routine to fit the model.
 
     References
     ----------

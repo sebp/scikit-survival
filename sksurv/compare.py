@@ -57,7 +57,13 @@ def compare_survival(y, group_indicator, return_stats=False):
     """
 
     event, time = check_array_survival(group_indicator, y)
-    group_indicator = check_array(group_indicator, dtype="O", ensure_2d=False)
+    group_indicator = check_array(
+        group_indicator,
+        dtype="O",
+        ensure_2d=False,
+        estimator="compare_survival",
+        input_name="group_indicator",
+    )
 
     n_samples = time.shape[0]
     groups, group_counts = numpy.unique(group_indicator, return_counts=True)
@@ -112,7 +118,7 @@ def compare_survival(y, group_indicator, return_stats=False):
         table["expected"] = expected
         table["statistic"] = observed - expected
         table = pandas.DataFrame.from_dict(table)
-        table.index = pandas.Index(groups, name="group")
+        table.index = pandas.Index(groups, name="group", dtype=groups.dtype)
         return chisq, pval, table, covar
 
     return chisq, pval

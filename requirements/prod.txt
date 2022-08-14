@@ -3,6 +3,6 @@ joblib
 numexpr
 numpy
 osqp !=0.6.0,!=0.6.1
-pandas >=0.25
+pandas >=1.0.5
 scipy >=1.0,!=1.3.0
-scikit-learn >=1.0.0,<1.1
+scikit-learn >=1.1.0,<1.2

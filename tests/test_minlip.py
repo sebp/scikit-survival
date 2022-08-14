@@ -245,6 +245,7 @@ class TestToyOsqpExample:
         m.set_params(alpha=2)
         m.fit(x, y)
 
+        assert m.n_iter_ > 100
         assert (1, x.shape[0]) == m.coef_.shape
         assert 1 == m.coef0
         expected_coef = numpy.array([
@@ -355,6 +356,7 @@ class TestToyEcosExample:
         m.set_params(alpha=2)
         m.fit(x, y)
 
+        assert m.n_iter_ > 10
         assert (1, x.shape[0]) == m.coef_.shape
         assert 1 == m.coef0
         expected_coef = numpy.array([
@@ -463,6 +465,8 @@ class TestMinlipOsqp:
 
         assert (1, x.shape[0]) == m.coef_.shape
 
+        assert m.n_iter_ > 1000
+
         p = m.predict(x)
         assert_cindex_almost_equal(y['cens'], y['time'], p,
                                    (0.5990741854033906, 79720, 53352, 0, 42))
@@ -526,6 +530,8 @@ class TestMinlipCvxpy:
         m.fit(x, y)
 
         assert (1, x.shape[0]) == m.coef_.shape
+
+        assert m.n_iter_ > 10
 
         p = m.predict(x)
         assert_cindex_almost_equal(y['cens'], y['time'], p,

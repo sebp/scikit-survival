@@ -20,7 +20,7 @@ from sklearn.ensemble._gb import BaseGradientBoosting, VerboseReporter
 from sklearn.ensemble._gradient_boosting import _random_sample_mask
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.tree._tree import DTYPE
-from sklearn.utils import check_array, check_consistent_length, check_random_state, column_or_1d
+from sklearn.utils import check_consistent_length, check_random_state, column_or_1d
 from sklearn.utils.extmath import squared_norm
 from sklearn.utils.validation import check_is_fitted
 
@@ -171,8 +171,12 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         self.verbose = verbose
 
     @property
+    def loss_(self):
+        return self._loss
+
+    @property
     def _predict_risk_score(self):
-        return isinstance(self.loss_, CoxPH)
+        return isinstance(self._loss, CoxPH)
 
     def _check_params(self):
         """Check validity of parameters and raise ValueError if not valid. """
@@ -221,13 +225,13 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
                 subsample_weight = sample_weight * sample_mask.astype(numpy.float64)
 
                 # OOB score before adding this stage
-                old_oob_score = self.loss_(y[~sample_mask],
+                old_oob_score = self._loss(y[~sample_mask],
                                            y_pred[~sample_mask],
                                            sample_weight[~sample_mask])
             else:
                 subsample_weight = sample_weight
 
-            residuals = self.loss_.negative_gradient(y, y_pred, sample_weight=sample_weight)
+            residuals = self._loss.negative_gradient(y, y_pred, sample_weight=sample_weight)
 
             best_learner = _fit_stage_componentwise(Xi, residuals, subsample_weight)
             self.estimators_.append(best_learner)
@@ -248,14 +252,14 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
             # track deviance (= loss)
             if do_oob:
-                self.train_score_[num_iter] = self.loss_(y[sample_mask], y_pred[sample_mask],
+                self.train_score_[num_iter] = self._loss(y[sample_mask], y_pred[sample_mask],
                                                          sample_weight[sample_mask])
                 self.oob_improvement_[num_iter] = (old_oob_score
-                                                   - self.loss_(y[~sample_mask], y_pred[~sample_mask],
+                                                   - self._loss(y[~sample_mask], y_pred[~sample_mask],
                                                                 sample_weight[~sample_mask]))
             else:
                 # no need to fancy index w/ no subsampling
-                self.train_score_[num_iter] = self.loss_(y, y_pred, sample_weight)
+                self.train_score_[num_iter] = self._loss(y, y_pred, sample_weight)
 
             if self.verbose > 0:
                 verbose_reporter.update(num_iter, self)
@@ -296,8 +300,8 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         self._check_params()
 
         self.estimators_ = []
-        self.loss_ = LOSS_FUNCTIONS[self.loss]()
-        if isinstance(self.loss_, (CensoredSquaredLoss, IPCWLeastSquaresError)):
+        self._loss = LOSS_FUNCTIONS[self.loss]()
+        if isinstance(self._loss, (CensoredSquaredLoss, IPCWLeastSquaresError)):
             time = numpy.log(time)
 
         self.train_score_ = numpy.zeros((self.n_estimators,), dtype=numpy.float64)
@@ -308,7 +312,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         self._fit(X, event, time, sample_weight, random_state)
 
-        if isinstance(self.loss_, CoxPH):
+        if isinstance(self._loss, CoxPH):
             risk_scores = self._predict(X)
             self._baseline_model = BreslowEstimator().fit(risk_scores, event, time)
         else:
@@ -324,7 +328,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         for estimator in self.estimators_:
             pred += self.learning_rate * estimator.predict(Xi)
 
-        return self.loss_._scale_raw_prediction(pred)
+        return self._loss._scale_raw_prediction(pred)
 
     def predict(self, X):
         """Predict risk scores.
@@ -702,7 +706,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
     @property
     def _predict_risk_score(self):
-        return isinstance(self.loss_, CoxPH)
+        return isinstance(self._loss, CoxPH)
 
     def _check_params(self):
         """Check validity of parameters and raise ValueError if not valid. """
@@ -736,7 +740,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         if self.loss not in LOSS_FUNCTIONS:
             raise ValueError("Loss {!r} not supported.".format(self.loss))
 
-        self.loss_ = LOSS_FUNCTIONS[self.loss]()
+        self._loss = LOSS_FUNCTIONS[self.loss]()
 
     def _check_max_features(self):
         if isinstance(self.max_features, str):
@@ -768,7 +772,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         """Fit another stage of ``n_classes_`` trees to the boosting model. """
 
         assert sample_mask.dtype == bool
-        loss = self.loss_
+        loss = self._loss
 
         # whether to use dropout in next iteration
         do_dropout = self.dropout_rate > 0. and 0 < i < len(scale) - 1
@@ -846,7 +850,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         do_oob = self.subsample < 1.0
         sample_mask = numpy.ones((n_samples, ), dtype=bool)
         n_inbag = max(1, int(self.subsample * n_samples))
-        loss_ = self.loss_
+        loss_ = self._loss
 
         if self.verbose:
             verbose_reporter = VerboseReporter(verbose=self.verbose)
@@ -951,7 +955,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         self._check_params()
 
-        if isinstance(self.loss_, (CensoredSquaredLoss, IPCWLeastSquaresError)):
+        if isinstance(self._loss, (CensoredSquaredLoss, IPCWLeastSquaresError)):
             time = numpy.log(time)
 
         self._init_state()
@@ -960,7 +964,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         else:
             self.init_.fit(X, (event, time), sample_weight)
 
-        raw_predictions = self.loss_.get_init_raw_predictions(X, self.init_)
+        raw_predictions = self._loss.get_init_raw_predictions(X, self.init_)
         begin_at_stage = 0
 
         # The rng state must be preserved if warm_start is True
@@ -979,7 +983,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         self.n_estimators_ = n_stages
 
-        if isinstance(self.loss_, CoxPH):
+        if isinstance(self._loss, CoxPH):
             X_pred = X
             if issparse(X):
                 X_pred = X.asformat('csr')
@@ -1006,7 +1010,9 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         return raw_predictions
 
     def _dropout_staged_raw_predict(self, X):
-        X = check_array(X, dtype=DTYPE, order="C")
+        X = self._validate_data(
+            X, dtype=DTYPE, order='C', accept_sparse='csr'
+        )
         raw_predictions = self._raw_predict_init(X)
 
         n_estimators, K = self.estimators_.shape
@@ -1032,7 +1038,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         if score.shape[1] == 1:
             score = score.ravel()
 
-        return self.loss_._scale_raw_prediction(score)
+        return self._loss._scale_raw_prediction(score)
 
     def predict(self, X):
         """Predict risk scores.
@@ -1083,12 +1089,12 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         # if dropout wasn't used during training, proceed as usual,
         # otherwise consider scaling factor of individual trees
         if not hasattr(self, "scale_"):
-            aiter = self._staged_raw_predict(X)
+            predictions_iter = self._staged_raw_predict(X)
         else:
-            aiter = self._dropout_staged_raw_predict(X)
+            predictions_iter = self._dropout_staged_raw_predict(X)
 
-        for raw_predictions in aiter:
-            y = self.loss_._scale_raw_prediction(raw_predictions)
+        for raw_predictions in predictions_iter:
+            y = self._loss._scale_raw_prediction(raw_predictions)
             yield y.ravel()
 
     def _get_baseline_model(self):

@@ -14,8 +14,7 @@ from sklearn.ensemble._forest import (
     _parallel_build_trees,
 )
 from sklearn.tree._tree import DTYPE
-from sklearn.utils.fixes import _joblib_parallel_args
-from sklearn.utils.validation import check_array, check_is_fitted, check_random_state
+from sklearn.utils.validation import check_is_fitted, check_random_state
 
 from ..base import SurvivalAnalysisMixin
 from ..metrics import concordance_index_censored
@@ -85,7 +84,7 @@ class _BaseSurvivalForest(BaseForest,
         -------
         self
         """
-        X = self._validate_data(X, ensure_min_samples=2)
+        X = self._validate_data(X, dtype=DTYPE, ensure_min_samples=2)
         event, time = check_array_survival(X, y)
 
         self.n_features_in_ = X.shape[1]
@@ -143,9 +142,9 @@ class _BaseSurvivalForest(BaseForest,
             # parallel_backend contexts set at a higher level,
             # since correctness does not rely on using threads.
             trees = Parallel(n_jobs=self.n_jobs, verbose=self.verbose,
-                             **_joblib_parallel_args(prefer='threads'))(
+                             prefer='threads')(
                 delayed(_parallel_build_trees)(
-                    t, self, X, (y_numeric, self.event_times_), sample_weight, i, len(trees),
+                    t, self.bootstrap, X, (y_numeric, self.event_times_), sample_weight, i, len(trees),
                     verbose=self.verbose,
                     n_samples_bootstrap=n_samples_bootstrap)
                 for i, t in enumerate(trees))
@@ -160,8 +159,6 @@ class _BaseSurvivalForest(BaseForest,
 
     def _set_oob_score_and_attributes(self, X, y):
         """Calculate out of bag predictions and score."""
-        X = check_array(X, dtype=DTYPE)
-
         n_samples = X.shape[0]
         event, time = y
 
@@ -217,7 +214,7 @@ class _BaseSurvivalForest(BaseForest,
         # Parallel loop
         lock = threading.Lock()
         Parallel(n_jobs=n_jobs, verbose=self.verbose,
-                 **_joblib_parallel_args(require="sharedmem"))(
+                 require="sharedmem")(
             delayed(_accumulate_prediction)(_get_fn(e, predict_fn), X, [y_hat], lock)
             for e in self.estimators_)
 
@@ -322,7 +319,6 @@ class RandomSurvivalForest(_BaseSurvivalForest):
             - If float, then `max_features` is a fraction and
               `int(max_features * n_features)` features are considered at each
               split.
-            - If "auto", then `max_features=sqrt(n_features)`.
             - If "sqrt", then `max_features=sqrt(n_features)`.
             - If "log2", then `max_features=log2(n_features)`.
             - If None, then `max_features=n_features`.
@@ -433,7 +429,7 @@ class RandomSurvivalForest(_BaseSurvivalForest):
                  min_samples_split=6,
                  min_samples_leaf=3,
                  min_weight_fraction_leaf=0.,
-                 max_features="auto",
+                 max_features="sqrt",
                  max_leaf_nodes=None,
                  bootstrap=True,
                  oob_score=False,
@@ -647,7 +643,6 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
             - If float, then `max_features` is a fraction and
               `int(max_features * n_features)` features are considered at each
               split.
-            - If "auto", then `max_features=sqrt(n_features)`.
             - If "sqrt", then `max_features=sqrt(n_features)`.
             - If "log2", then `max_features=log2(n_features)`.
             - If None, then `max_features=n_features`.
@@ -726,7 +721,7 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
                  min_samples_split=6,
                  min_samples_leaf=3,
                  min_weight_fraction_leaf=0.,
-                 max_features="auto",
+                 max_features="sqrt",
                  max_leaf_nodes=None,
                  bootstrap=True,
                  oob_score=False,

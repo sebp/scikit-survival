@@ -372,7 +372,7 @@ class SurvivalFunctionEstimator(BaseEstimator):
             Probability of an event.
         """
         check_is_fitted(self, "unique_time_")
-        time = check_array(time, ensure_2d=False)
+        time = check_array(time, ensure_2d=False, estimator=self, input_name="time")
 
         # K-M is undefined if estimate at last time point is non-zero
         extends = time > self.unique_time_[-1]

@@ -726,6 +726,10 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
 
         return self
 
+    @property
+    def n_iter_(self):
+        return self.optimizer_result_.nit
+
     @staticmethod
     def _argsort_and_resolve_ties(time, random_state):
         """Like numpy.argsort, but resolves ties uniformly at random"""
@@ -831,6 +835,9 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     feature_names_in_ : ndarray of shape (`n_features_in_`,)
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
+
+    n_iter_ : int
+        Number of iterations run by the optimization routine to fit the model.
 
     See also
     --------
@@ -970,6 +977,9 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     feature_names_in_ : ndarray of shape (`n_features_in_`,)
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
+
+    n_iter_ : int
+        Number of iterations run by the optimization routine to fit the model.
 
     See also
     --------

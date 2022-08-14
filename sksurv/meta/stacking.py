@@ -12,9 +12,22 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numpy
 from sklearn.base import MetaEstimatorMixin, clone
-from sklearn.utils.metaestimators import _BaseComposition, if_delegate_has_method
+from sklearn.utils.metaestimators import _BaseComposition, available_if
 
 from ..base import SurvivalAnalysisMixin
+
+
+def _meta_estimator_has(attr):
+    """Check that meta_estimator has `attr`.
+
+    Used together with `available_if`."""
+
+    def check(self):
+        # raise original `AttributeError` if `attr` does not exist
+        getattr(self.meta_estimator, attr)
+        return True
+
+    return check
 
 
 class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
@@ -202,7 +215,7 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
 
         return self
 
-    @if_delegate_has_method(delegate='meta_estimator')
+    @available_if(_meta_estimator_has('predict'))
     def predict(self, X):
         """Perform prediction.
 
@@ -224,7 +237,7 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
         Xt = self._predict_estimators(X)
         return self.final_estimator_.predict(Xt)
 
-    @if_delegate_has_method(delegate='meta_estimator')
+    @available_if(_meta_estimator_has('predict_proba'))
     def predict_proba(self, X):
         """Perform prediction.
 
@@ -246,7 +259,7 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
         Xt = self._predict_estimators(X)
         return self.final_estimator_.predict_proba(Xt)
 
-    @if_delegate_has_method(delegate='meta_estimator')
+    @available_if(_meta_estimator_has('predict_log_proba'))
     def predict_log_proba(self, X):
         """Perform prediction.
 

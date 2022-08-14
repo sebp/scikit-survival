@@ -81,6 +81,11 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
     max_iter : int, default: 1000
         The maximum number of iterations to be run.
 
+    Attributes
+    ----------
+    n_iter_ : int
+        Number of iterations run by the optimization routine to fit the model.
+
     See also
     --------
     sksurv.svm.FastSurvivalSVM
