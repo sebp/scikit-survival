@@ -10,9 +10,65 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import numpy
 
 
 class SurvivalAnalysisMixin:
+    def _predict_function(self, func_name, baseline_model, prediction, return_array):
+        fns = getattr(baseline_model, func_name)(prediction)
+
+        if not return_array:
+            return fns
+
+        times = baseline_model.unique_times_
+        arr = numpy.empty((prediction.shape[0], times.shape[0]), dtype=float)
+        for i, fn in enumerate(fns):
+            arr[i, :] = fn(times)
+        return arr
+
+    def _predict_survival_function(self, baseline_model, prediction, return_array):
+        """Return survival functions.
+
+        Parameters
+        ----------
+        baseline_model : sksurv.linear_model.coxph.BreslowEstimator
+            Estimator of baseline survival function.
+
+        prediction : array-like, shape=(n_samples,)
+            Predicted risk scores.
+
+        return_array : bool
+            If True, return a float array of the survival function
+            evaluated at the unique event times, otherwise return
+            an array of :class:`sksurv.functions.StepFunction` instances.
+
+        Returns
+        -------
+        survival : ndarray
+        """
+        return self._predict_function("get_survival_function", baseline_model, prediction, return_array)
+
+    def _predict_cumulative_hazard_function(self, baseline_model, prediction, return_array):
+        """Return cumulative hazard functions.
+
+        Parameters
+        ----------
+        baseline_model : sksurv.linear_model.coxph.BreslowEstimator
+            Estimator of baseline cumulative hazard function.
+
+        prediction : array-like, shape=(n_samples,)
+            Predicted risk scores.
+
+        return_array : bool
+            If True, return a float array of the cumulative hazard function
+            evaluated at the unique event times, otherwise return
+            an array of :class:`sksurv.functions.StepFunction` instances.
+
+        Returns
+        -------
+        cum_hazard : ndarray
+        """
+        return self._predict_function("get_cumulative_hazard_function", baseline_model, prediction, return_array)
 
     def score(self, X, y):
         """Returns the concordance index of the prediction.

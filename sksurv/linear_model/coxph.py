@@ -37,6 +37,9 @@ class BreslowEstimator:
 
     baseline_survival_ : :class:`sksurv.functions.StepFunction`
         Baseline survival function.
+
+    unique_times_ : ndarray
+        Unique event times.
     """
 
     def fit(self, linear_predictor, event, time):
@@ -76,8 +79,8 @@ class BreslowEstimator:
 
         y = numpy.cumsum(n_events / divisor)
         self.cum_baseline_hazard_ = StepFunction(uniq_times, y)
-        self.baseline_survival_ = StepFunction(self.cum_baseline_hazard_.x,
-                                               numpy.exp(- self.cum_baseline_hazard_.y))
+        self.baseline_survival_ = StepFunction(uniq_times, numpy.exp(-y))
+        self.unique_times_ = uniq_times
         return self
 
     def get_cumulative_hazard_function(self, linear_predictor):
@@ -349,6 +352,9 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
 
+    event_times_ : array of shape = (n_event_times,)
+        Unique time points where events occurred.
+
     See also
     --------
     sksurv.linear_model.CoxnetSurvivalAnalysis
@@ -380,6 +386,10 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     @property
     def baseline_survival_(self):
         return self._baseline_model.baseline_survival_
+
+    @property
+    def event_times_(self):
+        return self._baseline_model.unique_times_
 
     def fit(self, X, y):
         """Minimize negative partial log-likelihood for provided data.
@@ -483,7 +493,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         return numpy.dot(X, self.coef_)
 
-    def predict_cumulative_hazard_function(self, X):
+    def predict_cumulative_hazard_function(self, X, return_array=False):
         """Predict cumulative hazard function.
 
         The cumulative hazard function for an individual
@@ -501,10 +511,17 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         X : array-like, shape = (n_samples, n_features)
             Data matrix.
 
+        return_array : boolean
+            If set, return an array with the cumulative hazard rate
+            for each `self.event_times_`, otherwise an array of
+            :class:`sksurv.functions.StepFunction`.
+
         Returns
         -------
-        cum_hazard : ndarray of :class:`sksurv.functions.StepFunction`, shape = (n_samples,)
-            Predicted cumulative hazard functions.
+        cum_hazard : ndarray
+            If `return_array` is set, an array with the cumulative hazard rate
+            for each `self.event_times_`, otherwise an array of length `n_samples`
+            of :class:`sksurv.functions.StepFunction` instances will be returned.
 
         Examples
         --------
@@ -533,9 +550,11 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         >>> plt.ylim(0, 1)
         >>> plt.show()
         """
-        return self._baseline_model.get_cumulative_hazard_function(self.predict(X))
+        return self._predict_cumulative_hazard_function(
+            self._baseline_model, self.predict(X), return_array
+        )
 
-    def predict_survival_function(self, X):
+    def predict_survival_function(self, X, return_array=False):
         """Predict survival function.
 
         The survival function for an individual
@@ -553,10 +572,18 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         X : array-like, shape = (n_samples, n_features)
             Data matrix.
 
+        return_array : boolean, default: False
+            If set, return an array with the probability
+            of survival for each `self.event_times_`,
+            otherwise an array of :class:`sksurv.functions.StepFunction`.
+
         Returns
         -------
-        survival : ndarray of :class:`sksurv.functions.StepFunction`, shape = (n_samples,)
-            Predicted survival functions.
+        survival : ndarray
+            If `return_array` is set, an array with the probability of
+            survival for each `self.event_times_`, otherwise an array of
+            length `n_samples` of :class:`sksurv.functions.StepFunction`
+            instances will be returned.
 
         Examples
         --------
@@ -585,4 +612,6 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         >>> plt.ylim(0, 1)
         >>> plt.show()
         """
-        return self._baseline_model.get_survival_function(self.predict(X))
+        return self._predict_survival_function(
+            self._baseline_model, self.predict(X), return_array
+        )
