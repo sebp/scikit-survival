@@ -40,7 +40,7 @@ Requirements
 - osqp
 - pandas 1.0.5 or later
 - scikit-learn 1.1
-- scipy 1.0 or later
+- scipy 1.3.2 or later
 - C/C++ compiler
 
 ============

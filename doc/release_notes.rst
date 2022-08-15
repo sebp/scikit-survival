@@ -18,6 +18,8 @@ the minimum supported versions of dependencies are updated to
    +--------------+-----------------+
    | scikit-learn | 1.1.0           |
    +--------------+-----------------+
+   | scipy        | 1.3.2           |
+   +--------------+-----------------+
 
 Enhancements
 ^^^^^^^^^^^^
