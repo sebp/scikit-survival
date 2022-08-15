@@ -1,3 +1,5 @@
+.. _mod-svm:
+
 Survival Support Vector Machine
 ===============================
 .. currentmodule:: sksurv.svm
