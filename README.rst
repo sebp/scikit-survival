@@ -36,7 +36,7 @@ Requirements
 - ecos
 - joblib
 - numexpr
-- numpy 1.16 or later
+- numpy 1.17.3 or later
 - osqp
 - pandas 1.0.5 or later
 - scikit-learn 1.1
