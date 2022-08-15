@@ -480,7 +480,7 @@ class RandomSurvivalForest(_BaseSurvivalForest):
         X : array-like, shape = (n_samples, n_features)
             Data matrix.
 
-        return_array : boolean
+        return_array : boolean, default: False
             If set, return an array with the cumulative hazard rate
             for each `self.event_times_`, otherwise an array of
             :class:`sksurv.functions.StepFunction`.
@@ -489,8 +489,8 @@ class RandomSurvivalForest(_BaseSurvivalForest):
         -------
         cum_hazard : ndarray
             If `return_array` is set, an array with the cumulative hazard rate
-            for each `self.event_times_`, otherwise an array of
-            :class:`sksurv.functions.StepFunction` will be returned.
+            for each `self.event_times_`, otherwise an array of length `n_samples`
+            of :class:`sksurv.functions.StepFunction` instances will be returned.
 
         Examples
         --------
@@ -772,7 +772,7 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
         X : array-like, shape = (n_samples, n_features)
             Data matrix.
 
-        return_array : boolean
+        return_array : boolean, default: False
             If set, return an array with the cumulative hazard rate
             for each `self.event_times_`, otherwise an array of
             :class:`sksurv.functions.StepFunction`.
@@ -781,8 +781,8 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
         -------
         cum_hazard : ndarray
             If `return_array` is set, an array with the cumulative hazard rate
-            for each `self.event_times_`, otherwise an array of
-            :class:`sksurv.functions.StepFunction` will be returned.
+            for each `self.event_times_`, otherwise an array of length `n_samples`
+            of :class:`sksurv.functions.StepFunction` instances will be returned.
 
         Examples
         --------
@@ -830,7 +830,7 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
         X : array-like, shape = (n_samples, n_features)
             Data matrix.
 
-        return_array : boolean
+        return_array : boolean, default: False
             If set, return an array with the probability
             of survival for each `self.event_times_`,
             otherwise an array of :class:`sksurv.functions.StepFunction`.
@@ -838,10 +838,10 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
         Returns
         -------
         survival : ndarray
-            If `return_array` is set, an array with the probability
-            of survival for each `self.event_times_`,
-            otherwise an array of :class:`sksurv.functions.StepFunction`
-            will be returned.
+            If `return_array` is set, an array with the probability of
+            survival for each `self.event_times_`, otherwise an array of
+            length `n_samples` of :class:`sksurv.functions.StepFunction`
+            instances will be returned.
 
         Examples
         --------
