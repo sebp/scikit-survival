@@ -2,7 +2,9 @@ channels:
   - defaults
   - sebp
 dependencies:
+  - python=3.10
   - pip
   - scikit-survival
   - matplotlib=3.5.1
+  - numpy<1.23.0
   - seaborn==0.11.2
