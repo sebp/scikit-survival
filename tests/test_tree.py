@@ -496,3 +496,20 @@ def test_X_idx_sorted(fake_data, val):
             match="The parameter 'X_idx_sorted' is deprecated and has no effect."
     ):
         tree.fit(X, y, X_idx_sorted=X_idx_sorted)
+
+
+def test_apply(veterans):
+    X, y = veterans
+    X = X.loc[:, "Karnofsky_score"].values[:, numpy.newaxis]
+    X = X.astype(numpy.float32)
+
+    tree = SurvivalTree(max_depth=2, max_features=1)
+    tree.fit(X, y)
+
+    X_trans = tree.apply(X)
+
+    assert X_trans.shape[0] == X.shape[0]
+
+    X_path = tree.decision_path(X)
+    
+    assert X_path.todense().shape[0] == X.shape[0]    

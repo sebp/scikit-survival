@@ -260,3 +260,20 @@ def test_fit_max_samples(make_whas500, forest_cls, max_samples, exc_type, exc_ms
     forest = forest_cls(max_samples=max_samples)
     with pytest.raises(exc_type, match=exc_msg):
         forest.fit(whas500.x, whas500.y)
+
+
+@pytest.mark.parametrize('forest_cls', FORESTS)
+def test_apply(make_whas500, forest_cls):
+    whas500 = make_whas500(to_numeric=True)
+
+    forest = forest_cls()
+    forest.fit(whas500.x, whas500.y)
+
+    x_trans = forest.apply(whas500.x)
+
+    assert x_trans.shape[0] == whas500.x.shape[0]
+    assert x_trans.shape[1] == forest.n_estimators
+
+    x_path, _ = forest.decision_path(whas500.x)
+
+    assert x_path.todense().shape[0] == whas500.x.shape[0]

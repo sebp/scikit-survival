@@ -520,3 +520,52 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         if return_array:
             return arr
         return _array_to_step_function(self.event_times_, arr)
+
+    def apply(self, X, check_input=True):
+        """Return the index of the leaf that each sample is predicted as.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            The input samples. Internally, it will be converted to
+            ``dtype=np.float32`` and if a sparse matrix is provided
+            to a sparse ``csr_matrix``.
+
+        check_input : bool, default=True
+            Allow to bypass several input checking.
+            Don't use this parameter unless you know what you do.
+
+        Returns
+        -------
+        X_leaves : array-like of shape (n_samples,)
+            For each datapoint x in X, return the index of the leaf x
+            ends up in. Leaves are numbered within
+            ``[0; self.tree_.node_count)``, possibly with gaps in the
+            numbering.
+        """
+        check_is_fitted(self, "tree_")
+        self._validate_X_predict(X, check_input)
+        return self.tree_.apply(X)
+    
+    def decision_path(self, X, check_input=True):
+        """Return the decision path in the tree.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            The input samples. Internally, it will be converted to
+            ``dtype=np.float32`` and if a sparse matrix is provided
+            to a sparse ``csr_matrix``.
+
+        check_input : bool, default=True
+            Allow to bypass several input checking.
+            Don't use this parameter unless you know what you do.
+
+        Returns
+        -------
+        indicator : sparse matrix of shape (n_samples, n_nodes)
+            Return a node indicator CSR matrix where non zero elements
+            indicates that the samples goes through the nodes.
+        """
+        X = self._validate_X_predict(X, check_input)
+        return self.tree_.decision_path(X)
