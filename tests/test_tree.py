@@ -511,5 +511,5 @@ def test_apply(veterans):
     assert X_trans.shape[0] == X.shape[0]
 
     X_path = tree.decision_path(X)
-    
-    assert X_path.todense().shape[0] == X.shape[0]    
+
+    assert X_path.todense().shape[0] == X.shape[0]

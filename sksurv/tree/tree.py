@@ -546,7 +546,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         check_is_fitted(self, "tree_")
         self._validate_X_predict(X, check_input)
         return self.tree_.apply(X)
-    
+
     def decision_path(self, X, check_input=True):
         """Return the decision path in the tree.
 
