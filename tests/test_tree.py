@@ -509,7 +509,8 @@ def test_apply(veterans):
     X_trans = tree.apply(X)
 
     assert X_trans.shape[0] == X.shape[0]
-    assert all(X_trans >= 0) and all(X_trans < tree.tree_.node_count)
+    assert all(X_trans >= 0)
+    assert all(X_trans < tree.tree_.node_count)
 
     X_path = tree.decision_path(X)
 
