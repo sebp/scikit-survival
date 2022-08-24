@@ -35,7 +35,7 @@ class DummySurvivalEstimator(DummyRegressor):
         return super().fit(X, time, sample_weight=sample_weight)
 
 
-class SurvivalLossFunction(RegressionLossFunction, metaclass=ABCMeta):
+class SurvivalLossFunction(RegressionLossFunction, metaclass=ABCMeta):  # noqa: B024
     """Base class for survival loss functions."""
     # pylint: disable=abstract-method,no-self-use
     def init_estimator(self):
