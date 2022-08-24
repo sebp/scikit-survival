@@ -498,7 +498,7 @@ def test_X_idx_sorted(fake_data, val):
         tree.fit(X, y, X_idx_sorted=X_idx_sorted)
 
 
-def test_apply(veterans):
+def test_apply_shape(veterans):
     X, y = veterans
     X = X.loc[:, "Karnofsky_score"].values[:, numpy.newaxis]
     X = X.astype(numpy.float32)
@@ -514,5 +514,63 @@ def test_apply(veterans):
 
     X_path = tree.decision_path(X)
 
-    assert X_path.todense().shape[0] == X.shape[0]
-    assert X_path.todense().shape[1] == tree.tree_.node_count
+    assert X_path.toarray().shape[0] == X.shape[0]
+    assert X_path.toarray().shape[1] == tree.tree_.node_count
+
+
+def test_apply_values():
+    """Test `apply` and `decision_function` with a toy dataset.
+
+    The duration is directly proportional to x_1 in case of event.
+    In case of censoring, the duration follows a uniform distribution.
+
+    Besides, we observe an event only when `x_1 > 0`.
+    `x_2` follows a uniform distribution and brings zero predictive power.
+
+    Thus, the decision path only depends on the value of x_1.
+    """
+    pos = numpy.random.randint(1, 10, (20))
+    neg = -pos
+
+    x_1 = numpy.r_[pos, neg]
+    x_2 = numpy.random.rand(40)
+
+    y_duration_pos = pos * 3 + 1
+    y_duration_neg = numpy.random.randint(1, 30, (20))
+
+    y_duration = numpy.r_[y_duration_pos, y_duration_neg]
+    y_event = numpy.r_[numpy.ones(20), numpy.zeros(20)]
+
+    y = [(bool(e), d) for e, d in zip(y_event, y_duration)]
+    y = numpy.array(y, dtype=[('fstat', '?'), ('lenfol', '<f8')])
+
+    X = numpy.c_[x_1, x_2]
+
+    tree = SurvivalTree(max_depth=2)
+    tree.fit(X, y)
+
+    X_test = numpy.array([
+        [-1, 0],
+        [-10, 5],
+        [1, 0],
+        [10, 0],
+        [1, 1],
+    ], dtype=numpy.float32)
+
+    X_trans = tree.apply(X_test)
+    X_trans_expected = numpy.array([
+        1, 1, 3, 4, 3
+    ])
+
+    assert_array_equal(X_trans, X_trans_expected)
+
+    X_path = tree.decision_path(X_test).toarray()
+    X_path_expected = numpy.array([
+        [1, 1, 0, 0, 0],
+        [1, 1, 0, 0, 0],
+        [1, 0, 1, 1, 0],
+        [1, 0, 1, 0, 1],
+        [1, 0, 1, 1, 0],
+    ])
+
+    assert_array_equal(X_path, X_path_expected)
