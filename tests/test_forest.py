@@ -276,4 +276,4 @@ def test_apply(make_whas500, forest_cls):
 
     x_path, _ = forest.decision_path(whas500.x)
 
-    assert x_path.todense().shape[0] == whas500.x.shape[0]
+    assert x_path.toarray().shape[0] == whas500.x.shape[0]
