@@ -4,6 +4,7 @@ import numpy
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 import pandas
 import pytest
+from scipy import sparse
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.tree._tree import TREE_UNDEFINED
@@ -498,7 +499,7 @@ def test_X_idx_sorted(fake_data, val):
         tree.fit(X, y, X_idx_sorted=X_idx_sorted)
 
 
-def test_apply_shape(veterans):
+def test_apply(veterans):
     X, y = veterans
     X = X.loc[:, "Karnofsky_score"].values[:, numpy.newaxis]
     X = X.astype(numpy.float32)
@@ -513,6 +514,30 @@ def test_apply_shape(veterans):
     assert all(X_trans < tree.tree_.node_count)
 
     X_path = tree.decision_path(X).toarray()
+
+    assert X_path.shape[0] == X.shape[0]
+    assert X_path.shape[1] == tree.tree_.node_count
+
+    ones = X_path[numpy.arange(X.shape[0]), X_trans]
+    assert_array_equal(ones, numpy.ones(X.shape[0]))
+
+
+def test_apply_sparse(veterans):
+    X, y = veterans
+    X = X.loc[:, "Karnofsky_score"].values[:, numpy.newaxis]
+    X = X.astype(numpy.float32)
+    X_sparse = sparse.csr_matrix(X)
+    
+    tree = SurvivalTree(max_depth=2, max_features=1)
+    tree.fit(X_sparse, y)
+
+    X_trans = tree.apply(X_sparse)
+
+    assert X_trans.shape[0] == X.shape[0]
+    assert all(X_trans >= 0)
+    assert all(X_trans < tree.tree_.node_count)
+
+    X_path = tree.decision_path(X_sparse).toarray()
 
     assert X_path.shape[0] == X.shape[0]
     assert X_path.shape[1] == tree.tree_.node_count

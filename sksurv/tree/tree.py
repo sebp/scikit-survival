@@ -3,9 +3,10 @@ import numbers
 import warnings
 
 import numpy as np
+from scipy.sparse import issparse
 from sklearn.base import BaseEstimator
 from sklearn.tree import _tree
-from sklearn.tree._classes import DENSE_SPLITTERS
+from sklearn.tree._classes import DENSE_SPLITTERS, SPARSE_SPLITTERS
 from sklearn.tree._splitter import Splitter
 from sklearn.tree._tree import BestFirstTreeBuilder, DepthFirstTreeBuilder, Tree
 from sklearn.utils.validation import check_is_fitted, check_random_state
@@ -183,10 +184,12 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         random_state = check_random_state(self.random_state)
 
         if check_input:
-            X = self._validate_data(X, ensure_min_samples=2)
+            X = self._validate_data(X, ensure_min_samples=2, accept_sparse="csc")
             event, time = check_array_survival(X, y)
             time = time.astype(np.float64)
             self.event_times_ = np.unique(time[event])
+            if issparse(X):
+                X.sort_indices()
 
             y_numeric = np.empty((X.shape[0], 2), dtype=np.float64)
             y_numeric[:, 0] = time
@@ -213,9 +216,11 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         # Build tree
         criterion = LogrankCriterion(self.n_outputs_, n_samples, self.event_times_)
 
+        SPLITTERS = SPARSE_SPLITTERS if issparse(X) else DENSE_SPLITTERS
+
         splitter = self.splitter
         if not isinstance(self.splitter, Splitter):
-            splitter = DENSE_SPLITTERS[self.splitter](
+            splitter = SPLITTERS[self.splitter](
                 criterion,
                 self.max_features_,
                 params["min_samples_leaf"],
@@ -350,7 +355,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
     def _validate_X_predict(self, X, check_input):
         """Validate X whenever one tries to predict"""
         if check_input:
-            X = self._validate_data(X, dtype=DTYPE, reset=False)
+            X = self._validate_data(X, dtype=DTYPE, accept_sparse="csr", reset=False)
         else:
             # The number of features is checked regardless of `check_input`
             self._check_n_features(X, reset=False)
@@ -446,7 +451,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         >>> plt.show()
         """
         check_is_fitted(self, 'tree_')
-        X = self._validate_X_predict(X, check_input)
+        X = self._validate_X_predict(X, check_input, accept_sparse="csc")
 
         pred = self.tree_.predict(X)
         arr = pred[..., 0]
@@ -513,7 +518,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         >>> plt.show()
         """
         check_is_fitted(self, 'tree_')
-        X = self._validate_X_predict(X, check_input)
+        X = self._validate_X_predict(X, check_input, accept_sparse="csc")
 
         pred = self.tree_.predict(X)
         arr = pred[..., 1]
@@ -567,5 +572,5 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             Return a node indicator CSR matrix where non zero elements
             indicates that the samples goes through the nodes.
         """
-        X = self._validate_X_predict(X, check_input)
+        X = self._validate_X_predict(X, check_input) 
         return self.tree_.decision_path(X)

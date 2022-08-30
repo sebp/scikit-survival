@@ -1,5 +1,6 @@
 import numpy
 from numpy.testing import assert_array_almost_equal
+from scipy import sparse
 import pytest
 from sklearn.pipeline import make_pipeline
 
@@ -277,3 +278,22 @@ def test_apply(make_whas500, forest_cls):
     x_path, _ = forest.decision_path(whas500.x)
 
     assert x_path.toarray().shape[0] == whas500.x.shape[0]
+
+
+@pytest.mark.parametrize('forest_cls', FORESTS)
+def test_apply_sparse(make_whas500, forest_cls):
+    whas500 = make_whas500(to_numeric=True)
+
+    forest = forest_cls()
+    x, y = whas500.x, whas500.y
+    x_sparse = sparse.csr_matrix(x)
+    forest.fit(x_sparse, y)
+
+    x_trans = forest.apply(x_sparse)
+
+    assert x_trans.shape[0] == x.shape[0]
+    assert x_trans.shape[1] == forest.n_estimators
+
+    x_path, _ = forest.decision_path(x_sparse)
+
+    assert x_path.toarray().shape[0] == x.shape[0]
