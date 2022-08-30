@@ -527,7 +527,6 @@ def test_apply_sparse(veterans):
     X = X.loc[:, "Karnofsky_score"].values[:, numpy.newaxis]
     X = X.astype(numpy.float32)
     X_sparse = sparse.csr_matrix(X)
-    
     tree = SurvivalTree(max_depth=2, max_features=1)
     tree.fit(X_sparse, y)
 

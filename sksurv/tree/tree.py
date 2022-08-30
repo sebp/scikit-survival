@@ -572,5 +572,5 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             Return a node indicator CSR matrix where non zero elements
             indicates that the samples goes through the nodes.
         """
-        X = self._validate_X_predict(X, check_input) 
+        X = self._validate_X_predict(X, check_input)
         return self.tree_.decision_path(X)
