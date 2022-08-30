@@ -84,7 +84,7 @@ class _BaseSurvivalForest(BaseForest,
         -------
         self
         """
-        X = self._validate_data(X, dtype=DTYPE, ensure_min_samples=2)
+        X = self._validate_data(X, dtype=DTYPE, accept_sparse="csc", ensure_min_samples=2)
         event, time = check_array_survival(X, y)
 
         self.n_features_in_ = X.shape[1]
