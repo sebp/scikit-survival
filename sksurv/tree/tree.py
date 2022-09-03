@@ -352,10 +352,10 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         self.max_features_ = max_features
 
-    def _validate_X_predict(self, X, check_input):
+    def _validate_X_predict(self, X, check_input, accept_sparse="csr"):
         """Validate X whenever one tries to predict"""
         if check_input:
-            X = self._validate_data(X, dtype=DTYPE, accept_sparse="csr", reset=False)
+            X = self._validate_data(X, dtype=DTYPE, accept_sparse=accept_sparse, reset=False)
         else:
             # The number of features is checked regardless of `check_input`
             self._check_n_features(X, reset=False)
