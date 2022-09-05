@@ -42,6 +42,14 @@ jobs:
           conda install --experimental-solver=libmamba -n sksurv-test ipykernel 'matplotlib==3.5.1' nbformat 'seaborn==0.11.2'
           conda run -n sksurv-test pip install nbval
           conda list -n sksurv-test
+      - name: Configure matplotlib
+        run: |
+          mkdir -p ${XDG_CONFIG_HOME}/matplotlib
+          echo 'figure.figsize: 6.0, 4.0' > ${XDG_CONFIG_HOME}/matplotlib/matplotlibrc
+          echo 'figure.facecolor: white' >> ${XDG_CONFIG_HOME}/matplotlib/matplotlibrc
+          echo 'figure.edgecolor: white' >> ${XDG_CONFIG_HOME}/matplotlib/matplotlibrc
+          echo 'figure.dpi: 72' >> ${XDG_CONFIG_HOME}/matplotlib/matplotlibrc
+          echo 'font.size: 10' >> ${XDG_CONFIG_HOME}/matplotlib/matplotlibrc
       - name: Build package
         run: |
           source activate sksurv-test
