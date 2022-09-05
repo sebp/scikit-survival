@@ -1,7 +1,7 @@
 import numpy
 from numpy.testing import assert_array_almost_equal
-from scipy import sparse
 import pytest
+from scipy import sparse
 from sklearn.pipeline import make_pipeline
 
 from sksurv.datasets import load_breast_cancer
