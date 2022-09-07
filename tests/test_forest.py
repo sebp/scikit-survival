@@ -300,20 +300,20 @@ def test_apply_sparse(make_whas500, forest_cls):
     assert X_path.toarray().shape[0] == X.shape[0]
 
 
-@pytest.mark.parametrize("seed", range(10))
 @pytest.mark.parametrize('forest_cls', FORESTS)
-def test_predict_sparse(seed, make_whas500, forest_cls):
+def test_predict_sparse(make_whas500, forest_cls):
+    seed = 42
     whas500 = make_whas500(to_numeric=True)
     X, y = whas500.x, whas500.y
-    X = numpy.random.randn(*X.shape)
+    X = numpy.random.RandomState(seed).binomial(n=5, p=.1, size=X.shape)
 
     X_train, X_test, y_train, _ = train_test_split(X, y, random_state=seed)
 
     forest = forest_cls(random_state=seed)
     forest.fit(X_train, y_train)
     y_pred = forest.predict(X_test)
-    y_pred_cum_h = forest.predict_cumulative_hazard_function(X_test)
-    y_pred_surv = forest.predict_survival_function(X_test)
+    y_cum_h = forest.predict_cumulative_hazard_function(X_test)
+    y_surv = forest.predict_survival_function(X_test)
 
     X_train_csr = sparse.csr_matrix(X_train)
     X_test_csr = sparse.csr_matrix(X_test)
@@ -321,18 +321,12 @@ def test_predict_sparse(seed, make_whas500, forest_cls):
     forest_csr = forest_cls(random_state=seed)
     forest_csr.fit(X_train_csr, y_train)
     y_pred_csr = forest_csr.predict(X_test_csr)
-    y_pred_cum_h_csr = forest_csr.predict_cumulative_hazard_function(X_test_csr)
-    y_pred_surv_csr = forest_csr.predict_survival_function(X_test_csr)
+    y_cum_h_csr = forest_csr.predict_cumulative_hazard_function(X_test_csr)
+    y_surv_csr = forest_csr.predict_survival_function(X_test_csr)
 
     assert y_pred.shape[0] == X_test.shape[0]
     assert y_pred_csr.shape[0] == X_test.shape[0]
 
     assert_array_equal(y_pred, y_pred_csr)
-
-    for step_f, step_f_csr in zip(y_pred_cum_h, y_pred_cum_h_csr):
-        assert_array_equal(step_f.x, step_f_csr.x)
-        assert_array_equal(step_f.y, step_f_csr.y)
-
-    for step_f, step_f_csr in zip(y_pred_surv, y_pred_surv_csr):
-        assert_array_equal(step_f.x, step_f_csr.x)
-        assert_array_equal(step_f.y, step_f_csr.y)
+    assert_array_equal(y_cum_h_csr, y_cum_h)
+    assert_array_equal(y_surv, y_surv_csr)
