@@ -2,8 +2,8 @@ import numpy
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 import pytest
 from scipy import sparse
-from sklearn.pipeline import make_pipeline
 from sklearn.model_selection import train_test_split
+from sklearn.pipeline import make_pipeline
 
 from sksurv.datasets import load_breast_cancer
 from sksurv.ensemble import ExtraSurvivalTrees, RandomSurvivalForest
@@ -328,11 +328,11 @@ def test_predict_sparse(seed, make_whas500, forest_cls):
     assert(y_pred_csr.shape[0] == X_test.shape[0])
 
     assert_array_equal(y_pred, y_pred_csr)
-    
+
     for step_f, step_f_csr in zip(y_pred_cum_h, y_pred_cum_h_csr):
         assert_array_equal(step_f.x, step_f_csr.x)
         assert_array_equal(step_f.y, step_f_csr.y)
 
     for step_f, step_f_csr in zip(y_pred_surv, y_pred_surv_csr):
         assert_array_equal(step_f.x, step_f_csr.x)
-        assert_array_equal(step_f.y, step_f_csr.y) 
+        assert_array_equal(step_f.y, step_f_csr.y)

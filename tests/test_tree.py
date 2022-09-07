@@ -5,9 +5,9 @@ from numpy.testing import assert_array_almost_equal, assert_array_equal
 import pandas
 import pytest
 from scipy import sparse
+from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import OrdinalEncoder
-from sklearn.model_selection import train_test_split
 from sklearn.tree._tree import TREE_UNDEFINED
 
 from sksurv.compare import compare_survival
@@ -576,7 +576,7 @@ def test_predict_sparse(seed, make_whas500):
     assert(y_pred_csr.shape[0] == X_test.shape[0])
 
     assert_array_equal(y_pred, y_pred_csr)
-    
+
     for step_f, step_f_csr in zip(y_pred_cum_h, y_pred_cum_h_csr):
         assert_array_equal(step_f.x, step_f_csr.x)
         assert_array_equal(step_f.y, step_f_csr.y)
