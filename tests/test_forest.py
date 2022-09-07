@@ -1,8 +1,9 @@
 import numpy
-from numpy.testing import assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 import pytest
 from scipy import sparse
 from sklearn.pipeline import make_pipeline
+from sklearn.model_selection import train_test_split
 
 from sksurv.datasets import load_breast_cancer
 from sksurv.ensemble import ExtraSurvivalTrees, RandomSurvivalForest
@@ -285,15 +286,53 @@ def test_apply_sparse(make_whas500, forest_cls):
     whas500 = make_whas500(to_numeric=True)
 
     forest = forest_cls()
-    x, y = whas500.x, whas500.y
-    x_sparse = sparse.csr_matrix(x)
-    forest.fit(x_sparse, y)
+    X, y = whas500.x, whas500.y
+    X_csr = sparse.csr_matrix(X)
+    forest.fit(X_csr, y)
 
-    x_trans = forest.apply(x_sparse)
+    X_trans = forest.apply(X_csr)
 
-    assert x_trans.shape[0] == x.shape[0]
-    assert x_trans.shape[1] == forest.n_estimators
+    assert X_trans.shape[0] == X.shape[0]
+    assert X_trans.shape[1] == forest.n_estimators
 
-    x_path, _ = forest.decision_path(x_sparse)
+    X_path, _ = forest.decision_path(X_csr)
 
-    assert x_path.toarray().shape[0] == x.shape[0]
+    assert X_path.toarray().shape[0] == X.shape[0]
+
+
+@pytest.mark.parametrize("seed", range(10))
+@pytest.mark.parametrize('forest_cls', FORESTS)
+def test_predict_sparse(seed, make_whas500, forest_cls):
+    whas500 = make_whas500(to_numeric=True)
+    X, y = whas500.x, whas500.y
+    X = numpy.random.randn(*X.shape)
+
+    X_train, X_test, y_train, _ = train_test_split(X, y, random_state=seed)
+
+    forest = forest_cls(random_state=seed)
+    forest.fit(X_train, y_train)
+    y_pred = forest.predict(X_test)
+    y_pred_cum_h = forest.predict_cumulative_hazard_function(X_test)
+    y_pred_surv = forest.predict_survival_function(X_test)
+
+    X_train_csr = sparse.csr_matrix(X_train)
+    X_test_csr = sparse.csr_matrix(X_test)
+
+    forest_csr = forest_cls(random_state=seed)
+    forest_csr.fit(X_train_csr, y_train)
+    y_pred_csr = forest_csr.predict(X_test_csr)
+    y_pred_cum_h_csr = forest_csr.predict_cumulative_hazard_function(X_test_csr)
+    y_pred_surv_csr = forest_csr.predict_survival_function(X_test_csr)
+
+    assert(y_pred.shape[0] == X_test.shape[0])
+    assert(y_pred_csr.shape[0] == X_test.shape[0])
+
+    assert_array_equal(y_pred, y_pred_csr)
+    
+    for step_f, step_f_csr in zip(y_pred_cum_h, y_pred_cum_h_csr):
+        assert_array_equal(step_f.x, step_f_csr.x)
+        assert_array_equal(step_f.y, step_f_csr.y)
+
+    for step_f, step_f_csr in zip(y_pred_surv, y_pred_surv_csr):
+        assert_array_equal(step_f.x, step_f_csr.x)
+        assert_array_equal(step_f.y, step_f_csr.y) 

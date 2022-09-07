@@ -451,7 +451,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         >>> plt.show()
         """
         check_is_fitted(self, 'tree_')
-        X = self._validate_X_predict(X, check_input, accept_sparse="csc")
+        X = self._validate_X_predict(X, check_input, accept_sparse="csr")
 
         pred = self.tree_.predict(X)
         arr = pred[..., 0]
@@ -518,7 +518,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         >>> plt.show()
         """
         check_is_fitted(self, 'tree_')
-        X = self._validate_X_predict(X, check_input, accept_sparse="csc")
+        X = self._validate_X_predict(X, check_input, accept_sparse="csr")
 
         pred = self.tree_.predict(X)
         arr = pred[..., 1]

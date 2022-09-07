@@ -7,6 +7,7 @@ import pytest
 from scipy import sparse
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import OrdinalEncoder
+from sklearn.model_selection import train_test_split
 from sklearn.tree._tree import TREE_UNDEFINED
 
 from sksurv.compare import compare_survival
@@ -543,3 +544,43 @@ def test_apply_sparse(veterans):
 
     ones = X_path[numpy.arange(X.shape[0]), X_trans]
     assert_array_equal(ones, numpy.ones(X.shape[0]))
+
+
+@pytest.mark.parametrize("seed", range(100))
+def test_predict_sparse(seed, make_whas500):
+    whas500 = make_whas500(to_numeric=True)
+    X, y = whas500.x, whas500.y
+    # Duplicates values in whas500 leads to assert errors because of
+    # tie resolution during tree fitting.
+    # Using a synthetic dataset resolves this issue.
+    X = numpy.random.randn(*X.shape)
+
+    X_train, X_test, y_train, _ = train_test_split(X, y, random_state=seed)
+
+    tree = SurvivalTree(min_samples_leaf=10, random_state=seed)
+    tree.fit(X_train, y_train)
+    y_pred = tree.predict(X_test)
+    y_pred_cum_h = tree.predict_cumulative_hazard_function(X_test)
+    y_pred_surv = tree.predict_survival_function(X_test)
+
+    X_train_csr = sparse.csr_matrix(X_train)
+    X_test_csr = sparse.csr_matrix(X_test)
+
+    tree_csr = SurvivalTree(min_samples_leaf=10, random_state=seed)
+    tree_csr.fit(X_train_csr, y_train)
+    y_pred_csr = tree_csr.predict(X_test_csr)
+    y_pred_cum_h_csr = tree_csr.predict_cumulative_hazard_function(X_test_csr)
+    y_pred_surv_csr = tree_csr.predict_survival_function(X_test_csr)
+
+    assert(y_pred.shape[0] == X_test.shape[0])
+    assert(y_pred_csr.shape[0] == X_test.shape[0])
+
+    assert_array_equal(y_pred, y_pred_csr)
+    
+    for step_f, step_f_csr in zip(y_pred_cum_h, y_pred_cum_h_csr):
+        assert_array_equal(step_f.x, step_f_csr.x)
+        assert_array_equal(step_f.y, step_f_csr.y)
+
+    for step_f, step_f_csr in zip(y_pred_surv, y_pred_surv_csr):
+        assert_array_equal(step_f.x, step_f_csr.x)
+        assert_array_equal(step_f.y, step_f_csr.y)
