@@ -572,8 +572,8 @@ def test_predict_sparse(seed, make_whas500):
     y_pred_cum_h_csr = tree_csr.predict_cumulative_hazard_function(X_test_csr)
     y_pred_surv_csr = tree_csr.predict_survival_function(X_test_csr)
 
-    assert(y_pred.shape[0] == X_test.shape[0])
-    assert(y_pred_csr.shape[0] == X_test.shape[0])
+    assert y_pred.shape[0] == X_test.shape[0]
+    assert y_pred_csr.shape[0] == X_test.shape[0]
 
     assert_array_equal(y_pred, y_pred_csr)
 
