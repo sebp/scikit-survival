@@ -77,11 +77,11 @@ class StepFunction:
         return "StepFunction(x=%r, y=%r, a=%r, b=%r)" % (self.x, self.y, self.a, self.b)
 
     def __eq__(self, other):
-        if not isinstance(other, type(self)):
-            return False
-        return (
-            all(self.x == other.x)
-            and all(self.y == other.y)
-            and self.a == other.a
-            and self.b == other.b
-        )
+        if isinstance(other, type(self)):
+            return (
+                all(self.x == other.x)
+                and all(self.y == other.y)
+                and self.a == other.a
+                and self.b == other.b
+            )
+        return False

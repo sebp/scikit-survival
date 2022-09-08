@@ -42,3 +42,16 @@ class TestStepFunction:
     def test_not_finite(a_step_function, non_finite_value):
         with pytest.raises(ValueError, match="x must be finite"):
             a_step_function(non_finite_value)
+
+    @staticmethod
+    def test_equal(a_step_function):
+        x = numpy.array([0, 1, 1.2, 1.75, 2, 2.1, 3, 3.94, 5.4, 9])
+        y = numpy.array([11, 9, 9.12, 7.5, 7.25, 5.14, 3, 2.94, 2.4, 1.9])
+        other_step_function = StepFunction(x, y)
+
+        assert a_step_function == other_step_function
+
+        different_step_function = StepFunction(x+1, y)
+        assert a_step_function != different_step_function
+
+        assert a_step_function != x
