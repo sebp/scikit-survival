@@ -1,6 +1,8 @@
 import numpy
-from numpy.testing import assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 import pytest
+from scipy import sparse
+from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 
 from sksurv.datasets import load_breast_cancer
@@ -260,3 +262,71 @@ def test_fit_max_samples(make_whas500, forest_cls, max_samples, exc_type, exc_ms
     forest = forest_cls(max_samples=max_samples)
     with pytest.raises(exc_type, match=exc_msg):
         forest.fit(whas500.x, whas500.y)
+
+
+@pytest.mark.parametrize('forest_cls', FORESTS)
+def test_apply(make_whas500, forest_cls):
+    whas500 = make_whas500(to_numeric=True)
+
+    forest = forest_cls()
+    forest.fit(whas500.x, whas500.y)
+
+    x_trans = forest.apply(whas500.x)
+
+    assert x_trans.shape[0] == whas500.x.shape[0]
+    assert x_trans.shape[1] == forest.n_estimators
+
+    x_path, _ = forest.decision_path(whas500.x)
+
+    assert x_path.toarray().shape[0] == whas500.x.shape[0]
+
+
+@pytest.mark.parametrize('forest_cls', FORESTS)
+def test_apply_sparse(make_whas500, forest_cls):
+    whas500 = make_whas500(to_numeric=True)
+
+    forest = forest_cls()
+    X, y = whas500.x, whas500.y
+    X_csr = sparse.csr_matrix(X)
+    forest.fit(X_csr, y)
+
+    X_trans = forest.apply(X_csr)
+
+    assert X_trans.shape[0] == X.shape[0]
+    assert X_trans.shape[1] == forest.n_estimators
+
+    X_path, _ = forest.decision_path(X_csr)
+
+    assert X_path.toarray().shape[0] == X.shape[0]
+
+
+@pytest.mark.parametrize('forest_cls', FORESTS)
+def test_predict_sparse(make_whas500, forest_cls):
+    seed = 42
+    whas500 = make_whas500(to_numeric=True)
+    X, y = whas500.x, whas500.y
+    X = numpy.random.RandomState(seed).binomial(n=5, p=.1, size=X.shape)
+
+    X_train, X_test, y_train, _ = train_test_split(X, y, random_state=seed)
+
+    forest = forest_cls(random_state=seed)
+    forest.fit(X_train, y_train)
+    y_pred = forest.predict(X_test)
+    y_cum_h = forest.predict_cumulative_hazard_function(X_test)
+    y_surv = forest.predict_survival_function(X_test)
+
+    X_train_csr = sparse.csr_matrix(X_train)
+    X_test_csr = sparse.csr_matrix(X_test)
+
+    forest_csr = forest_cls(random_state=seed)
+    forest_csr.fit(X_train_csr, y_train)
+    y_pred_csr = forest_csr.predict(X_test_csr)
+    y_cum_h_csr = forest_csr.predict_cumulative_hazard_function(X_test_csr)
+    y_surv_csr = forest_csr.predict_survival_function(X_test_csr)
+
+    assert y_pred.shape[0] == X_test.shape[0]
+    assert y_pred_csr.shape[0] == X_test.shape[0]
+
+    assert_array_equal(y_pred, y_pred_csr)
+    assert_array_equal(y_cum_h_csr, y_cum_h)
+    assert_array_equal(y_surv, y_surv_csr)

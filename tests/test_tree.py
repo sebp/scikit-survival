@@ -4,6 +4,8 @@ import numpy
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 import pandas
 import pytest
+from scipy import sparse
+from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.tree._tree import TREE_UNDEFINED
@@ -496,3 +498,83 @@ def test_X_idx_sorted(fake_data, val):
             match="The parameter 'X_idx_sorted' is deprecated and has no effect."
     ):
         tree.fit(X, y, X_idx_sorted=X_idx_sorted)
+
+
+def test_apply(veterans):
+    X, y = veterans
+    X = X.loc[:, "Karnofsky_score"].values[:, numpy.newaxis]
+    X = X.astype(numpy.float32)
+
+    tree = SurvivalTree(max_depth=2, max_features=1)
+    tree.fit(X, y)
+
+    X_trans = tree.apply(X)
+
+    assert X_trans.shape[0] == X.shape[0]
+    assert all(X_trans >= 0)
+    assert all(X_trans < tree.tree_.node_count)
+
+    X_path = tree.decision_path(X).toarray()
+
+    assert X_path.shape[0] == X.shape[0]
+    assert X_path.shape[1] == tree.tree_.node_count
+
+    ones = X_path[numpy.arange(X.shape[0]), X_trans]
+    assert_array_equal(ones, numpy.ones(X.shape[0]))
+
+
+def test_apply_sparse(veterans):
+    X, y = veterans
+    X = X.loc[:, "Karnofsky_score"].values[:, numpy.newaxis]
+    X = X.astype(numpy.float32)
+    X_sparse = sparse.csr_matrix(X)
+    tree = SurvivalTree(max_depth=2, max_features=1)
+    tree.fit(X_sparse, y)
+
+    X_trans = tree.apply(X_sparse)
+
+    assert X_trans.shape[0] == X.shape[0]
+    assert all(X_trans >= 0)
+    assert all(X_trans < tree.tree_.node_count)
+
+    X_path = tree.decision_path(X_sparse).toarray()
+
+    assert X_path.shape[0] == X.shape[0]
+    assert X_path.shape[1] == tree.tree_.node_count
+
+    ones = X_path[numpy.arange(X.shape[0]), X_trans]
+    assert_array_equal(ones, numpy.ones(X.shape[0]))
+
+
+def test_predict_sparse(make_whas500):
+    seed = 42
+    whas500 = make_whas500(to_numeric=True)
+    X, y = whas500.x, whas500.y
+    # Duplicates values in whas500 leads to assert errors because of
+    # tie resolution during tree fitting.
+    # Using a synthetic dataset resolves this issue.
+    X = numpy.random.RandomState(seed).binomial(n=5, p=.1, size=X.shape)
+
+    X_train, X_test, y_train, _ = train_test_split(X, y, random_state=seed)
+
+    tree = SurvivalTree(min_samples_leaf=10, random_state=seed)
+    tree.fit(X_train, y_train)
+    y_pred = tree.predict(X_test)
+    y_cum_h = tree.predict_cumulative_hazard_function(X_test)
+    y_surv = tree.predict_survival_function(X_test)
+
+    X_train_csr = sparse.csr_matrix(X_train)
+    X_test_csr = sparse.csr_matrix(X_test)
+
+    tree_csr = SurvivalTree(min_samples_leaf=10, random_state=seed)
+    tree_csr.fit(X_train_csr, y_train)
+    y_pred_csr = tree_csr.predict(X_test_csr)
+    y_cum_h_csr = tree_csr.predict_cumulative_hazard_function(X_test_csr)
+    y_surv_csr = tree_csr.predict_survival_function(X_test_csr)
+
+    assert y_pred.shape[0] == X_test.shape[0]
+    assert y_pred_csr.shape[0] == X_test.shape[0]
+
+    assert_array_equal(y_pred, y_pred_csr)
+    assert_array_equal(y_cum_h, y_cum_h_csr)
+    assert_array_equal(y_surv, y_surv_csr)
