@@ -162,7 +162,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         Parameters
         ----------
-        X : array-like, shape = (n_samples, n_features)
+        X : array-like or sparse matrix, shape = (n_samples, n_features)
             Data matrix
 
         y : structured array, shape = (n_samples,)
@@ -378,7 +378,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         Parameters
         ----------
-        X : array-like, shape = (n_samples, n_features)
+        X : array-like or sparse matrix, shape = (n_samples, n_features)
             Data matrix.
 
         check_input : boolean, default: True
@@ -404,7 +404,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         Parameters
         ----------
-        X : array-like, shape = (n_samples, n_features)
+        X : array-like or sparse matrix, shape = (n_samples, n_features)
             Data matrix.
 
         check_input : boolean, default: True
@@ -470,7 +470,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         Parameters
         ----------
-        X : array-like, shape = (n_samples, n_features)
+        X : array-like or sparse matrix, shape = (n_samples, n_features)
             Data matrix.
 
         check_input : boolean, default: True
@@ -531,18 +531,18 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         Parameters
         ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+        X : array-like or sparse matrix, shape = (n_samples, n_features)
             The input samples. Internally, it will be converted to
             ``dtype=np.float32`` and if a sparse matrix is provided
             to a sparse ``csr_matrix``.
 
-        check_input : bool, default=True
+        check_input : bool, default: True
             Allow to bypass several input checking.
             Don't use this parameter unless you know what you do.
 
         Returns
         -------
-        X_leaves : array-like of shape (n_samples,)
+        X_leaves : array-like, shape = (n_samples,)
             For each datapoint x in X, return the index of the leaf x
             ends up in. Leaves are numbered within
             ``[0; self.tree_.node_count)``, possibly with gaps in the
@@ -557,7 +557,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         Parameters
         ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+        X : array-like or sparse matrix, shape = (n_samples, n_features)
             The input samples. Internally, it will be converted to
             ``dtype=np.float32`` and if a sparse matrix is provided
             to a sparse ``csr_matrix``.
@@ -568,7 +568,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         Returns
         -------
-        indicator : sparse matrix of shape (n_samples, n_nodes)
+        indicator : sparse matrix, shape = (n_samples, n_nodes)
             Return a node indicator CSR matrix where non zero elements
             indicates that the samples goes through the nodes.
         """
