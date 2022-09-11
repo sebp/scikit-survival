@@ -37,7 +37,7 @@ jobs:
           echo "::set-output name=requirements::ci/deps/${{ matrix.config }}.sh"
           echo "::set-output name=conda_pkgs::$(${CONDA}/bin/python -c "from conda.base.context import context; print(context.pkgs_dirs[0])")"
       - name: Cache downloaded packages
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{ steps.dependencies.outputs.conda_pkgs }}
           key: ${{ runner.os }}-conda-${{ steps.dependencies.outputs.py_version }}-${{ hashFiles(steps.dependencies.outputs.requirements, 'requirements/*.txt') }}
