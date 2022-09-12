@@ -16,7 +16,7 @@ jobs:
           tox_env: py39-${{ matrix.tox_env }}
           dnf_install: pandoc cmake make
       - name: Archive documentation
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v3
         with:
           name: documentation
           path: doc/_build/html
