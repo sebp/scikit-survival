@@ -317,7 +317,7 @@ class TestToyOsqpExample:
         sd = numpy.std(x, axis=0)
         m.fit(x / sd, y)
 
-        assert(1, x.shape[0]) == m.coef_.shape
+        assert (1, x.shape[0]) == m.coef_.shape
         assert 1 == m.coef0
         expected_coef = numpy.array([
             [-1.893832101337, 1.083653895940, 0.810178205398,
@@ -428,7 +428,7 @@ class TestToyEcosExample:
         sd = numpy.std(x, axis=0)
         m.fit(x / sd, y)
 
-        assert(1, x.shape[0]) == m.coef_.shape
+        assert (1, x.shape[0]) == m.coef_.shape
         assert 1 == m.coef0
         expected_coef = numpy.array([
             [-1.893832101337, 1.083653895940, 0.810178205398,
