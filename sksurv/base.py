@@ -10,7 +10,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import numpy
+import numpy as np
 
 
 class SurvivalAnalysisMixin:
@@ -21,7 +21,7 @@ class SurvivalAnalysisMixin:
             return fns
 
         times = baseline_model.unique_times_
-        arr = numpy.empty((prediction.shape[0], times.shape[0]), dtype=float)
+        arr = np.empty((prediction.shape[0], times.shape[0]), dtype=float)
         for i, fn in enumerate(fns):
             arr[i, :] = fn(times)
         return arr

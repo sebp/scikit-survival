@@ -2,8 +2,8 @@ from collections import namedtuple
 from pathlib import Path
 import tempfile
 
-import numpy
-import pandas
+import numpy as np
+import pandas as pd
 import pytest
 from scipy.sparse import coo_matrix
 
@@ -24,8 +24,8 @@ def pytest_configure(config):
 
 @pytest.fixture()
 def fake_data():
-    x = numpy.random.randn(100, 11)
-    y = Surv.from_arrays(numpy.ones(100, dtype=bool), numpy.arange(1, 101, dtype=float))
+    x = np.random.randn(100, 11)
+    y = Surv.from_arrays(np.ones(100, dtype=bool), np.arange(1, 101, dtype=float))
     return x, y
 
 
@@ -59,7 +59,7 @@ def whas500_sparse_data():
     index_i = []
     index_j = []
     for j, (_, col) in enumerate(x_dense.iteritems()):
-        idx = numpy.flatnonzero(col.values)
+        idx = np.flatnonzero(col.values)
         data.extend([1] * len(idx))
         index_i.extend(idx)
         index_j.extend([j] * len(idx))
@@ -71,7 +71,7 @@ def whas500_sparse_data():
 @pytest.fixture()
 def whas500_uncomparable(make_whas500):
     whas500 = make_whas500(to_numeric=True)
-    i = numpy.argmax(whas500.y["lenfol"])
+    i = np.argmax(whas500.y["lenfol"])
     whas500.y["fstat"][:] = False
     whas500.y["fstat"][i] = True
     return whas500
@@ -82,13 +82,13 @@ def rossi():
     """Load rossi.csv"""
     p = Path(__file__)
     f = p.parent / 'data' / 'rossi.csv'
-    data = pandas.read_csv(f)
+    data = pd.read_csv(f)
     y = Surv.from_dataframe("arrest", "week", data)
     x = data.drop(["arrest", "week"], axis=1)
     return DataSet(x=x, y=y)
 
 
-@pytest.fixture(params=[numpy.infty, -numpy.infty, numpy.nan])
+@pytest.fixture(params=[np.infty, -np.infty, np.nan])
 def non_finite_value(request):
     """Inf/-Inf/NaN value."""
     return request.param

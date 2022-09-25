@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from io import StringIO
 
-import numpy
+import numpy as np
 import pandas as pd
 import pandas.testing as tm
 import pytest
@@ -100,7 +100,7 @@ class DataFrameCases(FixtureParameterFactory):
 
     def data_datetime(self):
         data = pd.DataFrame({
-            "attr_datetime": numpy.array(
+            "attr_datetime": np.array(
                 ["2014-10-31 14:13:01", "2004-03-13 19:49:31", "1998-12-06 09:10:11"], dtype="datetime64"
             )
         })
@@ -138,8 +138,9 @@ def test_writearff(data_frame, relation_name, expectation, temp_file):
 
 
 def test_writearff_unsupported_column_type(temp_file):
-    data = pd.DataFrame(
-        {"attr_datetime": numpy.array([2+3j, 45.1-1j, 0-1j, 7+0j, 132-3j, 1-0.41j], dtype="complex128")})
+    data = pd.DataFrame({
+        "attr_datetime": np.array([2+3j, 45.1-1j, 0-1j, 7+0j, 132-3j, 1-0.41j], dtype="complex128"),
+    })
 
     with pytest.raises(TypeError, match="unsupported type complex128"):
         writearff(data, temp_file, relation_name='test_delta', index=False)

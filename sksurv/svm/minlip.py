@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 import warnings
 
-import numpy
+import numpy as np
 from scipy import linalg, sparse
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
@@ -59,7 +59,7 @@ class OsqpSolver(QPSolver):
             raise RuntimeError("OSQP solver failed: {}".format(results.info.status))
 
         n_iter = results.info.iter
-        return results.x[numpy.newaxis], n_iter
+        return results.x[np.newaxis], n_iter
 
     def _get_options(self):
         solver_opts = {
@@ -105,21 +105,21 @@ class EcosSolver(QPSolver):
         L, max_eigval = self._decompose(P)
 
         # minimize wrt t,x
-        c = numpy.empty(n_pairs + 1)
+        c = np.empty(n_pairs + 1)
         c[1:] = q
         c[0] = 0.5 * max_eigval
 
-        zerorow = numpy.zeros((1, L.shape[1]))
-        G_quad = numpy.block([
+        zerorow = np.zeros((1, L.shape[1]))
+        G_quad = np.block([
             [-1, zerorow],
             [1, zerorow],
-            [numpy.zeros((L.shape[0], 1)), -2 * L],
+            [np.zeros((L.shape[0], 1)), -2 * L],
         ])
         G_lin = sparse.hstack((sparse.csc_matrix((G.shape[0], 1)), G))
         G_all = sparse.vstack((G_lin, sparse.csc_matrix(G_quad)), format="csc")
 
         n_constraints = G.shape[0]
-        h_all = numpy.empty(G_all.shape[0])
+        h_all = np.empty(G_all.shape[0])
         h_all[:n_constraints] = h
         h_all[n_constraints:(n_constraints + 2)] = 1
         h_all[(n_constraints + 2):] = 0
@@ -136,7 +136,7 @@ class EcosSolver(QPSolver):
         # drop solution for t
         x = results["x"][1:]
         n_iter = results["info"]["iter"]
-        return x[numpy.newaxis], n_iter
+        return x[np.newaxis], n_iter
 
     def _check_success(self, results):  # pylint: disable=no-self-use
         exit_flag = results["info"]["exitFlag"]
@@ -159,12 +159,12 @@ class EcosSolver(QPSolver):
     def _decompose(self, P):
         # from scipy.linalg.pinvh
         s, u = linalg.eigh(P)
-        largest_eigenvalue = numpy.max(numpy.abs(s))
+        largest_eigenvalue = np.max(np.abs(s))
 
         cond = self.cond
         if cond is None:
             t = u.dtype
-            cond = largest_eigenvalue * max(P.shape) * numpy.finfo(t).eps
+            cond = largest_eigenvalue * max(P.shape) * np.finfo(t).eps
 
         not_below_cutoff = (abs(s) > -cond)
         assert not_below_cutoff.all(), "matrix has negative eigenvalues: {}".format(s.min())
@@ -174,7 +174,7 @@ class EcosSolver(QPSolver):
         s = s[above_cutoff]
 
         # set maximum eigenvalue to 1
-        decomposed = u * numpy.sqrt(s / largest_eigenvalue)
+        decomposed = u * np.sqrt(s / largest_eigenvalue)
         return decomposed.T, largest_eigenvalue
 
 
@@ -314,14 +314,14 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
             format="csc"
         )
         n_constraints = Dt.shape[0]
-        h = numpy.empty(G.shape[0], dtype=float)
+        h = np.empty(G.shape[0], dtype=float)
         h[:2 * n_constraints] = self.alpha
         h[-n_pairs:] = 0.0
 
         return {"P": P, "q": q, "G": G, "h": h}
 
     def _fit(self, x, event, time):
-        D = create_difference_matrix(event.astype(numpy.uint8), time, kind=self.pairs)
+        D = create_difference_matrix(event.astype(np.uint8), time, kind=self.pairs)
         if D.shape[0] == 0:
             raise NoComparablePairException("Data has no comparable pairs, cannot fit model.")
 
@@ -396,7 +396,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         """
         X = self._validate_data(X, reset=False)
         K = self._get_kernel(X, self.X_fit_)
-        pred = -numpy.dot(self.coef_, K.T)
+        pred = -np.dot(self.coef_, K.T)
         return pred.ravel()
 
 
@@ -515,19 +515,19 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
         n_pairs = D.shape[0]
 
         P = D.dot(D.dot(K).T).T
-        q = -numpy.ones(n_pairs)
+        q = -np.ones(n_pairs)
 
         G = sparse.vstack((
             -sparse.eye(n_pairs),
             sparse.eye(n_pairs)),
             format="csc"
         )
-        h = numpy.empty(2 * n_pairs)
+        h = np.empty(2 * n_pairs)
         h[:n_pairs] = 0
         h[n_pairs:] = self.alpha
 
         return {"P": P, "q": q, "G": G, "h": h}
 
     def _update_coef(self, coef, D):
-        sv = numpy.flatnonzero(coef > 1e-5)
+        sv = np.flatnonzero(coef > 1e-5)
         self.coef_ = coef[:, sv] * D[sv, :]

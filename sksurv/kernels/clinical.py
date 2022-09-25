@@ -10,8 +10,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import numpy
-import pandas
+import numpy as np
+import pandas as pd
 from pandas.api.types import is_categorical_dtype, is_numeric_dtype
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
@@ -38,15 +38,15 @@ def _nominal_kernel(x, y, out):
 def _get_continuous_and_ordinal_array(x):
     """Convert array from continuous and ordered categorical columns"""
     nominal_columns = x.select_dtypes(include=['object', 'category']).columns
-    ordinal_columns = pandas.Index([v for v in nominal_columns if x[v].cat.ordered])
-    continuous_columns = x.select_dtypes(include=[numpy.number]).columns
+    ordinal_columns = pd.Index([v for v in nominal_columns if x[v].cat.ordered])
+    continuous_columns = x.select_dtypes(include=[np.number]).columns
 
-    x_num = x.loc[:, continuous_columns].astype(numpy.float64).values
+    x_num = x.loc[:, continuous_columns].astype(np.float64).values
     if len(ordinal_columns) > 0:
         x = _ordinal_as_numeric(x, ordinal_columns)
 
         nominal_columns = nominal_columns.difference(ordinal_columns)
-        x_out = numpy.column_stack((x_num, x))
+        x_out = np.column_stack((x_num, x))
     else:
         x_out = x_num
 
@@ -54,7 +54,7 @@ def _get_continuous_and_ordinal_array(x):
 
 
 def _ordinal_as_numeric(x, ordinal_columns):
-    x_numeric = numpy.empty((x.shape[0], len(ordinal_columns)), dtype=numpy.float64)
+    x_numeric = np.empty((x.shape[0], len(ordinal_columns)), dtype=np.float64)
 
     for i, c in enumerate(ordinal_columns):
         x_numeric[:, i] = x[c].cat.codes
@@ -96,7 +96,7 @@ def clinical_kernel(x, y=None):
     else:
         y = x
 
-    mat = numpy.zeros((x.shape[0], y.shape[0]), dtype=float)
+    mat = np.zeros((x.shape[0], y.shape[0]), dtype=float)
 
     x_numeric, nominal_columns = _get_continuous_and_ordinal_array(x)
     if id(x) != id(y):
@@ -168,14 +168,14 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
     def _prepare_by_column_dtype(self, X):
         """Get distance functions for each column's dtype"""
-        if not isinstance(X, pandas.DataFrame):
+        if not isinstance(X, pd.DataFrame):
             raise TypeError('X must be a pandas DataFrame')
 
         numeric_columns = []
         nominal_columns = []
         numeric_ranges = []
 
-        fit_data = numpy.empty_like(X)
+        fit_data = np.empty_like(X)
 
         for i, dt in enumerate(X.dtypes):
             col = X.iloc[:, i]
@@ -195,9 +195,9 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
             fit_data[:, i] = col.values
 
-        self._numeric_columns = numpy.asarray(numeric_columns)
-        self._nominal_columns = numpy.asarray(nominal_columns)
-        self._numeric_ranges = numpy.asarray(numeric_ranges, dtype=float)
+        self._numeric_columns = np.asarray(numeric_columns)
+        self._nominal_columns = np.asarray(nominal_columns)
+        self._numeric_ranges = np.asarray(numeric_ranges, dtype=float)
         self.X_fit_ = fit_data
 
     def fit(self, X, y=None, **kwargs):  # pylint: disable=unused-argument
@@ -257,14 +257,14 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
         n_samples_x = self.X_fit_.shape[0]
 
-        Y = numpy.asarray(Y)
+        Y = np.asarray(Y)
 
         n_samples_y = Y.shape[0]
 
-        mat = numpy.zeros((n_samples_y, n_samples_x), dtype=float)
+        mat = np.zeros((n_samples_y, n_samples_x), dtype=float)
 
-        continuous_ordinal_kernel_with_ranges(Y[:, self._numeric_columns].astype(numpy.float64),
-                                              self.X_fit_[:, self._numeric_columns].astype(numpy.float64),
+        continuous_ordinal_kernel_with_ranges(Y[:, self._numeric_columns].astype(np.float64),
+                                              self.X_fit_[:, self._numeric_columns].astype(np.float64),
                                               self._numeric_ranges, mat)
 
         if len(self._nominal_columns) > 0:
@@ -315,8 +315,8 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         val = pairwise_continuous_ordinal_kernel(X[self._numeric_columns], Y[self._numeric_columns],
                                                  self._numeric_ranges)
         if len(self._nominal_columns) > 0:
-            val += pairwise_nominal_kernel(X[self._nominal_columns].astype(numpy.int8),
-                                           Y[self._nominal_columns].astype(numpy.int8))
+            val += pairwise_nominal_kernel(X[self._nominal_columns].astype(np.int8),
+                                           Y[self._nominal_columns].astype(np.int8))
 
         val /= X.shape[0]
 

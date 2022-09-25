@@ -12,7 +12,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from abc import ABCMeta
 
-import numpy
+import numpy as np
 from sklearn.dummy import DummyRegressor
 from sklearn.ensemble._gb_losses import RegressionLossFunction
 from sklearn.utils.extmath import squared_norm
@@ -49,7 +49,7 @@ class CoxPH(SurvivalLossFunction):
     def __call__(self, y, raw_predictions, sample_weight=None):  # pylint: disable=unused-argument
         """Compute the partial likelihood of prediction ``y_pred`` and ``y``."""
         # TODO add support for sample weights
-        return coxph_loss(y['event'].astype(numpy.uint8), y['time'], raw_predictions.ravel())
+        return coxph_loss(y['event'].astype(np.uint8), y['time'], raw_predictions.ravel())
 
     def negative_gradient(self, y, raw_predictions, sample_weight=None, **kwargs):  # pylint: disable=unused-argument
         """Negative gradient of partial likelihood
@@ -62,7 +62,7 @@ class CoxPH(SurvivalLossFunction):
             The predictions.
         """
         ret = coxph_negative_gradient(
-            y['event'].astype(numpy.uint8), y['time'], raw_predictions.ravel())
+            y['event'].astype(np.uint8), y['time'], raw_predictions.ravel())
         if sample_weight is not None:
             ret *= sample_weight
         return ret
@@ -111,7 +111,7 @@ class CensoredSquaredLoss(SurvivalLossFunction):
         """
         pred_time = y['time'] - raw_predictions.ravel()
         mask = (pred_time > 0) | y['event']
-        ret = numpy.zeros(y['event'].shape[0])
+        ret = np.zeros(y['event'].shape[0])
         ret[mask] = pred_time.compress(mask, axis=0)
         return ret
 
@@ -130,7 +130,7 @@ class CensoredSquaredLoss(SurvivalLossFunction):
         """Least squares does not need to update terminal regions"""
 
     def _scale_raw_prediction(self, raw_predictions):
-        numpy.exp(raw_predictions, out=raw_predictions)
+        np.exp(raw_predictions, out=raw_predictions)
         return raw_predictions
 
 
@@ -141,7 +141,7 @@ class IPCWLeastSquaresError(SurvivalLossFunction):
     def __call__(self, y, raw_predictions, sample_weight=None):
         sample_weight = ipc_weights(y['event'], y['time'])
         return (1.0 / sample_weight.sum()
-                * numpy.sum(sample_weight * ((y['time'] - raw_predictions.ravel()) ** 2.0)))
+                * np.sum(sample_weight * ((y['time'] - raw_predictions.ravel()) ** 2.0)))
 
     def negative_gradient(self, y, raw_predictions, **kwargs):  # pylint: disable=unused-argument
         return y['time'] - raw_predictions.ravel()
@@ -156,7 +156,7 @@ class IPCWLeastSquaresError(SurvivalLossFunction):
         pass
 
     def _scale_raw_prediction(self, raw_predictions):
-        numpy.exp(raw_predictions, out=raw_predictions)
+        np.exp(raw_predictions, out=raw_predictions)
         return raw_predictions
 
 

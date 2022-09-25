@@ -10,7 +10,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import numpy
+import numpy as np
 from sklearn.base import MetaEstimatorMixin, clone
 from sklearn.utils.metaestimators import _BaseComposition, available_if
 
@@ -179,12 +179,12 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
                 p = estimator.predict(X)
 
             if p.ndim == 1:
-                p = p[:, numpy.newaxis]
+                p = p[:, np.newaxis]
 
             if Xt is None:
                 # assume that prediction array has the same size for all base learners
                 n_classes = p.shape[1]
-                Xt = numpy.empty((p.shape[0], n_classes * len(self.base_estimators)), order='F')
+                Xt = np.empty((p.shape[0], n_classes * len(self.base_estimators)), order='F')
             Xt[:, slice(start, start + n_classes)] = p
             start += n_classes
 

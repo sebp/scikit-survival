@@ -10,8 +10,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import numpy
-import pandas
+import numpy as np
+import pandas as pd
 from pandas.api.types import is_categorical_dtype
 from sklearn.utils import check_array, check_consistent_length
 
@@ -48,23 +48,22 @@ class Surv:
         if name_time == name_event:
             raise ValueError('name_time must be different from name_event')
 
-        time = numpy.asanyarray(time, dtype=float)
-        y = numpy.empty(time.shape[0],
-                        dtype=[(name_event, bool), (name_time, float)])
+        time = np.asanyarray(time, dtype=float)
+        y = np.empty(time.shape[0], dtype=[(name_event, bool), (name_time, float)])
         y[name_time] = time
 
-        event = numpy.asanyarray(event)
+        event = np.asanyarray(event)
         check_consistent_length(time, event)
 
-        if numpy.issubdtype(event.dtype, numpy.bool_):
+        if np.issubdtype(event.dtype, np.bool_):
             y[name_event] = event
         else:
-            events = numpy.unique(event)
+            events = np.unique(event)
             events.sort()
             if len(events) != 2:
                 raise ValueError('event indicator must be binary')
 
-            if numpy.all(events == numpy.array([0, 1], dtype=events.dtype)):
+            if np.all(events == np.array([0, 1], dtype=events.dtype)):
                 y[name_event] = event.astype(bool)
             else:
                 raise ValueError('non-boolean event indicator must contain 0 and 1 only')
@@ -89,7 +88,7 @@ class Surv:
         y : np.array
             Structured array with two fields.
         """
-        if not isinstance(data, pandas.DataFrame):
+        if not isinstance(data, pd.DataFrame):
             raise TypeError(
                 "exepected pandas.DataFrame, but got {!r}".format(type(data)))
 
@@ -129,7 +128,7 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False):
     if len(args) == 0:
         y = y_or_event
 
-        if not isinstance(y, numpy.ndarray) or y.dtype.fields is None or len(y.dtype.fields) != 2:
+        if not isinstance(y, np.ndarray) or y.dtype.fields is None or len(y.dtype.fields) != 2:
             raise ValueError('y must be a structured array with the first field'
                              ' being a binary class event indicator and the second field'
                              ' the time of the event/censoring')
@@ -138,14 +137,14 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False):
         y_event = y[event_field]
         time_args = (y[time_field],)
     else:
-        y_event = numpy.asanyarray(y_or_event)
+        y_event = np.asanyarray(y_or_event)
         time_args = args
 
     event = check_array(y_event, ensure_2d=False)
-    if not numpy.issubdtype(event.dtype, numpy.bool_):
+    if not np.issubdtype(event.dtype, np.bool_):
         raise ValueError('elements of event indicator must be boolean, but found {0}'.format(event.dtype))
 
-    if not (allow_all_censored or numpy.any(event)):
+    if not (allow_all_censored or np.any(event)):
         raise ValueError('all samples are censored')
 
     return_val = [event]
@@ -155,7 +154,7 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False):
             continue
 
         yt = check_array(yt, ensure_2d=False)
-        if not numpy.issubdtype(yt.dtype, numpy.number):
+        if not np.issubdtype(yt.dtype, np.number):
             raise ValueError('time must be numeric, but found {} for argument {}'.format(yt.dtype, i + 2))
 
         return_val.append(yt)
@@ -240,7 +239,7 @@ def safe_concat(objs, *args, **kwargs):
     axis = kwargs.pop("axis", 0)
     categories = {}
     for df in objs:
-        if isinstance(df, pandas.Series):
+        if isinstance(df, pd.Series):
             if is_categorical_dtype(df.dtype):
                 categories[df.name] = {"categories": df.cat.categories, "ordered": df.cat.ordered}
         else:
@@ -255,9 +254,9 @@ def safe_concat(objs, *args, **kwargs):
                     categories[name] = {"categories": s.cat.categories, "ordered": s.cat.ordered}
                 df[name] = df[name].astype(object)
 
-    concatenated = pandas.concat(objs, *args, axis=axis, **kwargs)
+    concatenated = pd.concat(objs, *args, axis=axis, **kwargs)
 
     for name, params in categories.items():
-        concatenated[name] = pandas.Categorical(concatenated[name], **params)
+        concatenated[name] = pd.Categorical(concatenated[name], **params)
 
     return concatenated

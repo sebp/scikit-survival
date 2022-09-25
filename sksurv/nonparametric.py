@@ -10,7 +10,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import numpy
+import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_array, check_consistent_length, check_is_fitted
 
@@ -57,11 +57,11 @@ def _compute_counts(event, time, order=None):
     n_samples = event.shape[0]
 
     if order is None:
-        order = numpy.argsort(time, kind="mergesort")
+        order = np.argsort(time, kind="mergesort")
 
-    uniq_times = numpy.empty(n_samples, dtype=time.dtype)
-    uniq_events = numpy.empty(n_samples, dtype=int)
-    uniq_counts = numpy.empty(n_samples, dtype=int)
+    uniq_times = np.empty(n_samples, dtype=time.dtype)
+    uniq_events = np.empty(n_samples, dtype=int)
+    uniq_counts = np.empty(n_samples, dtype=int)
 
     i = 0
     prev_val = time[order[0]]
@@ -86,14 +86,14 @@ def _compute_counts(event, time, order=None):
 
         prev_val = time[order[i]]
 
-    times = numpy.resize(uniq_times, j)
-    n_events = numpy.resize(uniq_events, j)
-    total_count = numpy.resize(uniq_counts, j)
+    times = np.resize(uniq_times, j)
+    n_events = np.resize(uniq_events, j)
+    total_count = np.resize(uniq_counts, j)
     n_censored = total_count - n_events
 
     # offset cumulative sum by one
-    total_count = numpy.r_[0, total_count]
-    n_at_risk = n_samples - numpy.cumsum(total_count)
+    total_count = np.r_[0, total_count]
+    n_at_risk = n_samples - np.cumsum(total_count)
 
     return times, n_events, n_at_risk[:-1], n_censored
 
@@ -129,20 +129,20 @@ def _compute_counts_truncated(event, time_enter, time_exit):
 
     n_samples = event.shape[0]
 
-    uniq_times = numpy.sort(numpy.unique(numpy.r_[time_enter, time_exit]), kind="mergesort")
-    total_counts = numpy.empty(len(uniq_times), dtype=int)
-    event_counts = numpy.empty(len(uniq_times), dtype=int)
+    uniq_times = np.sort(np.unique(np.r_[time_enter, time_exit]), kind="mergesort")
+    total_counts = np.empty(len(uniq_times), dtype=int)
+    event_counts = np.empty(len(uniq_times), dtype=int)
 
-    order_enter = numpy.argsort(time_enter, kind="mergesort")
-    order_exit = numpy.argsort(time_exit, kind="mergesort")
+    order_enter = np.argsort(time_enter, kind="mergesort")
+    order_exit = np.argsort(time_exit, kind="mergesort")
     s_time_enter = time_enter[order_enter]
     s_time_exit = time_exit[order_exit]
 
     t0 = uniq_times[0]
     # everything larger is included
-    idx_enter = numpy.searchsorted(s_time_enter, t0, side="right")
+    idx_enter = np.searchsorted(s_time_enter, t0, side="right")
     # everything smaller is excluded
-    idx_exit = numpy.searchsorted(s_time_exit, t0, side="left")
+    idx_exit = np.searchsorted(s_time_exit, t0, side="left")
 
     total_counts[0] = idx_enter
     # except people die on the day they enter
@@ -157,7 +157,7 @@ def _compute_counts_truncated(event, time_enter, time_exit):
         while idx_exit < n_samples and s_time_exit[idx_exit] < ti:
             idx_exit += 1
 
-        risk_set = numpy.setdiff1d(order_enter[:idx_enter], order_exit[:idx_exit], assume_unique=True)
+        risk_set = np.setdiff1d(order_enter[:idx_enter], order_exit[:idx_exit], assume_unique=True)
         total_counts[i] = len(risk_set)
 
         count_event = 0
@@ -238,17 +238,19 @@ def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None, rev
         uniq_times, n_events, n_at_risk = _compute_counts_truncated(event, time_enter, time_exit)
 
     # account for 0/0 = nan
-    ratio = numpy.divide(n_events, n_at_risk,
-                         out=numpy.zeros(uniq_times.shape[0], dtype=float),
-                         where=n_events != 0)
+    ratio = np.divide(
+        n_events, n_at_risk,
+        out=np.zeros(uniq_times.shape[0], dtype=float),
+        where=n_events != 0,
+    )
     values = 1.0 - ratio
 
     if time_min is not None:
         mask = uniq_times >= time_min
-        uniq_times = numpy.compress(mask, uniq_times)
-        values = numpy.compress(mask, values)
+        uniq_times = np.compress(mask, uniq_times)
+        values = np.compress(mask, values)
 
-    y = numpy.cumprod(values)
+    y = np.cumprod(values)
     return uniq_times, y
 
 
@@ -285,7 +287,7 @@ def nelson_aalen_estimator(event, time):
     check_consistent_length(event, time)
     uniq_times, n_events, n_at_risk, _ = _compute_counts(event, time)
 
-    y = numpy.cumsum(n_events / n_at_risk)
+    y = np.cumsum(n_events / n_at_risk)
 
     return uniq_times, y
 
@@ -313,16 +315,16 @@ def ipc_weights(event, time):
         of censoring weights for unseen time points.
     """
     if event.all():
-        return numpy.ones(time.shape[0])
+        return np.ones(time.shape[0])
 
     unique_time, p = kaplan_meier_estimator(event, time, reverse=True)
 
-    idx = numpy.searchsorted(unique_time, time[event])
+    idx = np.searchsorted(unique_time, time[event])
     Ghat = p[idx]
 
     assert (Ghat > 0).all()
 
-    weights = numpy.zeros(time.shape[0])
+    weights = np.zeros(time.shape[0])
     weights[event] = 1.0 / Ghat
 
     return weights
@@ -351,8 +353,8 @@ class SurvivalFunctionEstimator(BaseEstimator):
         event, time = check_y_survival(y, allow_all_censored=True)
 
         unique_time, prob = kaplan_meier_estimator(event, time)
-        self.unique_time_ = numpy.r_[-numpy.infty, unique_time]
-        self.prob_ = numpy.r_[1., prob]
+        self.unique_time_ = np.r_[-np.infty, unique_time]
+        self.prob_ = np.r_[1., prob]
 
         return self
 
@@ -381,15 +383,15 @@ class SurvivalFunctionEstimator(BaseEstimator):
                              "observed time point: {}".format(self.unique_time_[-1]))
 
         # beyond last time point is zero probability
-        Shat = numpy.empty(time.shape, dtype=float)
+        Shat = np.empty(time.shape, dtype=float)
         Shat[extends] = 0.0
 
         valid = ~extends
         time = time[valid]
-        idx = numpy.searchsorted(self.unique_time_, time)
+        idx = np.searchsorted(self.unique_time_, time)
         # for non-exact matches, we need to shift the index to left
-        eps = numpy.finfo(self.unique_time_.dtype).eps
-        exact = numpy.absolute(self.unique_time_[idx] - time) < eps
+        eps = np.finfo(self.unique_time_.dtype).eps
+        exact = np.absolute(self.unique_time_[idx] - time) < eps
         idx[~exact] -= 1
         Shat[valid] = self.prob_[idx]
 
@@ -415,12 +417,12 @@ class CensoringDistributionEstimator(SurvivalFunctionEstimator):
         """
         event, time = check_y_survival(y)
         if event.all():
-            self.unique_time_ = numpy.unique(time)
-            self.prob_ = numpy.ones(self.unique_time_.shape[0])
+            self.unique_time_ = np.unique(time)
+            self.prob_ = np.ones(self.unique_time_.shape[0])
         else:
             unique_time, prob = kaplan_meier_estimator(event, time, reverse=True)
-            self.unique_time_ = numpy.r_[-numpy.infty, unique_time]
-            self.prob_ = numpy.r_[1., prob]
+            self.unique_time_ = np.r_[-np.infty, unique_time]
+            self.prob_ = np.r_[1., prob]
 
         return self
 
@@ -447,7 +449,7 @@ class CensoringDistributionEstimator(SurvivalFunctionEstimator):
         if (Ghat == 0.0).any():
             raise ValueError("censoring survival function is zero at one or more time points")
 
-        weights = numpy.zeros(time.shape[0])
+        weights = np.zeros(time.shape[0])
         weights[event] = 1.0 / Ghat
 
         return weights

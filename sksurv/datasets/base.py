@@ -1,7 +1,7 @@
 import warnings
 
-import numpy
-import pandas
+import numpy as np
+import pandas as pd
 from pkg_resources import resource_filename
 
 from ..column import categorical_to_numeric, standardize
@@ -23,8 +23,7 @@ def _get_x_y_survival(dataset, col_event, col_time, val_outcome):
         y = None
         x_frame = dataset
     else:
-        y = numpy.empty(dtype=[(col_event, bool), (col_time, numpy.float64)],
-                        shape=dataset.shape[0])
+        y = np.empty(dtype=[(col_event, bool), (col_time, np.float64)], shape=dataset.shape[0])
         y[col_event] = (dataset[col_event] == val_outcome).values
         y[col_time] = dataset[col_time].values
 
@@ -186,7 +185,7 @@ def _load_arff_testing(path_testing, attr_labels, pos_label, survival):
         test_dataset.index = test_dataset["index"].astype(object)
         test_dataset.drop("index", axis=1, inplace=True)
 
-    has_labels = pandas.Index(attr_labels).isin(test_dataset.columns).all()
+    has_labels = pd.Index(attr_labels).isin(test_dataset.columns).all()
     if not has_labels:
         if survival:
             attr_labels = [None, None]
