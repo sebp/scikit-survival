@@ -7,7 +7,7 @@ jobs:
     name: Build and check notebooks
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
           submodules: true
@@ -27,7 +27,7 @@ jobs:
           echo "::set-output name=requirements::ci/deps/${DEPS_CONFIG}.sh"
           echo "::set-output name=conda_pkgs::$(${CONDA}/bin/python -c "from conda.base.context import context; print(context.pkgs_dirs[0])")"
       - name: Cache downloaded packages
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{ steps.dependencies.outputs.conda_pkgs }}
           key: ${{ runner.os }}-conda-${{ hashFiles(steps.dependencies.outputs.requirements) }}

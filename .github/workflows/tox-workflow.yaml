@@ -7,16 +7,16 @@ jobs:
     name: Linting and Docs
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: true
       - name: Run Tox
-        uses: fedora-python/tox-github-action@v0.4
+        uses: fedora-python/tox-github-action@v35.1
         with:
           tox_env: py39-${{ matrix.tox_env }}
           dnf_install: pandoc cmake make
       - name: Archive documentation
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v3
         with:
           name: documentation
           path: doc/_build/html
