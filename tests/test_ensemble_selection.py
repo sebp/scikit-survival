@@ -11,7 +11,7 @@ from sksurv.linear_model import IPCRidge
 from sksurv.meta import EnsembleSelection, EnsembleSelectionRegressor
 from sksurv.metrics import concordance_index_censored
 from sksurv.svm import FastKernelSurvivalSVM, FastSurvivalSVM
-from sksurv.testing import assert_cindex_almost_equal
+from sksurv.testing import FixtureParameterFactory, assert_cindex_almost_equal
 from sksurv.tree import SurvivalTree
 from sksurv.util import check_array_survival
 
@@ -157,100 +157,75 @@ class TestEnsembleSelectionSurvivalAnalysis:
         with pytest.warns(UserWarning, match=warn_msg):
             meta.predict(whas500.x_data_frame.iloc[:10])
 
-    @staticmethod
-    def test_min_score(make_whas500):
-        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
-        base_estimators = [
-            ('gbm', ComponentwiseGradientBoostingSurvivalAnalysis()),
-            ('svm', FastSurvivalSVM()),
-        ]
-        meta = EnsembleSelection(base_estimators, scorer=score_cindex, min_score=1.0, cv=3)
 
-        with pytest.raises(ValueError,
-                           match="no base estimator exceeds min_score, try decreasing it"):
-            meta.fit(whas500.x, whas500.y)
+class EnsembleSelectionFailureCases(FixtureParameterFactory):
+    def data_min_score(self):
+        params = {"scorer": score_cindex, "min_score": 1.0, "cv": 3}
+        match = "no base estimator exceeds min_score, try decreasing it"
+        return params, ValueError, match
 
-    @staticmethod
-    def test_min_correlation(make_whas500):
-        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
-        base_estimators = [
-            ('gbm', ComponentwiseGradientBoostingSurvivalAnalysis()),
-            ('svm', FastSurvivalSVM()),
-        ]
-        meta = EnsembleSelection(base_estimators, scorer=score_cindex, min_correlation=1.2)
+    def data_min_correlation_0(self):
+        params = {"scorer": score_cindex, "min_correlation": 1.2}
+        match = r"min_correlation must be in \[-1; 1\], but was 1.2"
+        return params, ValueError, match
 
-        with pytest.raises(ValueError,
-                           match=r"min_correlation must be in \[-1; 1\], but was 1.2"):
-            meta.fit(whas500.x, whas500.y)
+    def data_min_correlation_1(self):
+        params = {"scorer": score_cindex, "min_correlation": -2.1}
+        match = r"min_correlation must be in \[-1; 1\], but was -2.1"
+        return params, ValueError, match
 
-        meta.set_params(min_correlation=-2.1)
-        with pytest.raises(ValueError,
-                           match=r"min_correlation must be in \[-1; 1\], but was -2.1"):
-            meta.fit(whas500.x, whas500.y)
+    def data_min_correlation_2(self):
+        params = {"scorer": score_cindex, "min_correlation": np.nan}
+        match = r"min_correlation must be in \[-1; 1\], but was nan"
+        return params, ValueError, match
 
-        meta.set_params(min_correlation=np.nan)
-        with pytest.raises(ValueError,
-                           match=r"min_correlation must be in \[-1; 1\], but was nan"):
-            meta.fit(whas500.x, whas500.y)
+    def data_scorer_none(self):
+        params = {"scorer": None}
+        match = "scorer is not callable"
+        return params, TypeError, match
 
-    @staticmethod
-    def test_scorer(make_whas500):
-        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
-        base_estimators = [
-            ('gbm', ComponentwiseGradientBoostingSurvivalAnalysis()),
-            ('svm', FastSurvivalSVM()),
-        ]
-        meta = EnsembleSelection(base_estimators, scorer=None)
+    def data_scorer_not_callable(self):
+        params = {"scorer": np.zeros(10)}
+        match = "scorer is not callable"
+        return params, TypeError, match
 
-        with pytest.raises(TypeError, match="scorer is not callable"):
-            meta.fit(whas500.x, whas500.y)
+    def data_n_estimators_0(self):
+        params = {"scorer": score_cindex, "n_estimators": 0}
+        match = "n_estimators must not be zero or negative"
+        return params, ValueError, match
 
-        meta.set_params(scorer=np.zeros(10))
-        with pytest.raises(TypeError, match="scorer is not callable"):
-            meta.fit(whas500.x, whas500.y)
+    def data_n_estimators_1000(self):
+        params = {"scorer": score_cindex, "n_estimators": 1000}
+        match = r"n_estimators \(1000\) must not exceed number of base learners \(2\)"
+        return params, ValueError, match
 
-    @staticmethod
-    def test_n_estimators(make_whas500):
-        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
-        base_estimators = [
-            ('gbm', ComponentwiseGradientBoostingSurvivalAnalysis()),
-            ('svm', FastSurvivalSVM()),
-        ]
-        meta = EnsembleSelection(base_estimators, scorer=score_cindex, n_estimators=0)
+    def data_correlation_none(self):
+        params = {"scorer": score_cindex, "correlation": None}
+        match = "correlation must be one of 'pearson', 'kendall', and 'spearman', but got None"
+        return params, ValueError, match
 
-        with pytest.raises(ValueError, match="n_estimators must not be zero or negative"):
-            meta.fit(whas500.x, whas500.y)
+    def data_correlation_int(self):
+        params = {"scorer": score_cindex, "correlation": 2143}
+        match = "correlation must be one of 'pearson', 'kendall', and 'spearman', but got 2143"
+        return params, ValueError, match
 
-        meta.set_params(n_estimators=1000)
-        with pytest.raises(ValueError,
-                           match=r"n_estimators \(1000\) must not exceed number "
-                                 r"of base learners \(2\)"):
-            meta.fit(whas500.x, whas500.y)
+    def data_correlation_str(self):
+        params = {"scorer": score_cindex, "correlation": "clearly wrong"}
+        match = "correlation must be one of 'pearson', 'kendall', and 'spearman', but got 'clearly wrong'"
+        return params, ValueError, match
 
-    @staticmethod
-    def test_correlation(make_whas500):
-        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
-        base_estimators = [
-            ('gbm', ComponentwiseGradientBoostingSurvivalAnalysis()),
-            ('svm', FastSurvivalSVM()),
-        ]
-        meta = EnsembleSelection(base_estimators, scorer=score_cindex, correlation=None)
-        with pytest.raises(ValueError,
-                           match="correlation must be one of 'pearson', 'kendall', "
-                                 "and 'spearman', but got None"):
-            meta.fit(whas500.x, whas500.y)
 
-        meta = EnsembleSelection(base_estimators, scorer=score_cindex, correlation=2143)
-        with pytest.raises(ValueError,
-                           match="correlation must be one of 'pearson', 'kendall', "
-                                 "and 'spearman', but got 2143"):
-            meta.fit(whas500.x, whas500.y)
+@pytest.mark.parametrize("params,error_cls,error", EnsembleSelectionFailureCases().get_cases())
+def test_ensemble_selection_failures(params, error_cls, error, make_whas500):
+    whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
+    base_estimators = [
+        ('gbm', ComponentwiseGradientBoostingSurvivalAnalysis()),
+        ('svm', FastSurvivalSVM()),
+    ]
+    meta = EnsembleSelection(base_estimators, **params)
 
-        meta = EnsembleSelection(base_estimators, scorer=score_cindex, correlation="clearly wrong")
-        with pytest.raises(ValueError,
-                           match="correlation must be one of 'pearson', 'kendall', "
-                                 "and 'spearman', but got 'clearly wrong'"):
-            meta.fit(whas500.x, whas500.y)
+    with pytest.raises(error_cls, match=error):
+        meta.fit(whas500.x, whas500.y)
 
 
 def _score_rmse(est, X_test, y_test, **predict_params):
