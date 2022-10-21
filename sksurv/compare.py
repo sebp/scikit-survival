@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
-import numpy
-import pandas
+import numpy as np
+import pandas as pd
 from scipy import stats
 from sklearn.utils.validation import check_array
 
@@ -66,31 +66,31 @@ def compare_survival(y, group_indicator, return_stats=False):
     )
 
     n_samples = time.shape[0]
-    groups, group_counts = numpy.unique(group_indicator, return_counts=True)
+    groups, group_counts = np.unique(group_indicator, return_counts=True)
     n_groups = groups.shape[0]
     if n_groups == 1:
         raise ValueError("At least two groups must be specified, "
                          "but only one was provided.")
 
     # sort descending
-    o = numpy.argsort(-time, kind="mergesort")
+    o = np.argsort(-time, kind="mergesort")
     x = group_indicator[o]
     event = event[o]
     time = time[o]
 
-    at_risk = numpy.zeros(n_groups, dtype=int)
-    observed = numpy.zeros(n_groups, dtype=int)
-    expected = numpy.zeros(n_groups, dtype=float)
-    covar = numpy.zeros((n_groups, n_groups), dtype=float)
+    at_risk = np.zeros(n_groups, dtype=int)
+    observed = np.zeros(n_groups, dtype=int)
+    expected = np.zeros(n_groups, dtype=float)
+    covar = np.zeros((n_groups, n_groups), dtype=float)
 
-    covar_indices = numpy.diag_indices(n_groups)
+    covar_indices = np.diag_indices(n_groups)
 
     k = 0
     while k < n_samples:
         ti = time[k]
         total_events = 0
         while k < n_samples and ti == time[k]:
-            idx = numpy.searchsorted(groups, x[k])
+            idx = np.searchsorted(groups, x[k])
             if event[k]:
                 observed[idx] += 1
                 total_events += 1
@@ -104,11 +104,11 @@ def compare_survival(y, group_indicator, return_stats=False):
                 multiplier = total_events * (total_at_risk - total_events) / (total_at_risk * (total_at_risk - 1))
                 temp = at_risk * multiplier
                 covar[covar_indices] += temp
-                covar -= numpy.outer(temp, at_risk) / total_at_risk
+                covar -= np.outer(temp, at_risk) / total_at_risk
 
     df = n_groups - 1
     zz = observed[:df] - expected[:df]
-    chisq = numpy.linalg.solve(covar[:df, :df], zz).dot(zz)
+    chisq = np.linalg.solve(covar[:df, :df], zz).dot(zz)
     pval = stats.chi2.sf(chisq, df)
 
     if return_stats:
@@ -117,8 +117,8 @@ def compare_survival(y, group_indicator, return_stats=False):
         table["observed"] = observed
         table["expected"] = expected
         table["statistic"] = observed - expected
-        table = pandas.DataFrame.from_dict(table)
-        table.index = pandas.Index(groups, name="group", dtype=groups.dtype)
+        table = pd.DataFrame.from_dict(table)
+        table.index = pd.Index(groups, name="group", dtype=groups.dtype)
         return chisq, pval, table, covar
 
     return chisq, pval

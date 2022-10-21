@@ -13,8 +13,8 @@
 import os.path
 import re
 
-import numpy
-import pandas
+import numpy as np
+import pandas as pd
 from pandas.api.types import is_categorical_dtype, is_object_dtype
 
 _ILLEGAL_CHARACTER_PAT = re.compile(r"[^-_=\w\d\(\)<>\.]")
@@ -72,11 +72,11 @@ def _write_header(data, fp, relation_name, index):
 
         if is_categorical_dtype(series) or is_object_dtype(series):
             _write_attribute_categorical(series, fp)
-        elif numpy.issubdtype(series.dtype, numpy.floating):
+        elif np.issubdtype(series.dtype, np.floating):
             fp.write("real")
-        elif numpy.issubdtype(series.dtype, numpy.integer):
+        elif np.issubdtype(series.dtype, np.integer):
             fp.write("integer")
-        elif numpy.issubdtype(series.dtype, numpy.datetime64):
+        elif np.issubdtype(series.dtype, np.datetime64):
             fp.write("date 'yyyy-MM-dd HH:mm:ss'")
         else:
             raise TypeError('unsupported type %s' % series.dtype)
@@ -109,7 +109,7 @@ def _check_str_value(x):
     return str(x)
 
 
-_check_str_array = numpy.frompyfunc(_check_str_value, 1, 1)
+_check_str_array = np.frompyfunc(_check_str_value, 1, 1)
 
 
 def _write_attribute_categorical(series, fp):
@@ -132,7 +132,7 @@ def _write_data(data, fp):
     fp.write("@data\n")
 
     def to_str(x):
-        if pandas.isnull(x):
+        if pd.isnull(x):
             return '?'
         return str(x)
 

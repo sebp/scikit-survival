@@ -12,8 +12,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import itertools
 
-import numpy
-import pandas
+import numpy as np
+import pandas as pd
 from scipy.special import comb
 from sklearn.svm import LinearSVC
 from sklearn.utils import check_random_state
@@ -120,24 +120,24 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
         X = self._validate_data(X, ensure_min_samples=2)
         event, time = check_array_survival(X, y)
 
-        idx = numpy.arange(X.shape[0], dtype=int)
+        idx = np.arange(X.shape[0], dtype=int)
         random_state.shuffle(idx)
 
         n_pairs = int(comb(X.shape[0], 2))
-        x_pairs = numpy.empty((n_pairs, X.shape[1]), dtype=float)
-        y_pairs = numpy.empty(n_pairs, dtype=numpy.int8)
+        x_pairs = np.empty((n_pairs, X.shape[1]), dtype=float)
+        y_pairs = np.empty(n_pairs, dtype=np.int8)
         k = 0
         for xi, xj in itertools.combinations(idx, 2):
             if time[xi] > time[xj] and event[xj]:
-                numpy.subtract(X[xi, :], X[xj, :], out=x_pairs[k, :])
+                np.subtract(X[xi, :], X[xj, :], out=x_pairs[k, :])
                 y_pairs[k] = 1
                 k += 1
             elif time[xi] < time[xj] and event[xi]:
-                numpy.subtract(X[xi, :], X[xj, :], out=x_pairs[k, :])
+                np.subtract(X[xi, :], X[xj, :], out=x_pairs[k, :])
                 y_pairs[k] = -1
                 k += 1
             elif time[xi] == time[xj] and (event[xi] or event[xj]):
-                numpy.subtract(X[xi, :], X[xj, :], out=x_pairs[k, :])
+                np.subtract(X[xi, :], X[xj, :], out=x_pairs[k, :])
                 y_pairs[k] = 1 if event[xj] else -1
                 k += 1
 
@@ -145,7 +145,7 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
         y_pairs.resize(k, refcheck=False)
 
         if feature_names is not None:
-            x_pairs = pandas.DataFrame(x_pairs, columns=feature_names)
+            x_pairs = pd.DataFrame(x_pairs, columns=feature_names)
         return x_pairs, y_pairs
 
     def fit(self, X, y, sample_weight=None):

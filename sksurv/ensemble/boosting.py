@@ -12,7 +12,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numbers
 
-import numpy
+import numpy as np
 from scipy.sparse import csc_matrix, csr_matrix, issparse
 from sklearn.base import BaseEstimator
 from sklearn.ensemble._base import BaseEnsemble
@@ -34,7 +34,7 @@ __all__ = ['ComponentwiseGradientBoostingSurvivalAnalysis', 'GradientBoostingSur
 
 def _sample_binomial_plus_one(p, size, random_state):
     drop_model = random_state.binomial(1, p=p, size=size)
-    n_dropped = numpy.sum(drop_model)
+    n_dropped = np.sum(drop_model)
     if n_dropped == 0:
         idx = random_state.randint(0, size)
         drop_model[idx] = 1
@@ -49,11 +49,11 @@ class ComponentwiseLeastSquares(BaseEstimator):
 
     def fit(self, X, y, sample_weight):
         xw = X[:, self.component] * sample_weight
-        b = numpy.dot(xw, y)
+        b = np.dot(xw, y)
         if b == 0:
             self.coef_ = 0
         else:
-            a = numpy.dot(xw, xw)
+            a = np.dot(xw, xw)
             self.coef_ = b / a
 
         return self
@@ -67,7 +67,7 @@ def _fit_stage_componentwise(X, residuals, sample_weight, **fit_params):  # pyli
     n_features = X.shape[1]
 
     base_learners = []
-    error = numpy.empty(n_features)
+    error = np.empty(n_features)
     for component in range(n_features):
         learner = ComponentwiseLeastSquares(component).fit(X, residuals, sample_weight)
         l_pred = learner.predict(X)
@@ -75,7 +75,7 @@ def _fit_stage_componentwise(X, residuals, sample_weight, **fit_params):  # pyli
         base_learners.append(learner)
 
     # TODO: could use bottleneck.nanargmin for speed
-    best_component = numpy.nanargmin(error)
+    best_component = np.nanargmin(error)
     best_learner = base_learners[best_component]
     return best_learner
 
@@ -205,9 +205,9 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
     def _fit(self, X, event, time, sample_weight, random_state):  # noqa: C901
         n_samples = X.shape[0]
         # account for intercept
-        Xi = numpy.column_stack((numpy.ones(n_samples), X))
-        y = numpy.fromiter(zip(event, time), dtype=[('event', bool), ('time', numpy.float64)])
-        y_pred = numpy.zeros(n_samples)
+        Xi = np.column_stack((np.ones(n_samples), X))
+        y = np.fromiter(zip(event, time), dtype=[('event', bool), ('time', np.float64)])
+        y_pred = np.zeros(n_samples)
 
         do_oob = self.subsample < 1.0
         if do_oob:
@@ -215,7 +215,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         do_dropout = self.dropout_rate > 0
         if do_dropout:
-            scale = numpy.ones(int(self.n_estimators), dtype=float)
+            scale = np.ones(int(self.n_estimators), dtype=float)
 
         if self.verbose:
             verbose_reporter = VerboseReporter(verbose=self.verbose)
@@ -225,7 +225,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
             if do_oob:
                 sample_mask = _random_sample_mask(n_samples, n_inbag,
                                                   random_state)
-                subsample_weight = sample_weight * sample_mask.astype(numpy.float64)
+                subsample_weight = sample_weight * sample_mask.astype(np.float64)
 
                 # OOB score before adding this stage
                 old_oob_score = self._loss(y[~sample_mask],
@@ -293,7 +293,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         n_samples = X.shape[0]
 
         if sample_weight is None:
-            sample_weight = numpy.ones(n_samples, dtype=numpy.float32)
+            sample_weight = np.ones(n_samples, dtype=np.float32)
         else:
             sample_weight = column_or_1d(sample_weight, warn=True)
             check_consistent_length(X, sample_weight)
@@ -305,13 +305,12 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         self.estimators_ = []
         self._loss = LOSS_FUNCTIONS[self.loss]()
         if isinstance(self._loss, (CensoredSquaredLoss, IPCWLeastSquaresError)):
-            time = numpy.log(time)
+            time = np.log(time)
 
-        self.train_score_ = numpy.zeros((self.n_estimators,), dtype=numpy.float64)
+        self.train_score_ = np.zeros((self.n_estimators,), dtype=np.float64)
         # do oob?
         if self.subsample < 1.0:
-            self.oob_improvement_ = numpy.zeros(self.n_estimators,
-                                                dtype=numpy.float64)
+            self.oob_improvement_ = np.zeros(self.n_estimators, dtype=np.float64)
 
         self._fit(X, event, time, sample_weight, random_state)
 
@@ -325,8 +324,8 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
     def _predict(self, X):
         n_samples = X.shape[0]
-        Xi = numpy.column_stack((numpy.ones(n_samples), X))
-        pred = numpy.zeros(n_samples, dtype=float)
+        Xi = np.column_stack((np.ones(n_samples), X))
+        pred = np.zeros(n_samples, dtype=float)
 
         for estimator in self.estimators_:
             pred += self.learning_rate * estimator.predict(Xi)
@@ -492,7 +491,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
     @property
     def coef_(self):
-        coef = numpy.zeros(self.n_features_in_ + 1, dtype=float)
+        coef = np.zeros(self.n_features_in_ + 1, dtype=float)
 
         for estimator in self.estimators_:
             coef[estimator.component] += self.learning_rate * estimator.coef_
@@ -505,7 +504,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
     @property
     def feature_importances_(self):
-        imp = numpy.empty(self.n_features_in_ + 1, dtype=object)
+        imp = np.empty(self.n_features_in_ + 1, dtype=object)
         for i in range(imp.shape[0]):
             imp[i] = []
 
@@ -514,10 +513,10 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         def _importance(x):
             if len(x) > 0:
-                return numpy.min(x)
-            return numpy.nan
+                return np.min(x)
+            return np.nan
 
-        ret = numpy.array([_importance(x) for x in imp])
+        ret = np.array([_importance(x) for x in imp])
         return ret
 
     def _make_estimator(self, append=True, random_state=None):
@@ -776,16 +775,16 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
             if self.max_features == "auto":
                 max_features = self.n_features_in_
             elif self.max_features == "sqrt":
-                max_features = max(1, int(numpy.sqrt(self.n_features_in_)))
+                max_features = max(1, int(np.sqrt(self.n_features_in_)))
             elif self.max_features == "log2":
-                max_features = max(1, int(numpy.log2(self.n_features_in_)))
+                max_features = max(1, int(np.log2(self.n_features_in_)))
             else:
                 raise ValueError("Invalid value for max_features: %r. "
                                  "Allowed string values are 'auto', 'sqrt' "
                                  "or 'log2'." % self.max_features)
         elif self.max_features is None:
             max_features = self.n_features_in_
-        elif isinstance(self.max_features, (numbers.Integral, numpy.integer)):
+        elif isinstance(self.max_features, (numbers.Integral, np.integer)):
             if self.max_features < 1:
                 raise ValueError("max_features must be in (0, n_features_in_]")
             max_features = self.max_features
@@ -832,7 +831,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
             if self.subsample < 1.0:
                 # no inplace multiplication!
-                sample_weight = sample_weight * sample_mask.astype(numpy.float64)
+                sample_weight = sample_weight * sample_mask.astype(np.float64)
 
             X = X_csr if X_csr is not None else X
             tree.fit(X, residual, sample_weight=sample_weight,
@@ -877,7 +876,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         """
         n_samples = X.shape[0]
         do_oob = self.subsample < 1.0
-        sample_mask = numpy.ones((n_samples, ), dtype=bool)
+        sample_mask = np.ones((n_samples, ), dtype=bool)
         n_inbag = max(1, int(self.subsample * n_samples))
         loss_ = self._loss
 
@@ -889,7 +888,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         X_csr = csr_matrix(X) if issparse(X) else None
 
         if self.dropout_rate > 0.:
-            scale = numpy.ones(self.n_estimators, dtype=float)
+            scale = np.ones(self.n_estimators, dtype=float)
         else:
             scale = None
 
@@ -976,7 +975,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         sample_weight_is_none = sample_weight is None
         if sample_weight_is_none:
-            sample_weight = numpy.ones(n_samples, dtype=numpy.float32)
+            sample_weight = np.ones(n_samples, dtype=np.float32)
         else:
             sample_weight = column_or_1d(sample_weight, warn=True)
 
@@ -985,7 +984,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         self._check_params()
 
         if isinstance(self._loss, (CensoredSquaredLoss, IPCWLeastSquaresError)):
-            time = numpy.log(time)
+            time = np.log(time)
 
         self._init_state()
         if sample_weight_is_none:
@@ -1000,7 +999,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         self._rng = check_random_state(self.random_state)
 
         # fit the boosting stages
-        y = numpy.fromiter(zip(event, time), dtype=[('event', bool), ('time', numpy.float64)])
+        y = np.fromiter(zip(event, time), dtype=[('event', bool), ('time', np.float64)])
         n_stages = self._fit_stages(X, y, raw_predictions, sample_weight, self._rng,
                                     begin_at_stage, monitor)
         # change shape of arrays after fit (early-stopping or additional tests)

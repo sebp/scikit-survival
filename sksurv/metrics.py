@@ -10,7 +10,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import numpy
+import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.utils import check_array, check_consistent_length
 from sklearn.utils.metaestimators import available_if
@@ -48,7 +48,7 @@ def _check_inputs(event_indicator, event_time, estimate):
     event_time = check_array(event_time, ensure_2d=False, input_name="event_time")
     estimate = _check_estimate_1d(estimate, event_time)
 
-    if not numpy.issubdtype(event_indicator.dtype, numpy.bool_):
+    if not np.issubdtype(event_indicator.dtype, np.bool_):
         raise ValueError(
             'only boolean arrays are supported as class labels for survival analysis, got {0}'.format(
                 event_indicator.dtype))
@@ -63,8 +63,8 @@ def _check_inputs(event_indicator, event_time, estimate):
 
 
 def _check_times(test_time, times):
-    times = check_array(numpy.atleast_1d(times), ensure_2d=False, dtype=test_time.dtype, input_name="times")
-    times = numpy.unique(times)
+    times = check_array(np.atleast_1d(times), ensure_2d=False, dtype=test_time.dtype, input_name="times")
+    times = np.unique(times)
 
     if times.max() >= test_time.max() or times.min() < test_time.min():
         raise ValueError(
@@ -103,7 +103,7 @@ def _get_comparable(event_indicator, event_time, order):
         censored_at_same_time = ~event_at_same_time
         for j in range(i, end):
             if event_indicator[order[j]]:
-                mask = numpy.zeros(n_samples, dtype=bool)
+                mask = np.zeros(n_samples, dtype=bool)
                 mask[end:] = True
                 # an event is comparable to censored samples at same time point
                 mask[i:end] = censored_at_same_time
@@ -115,7 +115,7 @@ def _get_comparable(event_indicator, event_time, order):
 
 
 def _estimate_concordance_index(event_indicator, event_time, estimate, weights, tied_tol=1e-8):
-    order = numpy.argsort(event_time)
+    order = np.argsort(event_time)
 
     comparable, tied_time = _get_comparable(event_indicator, event_time, order)
 
@@ -137,7 +137,7 @@ def _estimate_concordance_index(event_indicator, event_time, estimate, weights, 
 
         assert event_i, 'got censored sample at index %d, but expected uncensored' % order[ind]
 
-        ties = numpy.absolute(est - est_i) <= tied_tol
+        ties = np.absolute(est - est_i) <= tied_tol
         n_ties = ties.sum()
         # an event should have a higher score
         con = est < est_i
@@ -222,7 +222,7 @@ def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1
     event_indicator, event_time, estimate = _check_inputs(
         event_indicator, event_time, estimate)
 
-    w = numpy.ones_like(estimate)
+    w = np.ones_like(estimate)
 
     return _estimate_concordance_index(event_indicator, event_time, estimate, w, tied_tol)
 
@@ -329,11 +329,11 @@ def concordance_index_ipcw(survival_train, survival_test, estimate, tau=None, ti
     if tau is None:
         ipcw = ipcw_test
     else:
-        ipcw = numpy.empty(estimate.shape[0], dtype=ipcw_test.dtype)
+        ipcw = np.empty(estimate.shape[0], dtype=ipcw_test.dtype)
         ipcw[mask] = ipcw_test
         ipcw[~mask] = 0
 
-    w = numpy.square(ipcw)
+    w = np.square(ipcw)
 
     return _estimate_concordance_index(test_event, test_time, estimate, w, tied_tol)
 
@@ -460,7 +460,7 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
     n_samples = estimate.shape[0]
     n_times = times.shape[0]
     if estimate.ndim == 1:
-        estimate = numpy.broadcast_to(estimate[:, numpy.newaxis], (n_samples, n_times))
+        estimate = np.broadcast_to(estimate[:, np.newaxis], (n_samples, n_times))
 
     # fit and transform IPCW
     cens = CensoringDistributionEstimator()
@@ -468,44 +468,44 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
     ipcw = cens.predict_ipcw(survival_test)
 
     # expand arrays to (n_samples, n_times) shape
-    test_time = numpy.broadcast_to(test_time[:, numpy.newaxis], (n_samples, n_times))
-    test_event = numpy.broadcast_to(test_event[:, numpy.newaxis], (n_samples, n_times))
-    times_2d = numpy.broadcast_to(times, (n_samples, n_times))
-    ipcw = numpy.broadcast_to(ipcw[:, numpy.newaxis], (n_samples, n_times))
+    test_time = np.broadcast_to(test_time[:, np.newaxis], (n_samples, n_times))
+    test_event = np.broadcast_to(test_event[:, np.newaxis], (n_samples, n_times))
+    times_2d = np.broadcast_to(times, (n_samples, n_times))
+    ipcw = np.broadcast_to(ipcw[:, np.newaxis], (n_samples, n_times))
 
     # sort each time point (columns) by risk score (descending)
-    o = numpy.argsort(-estimate, axis=0)
-    test_time = numpy.take_along_axis(test_time, o, axis=0)
-    test_event = numpy.take_along_axis(test_event, o, axis=0)
-    estimate = numpy.take_along_axis(estimate, o, axis=0)
-    ipcw = numpy.take_along_axis(ipcw, o, axis=0)
+    o = np.argsort(-estimate, axis=0)
+    test_time = np.take_along_axis(test_time, o, axis=0)
+    test_event = np.take_along_axis(test_event, o, axis=0)
+    estimate = np.take_along_axis(estimate, o, axis=0)
+    ipcw = np.take_along_axis(ipcw, o, axis=0)
 
     is_case = (test_time <= times_2d) & test_event
     is_control = test_time > times_2d
     n_controls = is_control.sum(axis=0)
 
     # prepend row of infinity values
-    estimate_diff = numpy.concatenate((numpy.broadcast_to(numpy.infty, (1, n_times)), estimate))
-    is_tied = numpy.absolute(numpy.diff(estimate_diff, axis=0)) <= tied_tol
+    estimate_diff = np.concatenate((np.broadcast_to(np.infty, (1, n_times)), estimate))
+    is_tied = np.absolute(np.diff(estimate_diff, axis=0)) <= tied_tol
 
-    cumsum_tp = numpy.cumsum(is_case * ipcw, axis=0)
-    cumsum_fp = numpy.cumsum(is_control, axis=0)
+    cumsum_tp = np.cumsum(is_case * ipcw, axis=0)
+    cumsum_fp = np.cumsum(is_control, axis=0)
     true_pos = cumsum_tp / cumsum_tp[-1]
     false_pos = cumsum_fp / n_controls
 
-    scores = numpy.empty(n_times, dtype=float)
-    it = numpy.nditer((true_pos, false_pos, is_tied), order="F", flags=["external_loop"])
+    scores = np.empty(n_times, dtype=float)
+    it = np.nditer((true_pos, false_pos, is_tied), order="F", flags=["external_loop"])
     with it:
         for i, (tp, fp, mask) in enumerate(it):
-            idx = numpy.flatnonzero(mask) - 1
+            idx = np.flatnonzero(mask) - 1
             # only keep the last estimate for tied risk scores
-            tp_no_ties = numpy.delete(tp, idx)
-            fp_no_ties = numpy.delete(fp, idx)
+            tp_no_ties = np.delete(tp, idx)
+            fp_no_ties = np.delete(fp, idx)
             # Add an extra threshold position
             # to make sure that the curve starts at (0, 0)
-            tp_no_ties = numpy.r_[0, tp_no_ties]
-            fp_no_ties = numpy.r_[0, fp_no_ties]
-            scores[i] = numpy.trapz(tp_no_ties, fp_no_ties)
+            tp_no_ties = np.r_[0, tp_no_ties]
+            fp_no_ties = np.r_[0, fp_no_ties]
+            scores[i] = np.trapz(tp_no_ties, fp_no_ties)
 
     if n_times == 1:
         mean_auc = scores[0]
@@ -514,7 +514,7 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
         surv.fit(survival_test)
         s_times = surv.predict_proba(times)
         # compute integral of AUC over survival function
-        d = -numpy.diff(numpy.r_[1.0, s_times])
+        d = -np.diff(np.r_[1.0, s_times])
         integral = (scores * d).sum()
         mean_auc = integral / (1.0 - s_times[-1])
 
@@ -624,20 +624,22 @@ def brier_score(survival_train, survival_test, estimate, times):
     cens = CensoringDistributionEstimator().fit(survival_train)
     # calculate inverse probability of censoring weight at current time point t.
     prob_cens_t = cens.predict_proba(times)
-    prob_cens_t[prob_cens_t == 0] = numpy.inf
+    prob_cens_t[prob_cens_t == 0] = np.inf
     # calculate inverse probability of censoring weights at observed time point
     prob_cens_y = cens.predict_proba(test_time)
-    prob_cens_y[prob_cens_y == 0] = numpy.inf
+    prob_cens_y[prob_cens_y == 0] = np.inf
 
     # Calculating the brier scores at each time point
-    brier_scores = numpy.empty(times.shape[0], dtype=float)
+    brier_scores = np.empty(times.shape[0], dtype=float)
     for i, t in enumerate(times):
         est = estimate[:, i]
         is_case = (test_time <= t) & test_event
         is_control = test_time > t
 
-        brier_scores[i] = numpy.mean(numpy.square(est) * is_case.astype(int) / prob_cens_y
-                                     + numpy.square(1.0 - est) * is_control.astype(int) / prob_cens_t[i])
+        brier_scores[i] = np.mean(
+            np.square(est) * is_case.astype(int) / prob_cens_y
+            + np.square(1.0 - est) * is_control.astype(int) / prob_cens_t[i]
+        )
 
     return times, brier_scores
 
@@ -691,7 +693,7 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
 
     Examples
     --------
-    >>> import numpy
+    >>> import numpy as np
     >>> from sksurv.datasets import load_gbsg2
     >>> from sksurv.linear_model import CoxPHSurvivalAnalysis
     >>> from sksurv.metrics import integrated_brier_score
@@ -711,8 +713,8 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
     of remaining event free from 1 year to 5 years (=1825 days).
 
     >>> survs = est.predict_survival_function(Xt)
-    >>> times = numpy.arange(365, 1826)
-    >>> preds = numpy.asarray([[fn(t) for t in times] for fn in survs])
+    >>> times = np.arange(365, 1826)
+    >>> preds = np.asarray([[fn(t) for t in times] for fn in survs])
 
     Compute the integrated Brier score from 1 to 5 years.
 
@@ -743,7 +745,7 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
         raise ValueError("At least two time points must be given")
 
     # Computing the IBS
-    ibs_value = numpy.trapz(brier_scores, times) / (times[-1] - times[0])
+    ibs_value = np.trapz(brier_scores, times) / (times[-1] - times[0])
 
     return ibs_value
 
@@ -779,7 +781,7 @@ class _ScoreOverrideMixin:
         return params
 
     def fit(self, X, y, **fit_params):
-        self._train_y = numpy.array(y, copy=True)
+        self._train_y = np.array(y, copy=True)
         self.estimator_ = self.estimator.fit(X, y, **fit_params)
         return self
 
@@ -926,7 +928,7 @@ class as_concordance_index_ipcw_scorer(_ScoreOverrideMixin, BaseEstimator):
     tied_tol : float, optional, default: 1e-8
         The tolerance value for considering ties.
         If the absolute difference between risk scores is smaller
-        or equal than `tied_tol`, risk scores are considered tied.´
+        or equal than `tied_tol`, risk scores are considered tied.
 
     Attributes
     ----------
@@ -993,7 +995,7 @@ class as_integrated_brier_score_scorer(_ScoreOverrideMixin, BaseEstimator):
         predict_func = getattr(self.estimator_, self._predict_func)
         surv_fns = predict_func(X)
         times = self.times
-        estimates = numpy.empty((len(surv_fns), len(times)))
+        estimates = np.empty((len(surv_fns), len(times)))
         for i, fn in enumerate(surv_fns):
             estimates[i, :] = fn(times)
         return estimates

@@ -16,6 +16,7 @@ from pathlib import Path
 import pkgutil
 
 from numpy.testing import assert_almost_equal, assert_array_equal
+import pytest
 
 import sksurv
 from sksurv.base import SurvivalAnalysisMixin
@@ -48,3 +49,13 @@ def all_survival_estimators():
                 continue
             all_classes.append(cls)
     return set(all_classes)
+
+
+class FixtureParameterFactory:
+    def get_cases(self):
+        cases = []
+        for name, func in inspect.getmembers(self):
+            if name.startswith("data_"):
+                values = func()
+                cases.append(pytest.param(*values, id=name))
+        return cases

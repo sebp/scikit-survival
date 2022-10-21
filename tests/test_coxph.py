@@ -1,8 +1,8 @@
 import warnings
 
-import numpy
+import numpy as np
 from numpy.testing import assert_array_almost_equal
-import pandas
+import pandas as pd
 import pytest
 from scipy.optimize import check_grad
 from sklearn.exceptions import ConvergenceWarning
@@ -17,24 +17,28 @@ from sksurv.preprocessing import OneHotEncoder
 
 @pytest.fixture()
 def coef_rossi_coxph_breslow():
-    return pandas.Series({"fin": -0.37902189,
-                          "age": -0.05724593,
-                          "race": 0.31412977,
-                          "wexp": -0.15111460,
-                          "mar": -0.43278257,
-                          "paro": -0.08498284,
-                          "prio": 0.09111154})
+    return pd.Series({
+        "fin": -0.37902189,
+        "age": -0.05724593,
+        "race": 0.31412977,
+        "wexp": -0.15111460,
+        "mar": -0.43278257,
+        "paro": -0.08498284,
+        "prio": 0.09111154,
+    })
 
 
 @pytest.fixture()
 def coef_rossi_coxph_efron():
-    return pandas.Series({"fin": -0.379422166485887,
-                          "age": -0.0574377426840626,
-                          "race": 0.313899787842507,
-                          "wexp": -0.149795697666534,
-                          "mar": -0.433703877937307,
-                          "paro": -0.0848710825003959,
-                          "prio": 0.0914970809852961})
+    return pd.Series({
+        "fin": -0.379422166485887,
+        "age": -0.0574377426840626,
+        "race": 0.313899787842507,
+        "wexp": -0.149795697666534,
+        "mar": -0.433703877937307,
+        "paro": -0.0848710825003959,
+        "prio": 0.0914970809852961,
+    })
 
 
 def assert_gradient_correctness(cph):
@@ -42,7 +46,7 @@ def assert_gradient_correctness(cph):
         cph.update(x)
         return cph.gradient
 
-    rnd = numpy.random.RandomState(9)
+    rnd = np.random.RandomState(9)
     coef = rnd.randn(cph.x.shape[1])
 
     err = check_grad(cph.nlog_likelihood,
@@ -54,12 +58,13 @@ def assert_gradient_correctness(cph):
 
 @pytest.fixture(params=["predict_cumulative_hazard_function", "predict_survival_function"])
 def rossi_predict_fn_result(request):
-    expected_x = numpy.array(
-        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30,
-            31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 42, 43, 44, 45, 46, 47, 48, 49, 50, 52])
+    expected_x = np.array([
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30,
+        31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 42, 43, 44, 45, 46, 47, 48, 49, 50, 52,
+    ])
 
     if request.param == "predict_cumulative_hazard_function":
-        expected_y = numpy.array([
+        expected_y = np.array([
             [0.00254216942097877, 0.00509187800740175, 0.00764340145273802, 0.010200092514897, 0.0127648376374983,
              0.0153402755947446, 0.0179299039244832, 0.0308995730701458, 0.0361610878212277, 0.0387993124614275,
              0.0441265357092526, 0.0495590825867252, 0.0522816985007711, 0.0604840458543902, 0.0660233973945142,
@@ -112,7 +117,7 @@ def rossi_predict_fn_result(request):
              0.170573078070673, 0.18064872418408, 0.186779528601685, 0.195087298030326]
         ])
     elif request.param == "predict_survival_function":
-        expected_y = numpy.array([
+        expected_y = np.array([
             [0.997461059155262, 0.994921063628358, 0.992385735058868, 0.989851752006058, 0.987316287353143,
              0.984776787077271, 0.982229880405155, 0.969572939420418, 0.964484914195169, 0.961943739897691,
              0.956832876286024, 0.95164893059497, 0.949061479987368, 0.941308786676055, 0.936108961524705,
@@ -170,12 +175,12 @@ def rossi_predict_fn_result(request):
 
 def assert_increasing(x):
     # check that values increase
-    assert (numpy.diff(x) > 0).all()
+    assert (np.diff(x) > 0).all()
 
 
 def assert_decreasing(x):
     # check that values decrease
-    assert (numpy.diff(x) < 0).all()
+    assert (np.diff(x) < 0).all()
 
 
 class TestCoxPH:
@@ -183,7 +188,7 @@ class TestCoxPH:
     @staticmethod
     def test_likelihood_breslow(rossi, coef_rossi_coxph_breslow):
         cph = CoxPHOptimizer(rossi.x.values, rossi.y['arrest'], rossi.y['week'],
-                             alpha=numpy.zeros(rossi.x.shape[1]),
+                             alpha=np.zeros(rossi.x.shape[1]),
                              ties="breslow")
 
         w = coef_rossi_coxph_breslow.loc[rossi.x.columns].values
@@ -195,7 +200,7 @@ class TestCoxPH:
     @staticmethod
     def test_gradient_breslow(rossi):
         cph = CoxPHOptimizer(rossi.x.values, rossi.y['arrest'], rossi.y['week'],
-                             alpha=numpy.zeros(rossi.x.shape[1]),
+                             alpha=np.zeros(rossi.x.shape[1]),
                              ties="breslow")
 
         assert_gradient_correctness(cph)
@@ -205,14 +210,14 @@ class TestCoxPH:
         cph = CoxPHSurvivalAnalysis()
         cph.fit(rossi.x.values, rossi.y)
 
-        actual = pandas.Series(cph.coef_, index=rossi.x.columns)
+        actual = pd.Series(cph.coef_, index=rossi.x.columns)
         assert_array_almost_equal(coef_rossi_coxph_breslow.values,
                                   actual.loc[coef_rossi_coxph_breslow.index].values)
 
     @staticmethod
     def test_likelihood_efron(rossi, coef_rossi_coxph_efron):
         cph = CoxPHOptimizer(rossi.x.values, rossi.y['arrest'], rossi.y['week'],
-                             alpha=numpy.zeros(rossi.x.shape[1]),
+                             alpha=np.zeros(rossi.x.shape[1]),
                              ties="efron")
 
         w = coef_rossi_coxph_efron.loc[rossi.x.columns].values
@@ -224,7 +229,7 @@ class TestCoxPH:
     @staticmethod
     def test_gradient_efron(rossi):
         cph = CoxPHOptimizer(rossi.x.values.astype(float), rossi.y['arrest'], rossi.y['week'],
-                             alpha=numpy.zeros(rossi.x.shape[1]), ties="efron")
+                             alpha=np.zeros(rossi.x.shape[1]), ties="efron")
 
         assert_gradient_correctness(cph)
 
@@ -233,7 +238,7 @@ class TestCoxPH:
         cph = CoxPHSurvivalAnalysis(ties="efron")
         cph.fit(rossi.x.values, rossi.y)
 
-        actual = pandas.Series(cph.coef_, index=rossi.x.columns)
+        actual = pd.Series(cph.coef_, index=rossi.x.columns)
         assert_array_almost_equal(coef_rossi_coxph_efron.values,
                                   actual.loc[coef_rossi_coxph_efron.index].values)
 
@@ -243,12 +248,14 @@ class TestCoxPH:
         xc = standardize(rossi.x, with_std=False)
         cph.fit(xc.values, rossi.y)
 
-        expected = numpy.array([-0.136002823953217, -1.13104636905577, 0.741965816026403, -0.98072115186145,
-                                -0.600098931134794, -0.997407014712788, -0.0993800739865776, -0.266761246895696,
-                                -0.665145743277517, -0.418747210463951, -0.0770761787926419, 0.411385264707043,
-                                -0.0770761787926419, 0.563114305747799, -1.07096133044073])
+        expected = np.array([
+            -0.136002823953217, -1.13104636905577, 0.741965816026403, -0.98072115186145,
+            -0.600098931134794, -0.997407014712788, -0.0993800739865776, -0.266761246895696,
+            -0.665145743277517, -0.418747210463951, -0.0770761787926419, 0.411385264707043,
+            -0.0770761787926419, 0.563114305747799, -1.07096133044073,
+        ])
 
-        idx = numpy.array([15, 77, 79, 90, 113, 122, 134, 172, 213, 219, 257, 313, 364, 395, 409])
+        idx = np.array([15, 77, 79, 90, 113, 122, 134, 172, 213, 219, 257, 313, 364, 395, 409])
 
         pred = cph.predict(xc.iloc[idx, :].values)
 
@@ -261,15 +268,17 @@ class TestCoxPH:
         cph = CoxPHSurvivalAnalysis(alpha=1.0)
         cph.fit(rossi.x.values, rossi.y)
 
-        expected = pandas.Series({'fin': -0.36366779384675196,
-                                  'age': -0.057788417088377418,
-                                  'race': 0.28960521422300672,
-                                  'wexp': -0.15082851149160476,
-                                  'mar': -0.3829568076550468,
-                                  'paro': -0.08230383874483703,
-                                  'prio': 0.090951189830228568})
+        expected = pd.Series({
+            'fin': -0.36366779384675196,
+            'age': -0.057788417088377418,
+            'race': 0.28960521422300672,
+            'wexp': -0.15082851149160476,
+            'mar': -0.3829568076550468,
+            'paro': -0.08230383874483703,
+            'prio': 0.090951189830228568,
+        })
 
-        actual = pandas.Series(cph.coef_, index=rossi.x.columns)
+        actual = pd.Series(cph.coef_, index=rossi.x.columns)
         assert_array_almost_equal(expected.values,
                                   actual.loc[expected.index].values)
 
@@ -280,15 +289,17 @@ class TestCoxPH:
         cph = CoxPHSurvivalAnalysis(alpha=19.67)
         cph.fit(rossi.x.values, rossi.y)
 
-        expected = pandas.Series({'fin': -0.21145000,
-                                  'age': -0.06223214,
-                                  'race': 0.11957591,
-                                  'wexp': -0.10694088,
-                                  'mar': -0.13696844,
-                                  'paro': -0.04929119,
-                                  'prio': 0.09029133})
+        expected = pd.Series({
+            'fin': -0.21145000,
+            'age': -0.06223214,
+            'race': 0.11957591,
+            'wexp': -0.10694088,
+            'mar': -0.13696844,
+            'paro': -0.04929119,
+            'prio': 0.09029133,
+        })
 
-        actual = pandas.Series(cph.coef_, index=rossi.x.columns)
+        actual = pd.Series(cph.coef_, index=rossi.x.columns)
         assert_array_almost_equal(expected.values,
                                   actual.loc[expected.index].values)
 
@@ -299,7 +310,7 @@ class TestCoxPH:
         X = X.loc[included, :]
         y = y[included.values]
 
-        X["grade"] = pandas.Series(pandas.Categorical(
+        X["grade"] = pd.Series(pd.Categorical(
             X["grade"].astype(object),
             categories=["intermediate", "poorly differentiated",
                         "well differentiated"]),
@@ -310,18 +321,18 @@ class TestCoxPH:
 
         cols_unpen = ['age', 'size', 'grade=poorly differentiated',
                       'grade=well differentiated', 'er=positive']
-        X = pandas.concat((
+        X = pd.concat((
             X.loc[:, cols_unpen],
             X.drop(cols_unpen, axis=1)),
             axis=1)
 
-        alphas = numpy.ones(X.shape[1])
+        alphas = np.ones(X.shape[1])
         alphas[:len(cols_unpen)] = 0.0
 
         cph = CoxPHSurvivalAnalysis(alpha=alphas)
         cph.fit(X, y)
 
-        coef = numpy.array([
+        coef = np.array([
             -0.0228825990482334, 0.635554486750423, -0.242079636336473,
             -1.30197563647684, -2.27790151300312,
             0.291950212930807, 0.210861165049552, -0.612456645638769, -0.453414844486013, -0.1239424190253,
@@ -357,13 +368,13 @@ class TestCoxPH:
 
     @staticmethod
     def test_alpha_array(rossi):
-        cph = CoxPHSurvivalAnalysis(alpha=numpy.array([], dtype=float))
+        cph = CoxPHSurvivalAnalysis(alpha=np.array([], dtype=float))
 
         with pytest.raises(ValueError,
                            match=r"Length alphas \(0\) must match number of features \(7\)"):
             cph.fit(rossi.x.values, rossi.y)
 
-        alphas = numpy.empty(rossi.x.shape[1], dtype=str)
+        alphas = np.empty(rossi.x.shape[1], dtype=str)
         alphas[:] = "failure"
         cph.set_params(alpha=alphas)
         with pytest.raises(
@@ -372,7 +383,7 @@ class TestCoxPH:
         ):
             cph.fit(rossi.x.values, rossi.y)
 
-        alphas = numpy.random.randn(rossi.x.shape[1], 3, 4)
+        alphas = np.random.randn(rossi.x.shape[1], 3, 4)
         cph.set_params(alpha=alphas)
         with pytest.raises(
             ValueError,
@@ -380,7 +391,7 @@ class TestCoxPH:
         ):
             cph.fit(rossi.x.values, rossi.y)
 
-        alphas = numpy.ones(rossi.x.shape[1])
+        alphas = np.ones(rossi.x.shape[1])
         alphas[-2] = -1e-4
         cph.set_params(alpha=alphas)
         with pytest.raises(ValueError, match=r"alpha must be positive, but was"):
@@ -420,22 +431,24 @@ class TestCoxPH:
         cph = CoxPHSurvivalAnalysis()
         cph.fit(rossi.x.values, rossi.y)
 
-        expected_x = numpy.array(
-            [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30,
-             31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 42, 43, 44, 45, 46, 47, 48, 49, 50, 52])
+        expected_x = np.array([
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30,
+            31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 42, 43, 44, 45, 46, 47, 48, 49, 50, 52,
+        ])
         assert_array_almost_equal(cph.cum_baseline_hazard_.x, expected_x)
 
-        expected_y = numpy.array(
-            [0.00678640369024364, 0.0135929334270716, 0.0204043079886091, 0.0272294776707967, 0.0340761479284598,
-             0.0409513630548852, 0.0478644598407522, 0.0824874121212009, 0.096533196335404, 0.103576022547612,
-             0.117797217724239, 0.13229957774496, 0.139567689198792, 0.161464121391667, 0.176251599922103,
-             0.191124391501441, 0.213510322480229, 0.236290954886606, 0.251649773106939, 0.290325398473108,
-             0.305965134135433, 0.313818453028679, 0.321716523315376, 0.35335069072333, 0.377266607384033,
-             0.401708829897942, 0.418104688092493, 0.434591703603588, 0.45124335888492, 0.459626329898386,
-             0.476473421812951, 0.493441590730406, 0.510649810315838, 0.54536240502959, 0.571724727186497,
-             0.607219385133454, 0.616212515733231, 0.634272429676232, 0.670563043622984, 0.689028239653618,
-             0.72608698374096, 0.744888154417096, 0.763829951751727, 0.802133842428817, 0.811813515937835,
-             0.831261170527727, 0.880363253205648, 0.910240767958261, 0.950727380604515])
+        expected_y = np.array([
+            0.00678640369024364, 0.0135929334270716, 0.0204043079886091, 0.0272294776707967, 0.0340761479284598,
+            0.0409513630548852, 0.0478644598407522, 0.0824874121212009, 0.096533196335404, 0.103576022547612,
+            0.117797217724239, 0.13229957774496, 0.139567689198792, 0.161464121391667, 0.176251599922103,
+            0.191124391501441, 0.213510322480229, 0.236290954886606, 0.251649773106939, 0.290325398473108,
+            0.305965134135433, 0.313818453028679, 0.321716523315376, 0.35335069072333, 0.377266607384033,
+            0.401708829897942, 0.418104688092493, 0.434591703603588, 0.45124335888492, 0.459626329898386,
+            0.476473421812951, 0.493441590730406, 0.510649810315838, 0.54536240502959, 0.571724727186497,
+            0.607219385133454, 0.616212515733231, 0.634272429676232, 0.670563043622984, 0.689028239653618,
+            0.72608698374096, 0.744888154417096, 0.763829951751727, 0.802133842428817, 0.811813515937835,
+            0.831261170527727, 0.880363253205648, 0.910240767958261, 0.950727380604515,
+        ])
 
         actual_y = [cph.cum_baseline_hazard_(v) for v in expected_x]
         assert_increasing(actual_y)

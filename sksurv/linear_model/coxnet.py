@@ -12,7 +12,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import warnings
 
-import numpy
+import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.preprocessing import normalize as f_normalize
@@ -149,26 +149,26 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         self._baseline_models = None
 
     def _pre_fit(self, X, y):
-        X = self._validate_data(X, ensure_min_samples=2, dtype=numpy.float64, copy=self.copy_X)
+        X = self._validate_data(X, ensure_min_samples=2, dtype=np.float64, copy=self.copy_X)
         event, time = check_array_survival(X, y)
         # center feature matrix
-        X_offset = numpy.average(X, axis=0)
+        X_offset = np.average(X, axis=0)
         X -= X_offset
         if self.normalize:
             X, X_scale = f_normalize(X, copy=False, axis=0, return_norm=True)
         else:
-            X_scale = numpy.ones(X.shape[1], dtype=X.dtype)
+            X_scale = np.ones(X.shape[1], dtype=X.dtype)
 
         # sort descending
-        o = numpy.argsort(-time, kind="mergesort")
-        X = numpy.asfortranarray(X[o, :])
-        event_num = event[o].astype(numpy.uint8)
-        time = time[o].astype(numpy.float64)
+        o = np.argsort(-time, kind="mergesort")
+        X = np.asfortranarray(X[o, :])
+        event_num = event[o].astype(np.uint8)
+        time = time[o].astype(np.float64)
         return X, event_num, time, X_offset, X_scale
 
     def _check_penalty_factor(self, n_features):
         if self.penalty_factor is None:
-            penalty_factor = numpy.ones(n_features, dtype=numpy.float64)
+            penalty_factor = np.ones(n_features, dtype=np.float64)
         else:
             pf = column_or_1d(self.penalty_factor, warn=True)
             if pf.shape[0] != n_features:
@@ -185,7 +185,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
             if self.n_alphas <= 0:
                 raise ValueError("n_alphas must be a positive integer")
 
-            alphas = numpy.empty(int(self.n_alphas), dtype=numpy.float64)
+            alphas = np.empty(int(self.n_alphas), dtype=np.float64)
         else:
             alphas = column_or_1d(self.alphas, warn=True)
             assert_all_finite(alphas, input_name="alphas")
@@ -204,7 +204,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
                                  "Allowed string values are 'auto'.")
         else:
             alpha_min_ratio = float(self.alpha_min_ratio)
-            if alpha_min_ratio <= 0 or not numpy.isfinite(alpha_min_ratio):
+            if alpha_min_ratio <= 0 or not np.isfinite(alpha_min_ratio):
                 raise ValueError("alpha_min_ratio must be positive")
         return alpha_min_ratio
 
@@ -224,7 +224,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         alpha_min_ratio = self._check_alpha_min_ratio(n_samples, n_features)
 
-        return create_path, alphas.astype(numpy.float64), penalty_factor.astype(numpy.float64), alpha_min_ratio
+        return create_path, alphas.astype(np.float64), penalty_factor.astype(np.float64), alpha_min_ratio
 
     def fit(self, X, y):
         """Fit estimator.
@@ -250,9 +250,9 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
             X, time, event_num, penalty, alphas, create_path,
             alpha_min_ratio, self.l1_ratio, int(self.max_iter),
             self.tol, self.verbose)
-        assert numpy.isfinite(coef).all()
+        assert np.isfinite(coef).all()
 
-        if numpy.all(numpy.absolute(coef) < numpy.finfo(float).eps):
+        if np.all(np.absolute(coef) < np.finfo(float).eps):
             warnings.warn('all coefficients are zero, consider decreasing alpha.',
                           stacklevel=2)
 
@@ -263,10 +263,10 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
                           category=ConvergenceWarning,
                           stacklevel=2)
 
-        coef /= X_scale[:, numpy.newaxis]
+        coef /= X_scale[:, np.newaxis]
 
         if self.fit_baseline_model:
-            predictions = numpy.dot(X, coef)
+            predictions = np.dot(X, coef)
             self._baseline_models = tuple(
                 BreslowEstimator().fit(predictions[:, i], event_num, time)
                 for i in range(coef.shape[1])
@@ -279,7 +279,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         self.penalty_factor_ = penalty
         self.coef_ = coef
         self.deviance_ratio_ = deviance_ratio
-        self.offset_ = numpy.dot(X_offset, coef)
+        self.offset_ = np.dot(X_offset, coef)
         return self
 
     def _get_coef(self, alpha):
@@ -299,7 +299,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         for i, val in enumerate(self.alphas_):
             if val > alpha:
                 coef_idx = i
-            elif alpha - val < numpy.finfo(float).eps:
+            elif alpha - val < np.finfo(float).eps:
                 coef_idx = i
                 exact = True
                 break
@@ -340,7 +340,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         """
         X = self._validate_data(X, reset=False)
         coef, offset = self._get_coef(alpha)
-        return numpy.dot(X, coef) - offset
+        return np.dot(X, coef) - offset
 
     def _get_baseline_model(self, alpha):
         check_is_fitted(self, "coef_")
@@ -350,9 +350,9 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         if alpha is None:
             baseline_model = self._baseline_models[-1]
         else:
-            is_close = numpy.isclose(alpha, self.alphas_)
+            is_close = np.isclose(alpha, self.alphas_)
             if is_close.any():
-                idx = numpy.flatnonzero(is_close)[0]
+                idx = np.flatnonzero(is_close)[0]
                 baseline_model = self._baseline_models[idx]
             else:
                 raise ValueError('alpha must be one value of alphas_: %s' % self.alphas_)

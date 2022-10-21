@@ -1,6 +1,6 @@
-import numpy
+import numpy as np
 from numpy.testing import assert_array_equal
-import pandas
+import pandas as pd
 import pytest
 
 from sksurv.datasets import load_whas500
@@ -20,11 +20,11 @@ def test_pandas_inputs(estimator_cls):
         estimator.set_params(kernel="rbf")
     estimator.fit(X_df, y)
     assert hasattr(estimator, "feature_names_in_")
-    assert_array_equal(estimator.feature_names_in_, numpy.asarray(X_df.columns, dtype=object))
+    assert_array_equal(estimator.feature_names_in_, np.asarray(X_df.columns, dtype=object))
     estimator.predict(X_df)
 
     msg = "The feature names should match those that were passed"
-    X_bad = pandas.DataFrame(X_np, columns=X_df.columns.tolist()[::-1])
+    X_bad = pd.DataFrame(X_np, columns=X_df.columns.tolist()[::-1])
     with pytest.warns(FutureWarning, match=msg):
         estimator.predict(X_bad)
 

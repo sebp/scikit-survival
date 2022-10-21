@@ -1,6 +1,6 @@
-import numpy
+import numpy as np
 from numpy.testing import assert_array_almost_equal
-import pandas
+import pandas as pd
 import pytest
 from sklearn.base import clone
 from sklearn.metrics.pairwise import pairwise_kernels
@@ -9,29 +9,37 @@ from sksurv.kernels import ClinicalKernelTransform, clinical_kernel
 
 
 def _get_expected_matrix(with_ordinal=True, with_nominal=True, with_continuous=True):
-    mat_age = numpy.array([[1., 0.9625, 0.925, 0.575, 0.],
-                           [0.9625, 1., 0.9625, 0.6125, 0.0375],
-                           [0.925, 0.9625, 1., 0.6500, 0.075],
-                           [0.575, 0.6125, 0.6500, 1., 0.425],
-                           [0., 0.0375, 0.075, 0.425, 1.]])
+    mat_age = np.array([
+        [1., 0.9625, 0.925, 0.575, 0.],
+        [0.9625, 1., 0.9625, 0.6125, 0.0375],
+        [0.925, 0.9625, 1., 0.6500, 0.075],
+        [0.575, 0.6125, 0.6500, 1., 0.425],
+        [0., 0.0375, 0.075, 0.425, 1.],
+    ])
 
-    mat_node_size = numpy.array([[1., 2/3, 2/3, 1/3, 2/3],
-                                [2/3, 1., 1/3, 0., 1.],
-                                [2/3, 1/3, 1., 2/3, 1/3],
-                                [1/3, 0., 2/3, 1., 0.],
-                                [2/3, 1., 1/3, 0., 1.]])
+    mat_node_size = np.array([
+        [1., 2/3, 2/3, 1/3, 2/3],
+        [2/3, 1., 1/3, 0., 1.],
+        [2/3, 1/3, 1., 2/3, 1/3],
+        [1/3, 0., 2/3, 1., 0.],
+        [2/3, 1., 1/3, 0., 1.],
+    ])
 
-    mat_node_spread = numpy.array([[1., 0., 1., 0.5, 0.],
-                                   [0., 1., 0., 0.5, 1.],
-                                   [1., 0., 1., 0.5, 0.],
-                                   [0.5, 0.5, 0.5, 1., 0.5],
-                                   [0., 1., 0., 0.5, 1.]])
+    mat_node_spread = np.array([
+        [1., 0., 1., 0.5, 0.],
+        [0., 1., 0., 0.5, 1.],
+        [1., 0., 1., 0.5, 0.],
+        [0.5, 0.5, 0.5, 1., 0.5],
+        [0., 1., 0., 0.5, 1.],
+    ])
 
-    mat_metastasis = numpy.array([[1, 0, 1, 1, 0],
-                                  [0, 1, 0, 0, 1],
-                                  [1, 0, 1, 1, 0],
-                                  [1, 0, 1, 1, 0],
-                                  [0, 1, 0, 0, 1]], dtype=float)
+    mat_metastasis = np.array([
+        [1, 0, 1, 1, 0],
+        [0, 1, 0, 0, 1],
+        [1, 0, 1, 1, 0],
+        [1, 0, 1, 1, 0],
+        [0, 1, 0, 0, 1],
+    ], dtype=float)
 
     included = []
     if with_continuous:
@@ -52,10 +60,12 @@ def _get_expected_matrix(with_ordinal=True, with_nominal=True, with_continuous=T
 
 @pytest.fixture()
 def make_data():
-    data = {'age': [20, 23, 26, 54, 100],
-            'lymph node size': [2, 1, 3, 4, 1],
-            'lymph node spread': ['distant', 'none', 'distant', 'close', 'none'],
-            'metastasis': ['yes', 'no', 'yes', 'yes', 'no']}
+    data = {
+        'age': [20, 23, 26, 54, 100],
+        'lymph node size': [2, 1, 3, 4, 1],
+        'lymph node spread': ['distant', 'none', 'distant', 'close', 'none'],
+        'metastasis': ['yes', 'no', 'yes', 'yes', 'no'],
+    }
 
     def _make_data(with_ordinal=True, with_nominal=True, with_continuous=True):
         data_s = {}
@@ -63,22 +73,22 @@ def make_data():
             data_s['age'] = data['age']
 
         if with_ordinal:
-            data_s['lymph node size'] = pandas.Categorical(data['lymph node size'],
-                                                           categories=[1, 2, 3, 4],
-                                                           ordered=True)
-            data_s['lymph node spread'] = pandas.Categorical(data['lymph node spread'],
-                                                             categories=['none', 'close', 'distant'],
-                                                             ordered=True)
+            data_s['lymph node size'] = pd.Categorical(
+                data['lymph node size'], categories=[1, 2, 3, 4], ordered=True
+            )
+            data_s['lymph node spread'] = pd.Categorical(
+                data['lymph node spread'], categories=['none', 'close', 'distant'], ordered=True
+            )
         if with_nominal:
-            data_s['metastasis'] = pandas.Categorical(data['metastasis'],
-                                                      categories=['no', 'yes'],
-                                                      ordered=False)
+            data_s['metastasis'] = pd.Categorical(
+                data['metastasis'], categories=['no', 'yes'], ordered=False
+            )
         expected = _get_expected_matrix(
             with_ordinal=with_ordinal,
             with_nominal=with_nominal,
             with_continuous=with_continuous)
 
-        return pandas.DataFrame(data_s), expected
+        return pd.DataFrame(data_s), expected
 
     return _make_data
 
@@ -129,10 +139,10 @@ class TestClinicalKernel:
         t = ClinicalKernelTransform()
 
         with pytest.raises(ValueError, match="expected 2d array, but got 1"):
-            t.fit(numpy.random.randn(31))
+            t.fit(np.random.randn(31))
 
         with pytest.raises(ValueError, match="expected 2d array, but got 3"):
-            t.fit(numpy.random.randn(31, 20, 2))
+            t.fit(np.random.randn(31, 20, 2))
 
     @staticmethod
     def test_kernel_transform(make_data):
@@ -140,7 +150,7 @@ class TestClinicalKernel:
         t = ClinicalKernelTransform()
 
         t.fit(data)
-        df_test = pandas.DataFrame(t.X_fit_, columns=data.columns)
+        df_test = pd.DataFrame(t.X_fit_, columns=data.columns)
         mat = t.transform(df_test)
 
         assert_array_almost_equal(expected, mat, 4)
@@ -165,7 +175,7 @@ class TestClinicalKernel:
         t = ClinicalKernelTransform()
         t.fit(data)
 
-        array_test = numpy.zeros((2, 17), dtype=float)
+        array_test = np.zeros((2, 17), dtype=float)
 
         error_msg = r"X has 17 features, but ClinicalKernelTransform is expecting 4 features as input\."
         warn_msg = "X does not have valid feature names, but ClinicalKernelTransform was fitted with feature names"
@@ -178,8 +188,8 @@ class TestClinicalKernel:
         t = ClinicalKernelTransform()
         t.fit(data)
 
-        df_test = pandas.DataFrame(
-            numpy.zeros((2, data.shape[1] + 1), dtype=float), columns=data.columns.tolist() + ["XYZ"]
+        df_test = pd.DataFrame(
+            np.zeros((2, data.shape[1] + 1), dtype=float), columns=data.columns.tolist() + ["XYZ"]
         )
 
         error_msg = r"X has 5 features, but ClinicalKernelTransform is expecting 4 features as input\."
@@ -259,7 +269,7 @@ class TestClinicalKernel:
 
         with pytest.raises(ValueError, match=r'Incompatible dimension for X and Y matrices: '
                                              r'X.shape\[1\] == 4 while Y.shape\[1\] == 17'):
-            pairwise_kernels(t.X_fit_, numpy.zeros((2, 17), dtype=float),
+            pairwise_kernels(t.X_fit_, np.zeros((2, 17), dtype=float),
                              metric=t.pairwise_kernel, n_jobs=1)
 
     @staticmethod
@@ -291,10 +301,13 @@ class TestClinicalKernel:
     @staticmethod
     def test_prepare_error_dtype():
         t = ClinicalKernelTransform(fit_once=True)
-        data = pandas.DataFrame({"age": [12, 61, 18, 21, 57, 17],
-                                 "date": numpy.array(
-                                     ["2016-01-01", "1954-06-30", "1999-03-01", "2005-02-25", "2112-12-31",
-                                      "1731-09-16"], dtype='datetime64')})
+        data = pd.DataFrame.from_dict({
+            "age": [12, 61, 18, 21, 57, 17],
+            "date": np.array(
+                ["2016-01-01", "1954-06-30", "1999-03-01", "2005-02-25", "2112-12-31", "1731-09-16"],
+                dtype='datetime64',
+            )
+        })
 
         with pytest.raises(TypeError, match=r'unsupported dtype: dtype\(.+\)'):
             t.prepare(data)
@@ -307,6 +320,6 @@ class TestClinicalKernel:
         with pytest.raises(ValueError, match='columns do not match'):
             clinical_kernel(x, y)
 
-        y = numpy.zeros((10, 17))
+        y = np.zeros((10, 17))
         with pytest.raises(ValueError, match='x and y have different number of features'):
             clinical_kernel(x, y)

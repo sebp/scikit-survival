@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 import pytest
 from scipy import sparse
@@ -30,8 +30,8 @@ def test_fit_predict(make_whas500, forest_cls, expected_c):
     assert len(forest.estimators_) == 100
 
     pred = forest.predict(whas500.x)
-    assert numpy.isfinite(pred).all()
-    assert numpy.all(pred >= 0)
+    assert np.isfinite(pred).all()
+    assert np.all(pred >= 0)
 
     assert_cindex_almost_equal(
         whas500.y["fstat"], whas500.y["lenfol"], pred, expected_c)
@@ -41,8 +41,9 @@ def test_fit_predict(make_whas500, forest_cls, expected_c):
 def test_fit_int_time(make_whas500, forest_cls):
     whas500 = make_whas500(to_numeric=True)
     y = whas500.y
-    y_int = numpy.empty(y.shape[0],
-                        dtype=[(y.dtype.names[0], bool), (y.dtype.names[1], int)])
+    y_int = np.empty(
+        y.shape[0], dtype=[(y.dtype.names[0], bool), (y.dtype.names[1], int)]
+    )
     y_int[:] = y
 
     forest_f = forest_cls(oob_score=True, random_state=2).fit(whas500.x[50:], y[50:])
@@ -71,14 +72,14 @@ def test_fit_predict_chf(make_whas500, forest_cls):
     chf = forest.predict_cumulative_hazard_function(whas500.x, return_array=True)
     assert chf.shape == (500, forest.event_times_.shape[0])
 
-    assert numpy.isfinite(chf).all()
-    assert numpy.all(chf >= 0.0)
+    assert np.isfinite(chf).all()
+    assert np.all(chf >= 0.0)
 
-    vals, counts = numpy.unique(chf[:, 0], return_counts=True)
+    vals, counts = np.unique(chf[:, 0], return_counts=True)
     assert vals[0] == 0.0
-    assert numpy.max(counts) == counts[0]
+    assert np.max(counts) == counts[0]
 
-    d = numpy.apply_along_axis(numpy.diff, 1, chf)
+    d = np.apply_along_axis(np.diff, 1, chf)
     assert (d >= 0).all()
 
 
@@ -94,15 +95,15 @@ def test_fit_predict_surv(make_whas500, forest_cls):
     surv = forest.predict_survival_function(whas500.x, return_array=True)
     assert surv.shape == (500, forest.event_times_.shape[0])
 
-    assert numpy.isfinite(surv).all()
-    assert numpy.all(surv >= 0.0)
-    assert numpy.all(surv <= 1.0)
+    assert np.isfinite(surv).all()
+    assert np.all(surv >= 0.0)
+    assert np.all(surv <= 1.0)
 
-    vals, counts = numpy.unique(surv[:, 0], return_counts=True)
+    vals, counts = np.unique(surv[:, 0], return_counts=True)
     assert vals[-1] == 1.0
-    assert numpy.max(counts) == counts[-1]
+    assert np.max(counts) == counts[-1]
 
-    d = numpy.apply_along_axis(numpy.diff, 1, surv)
+    d = np.apply_along_axis(np.diff, 1, surv)
     assert (d <= 0).all()
 
 
@@ -246,14 +247,14 @@ def test_pipeline_predict(breast_cancer, forest_cls, func):
       r"`max_samples` must be in range \(0\.0, 1\.0] but got value 2.0"),
      (0.0, ValueError,
       r"`max_samples` must be in range \(0\.0, 1\.0] but got value 0.0"),
-     (numpy.nan, ValueError,
+     (np.nan, ValueError,
       r"`max_samples` must be in range \(0\.0, 1\.0] but got value nan"),
-     (numpy.inf, ValueError,
+     (np.inf, ValueError,
       r"`max_samples` must be in range \(0\.0, 1\.0] but got value inf"),
      ('str max_samples?!', TypeError,
       r"`max_samples` should be int or float, but got "
       r"type '\<class 'str'\>'"),
-     (numpy.ones(2), TypeError,
+     (np.ones(2), TypeError,
       r"`max_samples` should be int or float, but got type "
       r"'\<class 'numpy.ndarray'\>'")]
 )
@@ -305,7 +306,7 @@ def test_predict_sparse(make_whas500, forest_cls):
     seed = 42
     whas500 = make_whas500(to_numeric=True)
     X, y = whas500.x, whas500.y
-    X = numpy.random.RandomState(seed).binomial(n=5, p=.1, size=X.shape)
+    X = np.random.RandomState(seed).binomial(n=5, p=.1, size=X.shape)
 
     X_train, X_test, y_train, _ = train_test_split(X, y, random_state=seed)
 

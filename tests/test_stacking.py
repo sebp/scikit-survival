@@ -1,6 +1,6 @@
-import numpy
+import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_array_equal
-import pandas
+import pandas as pd
 import pytest
 from sklearn.base import BaseEstimator
 from sklearn.datasets import load_iris
@@ -34,8 +34,8 @@ class _PredictDummy(BaseEstimator):
 
 @pytest.fixture()
 def dummy_data():
-    X = numpy.zeros((3, 2))
-    y = numpy.zeros(3)
+    X = np.zeros((3, 2))
+    y = np.zeros(3)
     return X, y
 
 
@@ -113,7 +113,7 @@ class TestStackingClassifier:
     def test_fit_sample_weights(iris_data_with_estimator):
         x, y, meta = iris_data_with_estimator(solver="liblinear", multi_class="ovr")
 
-        sample_weight = numpy.random.RandomState(0).uniform(size=x.shape[0])
+        sample_weight = np.random.RandomState(0).uniform(size=x.shape[0])
         meta.fit(x, y, tree__sample_weight=sample_weight, svm__sample_weight=sample_weight)
 
     @staticmethod
@@ -157,16 +157,16 @@ class TestStackingClassifier:
         meta.fit(x, y)
         p = getattr(meta, method)(x)
 
-        scores = numpy.empty(3)
+        scores = np.empty(3)
         for i, c in enumerate(meta.meta_estimator.classes_):
-            scores[i] = roc_auc_score(numpy.asarray(y == c, dtype=int), p[:, i])
+            scores[i] = roc_auc_score(np.asarray(y == c, dtype=int), p[:, i])
 
-        assert_array_almost_equal(numpy.array([1.0, 0.9986, 0.9986]), scores)
+        assert_array_almost_equal(np.array([1.0, 0.9986, 0.9986]), scores)
 
     @staticmethod
     def test_feature_names_in():
         data = load_iris()
-        x = pandas.DataFrame(data["data"], columns=data["feature_names"])
+        x = pd.DataFrame(data["data"], columns=data["feature_names"])
         y = data["target"]
 
         meta = Stacking(
@@ -220,10 +220,11 @@ class TestStackingSurvivalAnalysis:
 
     @staticmethod
     def test_predict_proba():
-        meta = Stacking(_PredictDummy(),
-                        [('coxph', CoxPHSurvivalAnalysis()),
-                         ('svm', FastSurvivalSVM(random_state=0))],
-                        probabilities=False)
+        meta = Stacking(
+            _PredictDummy(),
+            [('coxph', CoxPHSurvivalAnalysis()), ('svm', FastSurvivalSVM(random_state=0))],
+            probabilities=False
+        )
 
         with pytest.raises(AttributeError,
                            match="'_PredictDummy' object has no attribute 'predict_proba'"):

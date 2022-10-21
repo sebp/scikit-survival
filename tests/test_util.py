@@ -1,377 +1,380 @@
 from collections import OrderedDict
+from contextlib import nullcontext as does_not_raise
 
-import numpy
+import numpy as np
 from numpy.testing import assert_array_equal
-import pandas
+import pandas as pd
 import pandas.testing as tm
 import pytest
 
+from sksurv.testing import FixtureParameterFactory
 from sksurv.util import Surv, safe_concat
 
 
-class TestUtil:
-    @staticmethod
-    def test_concat_numeric():
-        rnd = numpy.random.RandomState(14)
-        a = pandas.Series(rnd.randn(100), name="col_A")
-        b = pandas.Series(rnd.randn(100), name="col_B")
+class ConcatCasesFactory(FixtureParameterFactory):
+    @property
+    def rnd(self):
+        return np.random.RandomState(14)
 
-        expected_df = pandas.DataFrame.from_dict(OrderedDict(
-            [(a.name, a), (b.name, b)]
-        ))
+    def to_data_frame(self, data):
+        return pd.DataFrame.from_dict(OrderedDict(data))
 
-        actual_df = safe_concat((a, b), axis=1)
+    def make_numeric_series(self, name):
+        return pd.Series(self.rnd.randn(100), name=name)
 
-        tm.assert_frame_equal(actual_df, expected_df)
+    def make_categorical_5_series(self, name):
+        return pd.Series(
+            pd.Categorical.from_codes(
+                self.rnd.binomial(4, 0.6, 100), ["C1", "C2", "C3", "C4", "C5"]
+            ), name=name
+        )
 
-    @staticmethod
-    def test_concat_numeric_categorical():
-        rnd = numpy.random.RandomState(14)
-        a = pandas.Series(rnd.randn(100), name="col_A")
-        b = pandas.Series(pandas.Categorical.from_codes(
-            rnd.binomial(4, 0.6, 100), ["C1", "C2", "C3", "C4", "C5"]), name="col_B")
+    def make_categorical_4_series(self, name):
+        return pd.Series(
+            pd.Categorical.from_codes(
+                self.rnd.binomial(3, 0.6, 100), ["C1", "C2", "C3", "C4"]
+            ), name=name
+        )
 
-        expected_df = pandas.DataFrame.from_dict(OrderedDict(
-            [(a.name, a), (b.name, b)]
-        ))
+    def make_categorical_3_series(self, name):
+        return pd.Series(
+            pd.Categorical.from_codes(
+                self.rnd.binomial(2, 0.6, 100), ["C1", "C2", "C3"]
+            ), name=name
+        )
 
-        actual_df = safe_concat((a, b), axis=1)
+    def make_binary_series(self, name):
+        return pd.Series(
+            pd.Categorical.from_codes(
+                self.rnd.binomial(1, 0.6, 100), ["Yes", "No"]
+            ), name=name
+        )
 
-        tm.assert_frame_equal(actual_df, expected_df)
 
-    @staticmethod
-    def test_concat_categorical():
-        rnd = numpy.random.RandomState(14)
-        a = pandas.DataFrame.from_dict(OrderedDict([
-            ("col_A", pandas.Series(pandas.Categorical.from_codes(
-                rnd.binomial(2, 0.6, 100), ["C1", "C2", "C3"]), name="col_A")),
-            ("col_B", rnd.randn(100))]))
-        b = pandas.DataFrame.from_dict(OrderedDict([
-            ("col_A", pandas.Series(pandas.Categorical.from_codes(
-                rnd.binomial(2, 0.2, 100), ["C1", "C2", "C3"]), name="col_A")),
-            ("col_B", rnd.randn(100))]))
+class ConcatCasesAxes1(ConcatCasesFactory):
+    def data_numeric(self):
+        a = self.make_numeric_series("col_A")
+        b = self.make_numeric_series("col_B")
 
-        expected_series = pandas.DataFrame.from_dict(OrderedDict([
-            ("col_A", pandas.Series(pandas.Categorical.from_codes(
-                numpy.r_[a.col_A.cat.codes.values, b.col_A.cat.codes.values],
-                ["C1", "C2", "C3"]
-            ))),
-            ("col_B", numpy.r_[a.col_B.values, b.col_B.values])
-        ]))
-        expected_series.index = pandas.Index(a.index.tolist() + b.index.tolist())
+        expected = [(a.name, a), (b.name, b)]
+        return (a, b), self.to_data_frame(expected), does_not_raise()
 
-        actual_series = safe_concat((a, b), axis=0)
+    def data_numeric_categorical(self):
+        a = self.make_numeric_series("col_A")
+        b = self.make_categorical_5_series("col_B")
 
-        tm.assert_frame_equal(actual_series, expected_series)
+        expected = [(a.name, a), (b.name, b)]
+        return (a, b), self.to_data_frame(expected), does_not_raise()
 
-    @staticmethod
-    def test_concat_categorical_mismatch():
-        rnd = numpy.random.RandomState(14)
-        a = pandas.DataFrame.from_dict(OrderedDict([
-            ("col_A", pandas.Series(pandas.Categorical.from_codes(
-                rnd.binomial(2, 0.6, 100), ["C1", "C2", "C3"]), name="col_A")),
-            ("col_B", rnd.randn(100))]))
-        b = pandas.DataFrame.from_dict(OrderedDict([
-            ("col_A", pandas.Series(pandas.Categorical.from_codes(
-                rnd.binomial(3, 0.6, 100), ["C1", "C2", "C3", "C4"]), name="col_A")),
-            ("col_B", rnd.randn(100))]))
+    def data_frame_numeric_categorical(self):
+        numeric_df = self.to_data_frame([
+            ("col_A", self.make_numeric_series("col_A")),
+            ("col_B", self.make_categorical_5_series("col_B")),
+        ])
 
-        with pytest.raises(ValueError, match="categories for column col_A do not match"):
-            safe_concat((a, b), axis=0)
-
-    @staticmethod
-    def test_concat_dataframe_numeric_categorical():
-        rnd = numpy.random.RandomState(14)
-        numeric_df = pandas.DataFrame.from_dict(OrderedDict(
-            [("col_A", rnd.randn(100)), ("col_B", rnd.randn(100))]
-        ))
-
-        cat_series = pandas.Series(pandas.Categorical.from_codes(
-            rnd.binomial(4, 0.6, 100), ["C1", "C2", "C3", "C4", "C5"]), name="col_C")
+        cat_series = self.make_categorical_5_series("col_C")
 
         expected_df = numeric_df.copy()
-        expected_df["col_C"] = cat_series
+        expected_df.loc[:, "col_C"] = cat_series
+        return (numeric_df, cat_series), expected_df, does_not_raise()
 
-        actual_df = safe_concat((numeric_df, cat_series), axis=1)
+    def data_duplicate_columns(self):
+        numeric_df = self.to_data_frame([
+            ("col_N", self.make_numeric_series("col_N")),
+            ("col_B", self.make_categorical_5_series("col_B")),
+            ("col_A", self.make_categorical_5_series("col_A")),
+        ])
 
+        cat_df = pd.DataFrame.from_dict(OrderedDict([
+            ("col_A", self.make_categorical_5_series("col_A")),
+            ("col_C", self.make_binary_series("col_C")),
+        ]))
+
+        err = pytest.raises(ValueError, match="duplicate columns col_A")
+        return (numeric_df, cat_df), None, err
+
+
+class ConcatCasesAxes0(ConcatCasesFactory):
+    def data_categorical(self):
+        a = self.to_data_frame([
+            ("col_A", self.make_categorical_3_series("col_A")),
+            ("col_B", self.make_numeric_series("col_B")),
+        ])
+        b = self.to_data_frame([
+            ("col_A", self.make_categorical_3_series("col_A")),
+            ("col_B", self.make_numeric_series("col_B"))
+        ])
+
+        expected = [
+            ("col_A", pd.Series(pd.Categorical.from_codes(
+                np.r_[a.col_A.cat.codes.values, b.col_A.cat.codes.values],
+                ["C1", "C2", "C3"]
+            ))),
+            ("col_B", np.r_[a.col_B.values, b.col_B.values])
+        ]
+        expected_df = self.to_data_frame(expected)
+        expected_df.index = pd.Index(a.index.tolist() + b.index.tolist())
+
+        return (a, b), expected_df, does_not_raise()
+
+    def data_categorical_mismatch(self):
+        a = self.to_data_frame([
+            ("col_A", self.make_categorical_3_series("col_A")),
+            ("col_B", self.make_numeric_series("col_B")),
+        ])
+        b = self.to_data_frame([
+            ("col_A", self.make_categorical_4_series("col_A")),
+            ("col_B", self.make_numeric_series("col_B")),
+        ])
+
+        err = pytest.raises(ValueError, match="categories for column col_A do not match")
+        return (a, b), None, err
+
+
+@pytest.mark.parametrize("inputs,expected_df,expected_error", ConcatCasesAxes1().get_cases())
+def test_concat_axis_1(inputs, expected_df, expected_error):
+    with expected_error:
+        actual_df = safe_concat(inputs, axis=1)
+
+    if expected_df is not None:
         tm.assert_frame_equal(actual_df, expected_df)
 
-    @staticmethod
-    def test_concat_duplicate_columns():
-        rnd = numpy.random.RandomState(14)
-        numeric_df = pandas.DataFrame.from_dict(OrderedDict([
-            ("col_N", rnd.randn(100)), ("col_B", rnd.randn(100)),
-            ("col_A", pandas.Series(pandas.Categorical.from_codes(
-                rnd.binomial(4, 0.2, 100), ["C1", "C2", "C3", "C4", "C5"]), name="col_A")),
-        ]))
 
-        cat_df = pandas.DataFrame.from_dict(OrderedDict([
-            ("col_A", pandas.Series(pandas.Categorical.from_codes(
-                rnd.binomial(4, 0.6, 100), ["C1", "C2", "C3", "C4", "C5"]), name="col_A")),
-            ("col_C", pandas.Series(pandas.Categorical.from_codes(
-                rnd.binomial(1, 0.6, 100), ["Yes", "No"]), name="col_C")),
-        ]))
+@pytest.mark.parametrize("inputs,expected_df,expected_error", ConcatCasesAxes0().get_cases())
+def test_concat_axis_0(inputs, expected_df, expected_error):
+    with expected_error:
+        actual_df = safe_concat(inputs, axis=0)
 
-        with pytest.raises(ValueError, match="duplicate columns col_A"):
-            safe_concat((numeric_df, cat_df), axis=1)
+    if expected_df is not None:
+        tm.assert_frame_equal(actual_df, expected_df)
 
 
-@pytest.fixture()
-def surv_arrays():
-    event = numpy.random.binomial(1, 0.5, size=100)
-    time = numpy.exp(numpy.random.randn(100))
-    return event, time
+class SurvCases(FixtureParameterFactory):
+    @property
+    def event_and_time(self):
+        event = np.random.binomial(1, 0.5, size=100)
+        time = np.exp(np.random.randn(100))
+        return event, time
 
 
-@pytest.fixture()
-def surv_data_frame():
-    df = pandas.DataFrame({'event': numpy.random.binomial(1, 0.5, size=100),
-                           'time': numpy.exp(numpy.random.randn(100))})
-    return df
+class SurvArrayCases(SurvCases):
+    def get_surv_arrays(self, event_name='event', time_name='time'):
+        event, time = self.event_and_time
 
+        expected = np.empty(dtype=[(event_name, bool), (time_name, float)], shape=event.shape[0])
+        expected[event_name] = event.astype(bool)
+        expected[time_name] = time
 
-class TestSurv:
+        return (event, time), expected
 
-    @staticmethod
-    def test_from_list(surv_arrays):
-        event, time = surv_arrays
+    def data_list(self):
+        (event, time), expected = self.get_surv_arrays()
 
-        expected = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
-        expected['event'] = event.astype(bool)
-        expected['time'] = time
+        inputs = (list(event.astype(bool)), list(time))
+        return inputs, {}, expected, does_not_raise()
 
-        y = Surv.from_arrays(list(event.astype(bool)), list(time))
-        assert_array_equal(y, expected)
+    def data_bool(self):
+        (event, time), expected = self.get_surv_arrays()
 
-    @staticmethod
-    def test_from_array_bool(surv_arrays):
-        event, time = surv_arrays
+        inputs = (event.astype(bool), time)
+        return inputs, {}, expected, does_not_raise()
 
-        expected = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
-        expected['event'] = event.astype(bool)
-        expected['time'] = time
+    def data_with_names(self):
+        (event, time), expected = self.get_surv_arrays('death', 'survival_time')
 
-        y = Surv.from_arrays(event.astype(bool), time)
-        assert_array_equal(y, expected)
+        inputs = (event.astype(bool), time)
+        kwargs = {'name_time': 'survival_time', 'name_event': 'death'}
+        return inputs, kwargs, expected, does_not_raise()
 
-    @staticmethod
-    def test_from_array_with_names(surv_arrays):
-        event, time = surv_arrays
+    def data_with_one_name_1(self):
+        (event, time), expected = self.get_surv_arrays('death')
 
-        expected = numpy.empty(dtype=[('death', bool), ('survival_time', float)], shape=100)
-        expected['death'] = event.astype(bool)
-        expected['survival_time'] = time
+        inputs = (event.astype(bool), time)
+        kwargs = {'name_event': 'death'}
+        return inputs, kwargs, expected, does_not_raise()
 
-        y = Surv.from_arrays(event.astype(bool), time, name_time='survival_time', name_event='death')
-        assert_array_equal(y, expected)
+    def data_with_one_name_2(self):
+        (event, time), expected = self.get_surv_arrays('event', 'survival_time')
 
-    @staticmethod
-    def test_from_array_with_one_name_1(surv_arrays):
-        event, time = surv_arrays
+        inputs = (event.astype(bool), time)
+        kwargs = {'name_time': 'survival_time'}
+        return inputs, kwargs, expected, does_not_raise()
 
-        expected = numpy.empty(dtype=[('death', bool), ('time', float)], shape=100)
-        expected['death'] = event.astype(bool)
-        expected['time'] = time
+    def data_array_int_event(self):
+        inputs, expected = self.get_surv_arrays()
 
-        y = Surv.from_arrays(event.astype(bool), time, name_event='death')
-        assert_array_equal(y, expected)
+        return inputs, {}, expected, does_not_raise()
 
-    @staticmethod
-    def test_from_array_with_one_name_2(surv_arrays):
-        event, time = surv_arrays
-
-        expected = numpy.empty(dtype=[('event', bool), ('survival_time', float)], shape=100)
-        expected['event'] = event.astype(bool)
-        expected['survival_time'] = time
-
-        y = Surv.from_arrays(event.astype(bool), time, name_time='survival_time')
-        assert_array_equal(y, expected)
-
-    @staticmethod
-    def test_from_array_int_event(surv_arrays):
-        event, time = surv_arrays
-
-        expected = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
-        expected['event'] = event.astype(bool)
-        expected['time'] = time
-
-        y = Surv.from_arrays(event, time)
-        assert_array_equal(y, expected)
-
-    @staticmethod
-    def test_from_array_int_time(surv_arrays):
-        event, time = surv_arrays
+    def data_int_time(self):
+        event, time = self.event_and_time
         time += 1
         time *= time
 
-        expected = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
+        expected = np.empty(dtype=[('event', bool), ('time', float)], shape=event.shape[0])
         expected['event'] = event.astype(bool)
         expected['time'] = time.astype(int)
 
-        y = Surv.from_arrays(event.astype(bool), time.astype(int))
-        assert_array_equal(y, expected)
+        inputs = (event.astype(bool), time.astype(int))
+        return inputs, {}, expected, does_not_raise()
 
-    @staticmethod
-    def test_from_array_float(surv_arrays):
-        event, time = surv_arrays
+    def data_float(self):
+        (event, time), expected = self.get_surv_arrays()
 
-        expected = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
-        expected['event'] = event.astype(bool)
-        expected['time'] = time
+        inputs = (event.astype(float), time)
+        return inputs, {}, expected, does_not_raise()
 
-        y = Surv.from_arrays(event.astype(float), time)
-        assert_array_equal(y, expected)
-
-    @staticmethod
-    def test_from_array_shape_mismatch(surv_arrays):
-        event, time = surv_arrays
+    def data_shape_mismatch_0(self):
+        event, time = self.event_and_time
 
         msg = "Found input variables with inconsistent numbers of samples"
-        with pytest.raises(ValueError, match=msg):
-            Surv.from_arrays(event[1:], time)
+        err = pytest.raises(ValueError, match=msg)
+        inputs = (event[1:], time)
+        return inputs, {}, None, err
 
-        with pytest.raises(ValueError, match=msg):
-            Surv.from_arrays(event, time[1:])
+    def data_shape_mismatch_1(self):
+        event, time = self.event_and_time
+        msg = "Found input variables with inconsistent numbers of samples"
+        err = pytest.raises(ValueError, match=msg)
+        inputs = (event, time[1:])
+        return inputs, {}, None, err
 
-    @staticmethod
-    def test_from_array_event_value_wrong_1(surv_arrays):
-        event, time = surv_arrays
+    def data_event_value_wrong_1(self):
+        event, time = self.event_and_time
         event += 1
 
-        with pytest.raises(ValueError,
-                           match="non-boolean event indicator must contain 0 and 1 only"):
-            Surv.from_arrays(event, time)
+        err = pytest.raises(
+            ValueError, match="non-boolean event indicator must contain 0 and 1 only"
+        )
+        return (event, time), {}, None, err
 
-    @staticmethod
-    def test_from_array_event_value_wrong_2(surv_arrays):
-        event, time = surv_arrays
+    def data_event_value_wrong_2(self):
+        event, time = self.event_and_time
         event -= 1
 
-        with pytest.raises(ValueError,
-                           match="non-boolean event indicator must contain 0 and 1 only"):
-            Surv.from_arrays(event, time)
+        err = pytest.raises(
+            ValueError, match="non-boolean event indicator must contain 0 and 1 only"
+        )
+        return (event, time), {}, None, err
 
-    @staticmethod
-    def test_from_array_event_value_wrong_3(surv_arrays):
-        event, time = surv_arrays
+    def data_event_value_wrong_3(self):
+        event, time = self.event_and_time
         event[event == 0] = 3
 
-        with pytest.raises(ValueError,
-                           match="non-boolean event indicator must contain 0 and 1 only"):
-            Surv.from_arrays(event, time)
+        err = pytest.raises(
+            ValueError, match="non-boolean event indicator must contain 0 and 1 only"
+        )
 
-    @staticmethod
-    def test_from_array_event_value_wrong_4(surv_arrays):
-        event, time = surv_arrays
+        return (event, time), {}, None, err
+
+    def data_event_value_wrong_4(self):
+        event, time = self.event_and_time
         event[1] = 3
 
-        with pytest.raises(ValueError,
-                           match="event indicator must be binary"):
-            Surv.from_arrays(event, time)
+        err = pytest.raises(ValueError, match="event indicator must be binary")
+        return (event, time), {}, None, err
 
-    @staticmethod
-    def test_from_array_event_value_wrong_5(surv_arrays):
-        event, time = surv_arrays
-        event = numpy.arange(event.shape[0])
+    def data_event_value_wrong_5(self):
+        event, time = self.event_and_time
+        event = np.arange(event.shape[0])
 
-        with pytest.raises(ValueError,
-                           match="event indicator must be binary"):
-            Surv.from_arrays(event, time)
+        err = pytest.raises(ValueError, match="event indicator must be binary")
+        return (event, time), {}, None, err
 
-    @staticmethod
-    def test_from_array_names_match(surv_arrays):
-        event, time = surv_arrays
+    def data_names_match(self):
+        event, time = self.event_and_time
 
-        with pytest.raises(ValueError,
-                           match="name_time must be different from name_event"):
-            Surv.from_arrays(event, time,
-                             name_event='time_and_event', name_time='time_and_event')
+        err = pytest.raises(
+            ValueError, match="name_time must be different from name_event"
+        )
+        kwargs = {'name_event': 'time_and_event', 'name_time': 'time_and_event'}
+        return (event, time), kwargs, None, err
 
-    @staticmethod
-    def test_from_dataframe_bool(surv_data_frame):
-        data = surv_data_frame
+
+@pytest.mark.parametrize("args,kwargs,expected,expected_error", SurvArrayCases().get_cases())
+def test_from_arrays(args, kwargs, expected, expected_error):
+    with expected_error:
+        y = Surv.from_arrays(*args, **kwargs)
+
+    if expected is not None:
+        assert_array_equal(y, expected)
+
+
+class SurvDataFrameCases(SurvCases):
+    def get_surv_data_frame(self, event_name='event', time_name='time'):
+        event, time = self.event_and_time
+        df = pd.DataFrame({event_name: event, time_name: time})
+
+        expected = np.empty(dtype=[(str(event_name), bool), (str(time_name), float)], shape=100)
+        expected[str(event_name)] = event.astype(bool)
+        expected[str(time_name)] = time
+
+        return df, expected
+
+    def data_bool(self):
+        data, expected = self.get_surv_data_frame()
         data['event'] = data['event'].astype(bool)
 
-        expected = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
-        expected['event'] = data['event']
-        expected['time'] = data['time']
+        inputs = ('event', 'time', data)
+        return inputs, expected, does_not_raise()
 
-        y = Surv.from_dataframe('event', 'time', data)
-        assert_array_equal(y, expected)
+    def data_int(self):
+        data, expected = self.get_surv_data_frame()
+        inputs = ('event', 'time', data)
+        return inputs, expected, does_not_raise()
 
-    @staticmethod
-    def test_from_dataframe_int(surv_data_frame):
-        data = surv_data_frame
-
-        expected = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
-        expected['event'] = data['event'].astype(bool)
-        expected['time'] = data['time']
-
-        y = Surv.from_dataframe('event', 'time', data)
-        assert_array_equal(y, expected)
-
-    @staticmethod
-    def test_from_dataframe_float(surv_data_frame):
-        data = surv_data_frame
+    def data_float(self):
+        data, expected = self.get_surv_data_frame()
         data['event'] = data['event'].astype(float)
+        inputs = ('event', 'time', data)
+        return inputs, expected, does_not_raise()
 
-        expected = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
-        expected['event'] = data['event'].astype(bool)
-        expected['time'] = data['time']
+    def data_no_str_columns(self):
+        data, expected = self.get_surv_data_frame(event_name=0, time_name=1)
+        inputs = (0, 1, data)
+        return inputs, expected, does_not_raise()
 
-        y = Surv.from_dataframe('event', 'time', data)
+    def data_column_names(self):
+        data, expected = self.get_surv_data_frame(event_name='death', time_name='time_to_death')
+        inputs = ('death', 'time_to_death', data)
+        return inputs, expected, does_not_raise()
+
+    def data_no_such_column_0(self):
+        data, _ = self.get_surv_data_frame()
+
+        err = pytest.raises(KeyError, match='unknown')
+        inputs = ('unknown', 'time', data)
+        return inputs, None, err
+
+    def data_no_such_column_1(self):
+        data, _ = self.get_surv_data_frame()
+
+        err = pytest.raises(KeyError, match='unknown')
+        inputs = ('event', 'unknown', data)
+        return inputs, None, err
+
+    def data_wrong_class_0(self):
+        data, _ = self.get_surv_data_frame()
+
+        err = pytest.raises(
+            TypeError, match=r"exepected pandas.DataFrame, but got <class 'dict'>"
+        )
+        inputs = ('event', 'time', data.to_dict())
+        return inputs, None, err
+
+    def data_wrong_class_1(self):
+        data, _ = self.get_surv_data_frame()
+
+        err = pytest.raises(
+            TypeError, match=r"exepected pandas.DataFrame, but got <class 'numpy.ndarray'>"
+        )
+        inputs = ('event', 'time', data.values)
+        return inputs, None, err
+
+
+@pytest.mark.parametrize("args,expected,expected_error", SurvDataFrameCases().get_cases())
+def test_from_dataframe(args, expected, expected_error):
+    with expected_error:
+        y = Surv.from_dataframe(*args)
+
+    if expected is not None:
         assert_array_equal(y, expected)
-
-    @staticmethod
-    def test_from_dataframe_no_str_columns(surv_data_frame):
-        data = surv_data_frame
-        data['event'] = data['event'].astype(bool)
-
-        expected = numpy.empty(dtype=[('0', bool), ('1', float)], shape=100)
-        expected['0'] = data['event']
-        expected['1'] = data['time']
-
-        y = Surv.from_dataframe(0, 1, data.rename(columns={'event': 0, 'time': 1}))
-        assert_array_equal(y, expected)
-
-    @staticmethod
-    def test_from_dataframe_column_names(surv_data_frame):
-        data = surv_data_frame.rename(columns={'event': 'death', 'time': 'time_to_death'})
-        data['death'] = data['death'].astype(bool)
-
-        expected = numpy.empty(dtype=[('death', bool), ('time_to_death', float)], shape=100)
-        expected['death'] = data['death']
-        expected['time_to_death'] = data['time_to_death']
-
-        y = Surv.from_dataframe('death', 'time_to_death', data)
-        assert_array_equal(y, expected)
-
-    @staticmethod
-    def test_from_dataframe_no_such_column(surv_data_frame):
-        data = surv_data_frame
-        data['event'] = data['event'].astype(bool)
-
-        expected = numpy.empty(dtype=[('event', bool), ('time', float)], shape=100)
-        expected['event'] = data['event']
-        expected['time'] = data['time']
-
-        match = 'unknown'
-        with pytest.raises(KeyError,
-                           match=match):
-            Surv.from_dataframe('unknown', 'time', data)
-
-        with pytest.raises(KeyError,
-                           match=match):
-            Surv.from_dataframe('event', 'unknown', data)
-
-    @staticmethod
-    def test_from_dataframe_wrong_class(surv_data_frame):
-        data = surv_data_frame
-
-        with pytest.raises(TypeError,
-                           match=r"exepected pandas.DataFrame, but got <class 'dict'>"):
-            Surv.from_dataframe('event', 'time', data.to_dict())
-
-        with pytest.raises(TypeError,
-                           match=r"exepected pandas.DataFrame, but got <class 'numpy.ndarray'>"):
-            Surv.from_dataframe('event', 'time', data.values)

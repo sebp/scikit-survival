@@ -10,7 +10,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import numpy
+import numpy as np
 from sklearn.linear_model import Ridge
 
 from ..base import SurvivalAnalysisMixin
@@ -88,7 +88,7 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
         event, time = check_array_survival(X, y)
 
         weights = ipc_weights(event, time)
-        super().fit(X, numpy.log(time), sample_weight=weights)
+        super().fit(X, np.log(time), sample_weight=weights)
 
         return self
 
@@ -105,7 +105,7 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
         C : array, shape = (n_samples,)
             Returns predicted values on original scale (NOT log scale).
         """
-        return numpy.exp(super().predict(X))
+        return np.exp(super().predict(X))
 
     def score(self, X, y, sample_weight=None):
         return SurvivalAnalysisMixin.score(self, X, y)
