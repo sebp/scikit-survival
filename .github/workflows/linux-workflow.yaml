@@ -33,9 +33,9 @@ jobs:
           echo "NUMPY_VERSION=${NUMPY_VERSION}" >> $GITHUB_ENV
           echo "SKLEARN_VERSION=${SKLEARN_VERSION}" >> $GITHUB_ENV
           echo "NO_SLOW=${NO_SLOW}" >> $GITHUB_ENV
-          echo "::set-output name=py_version::$(cut -d'.' -f 1-2 <<< ${CONDA_PYTHON_VERSION})"
-          echo "::set-output name=requirements::ci/deps/${{ matrix.config }}.sh"
-          echo "::set-output name=conda_pkgs::$(${CONDA}/bin/python -c "from conda.base.context import context; print(context.pkgs_dirs[0])")"
+          echo "py_version=$(cut -d'.' -f 1-2 <<< ${CONDA_PYTHON_VERSION})" >> $GITHUB_OUTPUT
+          echo "requirements=ci/deps/${{ matrix.config }}.sh" >> $GITHUB_OUTPUT
+          echo "conda_pkgs=$(${CONDA}/bin/python -c "from conda.base.context import context; print(context.pkgs_dirs[0])")" >> $GITHUB_OUTPUT
       - name: Cache downloaded packages
         uses: actions/cache@v3
         with:

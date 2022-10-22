@@ -26,11 +26,11 @@ jobs:
         shell: bash
         run: |
           if [ ${{ runner.os }} = 'Linux' ]; then
-            echo "::set-output name=build_platform::manylinux"
+            echo "build_platform=manylinux" >> $GITHUB_OUTPUT
           elif [ ${{ runner.os }} = 'macOS' ]; then
-            echo "::set-output name=build_platform::macosx"
+            echo "build_platform=macosx" >> $GITHUB_OUTPUT
           elif [ ${{ runner.os }} = 'Windows' ]; then
-            echo "::set-output name=build_platform::win_amd64"
+            echo "build_platform=win_amd64" >> $GITHUB_OUTPUT
           fi
 
       - name: Build wheels
