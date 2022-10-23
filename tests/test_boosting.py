@@ -110,11 +110,13 @@ class TestGradientBoosting:
             model.predict(np.random.randn(10, 2))
 
     def test_fit_subsample(self):
-        incl_mask = np.ones(500, dtype=bool)
-        incl_mask[[35, 111, 174, 206, 236, 268, 497]] = False
+        rnd = np.random.RandomState(500)
+        idx = rnd.choice(np.arange(500, dtype=int), size=125, replace=False)
+        incl_mask = np.zeros(500, dtype=bool)
+        incl_mask[idx] = True
 
         model = self.assert_fit_and_predict(
-            expected_cindex=(0.7050663861873019, 51616, 21591, 1, 14),
+            expected_cindex=(0.7746478873239436, 3245, 944, 0, 1),
             mask_test=incl_mask,
             n_estimators=50, max_features=8, subsample=0.6,
         )
