@@ -1,6 +1,29 @@
 Release Notes
 =============
 
+scikit-survival 0.19.0 (2022-10-23)
+-----------------------------------
+
+This release adds :meth:`sksurv.tree.SurvivalTree.apply` and
+:meth:`sksurv.tree.SurvivalTree.decision_path`, and support
+for sparse matrices to :class:`sksurv.tree.SurvivalTree`.
+Moreover, it fixes build issues with scikit-learn 1.1.2
+and on macOS with ARM64 CPU.
+
+Bug fixes
+^^^^^^^^^
+- Fix build issue with scikit-learn 1.1.2, which is binary-incompatible with
+  previous releases from the 1.1 series.
+- Fix build from source on macOS with ARM64 by specifying numpy 1.21.0 as install
+  requirement for that platform (:issue:`313`).
+
+Enhancements
+^^^^^^^^^^^^
+- :class:`sksurv.tree.SurvivalTree`: Add :meth:`sksurv.tree.SurvivalTree.apply` and
+  :meth:`sksurv.tree.SurvivalTree.decision_path` (:issue:`290`).
+- :class:`sksurv.tree.SurvivalTree`: Add support for sparse matrices (:issue:`290`).
+
+
 scikit-survival 0.18.0 (2022-08-15)
 -----------------------------------
 
