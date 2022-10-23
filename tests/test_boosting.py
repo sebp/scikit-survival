@@ -110,18 +110,26 @@ class TestGradientBoosting:
             model.predict(np.random.randn(10, 2))
 
     def test_fit_subsample(self):
-        rnd = np.random.RandomState(500)
-        idx = rnd.choice(np.arange(500, dtype=int), size=50, replace=False)
+        idx = np.array([
+            229, 337, 327, 416, 306, 131, 5, 431, 434, 134, 276, 264, 34, 274, 489,
+            11, 378, 467, 425, 241, 93, 310, 189, 277, 138, 332, 313, 59, 212, 171,
+            375, 85, 266, 36, 272, 287, 185, 338, 33, 343, 363, 9, 204, 472, 48,
+            280, 15, 184, 24, 82,
+        ], dtype=int)
         incl_mask = np.zeros(500, dtype=bool)
         incl_mask[idx] = True
 
         model = self.assert_fit_and_predict(
-            expected_cindex=(0.8094900849858357, 571, 134, 1, 0),
+            expected_cindex=(0.7754172989377845, 511, 148, 0, 0),
             mask_test=incl_mask,
-            n_estimators=50, max_features=8, subsample=0.6,
+            n_estimators=50,
+            learning_rate=0.2,
+            min_samples_split=10,
+            max_features=1.0,
+            subsample=0.637,
         )
 
-        assert model.max_features_ == 8
+        assert model.max_features_ == 14
         assert hasattr(model, "oob_improvement_")
 
         assert (50,) == model.train_score_.shape
