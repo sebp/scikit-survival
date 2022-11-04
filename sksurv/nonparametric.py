@@ -437,23 +437,6 @@ def ipc_weights(event, time):
 class SurvivalFunctionEstimator(BaseEstimator):
     """Kaplan–Meier estimate of the survival function.
 
-    Examples
-    --------
-    Creating a Kaplan-Meier curve with confidence interval:
-    >>> Surv = SurvivalFunctionEstimator()
-    >>> Surv = Surv.fit(y)
-    >>> fig, ax = plt.subplots()
-    >>> ax.step(self.unique_time_, self.prob_)
-    >>> ax.fill_between(
-    >>>    self.unique_time_,
-    >>>    self.prob_ + np.sqrt(self.var_est_),
-    >>>    self.prob_ - np.sqrt(self.var_est_),
-    >>>    facecolor="blue",
-    >>>    alpha=0.5,
-    >>>    step="pre",
-    >>> )
-    >>> plt.xlabel("time t")
-    >>> plt.ylabel("est. probability of survival")
     """
 
     def __init__(self):
@@ -526,12 +509,12 @@ class SurvivalFunctionEstimator(BaseEstimator):
         return Shat
 
     def estimator_variance(self, time):
-        """Return the Greenwood's estimate of the variance the KM estimator at given time points.
+        """Return the Greenwood's estimate of the variance of the KM estimator at given time points.
 
         Parameters
         ----------
         time : array, shape = (n_samples,)
-            Time to estimate probability at.
+            Time to estimate estimator variance at.
 
         Returns
         -------
@@ -550,8 +533,8 @@ class SurvivalFunctionEstimator(BaseEstimator):
             )
 
         # beyond last time point is zero probability
-        Var = np.empty(time.shape, dtype=float)
-        Var[extends] = 0.0
+        var = np.empty(time.shape, dtype=float)
+        var[extends] = 0.0
 
         valid = ~extends
         time = time[valid]
@@ -560,9 +543,9 @@ class SurvivalFunctionEstimator(BaseEstimator):
         eps = np.finfo(self.unique_time_.dtype).eps
         exact = np.absolute(self.unique_time_[idx] - time) < eps
         idx[~exact] -= 1
-        Var[valid] = self.var_est_[idx]
+        var[valid] = self.var_est_[idx]
 
-        return Var
+        return var
 
 
 class CensoringDistributionEstimator(SurvivalFunctionEstimator):
