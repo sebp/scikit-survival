@@ -435,9 +435,7 @@ def ipc_weights(event, time):
 
 
 class SurvivalFunctionEstimator(BaseEstimator):
-    """Kaplan–Meier estimate of the survival function.
-
-    """
+    """Kaplan–Meier estimate of the survival function."""
 
     def __init__(self):
         pass

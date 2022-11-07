@@ -9,8 +9,8 @@ from sksurv.nonparametric import (
     CensoringDistributionEstimator,
     SurvivalFunctionEstimator,
     kaplan_meier_estimator,
-    variance_kaplan_meier_estimator,
     nelson_aalen_estimator,
+    variance_kaplan_meier_estimator,
 )
 from sksurv.testing import FixtureParameterFactory
 from sksurv.util import Surv
