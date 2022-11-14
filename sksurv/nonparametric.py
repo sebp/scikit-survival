@@ -12,11 +12,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 from sklearn.base import BaseEstimator
-from sklearn.utils.validation import (
-    check_array,
-    check_consistent_length,
-    check_is_fitted,
-)
+from sklearn.utils.validation import check_array, check_consistent_length, check_is_fitted
 
 from .util import check_y_survival
 
@@ -162,9 +158,8 @@ def _compute_counts_truncated(event, time_enter, time_exit):
         while idx_exit < n_samples and s_time_exit[idx_exit] < ti:
             idx_exit += 1
 
-        risk_set = np.setdiff1d(
-            order_enter[:idx_enter], order_exit[:idx_exit], assume_unique=True
-        )
+        risk_set = np.setdiff1d(order_enter[:idx_enter], order_exit[:idx_exit], assume_unique=True)
+
         total_counts[i] = len(risk_set)
 
         count_event = 0
@@ -178,9 +173,7 @@ def _compute_counts_truncated(event, time_enter, time_exit):
     return uniq_times, event_counts, total_counts
 
 
-def kaplan_meier_estimator(
-    event, time_exit, time_enter=None, time_min=None, reverse=False
-):
+def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None, reverse=False):
     """Kaplan-Meier estimator of survival function.
 
     See [1]_ for further description.
@@ -231,9 +224,8 @@ def kaplan_meier_estimator(
     .. [1] Kaplan, E. L. and Meier, P., "Nonparametric estimation from incomplete observations",
            Journal of The American Statistical Association, vol. 53, pp. 457-481, 1958.
     """
-    event, time_enter, time_exit = check_y_survival(
-        event, time_enter, time_exit, allow_all_censored=True
-    )
+    event, time_enter, time_exit = check_y_survival(event, time_enter, time_exit, allow_all_censored=True)
+
     check_consistent_length(event, time_enter, time_exit)
 
     if time_enter is None:
@@ -244,18 +236,13 @@ def kaplan_meier_estimator(
             n_events = n_censored
     else:
         if reverse:
-            raise ValueError(
-                "The censoring distribution cannot be estimated from left truncated data"
-            )
+            raise ValueError("The censoring distribution cannot be estimated from left truncated data")
 
-        uniq_times, n_events, n_at_risk = _compute_counts_truncated(
-            event, time_enter, time_exit
-        )
+        uniq_times, n_events, n_at_risk = _compute_counts_truncated(event, time_enter, time_exit)
 
     # account for 0/0 = nan
     ratio = np.divide(
-        n_events,
-        n_at_risk,
+        n_events, n_at_risk,
         out=np.zeros(uniq_times.shape[0], dtype=float),
         where=n_events != 0,
     )
@@ -323,13 +310,9 @@ def variance_kaplan_meier_estimator(
             n_events = n_censored
     else:
         if reverse:
-            raise ValueError(
-                "The censoring distribution cannot be estimated from left truncated data"
-            )
+            raise ValueError("The censoring distribution cannot be estimated from left truncated data")
 
-        uniq_times, n_events, n_at_risk = _compute_counts_truncated(
-            event, time_enter, time_exit
-        )
+        uniq_times, n_events, n_at_risk = _compute_counts_truncated(event, time_enter, time_exit)
 
     # account for 0/0 = nan
     ratio_events = np.divide(
@@ -458,7 +441,7 @@ class SurvivalFunctionEstimator(BaseEstimator):
 
         unique_time, prob = kaplan_meier_estimator(event, time)
         self.unique_time_ = np.r_[-np.infty, unique_time]
-        self.prob_ = np.r_[1.0, prob]
+        self.prob_ = np.r_[1., prob]
 
         var_prob_survival = variance_kaplan_meier_estimator(event, time)
         self.var_est_ = np.r_[0.0, var_prob_survival]
@@ -488,8 +471,7 @@ class SurvivalFunctionEstimator(BaseEstimator):
         if self.prob_[-1] > 0 and extends.any():
             raise ValueError(
                 "time must be smaller than largest "
-                "observed time point: {}".format(self.unique_time_[-1])
-            )
+                "observed time point: {}".format(self.unique_time_[-1]))
 
         # beyond last time point is zero probability
         Shat = np.empty(time.shape, dtype=float)
@@ -570,7 +552,7 @@ class CensoringDistributionEstimator(SurvivalFunctionEstimator):
         else:
             unique_time, prob = kaplan_meier_estimator(event, time, reverse=True)
             self.unique_time_ = np.r_[-np.infty, unique_time]
-            self.prob_ = np.r_[1.0, prob]
+            self.prob_ = np.r_[1., prob]
 
         return self
 
@@ -595,9 +577,7 @@ class CensoringDistributionEstimator(SurvivalFunctionEstimator):
         Ghat = self.predict_proba(time[event])
 
         if (Ghat == 0.0).any():
-            raise ValueError(
-                "censoring survival function is zero at one or more time points"
-            )
+            raise ValueError("censoring survival function is zero at one or more time points")
 
         weights = np.zeros(time.shape[0])
         weights[event] = 1.0 / Ghat
