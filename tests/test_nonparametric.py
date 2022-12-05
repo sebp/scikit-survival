@@ -10,7 +10,6 @@ from sksurv.nonparametric import (
     SurvivalFunctionEstimator,
     kaplan_meier_estimator,
     nelson_aalen_estimator,
-    variance_kaplan_meier_estimator,
 )
 from sksurv.testing import FixtureParameterFactory
 from sksurv.util import Surv
@@ -251,13 +250,18 @@ class TestKaplanMeier:
         assert_array_equal(x, true_x)
         assert_array_almost_equal(y, true_y)
 
+        x, y, var = kaplan_meier_estimator(event, time, with_variance=True)
+        assert_array_equal(x, true_x)
+        assert_array_almost_equal(y, true_y)
+        assert_array_almost_equal(var, km_var)
+
         ys = Surv.from_arrays(event, time)
         est = SurvivalFunctionEstimator().fit(ys)
         assert_array_equal(est.unique_time_[1:], true_x)
         assert_array_almost_equal(est.prob_[1:], true_y)
-        prob = est.predict_proba(true_x)
+        assert_array_almost_equal(est.var_est_[1:], km_var)
+        prob, var = est.predict_proba(true_x, with_variance=True)
         assert_array_almost_equal(prob, true_y)
-        var = est.estimator_variance(true_x)
         assert_array_almost_equal(var, km_var)
 
     @staticmethod
@@ -269,33 +273,18 @@ class TestKaplanMeier:
             ValueError,
             match="dtype='numeric' is not compatible with arrays of bytes/strings"
         ):
-            est.predict_proba(np.array(["should", "not", "work"]))
+            est.predict_proba(np.array(["should", "not", "work"]), with_variance=True)
 
         with pytest.raises(
             ValueError,
             match=r"Found array with dim 3\. SurvivalFunctionEstimator expected <= 2\."
         ):
-            est.predict_proba(np.random.randn(10, 9, 5))
-
-        with pytest.raises(
-            ValueError,
-            match="dtype='numeric' is not compatible with arrays of bytes/strings"
-        ):
-            est.estimator_variance(np.array(["should", "not", "work"]))
-
-        with pytest.raises(
-            ValueError,
-            match=r"Found array with dim 3\. SurvivalFunctionEstimator expected <= 2\."
-        ):
-            est.estimator_variance(np.random.randn(10, 9, 5))
+            est.predict_proba(np.random.randn(10, 9, 5), with_variance=True)
 
     @staticmethod
     def test_truncated_enter_larger_exit_error(truncated_failure_data):
         with pytest.raises(ValueError, match="exit time must be larger start time for all samples"):
-            kaplan_meier_estimator(*truncated_failure_data)
-
-        with pytest.raises(ValueError, match="exit time must be larger start time for all samples"):
-            variance_kaplan_meier_estimator(*truncated_failure_data)
+            kaplan_meier_estimator(*truncated_failure_data, with_variance=True)
 
     @staticmethod
     def test_whas500(make_whas500, whas500_true_x):
@@ -384,9 +373,9 @@ class TestKaplanMeier:
         time = whas500.y['lenfol']
         event = whas500.y['fstat']
 
-        y = variance_kaplan_meier_estimator(event, time)
+        x, y, var = kaplan_meier_estimator(event, time, with_variance=True)
 
-        true_y = np.array(
+        true_var = np.array(
             [3.14880000e-05, 6.19520000e-05, 7.31120000e-05, 8.04720000e-05,
              8.77680000e-05, 1.05728000e-04, 1.26752000e-04, 1.37048000e-04,
              1.50552000e-04, 1.57208000e-04, 1.60512000e-04, 1.67072000e-04,
@@ -487,28 +476,26 @@ class TestKaplanMeier:
              2.19490083e-03, 2.19490083e-03, 2.19490083e-03, 2.19490083e-03,
              1.51916907e-02, 1.44600570e-02, 0.00000000e+00])
 
-        assert_array_almost_equal(y, true_y)
+        assert_array_almost_equal(var, true_var)
 
     @staticmethod
     def test_truncated_male(make_channing, channing_male_true_x):
         time_enter_m, time_exit_m, event_m = make_channing('Male')
 
-        x, y = kaplan_meier_estimator(event_m, time_exit_m, time_enter_m)
+        x, y, km_var = kaplan_meier_estimator(event_m, time_exit_m, time_enter_m, with_variance=True)
 
         assert_array_equal(x, channing_male_true_x)
 
         assert_array_equal(y[:3], np.array([1., 1., .5]))
         assert (y[3:] == 0).all()
 
-        km_var = variance_kaplan_meier_estimator(event_m, time_exit_m, time_enter_m)
         assert_array_equal(km_var[:3], np.array([0., 0., .125]))
 
     @staticmethod
     def test_truncated_male_older_68(make_channing, channing_male_true_x):
         time_enter_m, time_exit_m, event_m = make_channing('Male')
 
-        x, y = kaplan_meier_estimator(event_m, time_exit_m, time_enter_m, time_min=68 * 12)
-        km_var = variance_kaplan_meier_estimator(event_m, time_exit_m, time_enter_m,  time_min=68 * 12)
+        x, y, km_var = kaplan_meier_estimator(event_m, time_exit_m, time_enter_m, time_min=68 * 12, with_variance=True)
 
         x_true = channing_male_true_x[6:]
 
@@ -564,8 +551,7 @@ class TestKaplanMeier:
     def test_truncated_female(make_channing, channing_female_true_x):
         time_enter_f, time_exit_f, event_f = make_channing('Female')
 
-        x, y = kaplan_meier_estimator(event_f, time_exit_f, time_enter_f)
-        km_var = variance_kaplan_meier_estimator(event_f, time_exit_f, time_enter_f)
+        x, y, km_var = kaplan_meier_estimator(event_f, time_exit_f, time_enter_f, with_variance=True)
 
         assert_array_equal(x, channing_female_true_x)
 
@@ -668,8 +654,7 @@ class TestKaplanMeier:
     def test_truncated_female_older_68(make_channing, channing_female_true_x):
         time_enter_f, time_exit_f, event_f = make_channing('Female')
 
-        x, y = kaplan_meier_estimator(event_f, time_exit_f, time_enter_f, time_min=68 * 12)
-        km_var = variance_kaplan_meier_estimator(event_f, time_exit_f, time_enter_f, time_min=68 * 12)
+        x, y, km_var = kaplan_meier_estimator(event_f, time_exit_f, time_enter_f, time_min=68 * 12, with_variance=True)
 
         x_true = channing_female_true_x[30:]
         assert_array_equal(x, x_true)
@@ -766,8 +751,7 @@ class TestKaplanMeier:
     def test_right_truncated_children(make_aids):
         event, time_enter, time_exit = make_aids('children')
 
-        x, y = kaplan_meier_estimator(event, -time_exit.values, -time_enter.values)
-        km_var = variance_kaplan_meier_estimator(event, -time_exit.values, -time_enter.values)
+        x, y, km_var = kaplan_meier_estimator(event, -time_exit.values, -time_enter.values, with_variance=True)
         true_x = np.array([
             0.25, 0.50, 0.75, 1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 2.75, 3.00, 3.25, 3.50, 3.75, 4.00, 4.25, 4.50,
             5, 5.25, 5.50, 5.75, 6.50, 7,
@@ -794,8 +778,7 @@ class TestKaplanMeier:
     def test_right_truncated_adults(make_aids):
         event, time_enter, time_exit = make_aids('adults')
 
-        x, y = kaplan_meier_estimator(event, -time_exit.values, -time_enter.values)
-        km_var = variance_kaplan_meier_estimator(event, -time_exit.values, -time_enter.values)
+        x, y, km_var = kaplan_meier_estimator(event, -time_exit.values, -time_enter.values, with_variance=True)
 
         true_x = np.array([
             0.25, 0.50, 0.75, 1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 2.75, 3.00, 3.25, 3.50, 3.75,
@@ -842,12 +825,6 @@ class TestKaplanMeier:
             match="The censoring distribution cannot be estimated from left truncated data",
         ):
             kaplan_meier_estimator(*truncated_failure_data, reverse=True)
-
-        with pytest.raises(
-            ValueError,
-            match="The censoring distribution cannot be estimated from left truncated data",
-        ):
-            variance_kaplan_meier_estimator(*truncated_failure_data, reverse=True)
 
 
 class TestNelsonAalen:
@@ -952,5 +929,4 @@ class TestNelsonAalen:
             0.819138552293278, 1.15247188562661, 1.65247188562661, 2.65247188562661,
         ])
 
-        assert_array_almost_equal(y, true_y)
         assert_array_almost_equal(y, true_y)

@@ -19,7 +19,6 @@ from .util import check_y_survival
 __all__ = [
     "CensoringDistributionEstimator",
     "kaplan_meier_estimator",
-    "variance_kaplan_meier_estimator",
     "nelson_aalen_estimator",
     "ipc_weights",
     "SurvivalFunctionEstimator",
@@ -173,7 +172,7 @@ def _compute_counts_truncated(event, time_enter, time_exit):
     return uniq_times, event_counts, total_counts
 
 
-def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None, reverse=False):
+def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None, reverse=False, with_variance=False):
     """Kaplan-Meier estimator of survival function.
 
     See [1]_ for further description.
@@ -201,6 +200,10 @@ def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None, rev
         Only available for right-censored data, i.e. `time_enter` must
         be None.
 
+    with_variance : bool, optional, default: False
+        Whether to estimate the variance of the Kaplan-Meier estimator.
+        Only available if reverse=False.
+
     Returns
     -------
     time : array, shape = (n_times,)
@@ -209,6 +212,9 @@ def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None, rev
     prob_survival : array, shape = (n_times,)
         Survival probability at each unique time point.
         If `time_enter` is provided, estimates are conditional probabilities.
+
+    var_prob_survival : array, shape = (n_times,)
+        Variance of the KM estimator at each unique time point, based on Greenwood's formula [2]_.
 
     Examples
     --------
@@ -223,6 +229,8 @@ def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None, rev
     ----------
     .. [1] Kaplan, E. L. and Meier, P., "Nonparametric estimation from incomplete observations",
            Journal of The American Statistical Association, vol. 53, pp. 457-481, 1958.
+    .. [2] Greenwood, Major (1926). A report on the natural duration of cancer.
+           Issue 33 of Reports on public health and medical subjects. HMSO. OCLC 14713088
     """
     event, time_enter, time_exit = check_y_survival(event, time_enter, time_exit, allow_all_censored=True)
 
@@ -248,97 +256,30 @@ def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None, rev
     )
     values = 1.0 - ratio
 
+    if with_variance:
+        if reverse:
+            raise ValueError("The variance of the censoring distribution is not implemented.")
+        ratio_var = np.divide(
+            n_events,
+            n_at_risk * (n_at_risk - n_events),
+            out=np.zeros(uniq_times.shape[0], dtype=float),
+            where=(n_events != 0) & (n_at_risk != n_events),
+        )
+
     if time_min is not None:
         mask = uniq_times >= time_min
         uniq_times = np.compress(mask, uniq_times)
         values = np.compress(mask, values)
 
-    y = np.cumprod(values)
-    return uniq_times, y
+    prob_survival = np.cumprod(values)
 
-
-def variance_kaplan_meier_estimator(
-    event, time_exit, time_enter=None, time_min=None, reverse=False
-):
-    """Variance of the Kaplan-Meier estimator of survival function. Computed using Greenwood's approximation
-
-    See [1]_ for further description.
-
-    Parameters
-    ----------
-    event : array-like, shape = (n_samples,)
-        Contains binary event indicators.
-
-    time_exit : array-like, shape = (n_samples,)
-        Contains event/censoring times.
-
-    time_enter : array-like, shape = (n_samples,), optional
-        Contains time when each individual entered the study for
-        left truncated survival data.
-
-    time_min : float, optional
-        Compute estimator conditional on survival at least up to
-        the specified time.
-
-    reverse : bool, optional, default: False
-        Whether to estimate the censoring distribution.
-        When there are ties between times at which events are observed,
-        then events come first and are subtracted from the denominator.
-        Only available for right-censored data, i.e. `time_enter` must
-        be None.
-
-    Returns
-    -------
-    var_prob_survival : array, shape = (n_times,)
-        Variance of the KM estimator at each unique time point, based on Greenwood's formula [2]_.
-
-    References
-    ----------
-    .. [1] Greenwood, Major (1926). A report on the natural duration of cancer.
-           Issue 33 of Reports on public health and medical subjects. HMSO. OCLC 14713088
-    """
-    event, time_enter, time_exit = check_y_survival(
-        event, time_enter, time_exit, allow_all_censored=True
-    )
-    check_consistent_length(event, time_enter, time_exit)
-
-    if time_enter is None:
-        uniq_times, n_events, n_at_risk, n_censored = _compute_counts(event, time_exit)
-
-        if reverse:
-            n_at_risk -= n_events
-            n_events = n_censored
+    if with_variance:
+        if time_min is not None:
+            ratio_var = np.compress(mask, ratio_var)
+        var_prob_survival = prob_survival**2 * np.cumsum(ratio_var)
+        return uniq_times, prob_survival, var_prob_survival
     else:
-        if reverse:
-            raise ValueError("The censoring distribution cannot be estimated from left truncated data")
-
-        uniq_times, n_events, n_at_risk = _compute_counts_truncated(event, time_enter, time_exit)
-
-    # account for 0/0 = nan
-    ratio_events = np.divide(
-        n_events,
-        n_at_risk,
-        out=np.zeros(uniq_times.shape[0], dtype=float),
-        where=n_events != 0,
-    )
-    values_rem = 1.0 - ratio_events
-
-    ratio_var = np.divide(
-        n_events,
-        n_at_risk * (n_at_risk - n_events),
-        out=np.zeros(uniq_times.shape[0], dtype=float),
-        where=(n_events != 0) & (n_at_risk != n_events),
-    )
-
-    if time_min is not None:
-        mask = uniq_times >= time_min
-        uniq_times = np.compress(mask, uniq_times)
-        values_rem = np.compress(mask, values_rem)
-        ratio_var = np.compress(mask, ratio_var)
-
-    prob_survival = np.cumprod(values_rem)
-    var_prob_survival = prob_survival**2 * np.cumsum(ratio_var)
-    return var_prob_survival
+        return uniq_times, prob_survival
 
 
 def nelson_aalen_estimator(event, time):
@@ -439,16 +380,14 @@ class SurvivalFunctionEstimator(BaseEstimator):
         """
         event, time = check_y_survival(y, allow_all_censored=True)
 
-        unique_time, prob = kaplan_meier_estimator(event, time)
+        unique_time, prob, var_est = kaplan_meier_estimator(event, time, with_variance=True)
         self.unique_time_ = np.r_[-np.infty, unique_time]
         self.prob_ = np.r_[1., prob]
-
-        var_prob_survival = variance_kaplan_meier_estimator(event, time)
-        self.var_est_ = np.r_[0.0, var_prob_survival]
+        self.var_est_ = np.r_[0.0, var_est]
 
         return self
 
-    def predict_proba(self, time):
+    def predict_proba(self, time, with_variance=False):
         """Return probability of an event after given time point.
 
         :math:`\\hat{S}(t) = P(T > t)`
@@ -458,10 +397,16 @@ class SurvivalFunctionEstimator(BaseEstimator):
         time : array, shape = (n_samples,)
             Time to estimate probability at.
 
+        with_variance : bool, optional, default: False
+            Whether to return the variance of the Kaplan-Meier estimator.
+
         Returns
         -------
         prob : array, shape = (n_samples,)
             Probability of an event.
+
+        var : array, shape = (n_samples,)
+            Variance of the Kaplan-Meier estimator
         """
         check_is_fitted(self, "unique_time_")
         time = check_array(time, ensure_2d=False, estimator=self, input_name="time")
@@ -486,46 +431,13 @@ class SurvivalFunctionEstimator(BaseEstimator):
         idx[~exact] -= 1
         Shat[valid] = self.prob_[idx]
 
-        return Shat
-
-    def estimator_variance(self, time):
-        """Return the Greenwood's estimate of the variance of the KM estimator at given time points.
-
-        Parameters
-        ----------
-        time : array, shape = (n_samples,)
-            Time to estimate estimator variance at.
-
-        Returns
-        -------
-        var : array, shape = (n_samples,)
-            Variance of the Kaplan-Meier estimator
-        """
-        check_is_fitted(self, "unique_time_")
-        time = check_array(time, ensure_2d=False, estimator=self, input_name="time")
-
-        # K-M is undefined if estimate at last time point is non-zero
-        extends = time > self.unique_time_[-1]
-        if self.prob_[-1] > 0 and extends.any():
-            raise ValueError(
-                "time must be smaller than largest "
-                "observed time point: {}".format(self.unique_time_[-1])
-            )
-
-        # beyond last time point is zero probability
-        var = np.empty(time.shape, dtype=float)
-        var[extends] = 0.0
-
-        valid = ~extends
-        time = time[valid]
-        idx = np.searchsorted(self.unique_time_, time)
-        # for non-exact matches, we need to shift the index to left
-        eps = np.finfo(self.unique_time_.dtype).eps
-        exact = np.absolute(self.unique_time_[idx] - time) < eps
-        idx[~exact] -= 1
-        var[valid] = self.var_est_[idx]
-
-        return var
+        if with_variance:
+            var = np.empty(Shat.shape, dtype=float)
+            var[extends] = 0.0
+            var[valid] = self.var_est_[idx]
+            return Shat, var
+        else:
+            return Shat
 
 
 class CensoringDistributionEstimator(SurvivalFunctionEstimator):
