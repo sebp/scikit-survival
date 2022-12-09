@@ -260,3 +260,92 @@ def safe_concat(objs, *args, **kwargs):
         concatenated[name] = pd.Categorical(concatenated[name], **params)
 
     return concatenated
+
+
+class _ConditionalAvailableProperty:
+    """Implements a conditional property using the descriptor protocol based on the property decorator.
+
+    The corresponding class in scikit-learn (_AvailableIfDescriptor) only supports callables. This
+    class adopts the property decorator as presented by the descriptor guide in the offical documentation.
+
+    The check is defined on the getter function. Setter, Deleter also need to be defined on the exposing class
+    if they are supposed to be available.
+
+    See Also
+    --------
+    sklearn.utils.available_if._AvailableIfDescriptor:
+    The original class in scikit-learn.
+    """
+
+    def __init__(self, check, fget=None, fset=None, fdel=None, doc=None):
+        self._check = check
+        self.fget = fget
+        self.fset = fset
+        self.fdel = fdel
+        if doc is None and fget is not None:
+            doc = fget.__doc__
+        self.__doc__ = doc
+        self._name = ''
+
+    def _run_check(self, obj):
+        attr_err = AttributeError(
+            f"This {repr(obj)} has no attribute {repr(self._name)}"
+        )
+        if not self.check(obj):
+            raise attr_err
+
+    def __set_name__(self, owner, name):
+        self._name = name
+
+    def __get__(self, obj, objtype=None):
+        if obj is None:
+            return self
+        self._run_check(obj)
+        if self.fget is None:
+            raise AttributeError(f"property '{self._name}' has no getter")
+        return self.fget(obj)
+
+    def __set__(self, obj, value):
+        self._run_check(obj)
+        if self.fset is None:
+            raise AttributeError(f"property '{self._name}' has no setter")
+        self.fset(obj, value)
+
+    def __delete__(self, obj):
+        self._run_check(obj)
+        if self.fdel is None:
+            raise AttributeError(f"property '{self._name}' has no deleter")
+        self.fdel(obj)
+
+    @property
+    def check(self):
+        return self._check
+
+    @check.setter
+    def check(self, check):
+        if self._check is not None:
+            raise AttributeError(f"property '{self._name}' already had a check set")
+        if check is None:
+            return self._check
+        else:
+            return check
+
+    def getter(self, fget):
+        prop = type(self)(self.check, fget, self.fset, self.fdel, self.__doc__)
+        prop._name = self._name
+        return prop
+
+    def setter(self, fset):
+        prop = type(self)(self.check, self.fget, fset, self.fdel, self.__doc__)
+        prop._name = self._name
+        return prop
+
+    def deleter(self, fdel):
+        prop = type(self)(self.check, self.fget, self.fset, fdel, self.__doc__)
+        prop._name = self._name
+        return prop
+
+
+def conditionalAvailableProperty(check):
+    prop = _ConditionalAvailableProperty(check=check)
+    return prop.getter
