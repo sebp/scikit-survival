@@ -7,13 +7,10 @@ environment:
   matrix:
     - TARGET_ARCH: "x64"
       CONDA_PY: "38"
-      CONDA_INSTALL_LOCN: "C:\\Miniconda38-x64"
     - TARGET_ARCH: "x64"
       CONDA_PY: "39"
-      CONDA_INSTALL_LOCN: "C:\\Miniconda38-x64"
     - TARGET_ARCH: "x64"
       CONDA_PY: "310"
-      CONDA_INSTALL_LOCN: "C:\\Miniconda38-x64"
 
 
 # We always use a 64-bit machine.
@@ -21,14 +18,16 @@ platform:
 - x64
 
 install:
-  - cmd: set "OLDPATH=%PATH%"
-  - cmd: set "PATH=%CONDA_INSTALL_LOCN%\\Scripts;%CONDA_INSTALL_LOCN%\\Library\\bin;%PATH%"
-  - cmd: conda config --set always_yes yes --set changeps1 no
-  - cmd: conda config --set auto_update_conda false
-  - cmd: conda update --yes --quiet conda
-  - cmd: set "PATH=%OLDPATH%"
-  - cmd: call %CONDA_INSTALL_LOCN%\Scripts\activate.bat
-  - cmd: conda info -a
+  - ps: $env:CONDA_INSTALL_LOCN="$env:USERPROFILE\Miniconda3"
+  - ps: Invoke-WebRequest -Uri https://repo.anaconda.com/miniconda/Miniconda3-py39_4.12.0-Windows-x86_64.exe -OutFile Miniconda3.exe
+  - ps: ( Get-FileHash -Algorithm SHA256 Miniconda3.exe ).Hash -eq '1acbc2e8277ddd54a5f724896c7edee112d068529588d944702966c867e7e9cc'
+  - ps: Start-Process Miniconda3.exe -Wait -ArgumentList @('/S', '/InstallationType=JustMe', '/RegisterPython=1', '/D="$env:CONDA_INSTALL_LOCN"')
+  - ps: $env:Path += ";$env:CONDA_INSTALL_LOCN\Scripts;$env:CONDA_INSTALL_LOCN\Library\bin"
+  - ps: conda init powershell
+  - ps: conda config --set always_yes yes --set changeps1 no
+  - ps: conda config --set auto_update_conda false
+  - ps: conda update --yes --quiet conda
+  - ps: conda info -a
 
   # Install the build and runtime dependencies of the project.
   - cmd: conda env create -n sksurv-test --file ci\appveyor\requirements_%CONDA_PY%.yaml
