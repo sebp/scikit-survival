@@ -1,6 +1,6 @@
 # This file purposely does not contain libraries that depend on C modules.
 # See https://docs.readthedocs.io/en/latest/faq.html#i-get-import-errors-on-libraries-that-depend-on-c-modules
-ipython
+ipython !=8.7.0
 nbsphinx
 docutils
 setuptools_scm
