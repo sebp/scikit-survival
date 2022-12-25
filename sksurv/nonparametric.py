@@ -201,7 +201,7 @@ def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None, rev
 
     with_variance : bool, optional, default: False
         Whether to estimate the variance of the Kaplan-Meier estimator.
-        Only available if reverse=False.
+        Only available if `reverse` is False.
 
     Returns
     -------
@@ -213,7 +213,9 @@ def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None, rev
         If `time_enter` is provided, estimates are conditional probabilities.
 
     var_prob_survival : array, shape = (n_times,)
-        Variance of the KM estimator at each unique time point, based on Greenwood's formula [2]_.
+        Variance of the Kaplan-Meier estimator at each unique time point,
+        based on Greenwood's formula [2]_.
+        Only provided if `with_variance` is True.
 
     Examples
     --------
@@ -396,7 +398,7 @@ class SurvivalFunctionEstimator(BaseEstimator):
             Time to estimate probability at.
 
         with_variance : bool, optional, default: False
-            Whether to return the variance of the Kaplan-Meier estimator.
+            Whether to estimate the variance of the Kaplan-Meier estimator.
 
         Returns
         -------
@@ -404,7 +406,8 @@ class SurvivalFunctionEstimator(BaseEstimator):
             Probability of an event.
 
         var : array, shape = (n_samples,)
-            Variance of the Kaplan-Meier estimator
+            Variance of the Kaplan-Meier estimator.
+            Only provided if `with_variance` is True.
         """
         check_is_fitted(self, "unique_time_")
         time = check_array(time, ensure_2d=False, estimator=self, input_name="time")
