@@ -11,6 +11,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
+from scipy import stats
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_array, check_consistent_length, check_is_fitted
 
@@ -171,6 +172,19 @@ def _compute_counts_truncated(event, time_enter, time_exit):
     return uniq_times, event_counts, total_counts
 
 
+def _ci_logmlog(prob_survival, sigma_t, z):
+    eps = np.finfo(prob_survival.dtype).eps
+    log_p = np.zeros_like(prob_survival)
+    np.log(prob_survival, where=prob_survival > eps, out=log_p)
+    theta = np.zeros_like(prob_survival)
+    np.true_divide(sigma_t, log_p, where=log_p < -eps, out=theta)
+    theta = np.array([[-1], [1]]) * theta * z
+    ci = np.exp(np.exp(theta) * log_p)
+    ci[:, prob_survival <= eps] = 0.0
+    ci[:, 1.0 - prob_survival <= eps] = 1.0
+    return ci
+
+
 def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None, reverse=False, with_variance=False):
     """Kaplan-Meier estimator of survival function.
 
@@ -276,8 +290,13 @@ def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None, rev
     if with_variance:
         if time_min is not None:
             ratio_var = np.compress(mask, ratio_var)
-        var_prob_survival = prob_survival**2 * np.cumsum(ratio_var)
-        return uniq_times, prob_survival, var_prob_survival
+
+        conf_int = 0.95
+        z = stats.norm.isf((1.0 - conf_int) / 2.0)
+        sigma = np.sqrt(np.cumsum(ratio_var))
+        ci = _ci_logmlog(prob_survival, sigma, z)
+
+        return uniq_times, prob_survival, ci
     else:
         return uniq_times, prob_survival
 
@@ -383,7 +402,7 @@ class SurvivalFunctionEstimator(BaseEstimator):
         unique_time, prob, var_est = kaplan_meier_estimator(event, time, with_variance=True)
         self.unique_time_ = np.r_[-np.infty, unique_time]
         self.prob_ = np.r_[1., prob]
-        self.var_est_ = np.r_[0.0, var_est]
+        self.conf_int_ = np.column_stack((np.ones((2, 1)), var_est))
 
         return self
 
@@ -432,10 +451,10 @@ class SurvivalFunctionEstimator(BaseEstimator):
         Shat[valid] = self.prob_[idx]
 
         if with_variance:
-            var = np.empty(Shat.shape, dtype=float)
-            var[extends] = 0.0
-            var[valid] = self.var_est_[idx]
-            return Shat, var
+            ci = np.empty((2, time.shape[0]), dtype=float)
+            ci[:, extends] = np.nan
+            ci[:, valid] = self.conf_int_[:, idx]
+            return Shat, ci
         else:
             return Shat
 
