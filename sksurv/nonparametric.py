@@ -152,7 +152,7 @@ def _compute_counts_truncated(event, time_enter, time_exit):
     for i in range(1, len(uniq_times)):
         ti = uniq_times[i]
 
-        while idx_enter < n_samples and s_time_enter[idx_enter] <= ti:
+        while idx_enter < n_samples and s_time_enter[idx_enter] < ti:
             idx_enter += 1
 
         while idx_exit < n_samples and s_time_exit[idx_exit] < ti:
