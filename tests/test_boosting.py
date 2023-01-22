@@ -220,7 +220,8 @@ class TestGradientBoosting:
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         clf = GradientBoostingSurvivalAnalysis()
-        msg = "ccp_alpha == -1.0, must be >= 0.0"
+        msg = "The 'ccp_alpha' parameter of DecisionTreeRegressor must be a float in the range " \
+              r"\[0\.0, inf\). Got -1\.0 instead\."
 
         clf.set_params(ccp_alpha=-1.0)
         with pytest.raises(ValueError, match=msg):
