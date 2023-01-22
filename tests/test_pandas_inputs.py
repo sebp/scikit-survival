@@ -23,9 +23,9 @@ def test_pandas_inputs(estimator_cls):
     assert_array_equal(estimator.feature_names_in_, np.asarray(X_df.columns, dtype=object))
     estimator.predict(X_df)
 
-    msg = "The feature names should match those that were passed"
+    msg = "Feature names must be in the same order as they were in fit"
     X_bad = pd.DataFrame(X_np, columns=X_df.columns.tolist()[::-1])
-    with pytest.warns(FutureWarning, match=msg):
+    with pytest.raises(ValueError, match=msg):
         estimator.predict(X_bad)
 
     # warns when fitted on dataframe and transforming a ndarray

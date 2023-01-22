@@ -192,7 +192,10 @@ class TestClinicalKernel:
             np.zeros((2, data.shape[1] + 1), dtype=float), columns=data.columns.tolist() + ["XYZ"]
         )
 
-        error_msg = r"X has 5 features, but ClinicalKernelTransform is expecting 4 features as input\."
+        error_msg = r"""The feature names should match those that were passed during fit\.
+Feature names unseen at fit time:
+- XYZ
+"""
         warn_msg = r"The feature names should match those that were passed during fit\."
         with pytest.raises(ValueError, match=error_msg), pytest.warns(FutureWarning, match=warn_msg):
             t.transform(df_test)
