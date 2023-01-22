@@ -39,7 +39,7 @@ class _BaseSurvivalForest(BaseForest,
 
     @abstractmethod
     def __init__(self,
-                 base_estimator,
+                 estimator,
                  n_estimators=100, *,
                  estimator_params=tuple(),
                  bootstrap=False,
@@ -50,7 +50,7 @@ class _BaseSurvivalForest(BaseForest,
                  warm_start=False,
                  max_samples=None):
         super().__init__(
-            base_estimator,
+            estimator,
             n_estimators=n_estimators,
             estimator_params=estimator_params,
             bootstrap=bootstrap,
@@ -439,7 +439,7 @@ class RandomSurvivalForest(_BaseSurvivalForest):
                  warm_start=False,
                  max_samples=None):
         super().__init__(
-            base_estimator=SurvivalTree(),
+            estimator=SurvivalTree(),
             n_estimators=n_estimators,
             estimator_params=("max_depth",
                               "min_samples_split",
@@ -731,7 +731,7 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
                  warm_start=False,
                  max_samples=None):
         super().__init__(
-            base_estimator=SurvivalTree(splitter="random"),
+            estimator=SurvivalTree(splitter="random"),
             n_estimators=n_estimators,
             estimator_params=("max_depth",
                               "min_samples_split",
