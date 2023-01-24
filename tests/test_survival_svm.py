@@ -583,7 +583,7 @@ class TestKernelSurvivalSVM:
         )
 
         kpca = KernelPCA(
-            kernel="polynomial", copy_X=True, gamma=0.5, degree=2, coef0=0, random_state=0xf38
+            kernel="poly", copy_X=True, gamma=0.5, degree=2, coef0=0, random_state=0xf38
         )
         xt = kpca.fit_transform(x)
         nrsvm = FastSurvivalSVM(optimizer="rbtree", tol=2.5e-8, max_iter=100, random_state=0xf38)
