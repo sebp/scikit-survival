@@ -417,8 +417,9 @@ def test_max_depth(fake_data, val):
     X, y = fake_data
     tree = SurvivalTree(max_depth=val)
 
-    with pytest.raises(ValueError,
-                       match="max_depth must be greater than zero."):
+    msg = r"The 'max_depth' parameter of SurvivalTree must be " \
+          r"an int in the range \[1, inf\) or None\. Got {!r} instead\.".format(val)
+    with pytest.raises(ValueError, match=msg):
         tree.fit(X, y)
 
 
@@ -427,9 +428,9 @@ def test_min_samples_leaf(fake_data, val):
     X, y = fake_data
     tree = SurvivalTree(min_samples_leaf=val)
 
-    with pytest.raises(ValueError,
-                       match=r"min_samples_leaf must be at least 1 "
-                             r"or in \(0, 0\.5\], got"):
+    msg = r"The 'min_samples_leaf' parameter of SurvivalTree must be an int in the range \[1, inf\) or " \
+          r"a float in the range \(0\.0, 0\.5\]\. Got {!r} instead\.".format(val)
+    with pytest.raises(ValueError, match=msg):
         tree.fit(X, y)
 
 
@@ -438,10 +439,9 @@ def test_min_samples_split(fake_data, val):
     X, y = fake_data
     tree = SurvivalTree(min_samples_split=val)
 
-    with pytest.raises(ValueError,
-                       match="min_samples_split must be an integer "
-                             r"greater than 1 or a float in \(0\.0, 1\.0\]; "
-                             "got "):
+    msg = r"The 'min_samples_split' parameter of SurvivalTree must be an int in the range \[2, inf\) or " \
+          r"a float in the range \(0\.0, 1\.0\]\. Got {!r} instead\.".format(val)
+    with pytest.raises(ValueError, match=msg):
         tree.fit(X, y)
 
 
@@ -450,23 +450,25 @@ def test_min_weight_fraction_leaf(fake_data, val):
     X, y = fake_data
     tree = SurvivalTree(min_weight_fraction_leaf=val)
 
-    with pytest.raises(ValueError,
-                       match=r"min_weight_fraction_leaf must in \[0, 0\.5\]"):
+    msg = r"The 'min_weight_fraction_leaf' parameter of SurvivalTree must be " \
+          r"a float in the range \[0\.0, 0\.5\]\. Got {!r} instead\.".format(val)
+    with pytest.raises(ValueError, match=msg):
         tree.fit(X, y)
 
 
-@pytest.mark.parametrize("val", ["", "None", "sqrt_", "log10", "car"])
+@pytest.mark.parametrize("val", [0, 0.0, "", "None", "sqrt_", "log10", "car"])
 def test_max_features_invalid(fake_data, val):
     X, y = fake_data
     tree = SurvivalTree(max_features=val)
 
-    with pytest.raises(ValueError,
-                       match='Invalid value for max_features. Allowed string '
-                             'values are "auto", "sqrt" or "log2".'):
+    msg = r"The 'max_features' parameter of SurvivalTree must be " \
+          r"an int in the range \[1, inf\), a float in the range \(0\.0, 1\.0\], " \
+          r"a str among {.+} or None\."
+    with pytest.raises(ValueError, match=msg):
         tree.fit(X, y)
 
 
-@pytest.mark.parametrize("val", [0, 0.0, 12, 13, 100, 865411])
+@pytest.mark.parametrize("val", [12, 13, 100, 865411])
 def test_max_features_too_large(fake_data, val):
     X, y = fake_data
     tree = SurvivalTree(max_features=val)
@@ -481,8 +483,8 @@ def test_max_leaf_nodes_no_int(fake_data, val):
     X, y = fake_data
     tree = SurvivalTree(max_leaf_nodes=val)
 
-    with pytest.raises(ValueError,
-                       match="max_leaf_nodes must be integral number but was "):
+    msg = r"The 'max_leaf_nodes' parameter of SurvivalTree must be an int in the range \[2, inf\) or None\."
+    with pytest.raises(ValueError, match=msg):
         tree.fit(X, y)
 
 
@@ -491,9 +493,8 @@ def test_max_leaf_nodes_too_small(fake_data, val):
     X, y = fake_data
     tree = SurvivalTree(max_leaf_nodes=val)
 
-    with pytest.raises(ValueError,
-                       match="max_leaf_nodes {} must be either None "
-                             "or larger than 1".format(val)):
+    msg = r"The 'max_leaf_nodes' parameter of SurvivalTree must be an int in the range \[2, inf\) or None\."
+    with pytest.raises(ValueError, match=msg):
         tree.fit(X, y)
 
 

@@ -1,5 +1,5 @@
 from math import ceil
-import numbers
+from numbers import Integral, Real
 import warnings
 
 import numpy as np
@@ -9,6 +9,7 @@ from sklearn.tree import _tree
 from sklearn.tree._classes import DENSE_SPLITTERS, SPARSE_SPLITTERS
 from sklearn.tree._splitter import Splitter
 from sklearn.tree._tree import BestFirstTreeBuilder, DepthFirstTreeBuilder, Tree
+from sklearn.utils._param_validation import Interval, StrOptions
 from sklearn.utils.validation import check_is_fitted, check_random_state
 
 from ..base import SurvivalAnalysisMixin
@@ -138,6 +139,28 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
            R News, 7(2), 25–31. https://cran.r-project.org/doc/Rnews/Rnews_2007-2.pdf.
     """
 
+    _parameter_constraints = {
+        "splitter": [StrOptions({"best", "random"})],
+        "max_depth": [Interval(Integral, 1, None, closed="left"), None],
+        "min_samples_split": [
+            Interval(Integral, 2, None, closed="left"),
+            Interval(Real, 0.0, 1.0, closed="right"),
+        ],
+        "min_samples_leaf": [
+            Interval(Integral, 1, None, closed="left"),
+            Interval(Real, 0.0, 0.5, closed="right"),
+        ],
+        "min_weight_fraction_leaf": [Interval(Real, 0.0, 0.5, closed="both")],
+        "max_features": [
+            Interval(Integral, 1, None, closed="left"),
+            Interval(Real, 0.0, 1.0, closed="right"),
+            StrOptions({"auto", "sqrt", "log2"}, deprecated={"auto"}),
+            None,
+        ],
+        "random_state": ["random_state"],
+        "max_leaf_nodes": [Interval(Integral, 2, None, closed="left"), None],
+    }
+
     def __init__(self,
                  splitter="best",
                  max_depth=None,
@@ -255,15 +278,26 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         return self
 
     def _check_params(self, n_samples):
+        self._validate_params()
+
         # Check parameters
         max_depth = ((2 ** 31) - 1 if self.max_depth is None
                      else self.max_depth)
-        if max_depth <= 0:
-            raise ValueError("max_depth must be greater than zero.")
 
-        max_leaf_nodes = self._check_max_leaf_nodes()
-        min_samples_leaf = self._check_min_samples_leaf(n_samples)
-        min_samples_split = self._check_min_samples_split(n_samples)
+        max_leaf_nodes = (-1 if self.max_leaf_nodes is None
+                          else self.max_leaf_nodes)
+
+        if isinstance(self.min_samples_leaf, (Integral, np.integer)):
+            min_samples_leaf = self.min_samples_leaf
+        else:  # float
+            min_samples_leaf = int(ceil(self.min_samples_leaf * n_samples))
+
+        if isinstance(self.min_samples_split, (Integral, np.integer)):
+            min_samples_split = self.min_samples_split
+        else:  # float
+            min_samples_split = int(ceil(self.min_samples_split * n_samples))
+            min_samples_split = max(2, min_samples_split)
+
         min_samples_split = max(min_samples_split, 2 * min_samples_leaf)
 
         self._check_max_features()
@@ -281,64 +315,16 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             "min_weight_leaf": min_weight_leaf,
         }
 
-    def _check_max_leaf_nodes(self):
-        max_leaf_nodes = (-1 if self.max_leaf_nodes is None
-                          else self.max_leaf_nodes)
-        if not isinstance(max_leaf_nodes, (numbers.Integral, np.integer)):
-            raise ValueError("max_leaf_nodes must be integral number but was "
-                             "%r" % max_leaf_nodes)
-        if -1 < max_leaf_nodes < 2:
-            raise ValueError(("max_leaf_nodes {} must be either None "
-                              "or larger than 1").format(max_leaf_nodes))
-        return max_leaf_nodes
-
-    def _check_min_samples_leaf(self, n_samples):
-        if isinstance(self.min_samples_leaf, (numbers.Integral, np.integer)):
-            if self.min_samples_leaf < 1:
-                raise ValueError("min_samples_leaf must be at least 1 "
-                                 "or in (0, 0.5], got %s"
-                                 % self.min_samples_leaf)
-            min_samples_leaf = self.min_samples_leaf
-        else:  # float
-            if not 0. < self.min_samples_leaf <= 0.5:
-                raise ValueError("min_samples_leaf must be at least 1 "
-                                 "or in (0, 0.5], got %s"
-                                 % self.min_samples_leaf)
-            min_samples_leaf = int(ceil(self.min_samples_leaf * n_samples))
-        # FIXME throw exception if min_samples_leaf < 2
-        return min_samples_leaf
-
-    def _check_min_samples_split(self, n_samples):
-        if isinstance(self.min_samples_split, (numbers.Integral, np.integer)):
-            if self.min_samples_split < 2:
-                raise ValueError("min_samples_split must be an integer "
-                                 "greater than 1 or a float in (0.0, 1.0]; "
-                                 "got the integer %s"
-                                 % self.min_samples_split)
-            min_samples_split = self.min_samples_split
-        else:  # float
-            if not 0. < self.min_samples_split <= 1.:
-                raise ValueError("min_samples_split must be an integer "
-                                 "greater than 1 or a float in (0.0, 1.0]; "
-                                 "got the float %s"
-                                 % self.min_samples_split)
-            min_samples_split = int(ceil(self.min_samples_split * n_samples))
-            min_samples_split = max(2, min_samples_split)
-        return min_samples_split
-
     def _check_max_features(self):
         if isinstance(self.max_features, str):
             if self.max_features in ("auto", "sqrt"):
                 max_features = max(1, int(np.sqrt(self.n_features_in_)))
             elif self.max_features == "log2":
                 max_features = max(1, int(np.log2(self.n_features_in_)))
-            else:
-                raise ValueError(
-                    'Invalid value for max_features. Allowed string '
-                    'values are "auto", "sqrt" or "log2".')
+
         elif self.max_features is None:
             max_features = self.n_features_in_
-        elif isinstance(self.max_features, (numbers.Integral, np.integer)):
+        elif isinstance(self.max_features, (Integral, np.integer)):
             max_features = self.max_features
         else:  # float
             if self.max_features > 0.0:
