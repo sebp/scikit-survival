@@ -12,7 +12,7 @@ else
   exit 1
 fi
 
-conda update -q conda
+#conda update -q conda
 conda config --set always_yes yes --set changeps1 no
 
 conda install -n base conda-libmamba-solver
