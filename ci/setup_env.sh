@@ -17,7 +17,7 @@ conda config --set always_yes yes --set changeps1 no
 
 conda install -n base conda-libmamba-solver
 
-conda create -n sksurv-test --experimental-solver=libmamba \
+conda create -n sksurv-test --solver=libmamba \
   python="${CONDA_PYTHON_VERSION:?}" \
   numpy="${NUMPY_VERSION:?}" \
   pandas="${PANDAS_VERSION:?}" \

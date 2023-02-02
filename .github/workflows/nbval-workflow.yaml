@@ -38,8 +38,8 @@ jobs:
       - name: Install Dependencies
         run: |
           python3 ci/list-requirements.py requirements/dev.txt > /tmp/conda-req.txt
-          conda install --experimental-solver=libmamba -c sebp -n sksurv-test --file /tmp/conda-req.txt
-          conda install --experimental-solver=libmamba -n sksurv-test ipykernel 'matplotlib==3.5.1' nbformat 'seaborn==0.11.2' 'ipython!=8.7.0'
+          conda install --solver=libmamba -c sebp -n sksurv-test --file /tmp/conda-req.txt
+          conda install --solver=libmamba -n sksurv-test ipykernel 'matplotlib==3.5.1' nbformat 'seaborn==0.11.2' 'ipython!=8.7.0'
           conda run -n sksurv-test pip install nbval
           conda list -n sksurv-test
       - name: Configure matplotlib

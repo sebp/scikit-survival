@@ -50,7 +50,7 @@ jobs:
       - name: Install Dependencies
         run: |
           python3 ci/list-requirements.py requirements/dev.txt > /tmp/conda-req.txt
-          conda install --experimental-solver=libmamba -c sebp -n sksurv-test --file /tmp/conda-req.txt
+          conda install --solver=libmamba -c sebp -n sksurv-test --file /tmp/conda-req.txt
           conda list -n sksurv-test
       - name: Build package
         run: |
