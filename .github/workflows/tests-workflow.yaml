@@ -130,7 +130,7 @@ jobs:
           python3 ci/list-requirements.py requirements/dev.txt > /tmp/conda-req.txt
           conda install --solver=libmamba -c sebp -n sksurv-test --file /tmp/conda-req.txt
           conda install --solver=libmamba -n sksurv-test ipykernel 'matplotlib==3.5.1' nbformat 'seaborn==0.11.2' 'ipython!=8.7.0'
-          conda run -n sksurv-test pip install nbval
+          conda run -n sksurv-test pip install 'nbval>=0.10.0'
           conda list -n sksurv-test
       - name: Configure matplotlib
         run: |
@@ -149,4 +149,4 @@ jobs:
       - name: Test notebooks
         run: |
           source activate sksurv-test
-          pytest --nbval doc/user_guide/*.ipynb --sanitize-with ci/nb_sanitize.cfg
+          pytest --nbval doc/user_guide/*.ipynb --nbval-sanitize-with ci/nb_sanitize.cfg
