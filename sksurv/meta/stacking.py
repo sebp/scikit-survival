@@ -12,6 +12,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 from sklearn.base import MetaEstimatorMixin, clone
+from sklearn.utils._param_validation import HasMethods
 from sklearn.utils.metaestimators import _BaseComposition, available_if
 
 from ..base import SurvivalAnalysisMixin
@@ -69,6 +70,13 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
     """
+
+    _parameter_constraints = {
+        "meta_estimator": [HasMethods(["fit"])],
+        "base_estimators": [list],
+        "probabilities": ["boolean"],
+    }
+
     def __init__(self, meta_estimator, base_estimators, probabilities=True):
         self.meta_estimator = meta_estimator
         self.base_estimators = base_estimators
@@ -86,11 +94,6 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
                 raise TypeError("All base estimators should implement "
                                 "fit and predict/predict_proba"
                                 " '%s' (type %s) doesn't)" % (t, type(t)))
-
-        if not hasattr(self.meta_estimator, "fit"):
-            raise TypeError("meta estimator should implement fit "
-                            "'%s' (type %s) doesn't)"
-                            % (self.meta_estimator, type(self.meta_estimator)))
 
     def set_params(self, **params):
         """
@@ -208,6 +211,7 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
         -------
         self
         """
+        self._validate_params()
         self._validate_estimators()
         self._fit_estimators(X, y, **fit_params)
         Xt = self._predict_estimators(X)
