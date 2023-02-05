@@ -21,6 +21,7 @@ from sklearn.ensemble._gradient_boosting import _random_sample_mask
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.tree._tree import DTYPE
 from sklearn.utils import check_consistent_length, check_random_state, column_or_1d
+from sklearn.utils._param_validation import Interval, StrOptions
 from sklearn.utils.extmath import squared_norm
 from sklearn.utils.validation import check_is_fitted
 
@@ -163,6 +164,17 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
     .. [1] Hothorn, T., Bühlmann, P., Dudoit, S., Molinaro, A., van der Laan, M. J.,
            "Survival ensembles", Biostatistics, 7(3), 355-73, 2006
     """
+
+    _parameter_constraints = {
+        "loss": [StrOptions(frozenset(LOSS_FUNCTIONS.keys()))],
+        "learning_rate": [Interval(numbers.Real, 0.0, None, closed="left")],
+        "n_estimators": [Interval(numbers.Integral, 1, None, closed="left")],
+        "subsample": [Interval(numbers.Real, 0.0, 1.0, closed="right")],
+        "dropout_rate": [Interval(numbers.Real, 0.0, 1.0, closed="left")],
+        "random_state": ["random_state"],
+        "verbose": ["verbose"],
+    }
+
     def __init__(self, loss="coxph", learning_rate=0.1, n_estimators=100, subsample=1.0,
                  dropout_rate=0, random_state=None, verbose=0):
         self.loss = loss
@@ -180,27 +192,6 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
     @property
     def _predict_risk_score(self):
         return isinstance(self._loss, CoxPH)
-
-    def _check_params(self):
-        """Check validity of parameters and raise ValueError if not valid. """
-        if self.n_estimators <= 0:
-            raise ValueError("n_estimators must be greater than 0 but "
-                             "was %r" % self.n_estimators)
-
-        if not 0.0 < self.subsample <= 1.0:
-            raise ValueError("subsample must be in ]0; 1] but "
-                             "was %r" % self.subsample)
-
-        if not 0.0 < self.learning_rate <= 1.0:
-            raise ValueError("learning_rate must be within ]0; 1] but "
-                             "was %r" % self.learning_rate)
-
-        if not 0.0 <= self.dropout_rate < 1.0:
-            raise ValueError("dropout_rate must be within [0; 1[, but "
-                             "was %r" % self.dropout_rate)
-
-        if self.loss not in LOSS_FUNCTIONS:
-            raise ValueError("Loss {!r} not supported.".format(self.loss))
 
     def _fit(self, X, event, time, sample_weight, random_state):  # noqa: C901
         n_samples = X.shape[0]
@@ -300,7 +291,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         random_state = check_random_state(self.random_state)
 
-        self._check_params()
+        self._validate_params()
 
         self.estimators_ = []
         self._loss = LOSS_FUNCTIONS[self.loss]()
@@ -698,6 +689,13 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
            in 18th International Conference on Artificial Intelligence and Statistics,
            2015, 489–497.
     """
+
+    _parameter_constraints = {
+        **BaseGradientBoosting._parameter_constraints,
+        "loss": [StrOptions(frozenset(LOSS_FUNCTIONS.keys()))],
+        "dropout_rate": [Interval(numbers.Real, 0.0, 1.0, closed="left")]
+    }
+
     def __init__(self, loss="coxph", learning_rate=0.1, n_estimators=100,
                  criterion='friedman_mse',
                  min_samples_split=2,
@@ -738,35 +736,11 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
     def _check_params(self):
         """Check validity of parameters and raise ValueError if not valid. """
-        self.n_estimators = int(self.n_estimators)
-        if self.n_estimators <= 0:
-            raise ValueError("n_estimators must be greater than 0 but "
-                             "was %r" % self.n_estimators)
-
-        if not 0.0 < self.learning_rate <= 1.0:
-            raise ValueError("learning_rate must be within ]0; 1] but "
-                             "was %r" % self.learning_rate)
-
-        if not 0.0 < self.subsample <= 1.0:
-            raise ValueError("subsample must be in ]0; 1] but "
-                             "was %r" % self.subsample)
-
-        if not 0.0 <= self.dropout_rate < 1.0:
-            raise ValueError("dropout_rate must be within [0; 1[, but "
-                             "was %r" % self.dropout_rate)
+        self._validate_params()
 
         max_features = self._check_max_features()
 
-        self.min_samples_split = int(self.min_samples_split)
-        self.min_samples_leaf = int(self.min_samples_leaf)
-        self.max_depth = int(self.max_depth)
-        if self.max_leaf_nodes:
-            self.max_leaf_nodes = int(self.max_leaf_nodes)
-
         self.max_features_ = max_features
-
-        if self.loss not in LOSS_FUNCTIONS:
-            raise ValueError("Loss {!r} not supported.".format(self.loss))
 
         self._loss = LOSS_FUNCTIONS[self.loss]()
 
@@ -778,21 +752,14 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                 max_features = max(1, int(np.sqrt(self.n_features_in_)))
             elif self.max_features == "log2":
                 max_features = max(1, int(np.log2(self.n_features_in_)))
-            else:
-                raise ValueError("Invalid value for max_features: %r. "
-                                 "Allowed string values are 'auto', 'sqrt' "
-                                 "or 'log2'." % self.max_features)
         elif self.max_features is None:
             max_features = self.n_features_in_
         elif isinstance(self.max_features, (numbers.Integral, np.integer)):
-            if self.max_features < 1:
-                raise ValueError("max_features must be in (0, n_features_in_]")
             max_features = self.max_features
         else:  # float
             if 0. < self.max_features <= 1.:
                 max_features = max(int(self.max_features * self.n_features_in_), 1)
-            else:
-                raise ValueError("max_features must be in (0, 1.0]")
+
         return max_features
 
     def _fit_stage(self, i, X, y, raw_predictions, sample_weight, sample_mask,
