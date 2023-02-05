@@ -10,12 +10,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import numbers
 import warnings
 
 import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.preprocessing import normalize as f_normalize
+from sklearn.utils._param_validation import Interval, StrOptions
 from sklearn.utils.validation import assert_all_finite, check_is_fitted, check_non_negative, column_or_1d
 
 from ..base import SurvivalAnalysisMixin
@@ -131,6 +133,20 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
            Journal of statistical software. 2011 Mar;39(5):1.
     """
 
+    _parameter_constraints: dict = {
+        "n_alphas": [Interval(numbers.Integral, 1, None, closed="left")],
+        "alphas": ["array-like", None],
+        "alpha_min_ratio": [Interval(numbers.Real, 0, None, closed="neither"), StrOptions({"auto"})],
+        "l1_ratio": [Interval(numbers.Real, 0.0, 1.0, closed="right")],
+        "penalty_factor": ["array-like", None],
+        "normalize": ["boolean"],
+        "copy_X": ["boolean"],
+        "tol": [Interval(numbers.Real, 0, None, closed="left")],
+        "max_iter": [Interval(numbers.Integral, 1, None, closed="left")],
+        "verbose": ["verbose"],
+        "fit_baseline_model": ["boolean"],
+    }
+
     def __init__(self, n_alphas=100, alphas=None, alpha_min_ratio="auto", l1_ratio=0.5,
                  penalty_factor=None, normalize=False, copy_X=True,
                  tol=1e-7, max_iter=100000, verbose=False, fit_baseline_model=False):
@@ -193,27 +209,17 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         return alphas, create_path
 
     def _check_alpha_min_ratio(self, n_samples, n_features):
-        if isinstance(self.alpha_min_ratio, str):
-            if self.alpha_min_ratio == "auto":
-                if n_samples > n_features:
-                    alpha_min_ratio = 0.0001
-                else:
-                    alpha_min_ratio = 0.01
+        alpha_min_ratio = self.alpha_min_ratio
+        if isinstance(alpha_min_ratio, str) and self.alpha_min_ratio == "auto":
+            if n_samples > n_features:
+                alpha_min_ratio = 0.0001
             else:
-                raise ValueError("Invalid value for alpha_min_ratio. "
-                                 "Allowed string values are 'auto'.")
-        else:
-            alpha_min_ratio = float(self.alpha_min_ratio)
-            if alpha_min_ratio <= 0 or not np.isfinite(alpha_min_ratio):
-                raise ValueError("alpha_min_ratio must be positive")
+                alpha_min_ratio = 0.01
+
         return alpha_min_ratio
 
     def _check_params(self, n_samples, n_features):
-        if not 0 < self.l1_ratio <= 1:
-            raise ValueError("l1_ratio must be in interval ]0;1], but was %f" % self.l1_ratio)
-
-        if self.tol <= 0:
-            raise ValueError("tolerance must be positive, but was %f" % self.tol)
+        self._validate_params()
 
         penalty_factor = self._check_penalty_factor(n_features)
 
