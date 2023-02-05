@@ -425,6 +425,12 @@ class RandomSurvivalForest(_BaseSurvivalForest):
            R News, 7(2), 25–31. https://cran.r-project.org/doc/Rnews/Rnews_2007-2.pdf.
     """
 
+    _parameter_constraints = {
+        **BaseForest._parameter_constraints,
+        **SurvivalTree._parameter_constraints,
+    }
+    _parameter_constraints.pop("splitter")
+
     def __init__(self,
                  n_estimators=100,
                  max_depth=None,
@@ -717,6 +723,13 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
     sksurv.tree.SurvivalTree
         A single survival tree.
     """
+
+    _parameter_constraints = {
+        **BaseForest._parameter_constraints,
+        **SurvivalTree._parameter_constraints,
+    }
+    _parameter_constraints.pop("splitter")
+
     def __init__(self,
                  n_estimators=100,
                  max_depth=None,

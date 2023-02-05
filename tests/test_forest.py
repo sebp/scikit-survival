@@ -254,7 +254,8 @@ def test_pipeline_predict(breast_cancer, forest_cls, func):
      ('str max_samples?!', TypeError,
       r"Got 'str max_samples\?!' instead", True),
      (np.ones(2), TypeError,
-      r"Got array\(\[1\., 1\.\]\) instead", True)]
+      r"Got array\(\[1\., 1\.\]\) instead", True),
+     (0, ValueError, r"Got 0 instead", True)]
 )
 def test_fit_max_samples(make_whas500, forest_cls, max_samples, exc_type, exc_msg, with_prefix):
     whas500 = make_whas500(to_numeric=True)
@@ -266,6 +267,19 @@ def test_fit_max_samples(make_whas500, forest_cls, max_samples, exc_type, exc_ms
     else:
         msg = exc_msg
     with pytest.raises(exc_type, match=msg):
+        forest.fit(whas500.x, whas500.y)
+
+
+@pytest.mark.parametrize('forest_cls', FORESTS)
+@pytest.mark.parametrize('max_features', [0, 0.0, 3.0, "", "None", "sqrt_", "log10", "car"])
+def test_fit_max_features(make_whas500, forest_cls, max_features):
+    whas500 = make_whas500(to_numeric=True)
+    forest = forest_cls(max_features=max_features)
+
+    msg = f"The 'max_features' parameter of {forest_cls.__name__} must be " \
+          r"an int in the range \[1, inf\), a float in the range \(0\.0, 1\.0\], " \
+          r"a str among {.+} or None\."
+    with pytest.raises(ValueError, match=msg):
         forest.fit(whas500.x, whas500.y)
 
 
