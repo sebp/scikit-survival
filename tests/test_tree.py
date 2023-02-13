@@ -24,8 +24,8 @@ def veterans():
 @pytest.fixture()
 def breast_cancer():
     X, y = load_breast_cancer()
-    X.loc[:, "er"] = X.loc[:, "er"].replace({"negative": 0, "positive": 1})
-    X.loc[:, "grade"] = X.loc[:, "grade"].replace({
+    X["er"] = X.loc[:, "er"].replace({"negative": 0, "positive": 1})
+    X["grade"] = X.loc[:, "grade"].replace({
         "intermediate": 0,
         "poorly differentiated": 1,
         "unkown": 2,

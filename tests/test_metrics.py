@@ -949,7 +949,7 @@ def test_brier_wrong_estimate_shape(nottingham_prognostic_index):
 
 def test_brier_coxph():
     X, y = load_gbsg2()
-    X.loc[:, "tgrade"] = X.loc[:, "tgrade"].map(len).astype(int)
+    X["tgrade"] = X.loc[:, "tgrade"].map(len).astype(int)
 
     Xt = OneHotEncoder().fit_transform(X)
 
