@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+import numbers
 import warnings
 
 import numpy as np
@@ -6,6 +7,7 @@ from scipy import linalg, sparse
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import pairwise_kernels
+from sklearn.utils._param_validation import Interval, StrOptions
 
 from ..base import SurvivalAnalysisMixin
 from ..exceptions import NoComparablePairException
@@ -271,6 +273,23 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
            The Journal of Machine Learning Research, 12, 819-862. 2011
     """
 
+    _parameter_constraints = {
+        "solver": [StrOptions({"ecos", "osqp"})],
+        "alpha": [Interval(numbers.Real, 0, None, closed="neither")],
+        "kernel": [
+            StrOptions({"linear", "poly", "rbf", "sigmoid", "precomputed"}),
+            callable,
+        ],
+        "degree": [Interval(numbers.Integral, 0, None, closed="left")],
+        "gamma": [Interval(numbers.Real, 0.0, None, closed="left"), None],
+        "coef0": [Interval(numbers.Real, None, None, closed="neither")],
+        "kernel_params": [dict, None],
+        "pairs": [StrOptions({"all", "nearest", "next"})],
+        "verbose": ["boolean"],
+        "timeit": [Interval(numbers.Integral, 1, None, closed="left"), None],
+        "max_iter": [Interval(numbers.Integral, 1, None, closed="left"), None],
+    }
+
     def __init__(self, solver="ecos",
                  alpha=1.0, kernel="linear", gamma=None, degree=3, coef0=1, kernel_params=None,
                  pairs="nearest", verbose=False, timeit=None, max_iter=None):
@@ -326,14 +345,10 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
             raise NoComparablePairException("Data has no comparable pairs, cannot fit model.")
 
         max_iter = self.max_iter
-        if max_iter is not None:
-            max_iter = int(max_iter)
         if self.solver == "ecos":
             solver = EcosSolver(max_iter=max_iter, verbose=self.verbose)
         elif self.solver == "osqp":
             solver = OsqpSolver(max_iter=max_iter, verbose=self.verbose)
-        else:
-            raise ValueError("unknown solver: {}".format(self.solver))
 
         K = self._get_kernel(x)
         problem_data = self._setup_qp(K, D, time)
@@ -372,6 +387,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         -------
         self
         """
+        self._validate_params()
         X = self._validate_data(X, ensure_min_samples=2)
         event, time = check_array_survival(X, y)
         self._fit(X, event, time)
@@ -504,6 +520,8 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
            In: Proc. of 16th European Symposium on Artificial Neural Networks,
            89-94, 2008.
     """
+
+    _parameter_constraints = MinlipSurvivalAnalysis._parameter_constraints
 
     def __init__(self, solver="ecos",
                  alpha=1.0, kernel="linear", gamma=None, degree=3, coef0=1, kernel_params=None,
