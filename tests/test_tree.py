@@ -498,23 +498,6 @@ def test_max_leaf_nodes_too_small(fake_data, val):
         tree.fit(X, y)
 
 
-@pytest.mark.parametrize("val", [0, 1, None, "sort"])
-def test_X_idx_sorted(fake_data, val):
-    X, y = fake_data
-    tree = SurvivalTree()
-
-    if val == "sort":
-        X_idx_sorted = np.argsort(X, axis=0)
-    else:
-        X_idx_sorted = val
-
-    with pytest.warns(
-            FutureWarning,
-            match="The parameter 'X_idx_sorted' is deprecated and has no effect."
-    ):
-        tree.fit(X, y, X_idx_sorted=X_idx_sorted)
-
-
 def test_apply(veterans):
     X, y = veterans
     X = X.loc[:, "Karnofsky_score"].values[:, np.newaxis]

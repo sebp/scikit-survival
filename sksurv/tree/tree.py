@@ -1,6 +1,5 @@
 from math import ceil
 from numbers import Integral, Real
-import warnings
 
 import numpy as np
 from scipy.sparse import issparse
@@ -179,8 +178,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         self.random_state = random_state
         self.max_leaf_nodes = max_leaf_nodes
 
-    def fit(self, X, y, sample_weight=None, check_input=True,
-            X_idx_sorted="deprecated"):
+    def fit(self, X, y, sample_weight=None, check_input=True):
         """Build a survival tree from the training set (X, y).
 
         Parameters
@@ -196,9 +194,6 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         check_input : boolean, default: True
             Allow to bypass several input checking.
             Don't use this parameter unless you know what you do.
-
-        X_idx_sorted : deprecated, default="deprecated"
-            This parameter is deprecated and has no effect
 
         Returns
         -------
@@ -222,15 +217,6 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         n_samples, self.n_features_in_ = X.shape
         params = self._check_params(n_samples)
-
-        if not isinstance(X_idx_sorted, str) or X_idx_sorted != "deprecated":
-            warnings.warn(
-                "The parameter 'X_idx_sorted' is deprecated and has no "
-                "effect. It will be removed in sklearn 1.1 (renaming of 0.26). "
-                "You can suppress this warning by not passing any value to the "
-                "'X_idx_sorted' parameter.",
-                FutureWarning
-            )
 
         self.n_outputs_ = self.event_times_.shape[0]
         # one "class" for CHF, one for survival function
