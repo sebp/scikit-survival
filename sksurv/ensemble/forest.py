@@ -125,8 +125,10 @@ class _BaseSurvivalForest(BaseForest,
                              % (self.n_estimators, len(self.estimators_)))
 
         if n_more_estimators == 0:
-            warnings.warn("Warm-start fitting without increasing n_estimators "
-                          "does not fit new trees.")
+            warnings.warn(
+                "Warm-start fitting without increasing n_estimators does not fit new trees.",
+                stacklevel=2
+            )
         else:
             if self.warm_start and len(self.estimators_) > 0:
                 # We draw from the random state to get the random state we
@@ -184,7 +186,9 @@ class _BaseSurvivalForest(BaseForest,
             warnings.warn(
                 "Some inputs do not have OOB scores. "
                 "This probably means too few trees were used "
-                "to compute any reliable oob estimates.")
+                "to compute any reliable oob estimates.",
+                stacklevel=3
+            )
             n_predictions[n_predictions == 0] = 1
 
         predictions /= n_predictions
