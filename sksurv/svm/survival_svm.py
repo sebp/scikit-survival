@@ -814,17 +814,17 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     verbose : bool, optional, default: False
         Whether to print messages during optimization
 
-    tol : float, optional
+    tol : float or None, optional, default: None
         Tolerance for termination. For detailed control, use solver-specific
         options.
 
-    optimizer : "avltree" | "direct-count" | "PRSVM" | "rbtree" | "simple", optional, default: avltree
+    optimizer : {'avltree', 'direct-count', 'PRSVM', 'rbtree', 'simple'}, optional, default: 'avltree'
         Which optimizer to use.
 
     random_state : int or :class:`numpy.random.RandomState` instance, optional
         Random number generator (used to resolve ties in survival times).
 
-    timeit : False or int
+    timeit : False, int or None, default: None
         If non-zero value is provided the time it takes for optimization is measured.
         The given number of repetitions are performed. Results can be accessed from the
         ``optimizer_result_`` attribute.
@@ -934,23 +934,36 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         Whether to calculate an intercept for the regression model. If set to ``False``, no intercept
         will be calculated. Has no effect if ``rank_ratio = 1``, i.e., only ranking is performed.
 
-    kernel : "linear" | "poly" | "rbf" | "sigmoid" | "cosine" | "precomputed"
-        Kernel.
-        Default: "linear"
+    kernel : {'linear', 'poly', 'rbf', 'sigmoid', 'cosine', 'precomputed'} or callable, default: 'linear'.
+        Kernel mapping used internally. This parameter is directly passed to
+        :func:`sklearn.metrics.pairwise.pairwise_kernels`.
+        If `kernel` is a string, it must be one of the metrics
+        in `pairwise.PAIRWISE_KERNEL_FUNCTIONS` or "precomputed".
+        If `kernel` is "precomputed", X is assumed to be a kernel matrix.
+        Alternatively, if `kernel` is a callable function, it is called on
+        each pair of instances (rows) and the resulting value recorded. The
+        callable should take two rows from X as input and return the
+        corresponding kernel value as a single number. This means that
+        callables from :mod:`sklearn.metrics.pairwise` are not allowed, as
+        they operate on matrices, not single samples. Use the string
+        identifying the kernel instead.
 
-    degree : int, default: 3
-        Degree for poly kernels. Ignored by other kernels.
-
-    gamma : float, optional
-        Kernel coefficient for rbf and poly kernels. Default: ``1/n_features``.
+    gamma : float, optional, default: None
+        Gamma parameter for the RBF, laplacian, polynomial, exponential chi2
+        and sigmoid kernels. Interpretation of the default value is left to
+        the kernel; see the documentation for :mod:`sklearn.metrics.pairwise`.
         Ignored by other kernels.
 
+    degree : int, default: 3
+        Degree of the polynomial kernel. Ignored by other kernels.
+
     coef0 : float, optional
-        Independent term in poly and sigmoid kernels.
+        Zero coefficient for polynomial and sigmoid kernels.
         Ignored by other kernels.
 
     kernel_params : mapping of string to any, optional
-        Parameters (keyword arguments) and values for kernel passed as call
+        Additional parameters (keyword arguments) for kernel function passed
+        as callable object.
 
     max_iter : int, optional, default: 20
         Maximum number of iterations to perform in Newton optimization
@@ -958,17 +971,17 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     verbose : bool, optional, default: False
         Whether to print messages during optimization
 
-    tol : float, optional
+    tol : float or None, optional, default: None
         Tolerance for termination. For detailed control, use solver-specific
         options.
 
-    optimizer : "avltree" | "rbtree", optional, default: "rbtree"
+    optimizer : {'avltree', 'rbtree'}, optional, default: 'rbtree'
         Which optimizer to use.
 
     random_state : int or :class:`numpy.random.RandomState` instance, optional
         Random number generator (used to resolve ties in survival times).
 
-    timeit : False or int
+    timeit : False, int or None, default: None
         If non-zero value is provided the time it takes for optimization is measured.
         The given number of repetitions are performed. Results can be accessed from the
         ``optimizer_result_`` attribute.

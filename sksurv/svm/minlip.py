@@ -201,31 +201,44 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
     Parameters
     ----------
-    solver : "ecos" | "osqp", optional, default: ecos
+    solver : {'ecos', 'osqp'}, optional, default: 'ecos'
         Which quadratic program solver to use.
 
     alpha : float, positive, default: 1
         Weight of penalizing the hinge loss in the objective function.
 
-    kernel : "linear" | "poly" | "rbf" | "sigmoid" | "cosine" | "precomputed"
-        Kernel.
-        Default: "linear"
+    kernel : {'linear', 'poly', 'rbf', 'sigmoid', 'cosine', 'precomputed'} or callable, default: 'linear'.
+        Kernel mapping used internally. This parameter is directly passed to
+        :func:`sklearn.metrics.pairwise.pairwise_kernels`.
+        If `kernel` is a string, it must be one of the metrics
+        in `sklearn.pairwise.PAIRWISE_KERNEL_FUNCTIONS` or "precomputed".
+        If `kernel` is "precomputed", X is assumed to be a kernel matrix.
+        Alternatively, if `kernel` is a callable function, it is called on
+        each pair of instances (rows) and the resulting value recorded. The
+        callable should take two rows from X as input and return the
+        corresponding kernel value as a single number. This means that
+        callables from :mod:`sklearn.metrics.pairwise` are not allowed, as
+        they operate on matrices, not single samples. Use the string
+        identifying the kernel instead.
 
-    gamma : float, optional
-        Kernel coefficient for rbf and poly kernels. Default: ``1/n_features``.
+    gamma : float, optional, default: None
+        Gamma parameter for the RBF, laplacian, polynomial, exponential chi2
+        and sigmoid kernels. Interpretation of the default value is left to
+        the kernel; see the documentation for :mod:`sklearn.metrics.pairwise`.
         Ignored by other kernels.
 
     degree : int, default: 3
-        Degree for poly kernels. Ignored by other kernels.
+        Degree of the polynomial kernel. Ignored by other kernels.
 
     coef0 : float, optional
-        Independent term in poly and sigmoid kernels.
+        Zero coefficient for polynomial and sigmoid kernels.
         Ignored by other kernels.
 
     kernel_params : mapping of string to any, optional
-        Parameters (keyword arguments) and values for kernel passed as call
+        Additional parameters (keyword arguments) for kernel function passed
+        as callable object.
 
-    pairs : "all" | "nearest" | "next", optional, default: "nearest"
+    pairs : {'all', 'nearest', 'next'}, optional, default: 'nearest'
         Which constraints to use in the optimization problem.
 
         - all: Use all comparable pairs. Scales quadratic in number of samples
@@ -237,14 +250,14 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
           disregarding its censoring status. Scales linear in number of samples.
 
     verbose : bool, default: False
-        Enable verbose output of solver
+        Enable verbose output of solver.
 
-    timeit : False or int
+    timeit : False, int or None, default: None
         If non-zero value is provided the time it takes for optimization is measured.
         The given number of repetitions are performed. Results can be accessed from the
         ``timings_`` attribute.
 
-    max_iter : int, optional
+    max_iter : int or None, optional, default: None
         Maximum number of iterations to perform. By default
         use solver's default value.
 
@@ -441,49 +454,62 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
 
     Parameters
     ----------
-    solver : "ecos" | "osqp", optional, default: ecos
+    solver : {'ecos', 'osqp'}, optional, default: 'ecos'
         Which quadratic program solver to use.
 
     alpha : float, positive, default: 1
         Weight of penalizing the hinge loss in the objective function.
 
-    kernel : "linear" | "poly" | "rbf" | "sigmoid" | "cosine" | "precomputed"
-        Kernel.
-        Default: "linear"
+    kernel : {'linear', 'poly', 'rbf', 'sigmoid', 'cosine', 'precomputed'} or callable, default: 'linear'.
+        Kernel mapping used internally. This parameter is directly passed to
+        :func:`sklearn.metrics.pairwise.pairwise_kernels`.
+        If `kernel` is a string, it must be one of the metrics
+        in `sklearn.pairwise.PAIRWISE_KERNEL_FUNCTIONS` or "precomputed".
+        If `kernel` is "precomputed", X is assumed to be a kernel matrix.
+        Alternatively, if `kernel` is a callable function, it is called on
+        each pair of instances (rows) and the resulting value recorded. The
+        callable should take two rows from X as input and return the
+        corresponding kernel value as a single number. This means that
+        callables from :mod:`sklearn.metrics.pairwise` are not allowed, as
+        they operate on matrices, not single samples. Use the string
+        identifying the kernel instead.
 
-    gamma : float, optional
-        Kernel coefficient for rbf and poly kernels. Default: ``1/n_features``.
+    gamma : float, optional, default: None
+        Gamma parameter for the RBF, laplacian, polynomial, exponential chi2
+        and sigmoid kernels. Interpretation of the default value is left to
+        the kernel; see the documentation for :mod:`sklearn.metrics.pairwise`.
         Ignored by other kernels.
 
     degree : int, default: 3
-        Degree for poly kernels. Ignored by other kernels.
+        Degree of the polynomial kernel. Ignored by other kernels.
 
     coef0 : float, optional
-        Independent term in poly and sigmoid kernels.
+        Zero coefficient for polynomial and sigmoid kernels.
         Ignored by other kernels.
 
     kernel_params : mapping of string to any, optional
-        Parameters (keyword arguments) and values for kernel passed as call
+        Additional parameters (keyword arguments) for kernel function passed
+        as callable object.
 
-    pairs : "all" | "nearest" | "next", optional, default: "all"
+    pairs : {'all', 'nearest', 'next'}, optional, default: 'all'
         Which constraints to use in the optimization problem.
 
         - all: Use all comparable pairs. Scales quadratic in number of samples.
         - nearest: Only considers comparable pairs :math:`(i, j)` where :math:`j` is the
           uncensored sample with highest survival time smaller than :math:`y_i`.
-          Scales linear in number of samples (cf. :class:`sksurv.svm.MinlipSurvivalSVM`).
+          Scales linear in number of samples (cf. :class:`sksurv.svm.MinlipSurvivalAnalysis`).
         - next: Only compare against direct nearest neighbor according to observed time,
           disregarding its censoring status. Scales linear in number of samples.
 
     verbose : bool, default: False
         Enable verbose output of solver.
 
-    timeit : False or int
+    timeit : False, int or None, default: None
         If non-zero value is provided the time it takes for optimization is measured.
         The given number of repetitions are performed. Results can be accessed from the
         ``timings_`` attribute.
 
-    max_iter : int, optional
+    max_iter : int or None, optional, default: None
         Maximum number of iterations to perform. By default
         use solver's default value.
 

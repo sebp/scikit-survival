@@ -97,11 +97,13 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
     learning_rate : float, optional, default: 0.1
         learning rate shrinks the contribution of each base learner by `learning_rate`.
         There is a trade-off between `learning_rate` and `n_estimators`.
+        Values must be in the range `[0.0, inf)`.
 
     n_estimators : int, default: 100
         The number of boosting stages to perform. Gradient boosting
         is fairly robust to over-fitting so a large number usually
         results in better performance.
+        Values must be in the range `[1, inf)`.
 
     subsample : float, optional, default: 1.0
         The fraction of samples to be used for fitting the individual base
@@ -109,6 +111,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         Boosting. `subsample` interacts with the parameter `n_estimators`.
         Choosing `subsample < 1.0` leads to a reduction of variance
         and an increase in bias.
+        Values must be in the range `(0.0, 1.0]`.
 
     dropout_rate : float, optional, default: 0.0
         If larger than zero, the residuals at each iteration are only computed
@@ -116,6 +119,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         percentage of base learners that are dropped. In each iteration,
         at least one base learner is dropped. This is an alternative regularization
         to shrinkage, i.e., setting `learning_rate < 1.0`.
+        Values must be in the range `[0.0, 1.0)`.
 
     random_state : int seed, RandomState instance, or None, default: None
         The seed of the pseudo random number generator to use when
@@ -123,8 +127,8 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
     verbose : int, default: 0
         Enable verbose output. If 1 then it prints progress and performance
-        once in a while (the more trees the lower the frequency). If greater
-        than 1 then it prints progress and performance for every tree.
+        once in a while.
+        Values must be in the range `[0, inf)`.
 
     Attributes
     ----------
@@ -541,12 +545,14 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
     learning_rate : float, optional, default: 0.1
         learning rate shrinks the contribution of each tree by `learning_rate`.
-        There is a trade-off between learning_rate and n_estimators.
+        There is a trade-off between `learning_rate` and `n_estimators`.
+        Values must be in the range `[0.0, inf)`.
 
     n_estimators : int, default: 100
         The number of regression trees to create. Gradient boosting
         is fairly robust to over-fitting so a large number usually
         results in better performance.
+        Values must be in the range `[1, inf)`.
 
     criterion : string, optional, default: 'friedman_mse'
         The function to measure the quality of a split. Supported criteria
@@ -556,22 +562,38 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         generally the best as it can provide a better approximation in
         some cases.
 
-    min_samples_split : integer, optional, default: 2
-        The minimum number of samples required to split an internal node.
+    min_samples_split : int or float, optional, default: 2
+        The minimum number of samples required to split an internal node:
 
-    min_samples_leaf : integer, optional, default: 1
+        - If int, values must be in the range `[2, inf)`.
+        - If float, values must be in the range `(0.0, 1.0]` and `min_samples_split`
+          will be `ceil(min_samples_split * n_samples)`.
+
+    min_samples_leaf : int or float, default: 1
         The minimum number of samples required to be at a leaf node.
+        A split point at any depth will only be considered if it leaves at
+        least ``min_samples_leaf`` training samples in each of the left and
+        right branches.  This may have the effect of smoothing the model,
+        especially in regression.
+
+        - If int, values must be in the range `[1, inf)`.
+        - If float, values must be in the range `(0.0, 1.0)` and `min_samples_leaf`
+          will be `ceil(min_samples_leaf * n_samples)`.
 
     min_weight_fraction_leaf : float, optional, default: 0.
-        The minimum weighted fraction of the input samples required to be at a
-        leaf node.
+        The minimum weighted fraction of the sum total of weights (of all
+        the input samples) required to be at a leaf node. Samples have
+        equal weight when `sample_weight` is not provided.
+        Values must be in the range `[0.0, 0.5]`.
 
-    max_depth : integer, optional, default: 3
-        maximum depth of the individual regression estimators. The maximum
+    max_depth : int or None, optional, default: 3
+        Maximum depth of the individual regression estimators. The maximum
         depth limits the number of nodes in the tree. Tune this parameter
         for best performance; the best value depends on the interaction
-        of the input variables.
-        Ignored if ``max_leaf_nodes`` is not None.
+        of the input variables. If None, then nodes are expanded until
+        all leaves are pure or until all leaves contain less than
+        `min_samples_split` samples.
+        If int, values must be in the range `[1, inf)`.
 
     min_impurity_decrease : float, optional, default: 0.
         A node will be split if this split induces a decrease of the impurity
@@ -590,19 +612,24 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         if ``sample_weight`` is passed.
 
     random_state : int seed, RandomState instance, or None, default: None
-        The seed of the pseudo random number generator to use when
-        shuffling the data.
+        Controls the random seed given to each Tree estimator at each
+        boosting iteration.
+        In addition, it controls the random permutation of the features at
+        each split.
+        It also controls the random splitting of the training data to obtain a
+        validation set if `n_iter_no_change` is not None.
+        Pass an int for reproducible output across multiple function calls.
 
     max_features : int, float, string or None, optional, default: None
         The number of features to consider when looking for the best split:
-          - If int, then consider `max_features` features at each split.
-          - If float, then `max_features` is a percentage and
-            `int(max_features * n_features)` features are considered at each
-            split.
-          - If "auto", then `max_features=n_features`.
-          - If "sqrt", then `max_features=sqrt(n_features)`.
-          - If "log2", then `max_features=log2(n_features)`.
-          - If None, then `max_features=n_features`.
+
+        - If int, values must be in the range `[1, inf)`.
+        - If float, values must be in the range `(0.0, 1.0]` and the features
+          considered at each split will be `max(1, int(max_features * n_features_in_))`.
+        - If 'auto', then `max_features=sqrt(n_features)`.
+        - If 'sqrt', then `max_features=sqrt(n_features)`.
+        - If 'log2', then `max_features=log2(n_features)`.
+        - If None, then `max_features=n_features`.
 
         Choosing `max_features < n_features` leads to a reduction of variance
         and an increase in bias.
@@ -614,14 +641,16 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
     max_leaf_nodes : int or None, optional, default: None
         Grow trees with ``max_leaf_nodes`` in best-first fashion.
         Best nodes are defined as relative reduction in impurity.
-        If None then unlimited number of leaf nodes.
+        Values must be in the range `[2, inf)`.
+        If `None`, then unlimited number of leaf nodes.
 
     subsample : float, optional, default: 1.0
-        The fraction of samples to be used for fitting the individual regression
-        trees. If smaller than 1.0, this results in Stochastic Gradient
+        The fraction of samples to be used for fitting the individual base
+        learners. If smaller than 1.0 this results in Stochastic Gradient
         Boosting. `subsample` interacts with the parameter `n_estimators`.
         Choosing `subsample < 1.0` leads to a reduction of variance
         and an increase in bias.
+        Values must be in the range `(0.0, 1.0]`.
 
     dropout_rate : float, optional, default: 0.0
         If larger than zero, the residuals at each iteration are only computed
@@ -629,16 +658,19 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         percentage of base learners that are dropped. In each iteration,
         at least one base learner is dropped. This is an alternative regularization
         to shrinkage, i.e., setting `learning_rate < 1.0`.
+        Values must be in the range `[0.0, 1.0)`.
 
     verbose : int, default: 0
         Enable verbose output. If 1 then it prints progress and performance
         once in a while (the more trees the lower the frequency). If greater
         than 1 then it prints progress and performance for every tree.
+        Values must be in the range `[0, inf)`.
 
     ccp_alpha : non-negative float, optional, default: 0.0.
         Complexity parameter used for Minimal Cost-Complexity Pruning. The
         subtree with the largest cost complexity that is smaller than
         ``ccp_alpha`` will be chosen. By default, no pruning is performed.
+        Values must be in the range `[0.0, inf)`.
 
     Attributes
     ----------

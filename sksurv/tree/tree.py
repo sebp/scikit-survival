@@ -40,15 +40,15 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
     Parameters
     ----------
-    splitter : string, optional, default: "best"
+    splitter : {'best', 'random'}, default: 'best'
         The strategy used to choose the split at each node. Supported
-        strategies are "best" to choose the best split and "random" to choose
+        strategies are 'best' to choose the best split and 'random' to choose
         the best random split.
 
     max_depth : int or None, optional, default: None
         The maximum depth of the tree. If None, then nodes are expanded until
         all leaves are pure or until all leaves contain less than
-        min_samples_split samples.
+        `min_samples_split` samples.
 
     min_samples_split : int, float, optional, default: 6
         The minimum number of samples required to split an internal node:
@@ -78,24 +78,29 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
     max_features : int, float, string or None, optional, default: None
         The number of features to consider when looking for the best split:
 
-            - If int, then consider `max_features` features at each split.
-            - If float, then `max_features` is a fraction and
-              `int(max_features * n_features)` features are considered at each
-              split.
-            - If "auto", then `max_features=sqrt(n_features)`.
-            - If "sqrt", then `max_features=sqrt(n_features)`.
-            - If "log2", then `max_features=log2(n_features)`.
-            - If None, then `max_features=n_features`.
+        - If int, then consider `max_features` features at each split.
+        - If float, then `max_features` is a fraction and
+          `int(max_features * n_features)` features are considered at each
+          split.
+        - If "auto", then `max_features=sqrt(n_features)`.
+        - If "sqrt", then `max_features=sqrt(n_features)`.
+        - If "log2", then `max_features=log2(n_features)`.
+        - If None, then `max_features=n_features`.
 
         Note: the search for a split does not stop until at least one
         valid partition of the node samples is found, even if it requires to
         effectively inspect more than ``max_features`` features.
 
     random_state : int, RandomState instance or None, optional, default: None
-        If int, random_state is the seed used by the random number generator;
-        If RandomState instance, random_state is the random number generator;
-        If None, the random number generator is the RandomState instance used
-        by `np.random`.
+        Controls the randomness of the estimator. The features are always
+        randomly permuted at each split, even if ``splitter`` is set to
+        ``"best"``. When ``max_features < n_features``, the algorithm will
+        select ``max_features`` at random at each split before finding the best
+        split among them. But the best found split may vary across different
+        runs, even if ``max_features=n_features``. That is the case, if the
+        improvement of the criterion is identical for several splits and one
+        split has to be selected at random. To obtain a deterministic behaviour
+        during fitting, ``random_state`` has to be fixed to an integer.
 
     max_leaf_nodes : int or None, optional, default: None
         Grow a tree with ``max_leaf_nodes`` in best-first fashion.

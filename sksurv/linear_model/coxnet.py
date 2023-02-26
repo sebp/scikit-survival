@@ -65,9 +65,10 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         This is a number that multiplies alpha to allow differential
         shrinkage.  Can be 0 for some variables, which implies no shrinkage,
         and that variable is always included in the model.
-        Default is 1 for all variables. Note: the penalty factors are
-        internally rescaled to sum to n_features, and the alphas sequence
-        will reflect this change.
+        Default is 1 for all variables.
+
+        Note: the penalty factors are internally rescaled to sum to
+        `n_features`, and the alphas sequence will reflect this change.
 
     normalize : boolean, optional, default: False
         If True, the features X will be normalized before optimization by

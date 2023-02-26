@@ -317,7 +317,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         If you want to include a subset of features without penalization,
         set the corresponding entries to 0.
 
-    ties : "breslow" | "efron", optional, default: "breslow"
+    ties : {'breslow', 'efron'}, optional, default: 'breslow'
         The method to handle tied event times. If there are
         no tied event times all the methods are equivalent.
 
@@ -330,7 +330,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         |1 - (new neg. log-likelihood / old neg. log-likelihood) | < tol
 
     verbose : int, optional, default: 0
-        Specified the amount of additional debug information
+        Specifies the amount of additional debug information
         during optimization.
 
     Attributes

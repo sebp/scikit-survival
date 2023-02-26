@@ -52,12 +52,12 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
     alpha : float, positive, default: 1.0
         Weight of penalizing the squared hinge loss in the objective function.
 
-    loss : string, 'hinge' or 'squared_hinge', default: 'squared_hinge'
+    loss : {'hinge', 'squared_hinge'}, default: 'squared_hinge'
         Specifies the loss function. 'hinge' is the standard SVM loss
         (used e.g. by the SVC class) while 'squared_hinge' is the
         square of the hinge loss.
 
-    penalty : 'l1' | 'l2', default: 'l2'
+    penalty : {'l1', 'l2'}, default: 'l2'
         Specifies the norm used in the penalization. The 'l2'
         penalty is the standard used in SVC. The 'l1' leads to `coef_`
         vectors that are sparse.

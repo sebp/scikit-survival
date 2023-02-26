@@ -321,13 +321,13 @@ class RandomSurvivalForest(_BaseSurvivalForest):
     max_features : int, float, string or None, optional, default: None
         The number of features to consider when looking for the best split:
 
-            - If int, then consider `max_features` features at each split.
-            - If float, then `max_features` is a fraction and
-              `int(max_features * n_features)` features are considered at each
-              split.
-            - If "sqrt", then `max_features=sqrt(n_features)`.
-            - If "log2", then `max_features=log2(n_features)`.
-            - If None, then `max_features=n_features`.
+        - If int, then consider `max_features` features at each split.
+        - If float, then `max_features` is a fraction and
+          `int(max_features * n_features)` features are considered at each
+          split.
+        - If "sqrt", then `max_features=sqrt(n_features)`.
+        - If "log2", then `max_features=log2(n_features)`.
+        - If None, then `max_features=n_features`.
 
         Note: the search for a split does not stop until at least one
         valid partition of the node samples is found, even if it requires to
@@ -346,16 +346,17 @@ class RandomSurvivalForest(_BaseSurvivalForest):
         Whether to use out-of-bag samples to estimate
         the generalization accuracy.
 
-    n_jobs : int or None, optional (default=None)
-        The number of jobs to run in parallel for both `fit` and `predict`.
-        ``None`` means 1 unless in a :obj:`joblib.parallel_backend` context.
-        ``-1`` means using all processors.
+    n_jobs : int or None, optional, default: None
+        The number of jobs to run in parallel. :meth:`fit`, :meth:`predict`,
+        :meth:`decision_path` and :meth:`apply` are all parallelized over the
+        trees. ``None`` means 1 unless in a :obj:`joblib.parallel_backend`
+        context. ``-1`` means using all processors.
 
     random_state : int, RandomState instance or None, optional, default: None
-        If int, random_state is the seed used by the random number generator;
-        If RandomState instance, random_state is the random number generator;
-        If None, the random number generator is the RandomState instance used
-        by `np.random`.
+        Controls both the randomness of the bootstrapping of the samples used
+        when building trees (if ``bootstrap=True``) and the sampling of the
+        features to consider when looking for the best split at each node
+        (if ``max_features < n_features``).
 
     verbose : int, optional, default: 0
         Controls the verbosity when fitting and predicting.
@@ -368,10 +369,11 @@ class RandomSurvivalForest(_BaseSurvivalForest):
     max_samples : int or float, optional, default: None
         If bootstrap is True, the number of samples to draw from X
         to train each base estimator.
+
         - If None (default), then draw `X.shape[0]` samples.
         - If int, then draw `max_samples` samples.
         - If float, then draw `max_samples * X.shape[0]` samples. Thus,
-        `max_samples` should be in the interval `(0.0, 1.0]`.
+          `max_samples` should be in the interval `(0.0, 1.0]`.
 
     Attributes
     ----------
@@ -651,13 +653,13 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
     max_features : int, float, string or None, optional, default: None
         The number of features to consider when looking for the best split:
 
-            - If int, then consider `max_features` features at each split.
-            - If float, then `max_features` is a fraction and
-              `int(max_features * n_features)` features are considered at each
-              split.
-            - If "sqrt", then `max_features=sqrt(n_features)`.
-            - If "log2", then `max_features=log2(n_features)`.
-            - If None, then `max_features=n_features`.
+        - If int, then consider `max_features` features at each split.
+        - If float, then `max_features` is a fraction and
+          `int(max_features * n_features)` features are considered at each
+          split.
+        - If "sqrt", then `max_features=sqrt(n_features)`.
+        - If "log2", then `max_features=log2(n_features)`.
+        - If None, then `max_features=n_features`.
 
         Note: the search for a split does not stop until at least one
         valid partition of the node samples is found, even if it requires to
@@ -676,16 +678,17 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
         Whether to use out-of-bag samples to estimate
         the generalization accuracy.
 
-    n_jobs : int or None, optional (default=None)
-        The number of jobs to run in parallel for both `fit` and `predict`.
-        ``None`` means 1 unless in a :obj:`joblib.parallel_backend` context.
-        ``-1`` means using all processors.
+    n_jobs : int or None, optional, default: None
+        The number of jobs to run in parallel. :meth:`fit`, :meth:`predict`,
+        :meth:`decision_path` and :meth:`apply` are all parallelized over the
+        trees. ``None`` means 1 unless in a :obj:`joblib.parallel_backend`
+        context. ``-1`` means using all processors.
 
     random_state : int, RandomState instance or None, optional, default: None
-        If int, random_state is the seed used by the random number generator;
-        If RandomState instance, random_state is the random number generator;
-        If None, the random number generator is the RandomState instance used
-        by `np.random`.
+        Controls both the randomness of the bootstrapping of the samples used
+        when building trees (if ``bootstrap=True``) and the sampling of the
+        features to consider when looking for the best split at each node
+        (if ``max_features < n_features``).
 
     verbose : int, optional, default: 0
         Controls the verbosity when fitting and predicting.
@@ -698,10 +701,11 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
     max_samples : int or float, optional, default: None
         If bootstrap is True, the number of samples to draw from X
         to train each base estimator.
+
         - If None (default), then draw `X.shape[0]` samples.
         - If int, then draw `max_samples` samples.
         - If float, then draw `max_samples * X.shape[0]` samples. Thus,
-        `max_samples` should be in the interval `(0.0, 1.0]`.
+          `max_samples` should be in the interval `(0.0, 1.0]`.
 
     Attributes
     ----------
