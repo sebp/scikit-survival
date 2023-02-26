@@ -25,6 +25,13 @@ def early_stopping_monitor(i, est, locals_):  # pylint: disable=unused-argument
 
 
 class MaxFeaturesCases(FixtureParameterFactory):
+
+    _prefix = (
+        "The 'max_features' parameter of GradientBoostingSurvivalAnalysis must be "
+        r"an int in the range \[1, inf\), a float in the range \(0\.0, 1\.0\], a str "
+        r"among {.+} or None\. "
+    )
+
     @property
     def n_features(self):
         return 14
@@ -45,15 +52,15 @@ class MaxFeaturesCases(FixtureParameterFactory):
         return 5, 5, does_not_raise()
 
     def data_m1(self):
-        return -1, None, pytest.raises(ValueError, match=r"max_features must be in \(0, n_features_in_\]")
+        return -1, None, pytest.raises(ValueError, match=MaxFeaturesCases._prefix + r"Got -1 instead\.")
 
     def data_m1p125(self):
-        return -1.125, None, pytest.raises(ValueError, match=r"max_features must be in \(0, 1.0\]")
+        return -1.125, None, pytest.raises(ValueError, match=MaxFeaturesCases._prefix + r"Got -1\.125 instead\.")
 
     def data_fail_me(self):
         return "fail_me", None, pytest.raises(
             ValueError,
-            match="Invalid value for max_features: 'fail_me'. Allowed string values are 'auto', 'sqrt' or 'log2'"
+            match=MaxFeaturesCases._prefix + r"Got 'fail_me' instead\."
         )
 
 
@@ -145,19 +152,25 @@ class TestGradientBoosting:
         assert not hasattr(model, "oob_improvement_")
         assert model.max_features_ == 8
 
-    def test_fit_int_param_as_float(self):
-        # Account for https://github.com/scikit-learn/scikit-learn/pull/12344
-        max_depth = 4
+    @pytest.mark.parametrize(
+        "parameter,value",
+        [
+            ("max_depth", 4.0),
+            ("n_estimators", 100.0),
+            ("max_leaf_nodes", 15.0),
+            ("min_samples_split", 10.0),
+        ]
+    )
+    def test_fit_int_param_as_float(self, parameter, value):
+        kwargs = {parameter: value}
+        model = GradientBoostingSurvivalAnalysis(**kwargs)
 
-        model = self.assert_fit_and_predict(
-            expected_cindex=(0.90256690042449006, 67826, 7321, 2, 14),
-            n_estimators=100.0, max_depth=float(max_depth), max_leaf_nodes=15.0, min_samples_split=10.0,
-        )
-        params = model.get_params()
-        assert 100 == params["n_estimators"]
-        assert max_depth == params["max_depth"]
-        assert 10 == params["min_samples_split"]
-        assert 15 == model.get_params()["max_leaf_nodes"]
+        msg = f"The '{parameter}' parameter of GradientBoostingSurvivalAnalysis " \
+              "must be an int in the range "
+
+        X, y = self.data
+        with pytest.raises(ValueError, match=msg):
+            model.fit(X, y)
 
     @pytest.mark.parametrize("fn,expected_file",
                              [("predict_survival_function", GBOOST_SURV_FILE),
@@ -220,7 +233,8 @@ class TestGradientBoosting:
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         clf = GradientBoostingSurvivalAnalysis()
-        msg = "ccp_alpha == -1.0, must be >= 0.0"
+        msg = "The 'ccp_alpha' parameter of GradientBoostingSurvivalAnalysis must be a float in the range " \
+              r"\[0\.0, inf\). Got -1\.0 instead\."
 
         clf.set_params(ccp_alpha=-1.0)
         with pytest.raises(ValueError, match=msg):
@@ -544,51 +558,55 @@ def sample_gb_class(request):
     return request.param, x, y
 
 
-def test_param_n_estimators(sample_gb_class):
+@pytest.mark.parametrize("n_estimators", [0, -1])
+def test_param_n_estimators(sample_gb_class, n_estimators):
     est_cls, x, y = sample_gb_class
-    model = est_cls(n_estimators=0)
+    model = est_cls(n_estimators=n_estimators)
 
-    with pytest.raises(ValueError, match="n_estimators must be greater than 0 but was 0"):
+    msg = f"The 'n_estimators' parameter of {est_cls.__name__} must be an int " \
+          r"in the range \[1, inf\)\. " \
+          f"Got {n_estimators} instead\\."
+
+    with pytest.raises(ValueError, match=msg):
         model.fit(x, y)
 
-    model.set_params(n_estimators=-1)
-    with pytest.raises(ValueError, match="n_estimators must be greater than 0 but was -1"):
-        model.fit(x, y)
 
-
-def test_param_learning_rate(sample_gb_class):
+@pytest.mark.parametrize("learning_rate", [-np.finfo(float).eps, -1])
+def test_param_learning_rate(sample_gb_class, learning_rate):
     est_cls, x, y = sample_gb_class
-    model = est_cls(learning_rate=0)
+    model = est_cls(learning_rate=learning_rate)
 
-    with pytest.raises(ValueError, match="learning_rate must be within ]0; 1] but was 0"):
+    msg = f"The 'learning_rate' parameter of {est_cls.__name__} must be a float " \
+          r"in the range \[0\.0, inf\)\. " \
+          f"Got {learning_rate} instead\\."
+
+    with pytest.raises(ValueError, match=msg):
         model.fit(x, y)
 
-    model.set_params(learning_rate=1.2)
-    with pytest.raises(ValueError, match="learning_rate must be within ]0; 1] but was 1.2"):
-        model.fit(x, y)
 
-
-def test_param_subsample(sample_gb_class):
+@pytest.mark.parametrize("subsample", [0, 1.2])
+def test_param_subsample(sample_gb_class, subsample):
     est_cls, x, y = sample_gb_class
-    model = est_cls(subsample=0)
+    model = est_cls(subsample=subsample)
 
-    with pytest.raises(ValueError, match="subsample must be in ]0; 1] but was 0"):
+    msg = f"The 'subsample' parameter of {est_cls.__name__} must be a float " \
+          r"in the range \(0\.0, 1\.0\]\. " \
+          f"Got {subsample} instead\\."
+
+    with pytest.raises(ValueError, match=msg):
         model.fit(x, y)
 
-    model.set_params(subsample=1.2)
-    with pytest.raises(ValueError, match="subsample must be in ]0; 1] but was 1.2"):
-        model.fit(x, y)
 
-
-def test_param_dropout_rate(sample_gb_class):
+@pytest.mark.parametrize("dropout_rate", [-0.1, 1.0, 1.2])
+def test_param_dropout_rate(sample_gb_class, dropout_rate):
     est_cls, x, y = sample_gb_class
-    model = est_cls(dropout_rate=-0.1)
+    model = est_cls(dropout_rate=dropout_rate)
 
-    with pytest.raises(ValueError, match=r"dropout_rate must be within \[0; 1\[, but was -0.1"):
-        model.fit(x, y)
+    msg = f"The 'dropout_rate' parameter of {est_cls.__name__} must be a float " \
+          r"in the range \[0\.0, 1\.0\)\. " \
+          f"Got {dropout_rate} instead\\."
 
-    model.set_params(dropout_rate=1.2)
-    with pytest.raises(ValueError, match=r"dropout_rate must be within \[0; 1\[, but was 1.2"):
+    with pytest.raises(ValueError, match=msg):
         model.fit(x, y)
 
 
@@ -604,17 +622,14 @@ def test_param_sample_weight(sample_gb_class):
         model.fit(x, y, [2, 4, 5, 6, 7, 1, 2, 7])
 
 
-def test_param_loss(sample_gb_class):
+@pytest.mark.parametrize("loss", ["", "unknown", None])
+def test_param_loss(sample_gb_class, loss):
     est_cls, x, y = sample_gb_class
-    model = est_cls(loss="")
+    model = est_cls(loss=loss)
 
-    with pytest.raises(ValueError, match="Loss '' not supported"):
-        model.fit(x, y)
+    msg = f"The 'loss' parameter of {est_cls.__name__} must be a str among " \
+          r"{.+}\. " \
+          f"Got {loss!r} instead\\."
 
-    model.set_params(loss="unknown")
-    with pytest.raises(ValueError, match="Loss 'unknown' not supported"):
-        model.fit(x, y)
-
-    model.set_params(loss=None)
-    with pytest.raises(ValueError, match="Loss None not supported"):
+    with pytest.raises(ValueError, match=msg):
         model.fit(x, y)

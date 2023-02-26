@@ -47,9 +47,9 @@ def test_logrank_veterans():
         columns=["counts", "observed", "expected", "statistic"],
         index=pd.Index(["adeno", "large", "smallcell", "squamous"], name="group")
     )
-    expected_stats.loc[:, "counts"] = np.array([27, 27, 48, 35], dtype=np.intp)
-    expected_stats.loc[:, "observed"] = np.array([26, 26, 45, 31], dtype=int)
-    expected_stats.loc[:, "expected"] = [15.6937646143605, 34.5494783863493, 30.1020793268148, 47.6546776724754]
+    expected_stats["counts"] = np.array([27, 27, 48, 35], dtype=np.intp)
+    expected_stats["observed"] = np.array([26, 26, 45, 31], dtype=int)
+    expected_stats["expected"] = [15.6937646143605, 34.5494783863493, 30.1020793268148, 47.6546776724754]
     assert_stats_frame_equal(stats, expected_stats)
 
     expected_var = np.array([

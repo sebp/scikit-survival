@@ -12,10 +12,10 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - py38_pandas10_numpy119_sklearn11
-          - py38_pandas11_numpy120_sklearn11
-          - py39_pandas13_numpy121_sklearn11
-          - py310_pandas14_numpy121_sklearn11
+          - py38_pandas10_numpy119_sklearn12
+          - py38_pandas11_numpy120_sklearn12
+          - py39_pandas13_numpy121_sklearn12
+          - py310_pandas14_numpy121_sklearn12
         runner:
           - ubuntu-latest
           - macos-latest
@@ -106,7 +106,7 @@ jobs:
       - name: Set dependencies
         id: dependencies
         env:
-          DEPS_CONFIG: py310_pandas14_numpy121_sklearn11
+          DEPS_CONFIG: py310_pandas14_numpy121_sklearn12
         run: |
           source ci/deps/${DEPS_CONFIG}.sh
           echo "CONDA_PYTHON_VERSION=${CONDA_PYTHON_VERSION}" >> $GITHUB_ENV

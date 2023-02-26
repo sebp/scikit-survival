@@ -83,14 +83,17 @@ class TestStackingClassifier:
     def test_meta_no_fit(dummy_data):
         est = Stacking(_NoFitEstimator(), [("m1", _PredictDummy())])
         X, y = dummy_data
-        with pytest.raises(TypeError,
-                           match=r"meta estimator should implement fit (.+) doesn't"):
+
+        msg = "The 'meta_estimator' parameter of Stacking must be an object " \
+              r"implementing 'fit'\. Got _NoFitEstimator\(\) instead\."
+
+        with pytest.raises(TypeError, match=msg):
             est.fit(X, y)
 
     @staticmethod
     def test_names_not_unique(dummy_data):
         est = Stacking(
-            _NoFitEstimator(),
+            _NoPredictDummy(),
             [("m1", _PredictDummy()), ("m2", _PredictDummy()), ("m1", _PredictDummy())]
         )
         X, y = dummy_data

@@ -63,7 +63,7 @@ class DataFrameCases(FixtureParameterFactory):
 
     def data_nominal_with_quotes(self):
         data, rel_name, expected = self.data_nominal()
-        data.loc[:, 'attr_nominal_spaces'] = [
+        data['attr_nominal_spaces'] = [
             "'red wine'", "'hard liquor'", None, 'mate', "'hard liquor'", 'mate'
         ]
         return data, rel_name, expected
@@ -71,14 +71,14 @@ class DataFrameCases(FixtureParameterFactory):
     def data_nominal_as_category(self):
         data, rel_name, expected = self.data_nominal_with_quotes()
         for name, series in data.iteritems():
-            data.loc[:, name] = pd.Categorical(series, ordered=False)
+            data[name] = pd.Categorical(series, ordered=False)
 
         expected[3] = "@attribute attr_nominal_spaces\t{\"hard liquor\",\"red wine\",mate}\n"
         return data, rel_name, expected
 
     def data_nominal_as_category_extra(self):
         data, rel_name, expected = self.data_nominal_as_category()
-        data.loc[:, 'attr_nominal'] = pd.Categorical(
+        data['attr_nominal'] = pd.Categorical(
             ['water', 'wine', 'beer', None, 'wine', 'water'],
             categories=['beer', 'coke', 'water', 'wine'],
             ordered=False,
@@ -89,7 +89,7 @@ class DataFrameCases(FixtureParameterFactory):
 
     def data_nominal_with_category_ordering(self):
         data, rel_name, expected = self.data_nominal_with_quotes()
-        data.loc[:, 'attr_nominal'] = pd.Categorical(
+        data['attr_nominal'] = pd.Categorical(
             ['water', 'wine', 'beer', None, 'wine', 'water'],
             categories=['water', 'coke', 'beer', 'wine'],
             ordered=False,

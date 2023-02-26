@@ -69,23 +69,33 @@ def test_unknown_optimizer(svm_cls, fake_data):
     x, y = fake_data
 
     ssvm = svm_cls(optimizer="random stuff")
-    with pytest.raises(ValueError, match="unknown optimizer: random stuff"):
+    msg = f"The 'optimizer' parameter of {svm_cls.__name__} must be " \
+          r"a str among \{.+\} or None\. Got 'random stuff' instead\."
+    with pytest.raises(ValueError, match=msg):
         ssvm.fit(x, y)
 
 
 class FastSurvivalSVMFailureCases(FixtureParameterFactory):
+    _prefix = "The '{name}' parameter of {estimator} must be "
+
     @property
     def x(self):
         return np.arange(80).reshape(10, 8)
 
     def data_alpha_negative(self):
         params = {"alpha": -1}
-        error = pytest.raises(ValueError, match="alpha must be positive")
+        msg = "The 'alpha' parameter of Fast(Kernel)?SurvivalSVM must be " \
+              r"a float in the range \(0\.0, inf\)\. " \
+              r"Got -1 instead\."
+        error = pytest.raises(ValueError, match=msg)
         return params, None, None, error
 
     def _rank_ratio_out_of_bounds(self, rank_ratio):
         params = {"rank_ratio": rank_ratio}
-        error = pytest.raises(ValueError, match=r"rank_ratio must be in \[0; 1\]")
+        msg = "The 'rank_ratio' parameter of Fast(Kernel)?SurvivalSVM must be " \
+              r"a float in the range \[0\.0, 1\.0\]\. " \
+              f"Got {rank_ratio!r} instead\\."
+        error = pytest.raises(ValueError, match=msg)
         return params, None, None, error
 
     def data_rank_ratio_out_of_bounds_0(self):
@@ -577,13 +587,13 @@ class TestKernelSurvivalSVM:
         x = normalize(whas500.x)
 
         rsvm = FastKernelSurvivalSVM(
-            optimizer="rbtree", kernel="polynomial",
+            optimizer="rbtree", kernel="poly",
             gamma=0.5, degree=2, coef0=0,
             tol=2.5e-8, max_iter=100, random_state=0xf38
         )
 
         kpca = KernelPCA(
-            kernel="polynomial", copy_X=True, gamma=0.5, degree=2, coef0=0, random_state=0xf38
+            kernel="poly", copy_X=True, gamma=0.5, degree=2, coef0=0, random_state=0xf38
         )
         xt = kpca.fit_transform(x)
         nrsvm = FastSurvivalSVM(optimizer="rbtree", tol=2.5e-8, max_iter=100, random_state=0xf38)

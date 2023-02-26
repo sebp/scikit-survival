@@ -17,6 +17,7 @@ import numpy as np
 from scipy.linalg import solve
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
+from sklearn.utils._param_validation import Interval, StrOptions
 from sklearn.utils.validation import check_array, check_is_fitted
 
 from ..base import SurvivalAnalysisMixin
@@ -138,8 +139,6 @@ class CoxPHOptimizer:
         self.time = time[o]
         self.alpha = alpha
         self.no_alpha = np.all(self.alpha < np.finfo(self.alpha.dtype).eps)
-        if ties not in ("breslow", "efron"):
-            raise ValueError("ties must be one of 'breslow', 'efron'")
         self._is_breslow = ties == "breslow"
 
     def nlog_likelihood(self, w):
@@ -318,7 +317,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         If you want to include a subset of features without penalization,
         set the corresponding entries to 0.
 
-    ties : "breslow" | "efron", optional, default: "breslow"
+    ties : {'breslow', 'efron'}, optional, default: 'breslow'
         The method to handle tied event times. If there are
         no tied event times all the methods are equivalent.
 
@@ -331,7 +330,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         |1 - (new neg. log-likelihood / old neg. log-likelihood) | < tol
 
     verbose : int, optional, default: 0
-        Specified the amount of additional debug information
+        Specifies the amount of additional debug information
         during optimization.
 
     Attributes
@@ -369,6 +368,14 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     .. [3] Efron, B. The Efficiency of Cox’s Likelihood Function for Censored Data.
            Journal of the American Statistical Association 72 (1977): 557–565.
     """
+
+    _parameter_constraints: dict = {
+        "alpha": [Interval(numbers.Real, 0, None, closed="left"), np.ndarray],
+        "ties": [StrOptions({"breslow", "efron"})],
+        "n_iter": [Interval(numbers.Integral, 1, None, closed="left")],
+        "tol": [Interval(numbers.Real, 0, None, closed="left")],
+        "verbose": ["verbose"],
+    }
 
     def __init__(self, alpha=0, ties="breslow", n_iter=100, tol=1e-9, verbose=0):
         self.alpha = alpha
@@ -408,6 +415,8 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         -------
         self
         """
+        self._validate_params()
+
         X = self._validate_data(X, ensure_min_samples=2, dtype=np.float64)
         event, time = check_array_survival(X, y)
 

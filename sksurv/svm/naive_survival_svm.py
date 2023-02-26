@@ -52,12 +52,12 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
     alpha : float, positive, default: 1.0
         Weight of penalizing the squared hinge loss in the objective function.
 
-    loss : string, 'hinge' or 'squared_hinge', default: 'squared_hinge'
+    loss : {'hinge', 'squared_hinge'}, default: 'squared_hinge'
         Specifies the loss function. 'hinge' is the standard SVM loss
         (used e.g. by the SVC class) while 'squared_hinge' is the
         square of the hinge loss.
 
-    penalty : 'l1' | 'l2', default: 'l2'
+    penalty : {'l1', 'l2'}, default: 'l2'
         Specifies the norm used in the penalization. The 'l2'
         penalty is the standard used in SVC. The 'l1' leads to `coef_`
         vectors that are sparse.
@@ -102,6 +102,18 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
            Bioinformatics 24(14), 1632-8, 2008.
 
     """
+
+    _parameter_constraints = {
+        "penalty": LinearSVC._parameter_constraints["penalty"],
+        "loss": LinearSVC._parameter_constraints["loss"],
+        "dual": LinearSVC._parameter_constraints["dual"],
+        "tol": LinearSVC._parameter_constraints["tol"],
+        "alpha": LinearSVC._parameter_constraints["C"],
+        "verbose": LinearSVC._parameter_constraints["verbose"],
+        "random_state": LinearSVC._parameter_constraints["random_state"],
+        "max_iter": LinearSVC._parameter_constraints["max_iter"],
+    }
+
     def __init__(self, penalty='l2', loss='squared_hinge', dual=False, tol=1e-4,
                  alpha=1.0, verbose=0, random_state=None, max_iter=1000):
         super().__init__(penalty=penalty,

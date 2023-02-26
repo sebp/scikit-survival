@@ -49,6 +49,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.coverage',
     'sphinx.ext.extlinks',
+    'sphinx.ext.intersphinx',
     'sphinx.ext.linkcode',
     'sphinx.ext.mathjax',
     'sphinx.ext.napoleon',
@@ -199,6 +200,7 @@ extlinks = {
     'issue': ('https://github.com/sebp/scikit-survival/issues/%s', '#'),
 }
 
+intersphinx_mapping = {'sklearn': ('https://scikit-learn.org/1.2', None)}
 
 def linkcode_resolve(domain, info):
     """

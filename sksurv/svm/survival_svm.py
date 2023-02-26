@@ -11,6 +11,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from abc import ABCMeta, abstractmethod
+from numbers import Integral, Real
 import warnings
 
 import numexpr
@@ -20,6 +21,7 @@ from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.utils import check_array, check_consistent_length, check_random_state, check_X_y
+from sklearn.utils._param_validation import Interval, StrOptions
 from sklearn.utils.extmath import safe_sparse_dot, squared_norm
 from sklearn.utils.validation import check_is_fitted
 
@@ -608,6 +610,18 @@ class NonlinearLargeScaleOptimizer(RankSVMOptimizer):
 
 
 class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
+
+    _parameter_constraints = {
+        "alpha": [Interval(Real, 0.0, None, closed="neither")],
+        "rank_ratio": [Interval(Real, 0.0, 1.0, closed="both")],
+        "fit_intercept": ["boolean"],
+        "max_iter": [Interval(Integral, 1, None, closed="left")],
+        "verbose": ["verbose"],
+        "tol": [Interval(Real, 0.0, None, closed="neither"), None],
+        "random_state": ["random_state"],
+        "timeit": [Interval(Integral, 1, None, closed="left"), "boolean"],
+    }
+
     @abstractmethod
     def __init__(self, alpha=1, rank_ratio=1.0, fit_intercept=False,
                  max_iter=20, verbose=False, tol=None,
@@ -647,8 +661,6 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
             optimizer = LargeScaleOptimizer(self.alpha, self.rank_ratio, self.fit_intercept,
                                             OrderStatisticTreeSurvivalCounter(X, ranks, status, AVLTree, times),
                                             timeit=self.timeit)
-        else:
-            raise ValueError('unknown optimizer: {0}'.format(self.optimizer))
 
         return optimizer
 
@@ -687,11 +699,7 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
         X = self._validate_for_fit(X)
         event, time = check_array_survival(X, y)
 
-        if self.alpha <= 0:
-            raise ValueError("alpha must be positive")
-
-        if not 0 <= self.rank_ratio <= 1:
-            raise ValueError("rank_ratio must be in [0; 1]")
+        self._validate_params()
 
         if self.fit_intercept and self.rank_ratio == 1.0:
             raise ValueError("fit_intercept=True is only meaningful if rank_ratio < 1.0")
@@ -806,17 +814,17 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     verbose : bool, optional, default: False
         Whether to print messages during optimization
 
-    tol : float, optional
+    tol : float or None, optional, default: None
         Tolerance for termination. For detailed control, use solver-specific
         options.
 
-    optimizer : "avltree" | "direct-count" | "PRSVM" | "rbtree" | "simple", optional, default: avltree
+    optimizer : {'avltree', 'direct-count', 'PRSVM', 'rbtree', 'simple'}, optional, default: 'avltree'
         Which optimizer to use.
 
     random_state : int or :class:`numpy.random.RandomState` instance, optional
         Random number generator (used to resolve ties in survival times).
 
-    timeit : False or int
+    timeit : False, int or None, default: None
         If non-zero value is provided the time it takes for optimization is measured.
         The given number of repetitions are performed. Results can be accessed from the
         ``optimizer_result_`` attribute.
@@ -852,6 +860,12 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
            ECML PKDD 2015, Porto, Portugal,
            Lecture Notes in Computer Science, vol. 9285, pp. 243-259 (2015)
     """
+
+    _parameter_constraints = {
+        **BaseSurvivalSVM._parameter_constraints,
+        "optimizer": [StrOptions({"simple", "PRSVM", "direct-count", "rbtree", "avltree"}), None],
+    }
+
     def __init__(self, alpha=1, rank_ratio=1.0, fit_intercept=False,
                  max_iter=20, verbose=False, tol=None,
                  optimizer=None, random_state=None, timeit=False):
@@ -920,23 +934,36 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         Whether to calculate an intercept for the regression model. If set to ``False``, no intercept
         will be calculated. Has no effect if ``rank_ratio = 1``, i.e., only ranking is performed.
 
-    kernel : "linear" | "poly" | "rbf" | "sigmoid" | "cosine" | "precomputed"
-        Kernel.
-        Default: "linear"
+    kernel : {'linear', 'poly', 'rbf', 'sigmoid', 'cosine', 'precomputed'} or callable, default: 'linear'.
+        Kernel mapping used internally. This parameter is directly passed to
+        :func:`sklearn.metrics.pairwise.pairwise_kernels`.
+        If `kernel` is a string, it must be one of the metrics
+        in `pairwise.PAIRWISE_KERNEL_FUNCTIONS` or "precomputed".
+        If `kernel` is "precomputed", X is assumed to be a kernel matrix.
+        Alternatively, if `kernel` is a callable function, it is called on
+        each pair of instances (rows) and the resulting value recorded. The
+        callable should take two rows from X as input and return the
+        corresponding kernel value as a single number. This means that
+        callables from :mod:`sklearn.metrics.pairwise` are not allowed, as
+        they operate on matrices, not single samples. Use the string
+        identifying the kernel instead.
 
-    degree : int, default: 3
-        Degree for poly kernels. Ignored by other kernels.
-
-    gamma : float, optional
-        Kernel coefficient for rbf and poly kernels. Default: ``1/n_features``.
+    gamma : float, optional, default: None
+        Gamma parameter for the RBF, laplacian, polynomial, exponential chi2
+        and sigmoid kernels. Interpretation of the default value is left to
+        the kernel; see the documentation for :mod:`sklearn.metrics.pairwise`.
         Ignored by other kernels.
 
+    degree : int, default: 3
+        Degree of the polynomial kernel. Ignored by other kernels.
+
     coef0 : float, optional
-        Independent term in poly and sigmoid kernels.
+        Zero coefficient for polynomial and sigmoid kernels.
         Ignored by other kernels.
 
     kernel_params : mapping of string to any, optional
-        Parameters (keyword arguments) and values for kernel passed as call
+        Additional parameters (keyword arguments) for kernel function passed
+        as callable object.
 
     max_iter : int, optional, default: 20
         Maximum number of iterations to perform in Newton optimization
@@ -944,17 +971,17 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     verbose : bool, optional, default: False
         Whether to print messages during optimization
 
-    tol : float, optional
+    tol : float or None, optional, default: None
         Tolerance for termination. For detailed control, use solver-specific
         options.
 
-    optimizer : "avltree" | "rbtree", optional, default: "rbtree"
+    optimizer : {'avltree', 'rbtree'}, optional, default: 'rbtree'
         Which optimizer to use.
 
     random_state : int or :class:`numpy.random.RandomState` instance, optional
         Random number generator (used to resolve ties in survival times).
 
-    timeit : False or int
+    timeit : False, int or None, default: None
         If non-zero value is provided the time it takes for optimization is measured.
         The given number of repetitions are performed. Results can be accessed from the
         ``optimizer_result_`` attribute.
@@ -993,6 +1020,20 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
            4th Workshop on Machine Learning in Life Sciences,
            23 September 2016, Riva del Garda, Italy. arXiv:1611.07054
     """
+
+    _parameter_constraints = {
+        **FastSurvivalSVM._parameter_constraints,
+        "kernel": [
+            StrOptions({"linear", "poly", "rbf", "sigmoid", "precomputed"}),
+            callable,
+        ],
+        "gamma": [Interval(Real, 0.0, None, closed="left"), None],
+        "degree": [Interval(Integral, 0, None, closed="left")],
+        "coef0": [Interval(Real, None, None, closed="neither")],
+        "kernel_params": [dict, None],
+        "optimizer": [StrOptions({"rbtree", "avltree"}), None],
+    }
+
     def __init__(self, alpha=1, rank_ratio=1.0, fit_intercept=False, kernel="rbf",
                  gamma=None, degree=3, coef0=1, kernel_params=None, max_iter=20, verbose=False, tol=None,
                  optimizer=None, random_state=None, timeit=False):
@@ -1036,8 +1077,6 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
                 self.alpha, self.rank_ratio, self.fit_intercept,
                 OrderStatisticTreeSurvivalCounter(kernel_mat, ranks, status, AVLTree, times),
                 timeit=self.timeit)
-        else:
-            raise ValueError('unknown optimizer: {0}'.format(self.optimizer))
 
         return optimizer
 
