@@ -434,13 +434,13 @@ def test_min_samples_leaf(fake_data, val):
         tree.fit(X, y)
 
 
-@pytest.mark.parametrize("val", [0, 0.0, 1, -1, -1e-6, -1512, 10.0, 1.000001, np.nan, -np.infty, np.infty])
+@pytest.mark.parametrize("val", [0, 0.0, 1, 1.0, -1, -1e-6, -1512, 10.0, 1.000001, np.nan, -np.infty, np.infty])
 def test_min_samples_split(fake_data, val):
     X, y = fake_data
     tree = SurvivalTree(min_samples_split=val)
 
     msg = r"The 'min_samples_split' parameter of SurvivalTree must be an int in the range \[2, inf\) or " \
-          r"a float in the range \(0\.0, 1\.0\]\. Got {!r} instead\.".format(val)
+          r"a float in the range \(0\.0, 1\.0\)\. Got {!r} instead\.".format(val)
     with pytest.raises(ValueError, match=msg):
         tree.fit(X, y)
 

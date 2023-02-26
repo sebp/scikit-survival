@@ -148,7 +148,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         "max_depth": [Interval(Integral, 1, None, closed="left"), None],
         "min_samples_split": [
             Interval(Integral, 2, None, closed="left"),
-            Interval(Real, 0.0, 1.0, closed="right"),
+            Interval(Real, 0.0, 1.0, closed="neither"),
         ],
         "min_samples_leaf": [
             Interval(Integral, 1, None, closed="left"),
@@ -283,7 +283,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         else:  # float
             min_samples_leaf = int(ceil(self.min_samples_leaf * n_samples))
 
-        if isinstance(self.min_samples_split, (Integral, np.integer)):
+        if isinstance(self.min_samples_split, Integral):
             min_samples_split = self.min_samples_split
         else:  # float
             min_samples_split = int(ceil(self.min_samples_split * n_samples))
