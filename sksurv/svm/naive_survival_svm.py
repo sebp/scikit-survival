@@ -29,7 +29,7 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
 
     Uses regular linear support vector classifier (liblinear).
     A new set of samples is created by building the difference between any two feature
-    vectors in the original data, thus this version requires `O(n_samples^2)` space.
+    vectors in the original data, thus this version requires :math:`O(\\text{n_samples}^2)` space.
 
     See :class:`sksurv.svm.HingeLossSurvivalSVM` for the kernel naive survival SVM.
 
