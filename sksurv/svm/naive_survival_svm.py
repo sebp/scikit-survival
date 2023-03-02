@@ -114,7 +114,7 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
         "max_iter": LinearSVC._parameter_constraints["max_iter"],
     }
 
-    def __init__(self, penalty='l2', loss='squared_hinge', dual=False, tol=1e-4,
+    def __init__(self, penalty='l2', loss='squared_hinge', *, dual=False, tol=1e-4,
                  alpha=1.0, verbose=0, random_state=None, max_iter=1000):
         super().__init__(penalty=penalty,
                          loss=loss,

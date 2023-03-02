@@ -148,7 +148,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         "fit_baseline_model": ["boolean"],
     }
 
-    def __init__(self, n_alphas=100, alphas=None, alpha_min_ratio="auto", l1_ratio=0.5,
+    def __init__(self, *, n_alphas=100, alphas=None, alpha_min_ratio="auto", l1_ratio=0.5,
                  penalty_factor=None, normalize=False, copy_X=True,
                  tol=1e-7, max_iter=100000, verbose=False, fit_baseline_model=False):
         self.n_alphas = n_alphas

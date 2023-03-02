@@ -377,7 +377,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         "verbose": ["verbose"],
     }
 
-    def __init__(self, alpha=0, ties="breslow", n_iter=100, tol=1e-9, verbose=0):
+    def __init__(self, alpha=0, *, ties="breslow", n_iter=100, tol=1e-9, verbose=0):
         self.alpha = alpha
         self.ties = ties
         self.n_iter = n_iter

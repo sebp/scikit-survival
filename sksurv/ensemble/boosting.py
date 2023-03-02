@@ -179,7 +179,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         "verbose": ["verbose"],
     }
 
-    def __init__(self, loss="coxph", learning_rate=0.1, n_estimators=100, subsample=1.0,
+    def __init__(self, *, loss="coxph", learning_rate=0.1, n_estimators=100, subsample=1.0,
                  dropout_rate=0, random_state=None, verbose=0):
         self.loss = loss
         self.n_estimators = n_estimators
@@ -728,7 +728,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         "dropout_rate": [Interval(numbers.Real, 0.0, 1.0, closed="left")]
     }
 
-    def __init__(self, loss="coxph", learning_rate=0.1, n_estimators=100,
+    def __init__(self, *, loss="coxph", learning_rate=0.1, n_estimators=100,
                  criterion='friedman_mse',
                  min_samples_split=2,
                  min_samples_leaf=1, min_weight_fraction_leaf=0.,

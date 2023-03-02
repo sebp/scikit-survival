@@ -166,6 +166,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
     }
 
     def __init__(self,
+                 *,
                  splitter="best",
                  max_depth=None,
                  min_samples_split=6,

@@ -439,6 +439,7 @@ class RandomSurvivalForest(_BaseSurvivalForest):
 
     def __init__(self,
                  n_estimators=100,
+                 *,
                  max_depth=None,
                  min_samples_split=6,
                  min_samples_leaf=3,
@@ -740,6 +741,7 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
 
     def __init__(self,
                  n_estimators=100,
+                 *,
                  max_depth=None,
                  min_samples_split=6,
                  min_samples_leaf=3,

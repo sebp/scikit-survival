@@ -39,7 +39,7 @@ class StepFunction:
     b : float, optional, default: 0.0
         Constant offset term.
     """
-    def __init__(self, x, y, a=1., b=0.):
+    def __init__(self, x, y, *, a=1., b=0.):
         check_consistent_length(x, y)
         self.x = x
         self.y = y

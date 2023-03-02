@@ -866,7 +866,7 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         "optimizer": [StrOptions({"simple", "PRSVM", "direct-count", "rbtree", "avltree"}), None],
     }
 
-    def __init__(self, alpha=1, rank_ratio=1.0, fit_intercept=False,
+    def __init__(self, alpha=1, *, rank_ratio=1.0, fit_intercept=False,
                  max_iter=20, verbose=False, tol=None,
                  optimizer=None, random_state=None, timeit=False):
         super().__init__(alpha=alpha, rank_ratio=rank_ratio, fit_intercept=fit_intercept,
@@ -1034,7 +1034,7 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         "optimizer": [StrOptions({"rbtree", "avltree"}), None],
     }
 
-    def __init__(self, alpha=1, rank_ratio=1.0, fit_intercept=False, kernel="rbf",
+    def __init__(self, alpha=1, *, rank_ratio=1.0, fit_intercept=False, kernel="rbf",
                  gamma=None, degree=3, coef0=1, kernel_params=None, max_iter=20, verbose=False, tol=None,
                  optimizer=None, random_state=None, timeit=False):
         super().__init__(alpha=alpha, rank_ratio=rank_ratio, fit_intercept=fit_intercept,

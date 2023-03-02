@@ -58,7 +58,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
     """
-    def __init__(self, allow_drop=True):
+    def __init__(self, *, allow_drop=True):
         self.allow_drop = allow_drop
 
     def fit(self, X, y=None):  # pylint: disable=unused-argument

@@ -140,6 +140,7 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
     def __init__(
         self,
         alpha=1.0,
+        *,
         fit_intercept=True,
         copy_X=True,
         max_iter=None,

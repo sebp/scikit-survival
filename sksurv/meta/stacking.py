@@ -77,7 +77,7 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
         "probabilities": ["boolean"],
     }
 
-    def __init__(self, meta_estimator, base_estimators, probabilities=True):
+    def __init__(self, meta_estimator, base_estimators, *, probabilities=True):
         self.meta_estimator = meta_estimator
         self.base_estimators = base_estimators
         self.probabilities = probabilities

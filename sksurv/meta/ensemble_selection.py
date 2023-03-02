@@ -394,7 +394,7 @@ class EnsembleSelection(BaseEnsembleSelection):
     }
     _parameter_constraints.pop("meta_estimator")
 
-    def __init__(self, base_estimators, scorer=None, n_estimators=0.2,
+    def __init__(self, base_estimators, *, scorer=None, n_estimators=0.2,
                  min_score=0.2, correlation="pearson", min_correlation=0.6,
                  cv=None, n_jobs=1, verbose=0):
         super().__init__(meta_estimator=MeanRankEstimator(),
@@ -537,7 +537,7 @@ class EnsembleSelectionRegressor(BaseEnsembleSelection):
     }
     _parameter_constraints.pop("meta_estimator")
 
-    def __init__(self, base_estimators, scorer=None, n_estimators=0.2,
+    def __init__(self, base_estimators, *, scorer=None, n_estimators=0.2,
                  min_score=0.66, correlation="pearson", min_correlation=0.6,
                  cv=None, n_jobs=1, verbose=0):
         super().__init__(meta_estimator=MeanEstimator(),

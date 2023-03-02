@@ -201,11 +201,11 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
     Parameters
     ----------
-    solver : {'ecos', 'osqp'}, optional, default: 'ecos'
-        Which quadratic program solver to use.
-
     alpha : float, positive, default: 1
         Weight of penalizing the hinge loss in the objective function.
+
+    solver : {'ecos', 'osqp'}, optional, default: 'ecos'
+        Which quadratic program solver to use.
 
     kernel : {'linear', 'poly', 'rbf', 'sigmoid', 'cosine', 'precomputed'} or callable, default: 'linear'.
         Kernel mapping used internally. This parameter is directly passed to
@@ -303,8 +303,8 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         "max_iter": [Interval(numbers.Integral, 1, None, closed="left"), None],
     }
 
-    def __init__(self, solver="ecos",
-                 alpha=1.0, kernel="linear", gamma=None, degree=3, coef0=1, kernel_params=None,
+    def __init__(self, alpha=1.0, *, solver="ecos",
+                 kernel="linear", gamma=None, degree=3, coef0=1, kernel_params=None,
                  pairs="nearest", verbose=False, timeit=None, max_iter=None):
         self.solver = solver
         self.alpha = alpha
@@ -454,11 +454,11 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
 
     Parameters
     ----------
-    solver : {'ecos', 'osqp'}, optional, default: 'ecos'
-        Which quadratic program solver to use.
-
     alpha : float, positive, default: 1
         Weight of penalizing the hinge loss in the objective function.
+
+    solver : {'ecos', 'osqp'}, optional, default: 'ecos'
+        Which quadratic program solver to use.
 
     kernel : {'linear', 'poly', 'rbf', 'sigmoid', 'cosine', 'precomputed'} or callable, default: 'linear'.
         Kernel mapping used internally. This parameter is directly passed to
@@ -549,8 +549,8 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
 
     _parameter_constraints = MinlipSurvivalAnalysis._parameter_constraints
 
-    def __init__(self, solver="ecos",
-                 alpha=1.0, kernel="linear", gamma=None, degree=3, coef0=1, kernel_params=None,
+    def __init__(self, alpha=1.0, *, solver="ecos",
+                 kernel="linear", gamma=None, degree=3, coef0=1, kernel_params=None,
                  pairs="all", verbose=False, timeit=None, max_iter=None):
         super().__init__(solver=solver, alpha=alpha, kernel=kernel, gamma=gamma, degree=degree, coef0=coef0,
                          kernel_params=kernel_params, pairs=pairs, verbose=verbose, timeit=timeit, max_iter=max_iter)
