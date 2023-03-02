@@ -1,6 +1,33 @@
 Release Notes
 =============
 
+scikit-survival 0.20.0 (2023-03-XX)
+-----------------------------------
+
+This release adds support for scikit-learn 1.2 and drops support for previous versions.
+
+Enhancements
+^^^^^^^^^^^^
+- Raise more informative error messages when a parameter does
+  not have a valid type/value (see
+  `sklearn#23462 <https://github.com/scikit-learn/scikit-learn/issues/23462>`_).
+- Add ``positive`` and ``random_state`` parameters to :class:`sksurv.linear_model.IPCRidge`.
+
+Documentation
+^^^^^^^^^^^^^
+- Update API docs based on scikit-learn 1.2 (where applicable).
+
+Backwards incompatible changes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- To align with the scikit-learn API, many parameters of estimators must be
+  provided with their names, as keyword arguments, instead of positional arguments.
+- Remove deprecated ``normalize`` parameter from :class:`sksurv.linear_model.IPCRidge`.
+- Remove deprecated ``X_idx_sorted`` argument from :meth:`sksurv.tree.SurvivalTree.fit`.
+- Setting ``kernel="polynomial"`` in :class:`sksurv.svm.FastKernelSurvivalSVM`,
+  :class:`sksurv.svm.HingeLossSurvivalSVM`, ad :class:`sksurv.svm.MinlipSurvivalAnalysis`
+  has been replaced with ``kernel="poly"``.
+
+
 scikit-survival 0.19.0 (2022-10-23)
 -----------------------------------
 
