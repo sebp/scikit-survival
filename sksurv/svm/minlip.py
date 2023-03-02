@@ -434,7 +434,7 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
 
     A new set of samples is created by building the difference between any two feature
     vectors in the original data, thus this version requires :math:`O(\\text{n_samples}^4)` space and
-    :math:`O(\\text{n_samples}^6 \\cdot \\text{n_features})`.
+    :math:`O(\\text{n_samples}^6 \\cdot \\text{n_features})` time.
 
     See :class:`sksurv.svm.NaiveSurvivalSVM` for the linear naive survival SVM based on liblinear.
 
