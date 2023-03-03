@@ -1,6 +1,6 @@
 |License| |Docs| |DOI|
 
-|build-linux| |build-macos| |build-windows| |Codecov| |Codacy|
+|build-tests| |build-windows| |Codecov| |Codacy|
 
 ***************
 scikit-survival
@@ -39,7 +39,7 @@ Requirements
 - numpy 1.17.3 or later
 - osqp
 - pandas 1.0.5 or later
-- scikit-learn 1.1
+- scikit-learn 1.2
 - scipy 1.3.2 or later
 - C/C++ compiler
 
@@ -134,13 +134,9 @@ Please cite the following paper if you are using **scikit-survival**.
    :target: https://zenodo.org/badge/latestdoi/77409504
    :alt: Digital Object Identifier (DOI)
 
-.. |build-linux| image:: https://github.com/sebp/scikit-survival/workflows/Linux/badge.svg?branch=master
-  :target: https://github.com/sebp/scikit-survival/actions?query=workflow%3ALinux+branch%3Amaster+
-  :alt: Linux Build Status
-
-.. |build-macos| image:: https://github.com/sebp/scikit-survival/workflows/macOS/badge.svg?branch=master
-  :target: https://github.com/sebp/scikit-survival/actions?query=workflow%3AmacOS+branch%3Amaster+
-  :alt: macOS Build Status
+.. |build-tests| image:: https://github.com/sebp/scikit-survival/actions/workflows/tests-workflow.yaml/badge.svg?branch=master
+  :target: https://github.com/sebp/scikit-survival/actions?query=workflow%3Atests+branch%3Amaster
+  :alt: GitHub Actions Tests Status
 
 .. |build-windows| image:: https://ci.appveyor.com/api/projects/status/github/sebp/scikit-survival?branch=master&svg=true
    :target: https://ci.appveyor.com/project/sebp/scikit-survival

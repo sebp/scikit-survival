@@ -159,6 +159,21 @@ class TestEnsembleSelectionSurvivalAnalysis:
 
 
 class EnsembleSelectionFailureCases(FixtureParameterFactory):
+    _msg_min_correlation = (
+        "The 'min_correlation' parameter of EnsembleSelection must be "
+        r"a float in the range \[-1, 1\]\. "
+        "Got {value} instead\\."
+    )
+    _msg_correlation = (
+        "The 'correlation' parameter of EnsembleSelection must be "
+        r"a str among {{.+}}\. "
+        "Got {value!r} instead\\."
+    )
+    _msg_scorer = (
+        "The 'scorer' parameter of EnsembleSelection must be "
+        r"a callable\. Got {value} instead\."
+    )
+
     def data_min_score(self):
         params = {"scorer": score_cindex, "min_score": 1.0, "cv": 3}
         match = "no base estimator exceeds min_score, try decreasing it"
@@ -166,32 +181,37 @@ class EnsembleSelectionFailureCases(FixtureParameterFactory):
 
     def data_min_correlation_0(self):
         params = {"scorer": score_cindex, "min_correlation": 1.2}
-        match = r"min_correlation must be in \[-1; 1\], but was 1.2"
+        match = self._msg_min_correlation.format(value=1.2)
         return params, ValueError, match
 
     def data_min_correlation_1(self):
         params = {"scorer": score_cindex, "min_correlation": -2.1}
-        match = r"min_correlation must be in \[-1; 1\], but was -2.1"
+        match = self._msg_min_correlation.format(value=-2.1)
         return params, ValueError, match
 
     def data_min_correlation_2(self):
         params = {"scorer": score_cindex, "min_correlation": np.nan}
-        match = r"min_correlation must be in \[-1; 1\], but was nan"
+        match = self._msg_min_correlation.format(value=np.nan)
         return params, ValueError, match
 
     def data_scorer_none(self):
         params = {"scorer": None}
-        match = "scorer is not callable"
+        match = self._msg_scorer.format(value=None)
         return params, TypeError, match
 
     def data_scorer_not_callable(self):
         params = {"scorer": np.zeros(10)}
-        match = "scorer is not callable"
+        value = r"array\(\[0\., 0\., 0\., 0\., 0\., 0\., 0\., 0\., 0\., 0\.\]\)"
+        match = self._msg_scorer.format(value=value)
         return params, TypeError, match
 
     def data_n_estimators_0(self):
         params = {"scorer": score_cindex, "n_estimators": 0}
-        match = "n_estimators must not be zero or negative"
+        match = (
+            "The 'n_estimators' parameter of EnsembleSelection must be "
+            r"an int in the range \[1, inf\) or a float in the range \(0\.0, 1\.0\]\. "
+            r"Got 0 instead\."
+        )
         return params, ValueError, match
 
     def data_n_estimators_1000(self):
@@ -201,17 +221,17 @@ class EnsembleSelectionFailureCases(FixtureParameterFactory):
 
     def data_correlation_none(self):
         params = {"scorer": score_cindex, "correlation": None}
-        match = "correlation must be one of 'pearson', 'kendall', and 'spearman', but got None"
+        match = self._msg_correlation.format(value=None)
         return params, ValueError, match
 
     def data_correlation_int(self):
         params = {"scorer": score_cindex, "correlation": 2143}
-        match = "correlation must be one of 'pearson', 'kendall', and 'spearman', but got 2143"
+        match = self._msg_correlation.format(value=2143)
         return params, ValueError, match
 
     def data_correlation_str(self):
         params = {"scorer": score_cindex, "correlation": "clearly wrong"}
-        match = "correlation must be one of 'pearson', 'kendall', and 'spearman', but got 'clearly wrong'"
+        match = self._msg_correlation.format(value='clearly wrong')
         return params, ValueError, match
 
 

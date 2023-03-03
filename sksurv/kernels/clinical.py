@@ -143,7 +143,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
            "Development of a kernel function for clinical data".
            Annual International Conference of the IEEE Engineering in Medicine and Biology Society, 5913-7, 2009
     """
-    def __init__(self, fit_once=False, _numeric_ranges=None, _numeric_columns=None, _nominal_columns=None):
+    def __init__(self, *, fit_once=False, _numeric_ranges=None, _numeric_columns=None, _nominal_columns=None):
         self.fit_once = fit_once
 
         self._numeric_ranges = _numeric_ranges

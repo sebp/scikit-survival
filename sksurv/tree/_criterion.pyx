@@ -99,8 +99,6 @@ cdef class LogrankCriterion(Criterion):
 
     def __cinit__(self, SIZE_t n_outputs, SIZE_t n_samples, const DOUBLE_t[::1] event_times):
         # Default values
-        self.sample_weight = NULL
-
         self.samples = NULL
         self.start = 0
         self.pos = 0
@@ -128,7 +126,7 @@ cdef class LogrankCriterion(Criterion):
     def __reduce__(self):
         return (type(self), (self.n_outputs, self.n_samples, self.event_times), self.__getstate__())
 
-    cdef int init(self, const DOUBLE_t[:, ::1] y, DOUBLE_t* sample_weight,
+    cdef int init(self, const DOUBLE_t[:, ::1] y, const DOUBLE_t[:] sample_weight,
                   double weighted_n_samples, SIZE_t* samples, SIZE_t start,
                   SIZE_t end) nogil except -1:
         """Initialize the criterion at node samples[start:end] and
@@ -157,7 +155,7 @@ cdef class LogrankCriterion(Criterion):
             i = samples[p]
             set_time_point(&time_arr[k], i, self.y)
 
-            if sample_weight is not NULL:
+            if sample_weight is not None:
                 w = sample_weight[i]
 
             self.weighted_n_node_samples += w
@@ -206,7 +204,7 @@ cdef class LogrankCriterion(Criterion):
 
     cdef int update(self, SIZE_t new_pos) nogil except -1:
         """Updated statistics by moving samples[pos:new_pos] to the left."""
-        cdef const double* sample_weight = self.sample_weight
+        cdef const DOUBLE_t[:] sample_weight = self.sample_weight
         cdef const SIZE_t* samples = self.samples
 
         cdef SIZE_t pos = self.start  # always start from the beginning
@@ -227,7 +225,7 @@ cdef class LogrankCriterion(Criterion):
             i = samples[idx_left]
             set_time_point(&time_arr[k], i, self.y)
 
-            if sample_weight is not NULL:
+            if sample_weight is not None:
                 w = sample_weight[i]
 
             self.weighted_n_left += w

@@ -17,6 +17,7 @@ import numpy as np
 from scipy.stats import kendalltau, rankdata, spearmanr
 from sklearn.base import BaseEstimator, clone
 from sklearn.model_selection import check_cv
+from sklearn.utils._param_validation import Interval, StrOptions
 
 from .base import _fit_and_score
 from .stacking import Stacking
@@ -93,6 +94,22 @@ def _score_regressor(estimator, X, y, idx):
 
 class BaseEnsembleSelection(Stacking):
 
+    _parameter_constraints = {
+        **Stacking._parameter_constraints,
+        "scorer": [callable],
+        "n_estimators": [
+            Interval(numbers.Integral, 1, None, closed="left"),
+            Interval(numbers.Real, 0.0, 1.0, closed="right"),
+        ],
+        "min_score": [numbers.Real],
+        "correlation": [StrOptions({"pearson", "kendall", "spearman"})],
+        "min_correlation": [Interval(numbers.Real, -1, 1, closed="both")],
+        "cv": ["cv_object"],
+        "n_jobs": [Interval(numbers.Integral, 1, None, closed="left")],
+        "verbose": ["verbose"],
+    }
+    _parameter_constraints.pop("probabilities")
+
     def __init__(self, meta_estimator, base_estimators, scorer=None, n_estimators=0.2,
                  min_score=0.66, correlation="pearson", min_correlation=0.6,
                  cv=None, n_jobs=1, verbose=0):
@@ -117,26 +134,17 @@ class BaseEnsembleSelection(Stacking):
         return 0
 
     def _check_params(self):
-        if self.n_estimators <= 0:
-            raise ValueError("n_estimators must not be zero or negative")
+        self._validate_params()
 
-        if self.n_estimators >= 1.0:
-            self.n_estimators = int(self.n_estimators)
-            if self.n_estimators > len(self.base_estimators):
-                raise ValueError(
-                    "n_estimators (%d) must not exceed number of base learners (%d)" % (self.n_estimators,
-                                                                                        len(self.base_estimators)))
+        if self.n_estimators > len(self.base_estimators):
+            raise ValueError(
+                "n_estimators (%d) must not exceed number of base learners (%d)" % (self.n_estimators,
+                                                                                    len(self.base_estimators)))
 
         if isinstance(self.n_estimators, numbers.Integral):
             self.n_estimators_ = self.n_estimators
         else:
             self.n_estimators_ = max(int(self.n_estimators * len(self.base_estimators)), 1)
-
-        if not callable(self.scorer):
-            raise TypeError("scorer is not callable")
-
-        if not -1. <= self.min_correlation <= 1:
-            raise ValueError("min_correlation must be in [-1; 1], but was %r" % self.min_correlation)
 
         if self.correlation == "pearson":
             self._corr_func = lambda x: np.corrcoef(x, rowvar=0)
@@ -144,9 +152,6 @@ class BaseEnsembleSelection(Stacking):
             self._corr_func = _corr_kendalltau
         elif self.correlation == "spearman":
             self._corr_func = lambda x: spearmanr(x, axis=0).correlation
-        else:
-            raise ValueError("correlation must be one of 'pearson', 'kendall', and 'spearman', "
-                             "but got %r" % self.correlation)
 
     def _create_base_ensemble(self, out, n_estimators, n_folds):
         """For each base estimator collect models trained on each fold"""
@@ -384,7 +389,12 @@ class EnsembleSelection(BaseEnsembleSelection):
         Lecture Notes in Computer Science, vol. 3181, 164-173, 2004
     """
 
-    def __init__(self, base_estimators, scorer=None, n_estimators=0.2,
+    _parameter_constraints = {
+        **BaseEnsembleSelection._parameter_constraints,
+    }
+    _parameter_constraints.pop("meta_estimator")
+
+    def __init__(self, base_estimators, *, scorer=None, n_estimators=0.2,
                  min_score=0.2, correlation="pearson", min_correlation=0.6,
                  cv=None, n_jobs=1, verbose=0):
         super().__init__(meta_estimator=MeanRankEstimator(),
@@ -521,7 +531,13 @@ class EnsembleSelectionRegressor(BaseEnsembleSelection):
         "Dynamic integration of regression models. International Workshop on Multiple Classifier Systems".
         Lecture Notes in Computer Science, vol. 3181, 164-173, 2004
     """
-    def __init__(self, base_estimators, scorer=None, n_estimators=0.2,
+
+    _parameter_constraints = {
+        **BaseEnsembleSelection._parameter_constraints,
+    }
+    _parameter_constraints.pop("meta_estimator")
+
+    def __init__(self, base_estimators, *, scorer=None, n_estimators=0.2,
                  min_score=0.66, correlation="pearson", min_correlation=0.6,
                  cv=None, n_jobs=1, verbose=0):
         super().__init__(meta_estimator=MeanEstimator(),

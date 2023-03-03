@@ -238,30 +238,48 @@ def test_pipeline_predict(breast_cancer, forest_cls, func):
 
 @pytest.mark.parametrize('forest_cls', FORESTS)
 @pytest.mark.parametrize(
-    'max_samples, exc_type, exc_msg',
+    'max_samples, exc_type, exc_msg, with_prefix',
     [(int(1e9), ValueError,
-      "`max_samples` must be in range 1 to 500 but got value 1000000000"),
+      "`max_samples` must be <= n_samples=500 but got value 1000000000", False),
      (1.0 + 1e-7, ValueError,
-      r"`max_samples` must be in range \(0\.0, 1\.0] but got value 1.0"),
+      r"Got 1\.0000001 instead", True),
      (2.0, ValueError,
-      r"`max_samples` must be in range \(0\.0, 1\.0] but got value 2.0"),
+      r"Got 2\.0 instead", True),
      (0.0, ValueError,
-      r"`max_samples` must be in range \(0\.0, 1\.0] but got value 0.0"),
+      r"Got 0\.0 instead", True),
      (np.nan, ValueError,
-      r"`max_samples` must be in range \(0\.0, 1\.0] but got value nan"),
+      "Got nan instead", True),
      (np.inf, ValueError,
-      r"`max_samples` must be in range \(0\.0, 1\.0] but got value inf"),
+      r"Got inf instead", True),
      ('str max_samples?!', TypeError,
-      r"`max_samples` should be int or float, but got "
-      r"type '\<class 'str'\>'"),
+      r"Got 'str max_samples\?!' instead", True),
      (np.ones(2), TypeError,
-      r"`max_samples` should be int or float, but got type "
-      r"'\<class 'numpy.ndarray'\>'")]
+      r"Got array\(\[1\., 1\.\]\) instead", True),
+     (0, ValueError, r"Got 0 instead", True)]
 )
-def test_fit_max_samples(make_whas500, forest_cls, max_samples, exc_type, exc_msg):
+def test_fit_max_samples(make_whas500, forest_cls, max_samples, exc_type, exc_msg, with_prefix):
     whas500 = make_whas500(to_numeric=True)
     forest = forest_cls(max_samples=max_samples)
-    with pytest.raises(exc_type, match=exc_msg):
+    prefix = f"The 'max_samples' parameter of {forest_cls.__name__} must be None, " \
+             r"a float in the range \(0\.0, 1\.0] or an int in the range \[1, inf\)\. "
+    if with_prefix:
+        msg = prefix + exc_msg
+    else:
+        msg = exc_msg
+    with pytest.raises(exc_type, match=msg):
+        forest.fit(whas500.x, whas500.y)
+
+
+@pytest.mark.parametrize('forest_cls', FORESTS)
+@pytest.mark.parametrize('max_features', [0, 0.0, 3.0, "", "None", "sqrt_", "log10", "car"])
+def test_fit_max_features(make_whas500, forest_cls, max_features):
+    whas500 = make_whas500(to_numeric=True)
+    forest = forest_cls(max_features=max_features)
+
+    msg = f"The 'max_features' parameter of {forest_cls.__name__} must be " \
+          r"an int in the range \[1, inf\), a float in the range \(0\.0, 1\.0\], " \
+          r"a str among {.+} or None\."
+    with pytest.raises(ValueError, match=msg):
         forest.fit(whas500.x, whas500.y)
 
 

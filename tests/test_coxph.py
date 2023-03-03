@@ -356,14 +356,15 @@ class TestCoxPH:
         assert_array_almost_equal(cph.coef_, coef)
 
     @staticmethod
-    def test_alpha(rossi):
-        cph = CoxPHSurvivalAnalysis(alpha=-0.0001)
+    @pytest.mark.parametrize("alpha", [-0.0001, -1.25])
+    def test_alpha(rossi, alpha):
+        cph = CoxPHSurvivalAnalysis(alpha=alpha)
 
-        with pytest.raises(ValueError, match=r"alpha must be positive, but was -0\.0001"):
-            cph.fit(rossi.x.values, rossi.y)
+        msg = "The 'alpha' parameter of CoxPHSurvivalAnalysis must be a float " \
+              r"in the range \[0, inf\) or an instance of 'numpy\.ndarray'\. " \
+              f"Got {alpha} instead\\."
 
-        cph.set_params(alpha=-1.25)
-        with pytest.raises(ValueError, match=r"alpha must be positive, but was -1\.25"):
+        with pytest.raises(ValueError, match=msg):
             cph.fit(rossi.x.values, rossi.y)
 
     @staticmethod
@@ -405,7 +406,23 @@ class TestCoxPH:
     @staticmethod
     def test_ties(rossi):
         cph = CoxPHSurvivalAnalysis(ties="xyz")
-        with pytest.raises(ValueError, match="ties must be one of 'breslow', 'efron'"):
+
+        msg = "The 'ties' parameter of CoxPHSurvivalAnalysis must be a str " \
+              r"among {.+}\. Got 'xyz' instead\."
+
+        with pytest.raises(ValueError, match=msg):
+            cph.fit(rossi.x.values, rossi.y)
+
+    @staticmethod
+    @pytest.mark.parametrize("n_iter", [0, -1, 10.0])
+    def test_n_iter(rossi, n_iter):
+        cph = CoxPHSurvivalAnalysis(n_iter=n_iter)
+
+        msg = "The 'n_iter' parameter of CoxPHSurvivalAnalysis must be an int " \
+              r"in the range \[1, inf\)\. " \
+              f"Got {n_iter} instead\\."
+
+        with pytest.raises(ValueError, match=msg):
             cph.fit(rossi.x.values, rossi.y)
 
     @staticmethod

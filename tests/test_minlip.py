@@ -409,7 +409,7 @@ class TestMinlipBreastCancer:
     @pytest.mark.parametrize("solver", ["osqp", "ecos"])
     def test_max_iter(gbsg2_scaled, solver):
         x, y = gbsg2_scaled
-        m = MinlipSurvivalAnalysis(solver=solver, alpha=1, kernel="polynomial",
+        m = MinlipSurvivalAnalysis(solver=solver, alpha=1, kernel="poly",
                                    degree=2, pairs="next", max_iter=5)
 
         with pytest.warns(ConvergenceWarning,
@@ -417,15 +417,19 @@ class TestMinlipBreastCancer:
             m.fit(x, y)
 
 
-@pytest.mark.parametrize("solver,error", [
-    (None, "unknown solver: None"),
-    ("i don't know", "unknown solver: i don't know"),
-    ([('why', 'are'), ('you', 'doing this')], r"unknown solver: \[\('why', 'are'\), \('you', 'doing this'\)\]"),
+@pytest.mark.parametrize("solver", [
+    None,
+    "i don't know",
+    [('why', 'are'), ('you', 'doing this')],
 ])
-def test_unknown_solver(gbsg2, solver, error):
+def test_unknown_solver(gbsg2, solver):
     x, y = gbsg2
     m = MinlipSurvivalAnalysis(solver=solver)
-    with pytest.raises(ValueError, match=error):
+
+    msg = "The 'solver' parameter of MinlipSurvivalAnalysis must be " \
+          r"a str among \{.+\}\. " \
+          r"Got .+ instead\."
+    with pytest.raises(ValueError, match=msg):
         m.fit(x, y)
 
 

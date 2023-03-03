@@ -677,23 +677,36 @@ class TestCoxnetSurvivalAnalysis:
 
     @pytest.mark.parametrize('val', [0, -1, -1e-6, 1 + 1e-6, 1512, np.nan, np.infty])
     def test_invalid_l1_ratio(self, val):
-        with pytest.raises(ValueError,
-                           match=r"l1_ratio must be in interval \]0;1\]"):
+        msg = "The 'l1_ratio' parameter of CoxnetSurvivalAnalysis must be a float " \
+              r"in the range \(0\.0, 1\.0]\. " \
+              f"Got {val} instead\\."
+
+        with pytest.raises(ValueError, match=msg):
             self._fit(alpha_min_ratio=0.0001, l1_ratio=val)
 
-    def test_invalid_tol(self, invalid_positive_int):
-        with pytest.raises(ValueError,
-                           match="tolerance must be positive"):
-            self._fit(alpha_min_ratio=0.0001, tol=invalid_positive_int)
+    @pytest.mark.parametrize("tol", [-1, -1e-6, -np.infty])
+    def test_invalid_tol(self, tol):
+        msg = "The 'tol' parameter of CoxnetSurvivalAnalysis must be a float " \
+              r"in the range \[0, inf\)\. " \
+              f"Got {tol} instead\\."
+
+        with pytest.raises(ValueError, match=msg):
+            self._fit(alpha_min_ratio=0.0001, tol=tol)
 
     def test_invalid_max_iter(self, invalid_positive_int):
-        with pytest.raises(ValueError,
-                           match="max_iter must be a positive integer"):
+        msg = "The 'max_iter' parameter of CoxnetSurvivalAnalysis must be an int " \
+              r"in the range \[1, inf\)\. " \
+              f"Got {invalid_positive_int} instead\\."
+
+        with pytest.raises(ValueError, match=msg):
             self._fit(alpha_min_ratio=0.0001, max_iter=invalid_positive_int)
 
     def test_invalid_n_alphas(self, invalid_positive_int):
-        with pytest.raises(ValueError,
-                           match="n_alphas must be a positive integer"):
+        msg = "The 'n_alphas' parameter of CoxnetSurvivalAnalysis must be an int " \
+              r"in the range \[1, inf\)\. " \
+              f"Got {invalid_positive_int} instead\\."
+
+        with pytest.raises(ValueError, match=msg):
             self._fit(alpha_min_ratio=0.0001, n_alphas=invalid_positive_int)
 
     @pytest.mark.parametrize('length', [0, 1, 29, 31])
@@ -736,14 +749,20 @@ class TestCoxnetSurvivalAnalysis:
             self._fit(alpha_min_ratio=0.0001, alphas=nan_float_array)
 
     def test_invalid_alpha_min_ratio_string(self):
-        with pytest.raises(ValueError,
-                           match="Invalid value for alpha_min_ratio"):
+        msg = "The 'alpha_min_ratio' parameter of CoxnetSurvivalAnalysis must be a float " \
+              r"in the range \(0, inf\) or a str among {'auto'}\. " \
+              r"Got 'max' instead\."
+
+        with pytest.raises(ValueError, match=msg):
             self._fit(alpha_min_ratio="max")
 
     @pytest.mark.parametrize("value", [0.0, -1e-12, -1, -np.infty, np.nan])
     def test_invalid_alpha_min_ratio_float(self, value):
-        with pytest.raises(ValueError,
-                           match="alpha_min_ratio must be positive"):
+        msg = "The 'alpha_min_ratio' parameter of CoxnetSurvivalAnalysis must be a float " \
+              r"in the range \(0, inf\) or a str among {'auto'}\. " \
+              f"Got {value} instead\\."
+
+        with pytest.raises(ValueError, match=msg):
             self._fit(alpha_min_ratio=value)
 
     @staticmethod
@@ -760,7 +779,7 @@ class TestCoxnetSurvivalAnalysis:
             184, 185, 186, 187, 188, 190, 191, 192, 193, 194, 195, 196, 197
         ])
 
-        nn = CoxnetSurvivalAnalysis(alphas=[0.007295025406624247], alpha_min_ratio=0.0001, l1_ratio=1.0)
+        nn = CoxnetSurvivalAnalysis(alphas=np.array([0.007295025406624247]), alpha_min_ratio=0.0001, l1_ratio=1.0)
         Xf, yf = Xt.iloc[index], y[index]
 
         with pytest.raises(ArithmeticError,
