@@ -5,6 +5,7 @@ import sys
 from pkg_resources import DistributionNotFound, get_distribution
 from sklearn.pipeline import Pipeline, _final_estimator_has
 from sklearn.utils.metaestimators import available_if
+
 from .util import conditionalAvailableProperty
 
 
