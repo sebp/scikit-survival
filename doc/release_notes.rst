@@ -24,7 +24,7 @@ Backwards incompatible changes
 - Remove deprecated ``normalize`` parameter from :class:`sksurv.linear_model.IPCRidge`.
 - Remove deprecated ``X_idx_sorted`` argument from :meth:`sksurv.tree.SurvivalTree.fit`.
 - Setting ``kernel="polynomial"`` in :class:`sksurv.svm.FastKernelSurvivalSVM`,
-  :class:`sksurv.svm.HingeLossSurvivalSVM`, ad :class:`sksurv.svm.MinlipSurvivalAnalysis`
+  :class:`sksurv.svm.HingeLossSurvivalSVM`, and :class:`sksurv.svm.MinlipSurvivalAnalysis`
   has been replaced with ``kernel="poly"``.
 
 
