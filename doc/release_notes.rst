@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-scikit-survival 0.20.0 (2023-03-XX)
+scikit-survival 0.20.0 (2023-03-05)
 -----------------------------------
 
 This release adds support for scikit-learn 1.2 and drops support for previous versions.
