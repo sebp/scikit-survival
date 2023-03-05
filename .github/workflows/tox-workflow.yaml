@@ -14,7 +14,7 @@ jobs:
         uses: fedora-python/tox-github-action@v36.0
         with:
           tox_env: py39-${{ matrix.tox_env }}
-          dnf_install: pandoc cmake make
+          dnf_install: cmake enchant-devel make pandoc
       - name: Archive documentation
         uses: actions/upload-artifact@v3
         with:
