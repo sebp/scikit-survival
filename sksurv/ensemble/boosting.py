@@ -528,7 +528,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
     For more details on gradient boosting see [1]_ and [2]_. If `loss='coxph'`,
     the partial likelihood of the proportional hazards model is optimized as
-    described in [3]_. If `loss='ipcwls'`, the accelerated failture time model with
+    described in [3]_. If `loss='ipcwls'`, the accelerated failure time model with
     inverse-probability of censoring weighted least squares error is optimized as
     described in [4]_. When using a non-zero `dropout_rate`, regularization is
     applied during training following [5]_.
