@@ -27,4 +27,4 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        tox_env: [flake8, isort, docs]
+        tox_env: [lint, docs]

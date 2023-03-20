@@ -24,4 +24,35 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
+[tool.ruff]
+extend-exclude = [
+    "doc/conf.py",
+    "sksurv/linear_model/src/eigen",
+]
+# Group violations by containing file.
+format = "grouped"
+ignore = ["C408"]
+ignore-init-module-imports = true
+line-length = 120
+select = [
+    "C4",
+    "C9",
+    "E",
+    "F",
+    "I",
+    "PT",
+    "W",
+]
+target-version = "py39"
+
+[tool.ruff.flake8-pytest-style]
+parametrize-names-type = "csv"
+
+[tool.ruff.mccabe]
+max-complexity = 10
+
+[tool.ruff.isort]
+force-sort-within-sections = true
+known-first-party = ["sksurv"]
+
 [tool.setuptools_scm]
