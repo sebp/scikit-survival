@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "setuptools>=45",
+    "setuptools>=61.0.0",
     "packaging",
     "wheel",
     "setuptools_scm[toml]>=6.4",
@@ -23,6 +23,54 @@ requires = [
     "scikit-learn; python_version>'3.10'",
 ]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "scikit-survival"
+description = "Survival analysis built on top of scikit-learn"
+readme = "README.rst"
+authors = [
+    {name = "Sebastian Pölsterl", email = "sebp@k-d-w.org"}
+]
+license = {file = "COPYING"}
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
+    "Programming Language :: C++",
+    "Programming Language :: Cython",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Software Development",
+    "Topic :: Scientific/Engineering"
+]
+dynamic = ["version", "dependencies"]
+
+[project.urls]
+homepage = "https://github.com/sebp/scikit-survival"
+Documentation = "https://scikit-survival.readthedocs.io"
+"Source Code" = "https://github.com/sebp/scikit-survival"
+"Bug Tracker" = "https://github.com/sebp/scikit-survival/issues"
+
+[tool.setuptools.dynamic]
+dependencies = {file = "requirements/prod.txt"}
+
+[tool.setuptools.packages.find]
+include = ["sksurv*"]
+namespaces = false
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.package-data]
+"sksurv.datasets" = ["data/*.arff"]
 
 [tool.ruff]
 extend-exclude = [
