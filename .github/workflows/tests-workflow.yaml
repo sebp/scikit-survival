@@ -81,14 +81,14 @@ jobs:
       - name: Submit Coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
-          file: tests/coverage.xml
+          file: coverage.xml
           fail_ci_if_error: true
         if: steps.coverage.outputs.do == 'true'
       - name: Submit Coverage to Codacy
         uses: codacy/codacy-coverage-reporter-action@master
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          coverage-reports: tests/coverage.xml
+          coverage-reports: coverage.xml
         if: ${{ steps.coverage.outputs.do == 'true' && github.event_name != 'pull_request' }}
 
 

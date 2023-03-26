@@ -73,6 +73,42 @@ include-package-data = false
 [tool.setuptools.package-data]
 "sksurv.datasets" = ["data/*.arff"]
 
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--strict-markers"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+plugins = ["Cython.Coverage"]
+relative_files = true
+source = ["sksurv"]
+
+[tool.coverage.report]
+exclude_lines = [
+    # Have to re-enable the standard pragma
+    "pragma: no cover",
+
+    # Don't complain about missing debug-only code:
+    "def __repr__",
+    "if self\\.debug",
+
+    # Don't complain if tests don't hit defensive assertion code:
+    "raise AssertionError",
+    "raise NotImplementedError",
+
+    # Don't complain if non-runnable code isn't run:
+    "if 0:",
+    "if __name__ == .__main__.:",
+]
+ignore_errors = true
+
+omit = [
+    "tests/*",
+    "*/setup.py",
+    "*/_version.py",
+]
+
 [tool.ruff]
 extend-exclude = [
     "doc/conf.py",
