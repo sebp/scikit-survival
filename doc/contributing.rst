@@ -85,7 +85,7 @@ For a pull request to be accepted, your changes must meet the below requirements
    All tests must be part of the ``tests`` directory.
    You can run the test suite locally by executing::
 
-    py.test tests/
+    pytest
 
    Tests will also be executed automatically once you submit a pull request.
 

@@ -46,7 +46,7 @@ install:
 
 test_script:
   - cmd: set "PYTHONWARNINGS=default"
-  - cmd: py.test -m "not slow" tests/
+  - cmd: pytest -m "not slow"
 
 artifacts:
   # Archive the generated wheel package in the ci.appveyor.com build report.

@@ -7,7 +7,7 @@ the contribution guidelines: https://scikit-survival.readthedocs.io/en/latest/co
 <!-- Remove items that do not apply. For completed items, change [ ] to [x]. -->
 
 - [ ] closes #xxxx
-- [ ] py.test passes
+- [ ] pytest passes
 - [ ] tests are included
 - [ ] code is well formatted
 - [ ] documentation renders correctly
