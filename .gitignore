@@ -48,6 +48,7 @@ nosetests.xml
 coverage.xml
 *.cover
 .pytest_cache/
+.ruff_cache/
 
 # Translations
 *.mo

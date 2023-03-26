@@ -6,7 +6,7 @@ prune doc/api/generated
 prune .binder
 prune .github
 prune ci
-exclude appveyor.yml .codecov.yml .coveragerc .readthedocs.yaml .zenodo.json
+exclude appveyor.yml .codecov.yml .readthedocs.yaml .zenodo.json
 
 global-exclude __pycache__
 global-exclude .ipynb_checkpoints

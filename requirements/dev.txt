@@ -1,7 +1,7 @@
 -r prod.txt
 
+coverage
 cython >=0.29
 packaging
 pytest
-pytest-cov
 setuptools_scm

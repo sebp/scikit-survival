@@ -74,7 +74,7 @@ For a pull request to be accepted, your changes must meet the below requirements
    To check that your code conforms to PEP8, you can install
    `tox`_ and run::
 
-    tox -e py310-flake8
+    tox -e py310-lint
 
 3. Each function, class, method, and attribute needs to be documented using docstrings.
    scikit-survival conforms to the
@@ -85,7 +85,7 @@ For a pull request to be accepted, your changes must meet the below requirements
    All tests must be part of the ``tests`` directory.
    You can run the test suite locally by executing::
 
-    py.test tests/
+    pytest
 
    Tests will also be executed automatically once you submit a pull request.
 
