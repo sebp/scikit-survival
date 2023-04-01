@@ -264,8 +264,9 @@ def kaplan_meier_estimator(
     --------
     Creating a Kaplan-Meier curve:
 
-    >>> x, y = kaplan_meier_estimator(event, time)
+    >>> x, y, conf_int = kaplan_meier_estimator(event, time, conf_type="log-log")
     >>> plt.step(x, y, where="post")
+    >>> plt.fill_between(x, conf_int[0], conf_int[1], alpha=0.25, step="post")
     >>> plt.ylim(0, 1)
     >>> plt.show()
 
