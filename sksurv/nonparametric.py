@@ -10,9 +10,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import numbers
+
 import numpy as np
 from scipy import stats
 from sklearn.base import BaseEstimator
+from sklearn.utils._param_validation import Interval, StrOptions
 from sklearn.utils.validation import check_array, check_consistent_length, check_is_fitted
 
 from .util import check_y_survival
@@ -173,6 +176,7 @@ def _compute_counts_truncated(event, time_enter, time_exit):
 
 
 def _ci_logmlog(prob_survival, sigma_t, z):
+    """Compute the pointwise log-minus-log transformed confidence intervals"""
     eps = np.finfo(prob_survival.dtype).eps
     log_p = np.zeros_like(prob_survival)
     np.log(prob_survival, where=prob_survival > eps, out=log_p)
@@ -185,7 +189,27 @@ def _ci_logmlog(prob_survival, sigma_t, z):
     return ci
 
 
-def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None, reverse=False, with_variance=False):
+def _km_ci_estimator(prob_survival, ratio_var, conf_level, conf_type):
+    if conf_type not in {"log-log"}:
+        raise ValueError("conf_type must be None or a str among {{'log-log'}}, but was {!r}".format(conf_type))
+
+    if (
+        not isinstance(conf_level, numbers.Real)
+        or not np.isfinite(conf_level)
+        or conf_level <= 0
+        or conf_level >= 1.0
+    ):
+        raise ValueError("conf_level must be a float in the range (0.0, 1.0), but was {!r}".format(conf_level))
+
+    z = stats.norm.isf((1.0 - conf_level) / 2.0)
+    sigma = np.sqrt(np.cumsum(ratio_var))
+    ci = _ci_logmlog(prob_survival, sigma, z)
+    return ci
+
+
+def kaplan_meier_estimator(
+    event, time_exit, time_enter=None, time_min=None, reverse=False, conf_level=0.95, conf_type=None,
+):
     """Kaplan-Meier estimator of survival function.
 
     See [1]_ for further description.
@@ -213,9 +237,14 @@ def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None, rev
         Only available for right-censored data, i.e. `time_enter` must
         be None.
 
-    with_variance : bool, optional, default: False
-        Whether to estimate the variance of the Kaplan-Meier estimator.
-        Only available if `reverse` is False.
+    conf_level : float, optional, default: 0.95
+        The level for a two-sided confidence interval on the survival curves.
+
+    conf_type : None or {'log-log'}, optional, default: 'log-log'.
+        The type of confidence intervals to estimate.
+        If `None`, no confidence intervals are estimated.
+        If "log-log", estimate confidence intervals using
+        the log hazard or :math:`log(-log(S(t)))` as described in [2]_.
 
     Returns
     -------
@@ -226,10 +255,10 @@ def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None, rev
         Survival probability at each unique time point.
         If `time_enter` is provided, estimates are conditional probabilities.
 
-    var_prob_survival : array, shape = (n_times,)
-        Variance of the Kaplan-Meier estimator at each unique time point,
-        based on Greenwood's formula [2]_.
-        Only provided if `with_variance` is True.
+    conf_int : array, shape = (2, n_times)
+        Pointwise confidence interval of the Kaplan-Meier estimator
+        at each unique time point.
+        Only provided if `conf_type` is not None.
 
     Examples
     --------
@@ -240,15 +269,24 @@ def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None, rev
     >>> plt.ylim(0, 1)
     >>> plt.show()
 
+    See also
+    --------
+    sksurv.nonparametric.SurvivalFunctionEstimator
+        Estimator API of the Kaplan-Meier estimator.
+
     References
     ----------
     .. [1] Kaplan, E. L. and Meier, P., "Nonparametric estimation from incomplete observations",
            Journal of The American Statistical Association, vol. 53, pp. 457-481, 1958.
-    .. [2] Greenwood, Major (1926). A report on the natural duration of cancer.
-           Issue 33 of Reports on public health and medical subjects. HMSO. OCLC 14713088
+    .. [2] Borgan Ø. and Liestøl K., "A Note on Confidence Intervals and Bands for the
+           Survival Function Based on Transformations", Scandinavian Journal of
+           Statistics. 1990;17(1):35–41.
     """
     event, time_enter, time_exit = check_y_survival(event, time_enter, time_exit, allow_all_censored=True)
     check_consistent_length(event, time_enter, time_exit)
+
+    if conf_type is not None and reverse:
+        raise NotImplementedError("Confidence intervals of the censoring distribution is not implemented.")
 
     if time_enter is None:
         uniq_times, n_events, n_at_risk, n_censored = _compute_counts(event, time_exit)
@@ -270,9 +308,7 @@ def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None, rev
     )
     values = 1.0 - ratio
 
-    if with_variance:
-        if reverse:
-            raise ValueError("The variance of the censoring distribution is not implemented.")
+    if conf_type is not None:
         ratio_var = np.divide(
             n_events,
             n_at_risk * (n_at_risk - n_events),
@@ -287,18 +323,15 @@ def kaplan_meier_estimator(event, time_exit, time_enter=None, time_min=None, rev
 
     prob_survival = np.cumprod(values)
 
-    if with_variance:
-        if time_min is not None:
-            ratio_var = np.compress(mask, ratio_var)
-
-        conf_int = 0.95
-        z = stats.norm.isf((1.0 - conf_int) / 2.0)
-        sigma = np.sqrt(np.cumsum(ratio_var))
-        ci = _ci_logmlog(prob_survival, sigma, z)
-
-        return uniq_times, prob_survival, ci
-    else:
+    if conf_type is None:
         return uniq_times, prob_survival
+
+    if time_min is not None:
+        ratio_var = np.compress(mask, ratio_var)
+
+    ci = _km_ci_estimator(prob_survival, ratio_var, conf_level, conf_type)
+
+    return uniq_times, prob_survival, ci
 
 
 def nelson_aalen_estimator(event, time):
@@ -378,10 +411,33 @@ def ipc_weights(event, time):
 
 
 class SurvivalFunctionEstimator(BaseEstimator):
-    """Kaplan–Meier estimate of the survival function."""
+    """Kaplan–Meier estimate of the survival function.
 
-    def __init__(self):
-        pass
+    Parameters
+    ----------
+    conf_level : float, optional, default: 0.95
+        The level for a two-sided confidence interval on the survival curves.
+
+    conf_type : None or {'log-log'}, optional, default: 'log-log'.
+        The type of confidence intervals to estimate.
+        If `None`, no confidence intervals are estimated.
+        If "log-log", estimate confidence intervals using
+        the log hazard or :math:`log(-log(S(t)))`.
+
+    See also
+    --------
+    sksurv.nonparametric.kaplan_meier_estimator
+        Functional API of the Kaplan-Meier estimator.
+    """
+
+    _parameter_constraints = {
+        "conf_level": [Interval(numbers.Real, 0.0, 1.0, closed="neither")],
+        "conf_type": [None, StrOptions({"log-log"})],
+    }
+
+    def __init__(self, conf_level=0.95, conf_type=None):
+        self.conf_level = conf_level
+        self.conf_type = conf_type
 
     def fit(self, y):
         """Estimate survival distribution from training data.
@@ -397,16 +453,22 @@ class SurvivalFunctionEstimator(BaseEstimator):
         -------
         self
         """
+        self._validate_params()
         event, time = check_y_survival(y, allow_all_censored=True)
 
-        unique_time, prob, var_est = kaplan_meier_estimator(event, time, with_variance=True)
+        values = kaplan_meier_estimator(event, time, conf_level=self.conf_level, conf_type=self.conf_type)
+        if self.conf_type is None:
+            unique_time, prob = values
+        else:
+            unique_time, prob, conf_int = values
+            self.conf_int_ = np.column_stack((np.ones((2, 1)), conf_int))
+
         self.unique_time_ = np.r_[-np.infty, unique_time]
         self.prob_ = np.r_[1., prob]
-        self.conf_int_ = np.column_stack((np.ones((2, 1)), var_est))
 
         return self
 
-    def predict_proba(self, time, with_variance=False):
+    def predict_proba(self, time, return_conf_int=False):
         """Return probability of an event after given time point.
 
         :math:`\\hat{S}(t) = P(T > t)`
@@ -416,19 +478,27 @@ class SurvivalFunctionEstimator(BaseEstimator):
         time : array, shape = (n_samples,)
             Time to estimate probability at.
 
-        with_variance : bool, optional, default: False
-            Whether to estimate the variance of the Kaplan-Meier estimator.
+        return_conf_int : bool, optional, default: False
+            Whether to return the pointwise confidence interval
+            of the survival function.
+            Only available if :meth:`fit()` has been called
+            with the `conf_type` parameter set.
 
         Returns
         -------
         prob : array, shape = (n_samples,)
-            Probability of an event.
+            Probability of an event at the passed time points.
 
-        var : array, shape = (n_samples,)
-            Variance of the Kaplan-Meier estimator.
-            Only provided if `with_variance` is True.
+        conf_int : array, shape = (2, n_samples)
+            Pointwise confidence interval at the passed time points.
+            Only provided if `return_conf_int` is True.
         """
         check_is_fitted(self, "unique_time_")
+        if return_conf_int and not hasattr(self, "conf_int_"):
+            raise ValueError(
+                "If return_conf_int is True, SurvivalFunctionEstimator must be fitted with conf_int != None"
+            )
+
         time = check_array(time, ensure_2d=False, estimator=self, input_name="time")
 
         # K-M is undefined if estimate at last time point is non-zero
@@ -450,13 +520,13 @@ class SurvivalFunctionEstimator(BaseEstimator):
         idx[~exact] -= 1
         Shat[valid] = self.prob_[idx]
 
-        if with_variance:
-            ci = np.empty((2, time.shape[0]), dtype=float)
-            ci[:, extends] = np.nan
-            ci[:, valid] = self.conf_int_[:, idx]
-            return Shat, ci
-        else:
+        if not return_conf_int:
             return Shat
+
+        ci = np.empty((2, time.shape[0]), dtype=float)
+        ci[:, extends] = np.nan
+        ci[:, valid] = self.conf_int_[:, idx]
+        return Shat, ci
 
 
 class CensoringDistributionEstimator(SurvivalFunctionEstimator):
