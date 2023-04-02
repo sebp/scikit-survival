@@ -963,6 +963,28 @@ def test_brier_coxph():
     assert round(abs(score[0] - 0.208817407492645), 5) == 0
 
 
+def test_brier_score_int_dtype():
+    times = np.arange(30, dtype=int)
+    rnd = np.random.RandomState(1)
+    times = rnd.choice(times, 20)
+
+    y_int = np.empty(20, dtype=[("event", bool), ("time", int)])
+    y_int["event"] = np.ones(20, dtype=bool)
+    y_int["event"][:10] = False
+    y_int["time"] = times
+
+    pred = rnd.randn(20, 10)
+    tp = np.linspace(1.0, 2.0, 10)
+    _, bs_int = brier_score(y_int, y_int, pred, times=tp)
+
+    y_float = np.empty(20, dtype=[("event", bool), ("time", float)])
+    y_float["event"][:] = y_int["event"]
+    y_float["time"][:] = y_int["time"]
+    _, bs_float = brier_score(y_float, y_float, pred, times=tp)
+
+    assert_array_almost_equal(bs_float, bs_int)
+
+
 def test_ibs_nottingham_1(nottingham_prognostic_index):
     times = np.linspace(365, 1825, 5)  # t=1..5 years
     preds, y = nottingham_prognostic_index(times)

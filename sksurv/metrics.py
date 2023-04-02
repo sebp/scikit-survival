@@ -63,7 +63,7 @@ def _check_inputs(event_indicator, event_time, estimate):
 
 
 def _check_times(test_time, times):
-    times = check_array(np.atleast_1d(times), ensure_2d=False, dtype=test_time.dtype, input_name="times")
+    times = check_array(np.atleast_1d(times), ensure_2d=False, input_name="times")
     times = np.unique(times)
 
     if times.max() >= test_time.max() or times.min() < test_time.min():
