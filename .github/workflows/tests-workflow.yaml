@@ -13,9 +13,9 @@ jobs:
       matrix:
         config:
           - py38_pandas10_numpy119_sklearn12
-          - py38_pandas11_numpy120_sklearn12
           - py39_pandas13_numpy121_sklearn12
           - py310_pandas14_numpy121_sklearn12
+          - py311_pandas15_numpy123_sklearn12
         runner:
           - ubuntu-latest
           - macos-latest
