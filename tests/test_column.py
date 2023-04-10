@@ -251,6 +251,10 @@ class EncodeCategoricalCases(CategoricalCases):
 
 
 @pytest.mark.parametrize("inputs,kwargs,expected_df", EncodeCategoricalCases().get_cases())
+@pytest.mark.filterwarnings(
+    "ignore:In a future version, the Index constructor will not infer numeric dtypes when "
+    "passed object-dtype sequences \\(matching Series behavior\\):FutureWarning"
+)  # deprecated in pandas 1.4.0
 def test_encode_categorical(inputs, kwargs, expected_df):
     actual_df = column.encode_categorical(inputs, **kwargs)
     tm.assert_frame_equal(actual_df.isnull(), expected_df.isnull())
