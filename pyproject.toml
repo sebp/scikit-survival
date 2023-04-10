@@ -55,8 +55,8 @@ classifiers = [
 dynamic = ["version", "dependencies"]
 
 [project.urls]
-homepage = "https://github.com/sebp/scikit-survival"
-Documentation = "https://scikit-survival.readthedocs.io"
+"Homepage" = "https://github.com/sebp/scikit-survival"
+"Documentation" = "https://scikit-survival.readthedocs.io"
 "Source Code" = "https://github.com/sebp/scikit-survival"
 "Bug Tracker" = "https://github.com/sebp/scikit-survival/issues"
 "Release Notes" = "https://scikit-survival.readthedocs.io/en/latest/release_notes.html"
