@@ -495,6 +495,7 @@ class TestKernelSurvivalSVM:
     @staticmethod
     @pytest.mark.slow()
     @pytest.mark.parametrize('optimizer', ['rbtree', 'avltree'])
+    @pytest.mark.filterwarnings("ignore:Optimization did not converge.*:sklearn.exceptions.ConvergenceWarning")
     def test_fit_and_predict_rbf(make_whas500, optimizer):
         whas500 = make_whas500(to_numeric=True)
         ssvm = FastKernelSurvivalSVM(
