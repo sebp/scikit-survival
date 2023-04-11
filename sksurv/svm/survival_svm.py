@@ -786,7 +786,7 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     to apply: a smaller value increases the amount of regularization and a
     higher value reduces the amount of regularization. The hyper-parameter
     :math:`r \\in [0; 1]` determines the trade-off between the ranking objective
-    and the regresson objective. If :math:`r = 1` it reduces to the ranking
+    and the regression objective. If :math:`r = 1` it reduces to the ranking
     objective, and if :math:`r = 0` to the regression objective. If the regression
     objective is used, survival/censoring times are log-transform and thus cannot be
     zero or negative.

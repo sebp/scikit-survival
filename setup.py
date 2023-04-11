@@ -16,8 +16,7 @@ import shutil
 import sys
 
 from packaging.version import Version
-from pkg_resources import parse_requirements as _parse_requirements
-from setuptools import Command, Extension, find_packages, setup
+from setuptools import Command, Extension, setup
 
 CYTHON_MIN_VERSION = Version('0.29')
 
@@ -62,20 +61,6 @@ class clean(Command):
             shutil.rmtree(delete_dir)
         for delete_file in self.delete_files:
             delete_file.unlink()
-
-
-def parse_requirements(filename):
-    with open(filename) as fin:
-        parsed_requirements = _parse_requirements(
-            fin)
-        requirements = [str(ir) for ir in parsed_requirements]
-    return requirements
-
-
-def get_long_description():
-    with open('README.rst', encoding="utf-8") as fp:
-        long_description = fp.read()
-    return long_description
 
 
 EXTENSIONS = {
@@ -177,46 +162,8 @@ def get_extensions():
     return extensions
 
 
-def setup_package():
+if __name__ == "__main__":
     setup(
-        name='scikit-survival',
-        url='https://github.com/sebp/scikit-survival',
-        project_urls={
-            "Bug Tracker": "https://github.com/sebp/scikit-survival/issues",
-            "Documentation": "https://scikit-survival.readthedocs.io",
-            "Source Code": "https://github.com/sebp/scikit-survival",
-        },
-        author='Sebastian Pölsterl',
-        author_email='sebp@k-d-w.org',
-        description='Survival analysis built on top of scikit-learn',
-        long_description=get_long_description(),
-        license="GPLv3+",
-        packages=find_packages(),
         ext_modules=get_extensions(),
-        classifiers=['Development Status :: 4 - Beta',
-                     'Intended Audience :: Science/Research',
-                     'Intended Audience :: Developers',
-                     'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
-                     'Operating System :: MacOS',
-                     'Operating System :: Microsoft :: Windows',
-                     'Operating System :: POSIX',
-                     'Programming Language :: C++',
-                     'Programming Language :: Cython',
-                     'Programming Language :: Python',
-                     'Programming Language :: Python :: 3',
-                     'Programming Language :: Python :: 3.8',
-                     'Programming Language :: Python :: 3.9',
-                     'Programming Language :: Python :: 3.10',
-                     'Topic :: Software Development',
-                     'Topic :: Scientific/Engineering',
-                     ],
-        zip_safe=False,
-        package_data={"sksurv.datasets": ["data/*.arff"]},
-        python_requires='>=3.8',
-        install_requires=parse_requirements('requirements/prod.txt'),
         cmdclass={"clean": clean},
     )
-
-
-if __name__ == "__main__":
-    setup_package()

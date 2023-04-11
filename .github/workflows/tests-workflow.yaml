@@ -13,9 +13,9 @@ jobs:
       matrix:
         config:
           - py38_pandas10_numpy119_sklearn12
-          - py38_pandas11_numpy120_sklearn12
           - py39_pandas13_numpy121_sklearn12
           - py310_pandas14_numpy121_sklearn12
+          - py311_pandas15_numpy123_sklearn12
         runner:
           - ubuntu-latest
           - macos-latest
@@ -81,14 +81,14 @@ jobs:
       - name: Submit Coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
-          file: tests/coverage.xml
+          file: coverage.xml
           fail_ci_if_error: true
         if: steps.coverage.outputs.do == 'true'
       - name: Submit Coverage to Codacy
         uses: codacy/codacy-coverage-reporter-action@master
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          coverage-reports: tests/coverage.xml
+          coverage-reports: coverage.xml
         if: ${{ steps.coverage.outputs.do == 'true' && github.event_name != 'pull_request' }}
 
 

@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "setuptools>=45",
+    "setuptools>=61.0.0",
     "packaging",
     "wheel",
     "setuptools_scm[toml]>=6.4",
@@ -20,8 +20,134 @@ requires = [
     # scikit-learn requirements
     "scikit-learn~=1.2.0; python_version<='3.9'",
     "scikit-learn~=1.2.0; python_version=='3.10'",
-    "scikit-learn; python_version>'3.10'",
+    "scikit-learn~=1.2.0; python_version=='3.11'",
+    "scikit-learn; python_version>'3.11'",
 ]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "scikit-survival"
+description = "Survival analysis built on top of scikit-learn"
+readme = "README.rst"
+authors = [
+    {name = "Sebastian Pölsterl", email = "sebp@k-d-w.org"}
+]
+license = {file = "COPYING"}
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
+    "Programming Language :: C++",
+    "Programming Language :: Cython",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Software Development",
+    "Topic :: Scientific/Engineering"
+]
+dynamic = ["version", "dependencies"]
+
+[project.urls]
+"Homepage" = "https://github.com/sebp/scikit-survival"
+"Documentation" = "https://scikit-survival.readthedocs.io"
+"Source Code" = "https://github.com/sebp/scikit-survival"
+"Bug Tracker" = "https://github.com/sebp/scikit-survival/issues"
+"Release Notes" = "https://scikit-survival.readthedocs.io/en/latest/release_notes.html"
+
+[tool.setuptools.dynamic]
+dependencies = {file = "requirements/prod.txt"}
+
+[tool.setuptools.packages.find]
+include = ["sksurv*"]
+namespaces = false
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.package-data]
+"sksurv.datasets" = ["data/*.arff"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--strict-markers"
+testpaths = ["tests"]
+filterwarnings = [
+    # distutils is deprecated in 3.10, scheduled for removal in 3.12
+    "ignore:The distutils package is deprecated:DeprecationWarning",
+    "ignore:Setuptools is replacing distutils",
+    # check_less_precise has been deprecated in pandas 1.1.0
+    "ignore:The 'check_less_precise' keyword in testing\\.assert_\\*_equal is deprecated and will be removed in a future version.*:FutureWarning",
+    # iteritems has been deprecated in pandas 1.5.0
+    "ignore:iteritems is deprecated and will be removed in a future version. Use \\.items instead:FutureWarning:",
+]
+
+[tool.coverage.run]
+branch = true
+plugins = ["Cython.Coverage"]
+relative_files = true
+source = ["sksurv"]
+
+[tool.coverage.report]
+exclude_lines = [
+    # Have to re-enable the standard pragma
+    "pragma: no cover",
+
+    # Don't complain about missing debug-only code:
+    "def __repr__",
+    "if self\\.debug",
+
+    # Don't complain if tests don't hit defensive assertion code:
+    "raise AssertionError",
+    "raise NotImplementedError",
+
+    # Don't complain if non-runnable code isn't run:
+    "if 0:",
+    "if __name__ == .__main__.:",
+]
+ignore_errors = true
+
+omit = [
+    "tests/*",
+    "*/setup.py",
+    "*/_version.py",
+]
+
+[tool.ruff]
+extend-exclude = [
+    "doc/conf.py",
+    "sksurv/linear_model/src/eigen",
+]
+# Group violations by containing file.
+format = "grouped"
+ignore = ["C408"]
+ignore-init-module-imports = true
+line-length = 120
+select = [
+    "C4",
+    "C9",
+    "E",
+    "F",
+    "I",
+    "PT",
+    "W",
+]
+target-version = "py39"
+
+[tool.ruff.flake8-pytest-style]
+parametrize-names-type = "csv"
+
+[tool.ruff.mccabe]
+max-complexity = 10
+
+[tool.ruff.isort]
+force-sort-within-sections = true
+known-first-party = ["sksurv"]
 
 [tool.setuptools_scm]

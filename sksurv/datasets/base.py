@@ -410,7 +410,7 @@ def load_flchain():
 
     .. [2] Dispenzieri, A., Katzmann, J., Kyle, R., Larson, D., Therneau, T., Colby, C., Clark, R.,
            Mead, G., Kumar, S., Melton III, LJ. and Rajkumar, SV.
-           Use of monclonal serum immunoglobulin free light chains to predict overall survival in
+           Use of nonclonal serum immunoglobulin free light chains to predict overall survival in
            the general population, Mayo Clinic Proceedings 87:512-523. (2012)
     """
     fn = resource_filename(__name__, 'data/flchain.arff')

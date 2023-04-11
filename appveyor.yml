@@ -11,6 +11,8 @@ environment:
       CONDA_PY: "39"
     - TARGET_ARCH: "x64"
       CONDA_PY: "310"
+    - TARGET_ARCH: "x64"
+      CONDA_PY: "311"
 
 
 # We always use a 64-bit machine.
@@ -46,7 +48,7 @@ install:
 
 test_script:
   - cmd: set "PYTHONWARNINGS=default"
-  - cmd: py.test -m "not slow" tests/
+  - cmd: pytest -m "not slow"
 
 artifacts:
   # Archive the generated wheel package in the ci.appveyor.com build report.

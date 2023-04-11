@@ -236,6 +236,7 @@ class EnsembleSelectionFailureCases(FixtureParameterFactory):
 
 
 @pytest.mark.parametrize("params,error_cls,error", EnsembleSelectionFailureCases().get_cases())
+@pytest.mark.filterwarnings("ignore:Optimization did not converge.*:sklearn.exceptions.ConvergenceWarning")
 def test_ensemble_selection_failures(params, error_cls, error, make_whas500):
     whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
     base_estimators = [

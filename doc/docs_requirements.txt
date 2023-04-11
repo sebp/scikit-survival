@@ -6,3 +6,4 @@ docutils
 setuptools_scm
 sphinx ~=4.4.0
 pydata-sphinx-theme ~=0.8.1
+sphinxcontrib-spelling

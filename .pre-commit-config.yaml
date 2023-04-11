@@ -1,0 +1,32 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+    -   id: trailing-whitespace
+        exclude: '^\.gitignore$'
+    -   id: check-added-large-files
+    -   id: check-merge-conflict
+    -   id: check-toml
+    -   id: check-yaml
+-   repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.22.0
+    hooks:
+    -   id: check-dependabot
+    -   id: check-github-workflows
+-   repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.4.2
+    hooks:
+    -   id: forbid-crlf
+        exclude: '^\.gitignore$'
+    -   id: forbid-tabs
+        types: [python]
+#-   repo: https://github.com/psf/black
+    #rev: 23.1.0
+    #hooks:
+    #-   id: black
+-   repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.0.259
+    hooks:
+    -   id: ruff

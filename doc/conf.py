@@ -53,8 +53,11 @@ extensions = [
     'sphinx.ext.linkcode',
     'sphinx.ext.mathjax',
     'sphinx.ext.napoleon',
+    'sphinxcontrib.spelling',
     'nbsphinx',
 ]
+
+spelling_word_list_filename = 'spelling_wordlist.txt'
 
 autosummary_generate = True
 autodoc_default_options = {

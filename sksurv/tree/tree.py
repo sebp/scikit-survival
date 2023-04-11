@@ -99,7 +99,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         split among them. But the best found split may vary across different
         runs, even if ``max_features=n_features``. That is the case, if the
         improvement of the criterion is identical for several splits and one
-        split has to be selected at random. To obtain a deterministic behaviour
+        split has to be selected at random. To obtain a deterministic behavior
         during fitting, ``random_state`` has to be fixed to an integer.
 
     max_leaf_nodes : int or None, optional, default: None

@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-scikit-survival 0.20.0 (2023-03-XX)
+scikit-survival 0.20.0 (2023-03-05)
 -----------------------------------
 
 This release adds support for scikit-learn 1.2 and drops support for previous versions.
@@ -24,7 +24,7 @@ Backwards incompatible changes
 - Remove deprecated ``normalize`` parameter from :class:`sksurv.linear_model.IPCRidge`.
 - Remove deprecated ``X_idx_sorted`` argument from :meth:`sksurv.tree.SurvivalTree.fit`.
 - Setting ``kernel="polynomial"`` in :class:`sksurv.svm.FastKernelSurvivalSVM`,
-  :class:`sksurv.svm.HingeLossSurvivalSVM`, ad :class:`sksurv.svm.MinlipSurvivalAnalysis`
+  :class:`sksurv.svm.HingeLossSurvivalSVM`, and :class:`sksurv.svm.MinlipSurvivalAnalysis`
   has been replaced with ``kernel="poly"``.
 
 
@@ -137,7 +137,7 @@ Enhancements
 - Add support for ``feature_names_in_`` and ``n_features_in_``
   to all estimators and transforms.
 - Add :meth:`sksurv.preprocessing.OneHotEncoder.get_feature_names_out`.
-- Update bundeled version of Eigen to 3.3.9.
+- Update bundled version of Eigen to 3.3.9.
 
 Backwards incompatible changes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -151,7 +151,7 @@ Deprecations
 ^^^^^^^^^^^^
 - The ``normalize`` parameter of :class:`sksurv.linear_model.IPCRidge`
   is deprecated and will be removed in a future version. Instead, use
-  a sciki-learn pipeline:
+  a scikit-learn pipeline:
   ``make_pipeline(StandardScaler(with_mean=False), IPCRidge())``.
 
 
@@ -397,9 +397,9 @@ Bug fixes
   - :func:`sksurv.metrics.cumulative_dynamic_auc`
   - :func:`sksurv.metrics.concordance_index_ipcw`
 
-- Throw an exception when trying to estimate c-index from uncomparable data (#117).
+- Throw an exception when trying to estimate c-index from incomparable data (#117).
 - Estimators in ``sksurv.svm`` will now throw an
-  exception when trying to fit a model to data with uncomparable pairs.
+  exception when trying to fit a model to data with incomparable pairs.
 
 
 scikit-survival 0.12 (2020-04-15)
