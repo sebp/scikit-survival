@@ -399,10 +399,10 @@ def test_cond_avail_property():
 
     testval = 43
     msg = "has no attribute 'prop'"
-    
+
     test_obj = WithCondProp(testval)
     with pytest.raises(AttributeError, match=msg):
-        test_obj.prop
+        _ = test_obj.prop
     with pytest.raises(AttributeError, match=msg):
         test_obj.prop = testval-1
     with pytest.raises(AttributeError, match=msg):
@@ -412,9 +412,9 @@ def test_cond_avail_property():
     test_obj.prop = testval-2
     assert test_obj.prop == testval-2
     del test_obj.prop
-    assert test_obj.avail == False
+    assert test_obj.avail is False
     with pytest.raises(AttributeError, match=msg):
-        test_obj.prop
+        _ = test_obj.prop
     with pytest.raises(AttributeError, match=msg):
         test_obj.prop = testval-3
     with pytest.raises(AttributeError, match=msg):
