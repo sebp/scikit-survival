@@ -2,10 +2,10 @@ version: 2
 
 python:
   install:
-    - requirements: doc/docs_requirements.txt
-    - requirements: requirements/prod.txt
     - method: pip
       path: .
+      extra_requirements:
+        - docs
 
 build:
   os: ubuntu-22.04
