@@ -1,4 +1,5 @@
 ecos
+importlib_resources >=1.3
 joblib
 numexpr
 numpy
