@@ -21,9 +21,9 @@ python ci/render-requirements.py ci/deps/requirements.yaml.tmpl > environment.ya
 
 conda env create -n sksurv-test --solver=libmamba --file environment.yaml
 
-echo "numpy ${NUMPY_VERSION:?}" > "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
-echo "pandas ${PANDAS_VERSION:?}" >> "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
-echo "scikit-learn ${SKLEARN_VERSION:?}" >> "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
+echo "numpy ${CI_NUMPY_VERSION:?}" > "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
+echo "pandas ${CI_PANDAS_VERSION:?}" >> "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
+echo "scikit-learn ${CI_SKLEARN_VERSION:?}" >> "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
 
 # Useful for debugging any issues with conda
 conda info -a

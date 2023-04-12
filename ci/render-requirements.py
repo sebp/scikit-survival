@@ -14,7 +14,7 @@ def get_pinned_packages():
     }
     pinned = {}
     for env_name in pkgs:
-        key = f"{env_name}_VERSION"
+        key = f"CI_{env_name}_VERSION"
         ver = os.environ.get(key, "*")
         pinned[key] = ver
     return pinned

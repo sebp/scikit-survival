@@ -4,7 +4,7 @@ export PYTHONWARNINGS="default"
 
 pytest_opts=("")
 
-if [ "x${NO_SLOW:-false}" != "xtrue" ]; then
+if [ "x${CI_NO_SLOW:-false}" != "xtrue" ]; then
   coverage erase
   rm -f coverage.xml
 else
