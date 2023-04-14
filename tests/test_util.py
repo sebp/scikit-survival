@@ -421,7 +421,7 @@ def test_cond_avail_property():
         test_obj.prop = testval-3
     with pytest.raises(AttributeError, match=msg):
         del test_obj.prop
-
+        
     test_obj.avail = True
     WithCondProp.prop.fget = None
     with pytest.raises(AttributeError, match='has no getter'):
@@ -433,6 +433,4 @@ def test_cond_avail_property():
     with pytest.raises(AttributeError, match='has no deleter'):
         del test_obj.prop
 
-    with pytest.raises(AttributeError, match='already had a check set'):
-        oldcheck = test_obj.prop.check
-        test_obj.prop.check = oldcheck
+
