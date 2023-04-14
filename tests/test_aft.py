@@ -1,6 +1,8 @@
 import numpy as np
 from numpy.testing import assert_array_almost_equal
+from sklearn.pipeline import make_pipeline
 
+from sksurv.base import SurvivalAnalysisMixin
 from sksurv.linear_model import IPCRidge
 from sksurv.testing import assert_cindex_almost_equal
 
@@ -36,3 +38,19 @@ class TestIPCRidge:
         )
 
         assert model.score(x_test, y_test) == 0.66925817946226107
+
+    @staticmethod
+    def test_pipeline_score(make_whas500):
+        whas500 = make_whas500()
+        pipe = make_pipeline(IPCRidge())
+        pipe.fit(whas500.x[:400], whas500.y[:400])
+
+        x_test = whas500.x[400:]
+        y_test = whas500.y[400:]
+        p = pipe.predict(x_test)
+        assert_cindex_almost_equal(
+            y_test['fstat'], y_test['lenfol'], -p,
+            (0.66925817946226107, 2066, 1021, 0, 1),
+        )
+
+        assert SurvivalAnalysisMixin.score(pipe, x_test, y_test) == 0.66925817946226107

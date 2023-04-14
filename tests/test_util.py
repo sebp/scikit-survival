@@ -8,7 +8,7 @@ import pandas.testing as tm
 import pytest
 
 from sksurv.testing import FixtureParameterFactory
-from sksurv.util import Surv, safe_concat, conditionalAvailableProperty
+from sksurv.util import Surv, conditionalAvailableProperty, safe_concat
 
 
 class ConcatCasesFactory(FixtureParameterFactory):
@@ -400,6 +400,8 @@ def test_cond_avail_property():
     testval = 43
     msg = "has no attribute 'prop'"
 
+    assert WithCondProp.prop is not None
+
     test_obj = WithCondProp(testval)
     with pytest.raises(AttributeError, match=msg):
         _ = test_obj.prop
@@ -419,3 +421,18 @@ def test_cond_avail_property():
         test_obj.prop = testval-3
     with pytest.raises(AttributeError, match=msg):
         del test_obj.prop
+
+    test_obj.avail = True
+    WithCondProp.prop.fget = None
+    with pytest.raises(AttributeError, match='has no getter'):
+        _ = test_obj.prop
+    WithCondProp.prop.fset = None
+    with pytest.raises(AttributeError, match='has no setter'):
+        test_obj.prop = testval-4
+    WithCondProp.prop.fdel = None
+    with pytest.raises(AttributeError, match='has no deleter'):
+        del test_obj.prop
+
+    with pytest.raises(AttributeError, match='already had a check set'):
+        oldcheck = test_obj.check
+        test_obj.prop.check = oldcheck

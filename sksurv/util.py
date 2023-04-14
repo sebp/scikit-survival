@@ -325,9 +325,7 @@ class _ConditionalAvailableProperty:
     def check(self, check):
         if self._check is not None:
             raise AttributeError(f"property '{self._name}' already had a check set")
-        if check is None:
-            return self._check
-        return check
+        self._check = check
 
     def getter(self, fget):
         prop = type(self)(self.check, fget, self.fset, self.fdel, self.__doc__)
