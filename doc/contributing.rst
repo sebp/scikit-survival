@@ -36,7 +36,7 @@ on your computer.
 Setting up a Development Environment
 ------------------------------------
 
-After you created a copy of our main repository on `GitHub`_, your need
+After you created a copy of our main repository on `GitHub`_, you need
 to setup a local development environment.
 We strongly recommend to use `conda`_ to
 create a separate virtual environment containing all dependencies.
@@ -46,8 +46,8 @@ These are the steps you need to take.
 
 2. Create a new environment, named ``sksurv``::
 
-    python ci/list-requirements.py requirements/dev.txt > dev-requirements.txt
-    conda create -n sksurv -c sebp python=3 --file dev-requirements.txt
+    python ci/render-requirements.py ci/deps/requirements.yaml.tmpl > dev-environment.yaml
+    conda env create -n sksurv --file dev-environment.yaml
 
 
 3. Activate the newly created environment::
@@ -56,27 +56,29 @@ These are the steps you need to take.
 
 4. Compile the C/C++ extensions and install scikit-survival in development mode::
 
-    pip install --no-build-isolation -e .
+    pip install -e .[dev]
 
 Making Changes to the Code
 --------------------------
 For a pull request to be accepted, your changes must meet the below requirements.
 
 1. All changes related to **one feature** must belong to **one branch**.
-   Each branch must be self-contained, with a single new feature or bugfix.
+   Each branch must be self-contained, with a single new feature or bug fix.
    `Create a new feature branch <https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging>`_
    by executing::
 
     git checkout -b my-new-feature
 
 2. All code must follow the standard Python guidelines for code style,
-   `PEP8 <https://www.python.org/dev/peps/pep-0008/>`_.
+   `PEP8 <https://peps.python.org/pep-0008/>`_.
    To check that your code conforms to PEP8, you can install
    `tox`_ and run::
 
-    tox -e py310-lint
+    tox -e lint
 
-3. Each function, class, method, and attribute needs to be documented using docstrings.
+   Alternatively, you can use `pre-commit`_ to check your code on every commit automatically.
+
+3. Each function, class, method, and attribute needs to be documented using doc strings.
    scikit-survival conforms to the
    `numpy docstring standard <https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard>`_.
 
@@ -125,7 +127,7 @@ The documentation resides in the ``doc/`` folder and is written in
 reStructuredText. HTML files of the documentation can be generated using `Sphinx`_.
 The easiest way to build the documentation is to install `tox`_ and run::
 
-    tox -e py310-docs
+    tox -e docs
 
 Generated files will be located in ``doc/_build/html``. To open the main page
 of the documentation, run::
@@ -137,3 +139,4 @@ of the documentation, run::
 .. _GitHub: https://github.com/sebp/scikit-survival
 .. _Sphinx: https://www.sphinx-doc.org/
 .. _tox: https://tox.readthedocs.io/en/latest/
+.. _pre-commit: https://pre-commit.com/#usage

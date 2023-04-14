@@ -17,15 +17,13 @@ conda config --set always_yes yes --set changeps1 no
 
 conda install -n base conda-libmamba-solver
 
-conda create -n sksurv-test --solver=libmamba \
-  python="${CONDA_PYTHON_VERSION:?}" \
-  numpy="${NUMPY_VERSION:?}" \
-  pandas="${PANDAS_VERSION:?}" \
-  scikit-learn="${SKLEARN_VERSION:?}"
+python ci/render-requirements.py ci/deps/requirements.yaml.tmpl > environment.yaml
 
-echo "numpy ${NUMPY_VERSION:?}" > "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
-echo "pandas ${PANDAS_VERSION:?}" >> "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
-echo "scikit-learn ${SKLEARN_VERSION:?}" >> "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
+conda env create -n sksurv-test --solver=libmamba --file environment.yaml
+
+echo "numpy ${CI_NUMPY_VERSION:?}" > "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
+echo "pandas ${CI_PANDAS_VERSION:?}" >> "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
+echo "scikit-learn ${CI_SKLEARN_VERSION:?}" >> "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
 
 # Useful for debugging any issues with conda
 conda info -a
@@ -33,7 +31,7 @@ conda info -a
 # shellcheck disable=SC1091
 source activate sksurv-test
 
-pip install build
-
 # delete any version that is already installed
 pip uninstall --yes scikit-survival || exit 0
+
+conda list -n sksurv-test

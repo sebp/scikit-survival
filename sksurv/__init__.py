@@ -1,8 +1,8 @@
 import importlib
+from importlib.metadata import PackageNotFoundError, distribution
 import platform
 import sys
 
-from pkg_resources import DistributionNotFound, get_distribution
 from sklearn.pipeline import Pipeline, _final_estimator_has
 from sklearn.utils.metaestimators import available_if
 
@@ -134,8 +134,8 @@ def patch_pipeline():
 
 
 try:
-    __version__ = get_distribution('scikit-survival').version
-except DistributionNotFound:  # pragma: no cover
+    __version__ = distribution('scikit-survival').version
+except PackageNotFoundError:  # pragma: no cover
     # package is not installed
     __version__ = 'unknown'
 

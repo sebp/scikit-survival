@@ -3,7 +3,7 @@ requires = [
     "setuptools>=61.0.0",
     "packaging",
     "wheel",
-    "setuptools_scm[toml]>=6.4",
+    "setuptools-scm[toml]>=6.4",
     "Cython>=0.29.16",
 
     # arm64 on Darwin supports Python 3.8 and above requires numpy>=1.21.0
@@ -49,10 +49,22 @@ classifiers = [
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Topic :: Software Development",
     "Topic :: Scientific/Engineering"
 ]
-dynamic = ["version", "dependencies"]
+dependencies = [
+    "ecos",
+    "importlib-resources >=1.3",
+    "joblib",
+    "numexpr",
+    "numpy",
+    "osqp !=0.6.0,!=0.6.1",
+    "pandas >=1.0.5,<2",
+    "scipy >=1.3.2",
+    "scikit-learn >=1.2.0,<1.3",
+]
+dynamic = ["version"]
 
 [project.urls]
 "Homepage" = "https://github.com/sebp/scikit-survival"
@@ -60,6 +72,41 @@ dynamic = ["version", "dependencies"]
 "Source Code" = "https://github.com/sebp/scikit-survival"
 "Bug Tracker" = "https://github.com/sebp/scikit-survival/issues"
 "Release Notes" = "https://scikit-survival.readthedocs.io/en/latest/release_notes.html"
+
+[project.optional-dependencies]
+dev = [
+    "build",
+    "coverage",
+    "cython >=0.29",
+    "packaging",
+    "pre-commit",
+    "pytest",
+    "ruff",
+    "setuptools-scm >=6.4",
+    "tomli",
+    "tox",
+]
+
+# This file purposely does not contain libraries that depend on C modules.
+# See https://docs.readthedocs.io/en/latest/faq.html#i-get-import-errors-on-libraries-that-depend-on-c-modules
+docs = [
+    "ipython !=8.7.0",
+    "nbsphinx",
+    "docutils",
+    "setuptools-scm",
+    "sphinx ~=4.4.0",
+    "pydata-sphinx-theme ~=0.8.1",
+    "sphinxcontrib-spelling",
+]
+
+nbval = [
+    "ipykernel",
+    "ipython!=8.7.0",
+    "matplotlib~=3.6.2",
+    "nbformat",
+    "nbval>=0.10.0",
+    "seaborn~=0.11.2",
+]
 
 [tool.setuptools.dynamic]
 dependencies = {file = "requirements/prod.txt"}

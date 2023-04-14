@@ -15,7 +15,7 @@ jobs:
           sudo apt-get install cmake libenchant-2-dev pandoc tox
       - name: Run Tox
         run: |
-          tox run -e py310-${{ matrix.tox_env }}
+          tox run -e ${{ matrix.tox_env }}
       - name: Archive documentation
         uses: actions/upload-artifact@v3
         with:
@@ -23,7 +23,7 @@ jobs:
           path: doc/_build/html
         if: ${{ matrix.tox_env == 'docs' }}
       - name: Print debug information
-        run: cat .tox/py310-${{ matrix.tox_env }}/log/*.log
+        run: cat .tox/${{ matrix.tox_env }}/log/*.log
         if: ${{ failure() }}
     strategy:
       fail-fast: false

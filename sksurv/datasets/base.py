@@ -1,8 +1,8 @@
 import warnings
 
+import importlib_resources
 import numpy as np
 import pandas as pd
-from pkg_resources import resource_filename
 
 from ..column import categorical_to_numeric, standardize
 from ..io import loadarff
@@ -222,7 +222,7 @@ def load_whas500():
         "Applied Survival Analysis: Regression Modeling of Time to Event Data."
         John Wiley & Sons, Inc. (2008)
     """
-    fn = resource_filename(__name__, 'data/whas500.arff')
+    fn = importlib_resources.files(__package__) / 'data' / 'whas500.arff'
     return get_x_y(loadarff(fn), attr_labels=['fstat', 'lenfol'], pos_label='1')
 
 
@@ -254,7 +254,7 @@ def load_gbsg2():
         in node-positive breast cancer patients."
         Journal of Clinical Oncology 12, 2086–2093. (1994)
     """
-    fn = resource_filename(__name__, 'data/GBSG2.arff')
+    fn = importlib_resources.files(__package__) / 'data' / 'GBSG2.arff'
     return get_x_y(loadarff(fn), attr_labels=['cens', 'time'], pos_label='1')
 
 
@@ -283,7 +283,7 @@ def load_veterans_lung_cancer():
     .. [1] Kalbfleisch, J.D., Prentice, R.L.:
         "The Statistical Analysis of Failure Time Data." John Wiley & Sons, Inc. (2002)
     """
-    fn = resource_filename(__name__, 'data/veteran.arff')
+    fn = importlib_resources.files(__package__) / 'data' / 'veteran.arff'
     return get_x_y(loadarff(fn), attr_labels=['Status', 'Survival_in_days'], pos_label="dead")
 
 
@@ -335,7 +335,7 @@ def load_aids(endpoint="aids"):
     else:
         raise ValueError("endpoint must be 'aids' or 'death'")
 
-    fn = resource_filename(__name__, 'data/actg320.arff')
+    fn = importlib_resources.files(__package__) / 'data' / 'actg320.arff'
     x, y = get_x_y(loadarff(fn), attr_labels=attr_labels, pos_label='1')
     x.drop(drop_columns, axis=1, inplace=True)
     return x, y
@@ -369,7 +369,7 @@ def load_breast_cancer():
         Patients in the TRANSBIG Multicenter Independent Validation Series."
         Clin. Cancer Res. 13(11), 3207–14 (2007)
     """
-    fn = resource_filename(__name__, 'data/breast_cancer_GSE7390-metastasis.arff')
+    fn = importlib_resources.files(__package__) / 'data' / 'breast_cancer_GSE7390-metastasis.arff'
     return get_x_y(loadarff(fn), attr_labels=['e.tdm', 't.tdm'], pos_label="1")
 
 
@@ -413,5 +413,5 @@ def load_flchain():
            Use of nonclonal serum immunoglobulin free light chains to predict overall survival in
            the general population, Mayo Clinic Proceedings 87:512-523. (2012)
     """
-    fn = resource_filename(__name__, 'data/flchain.arff')
+    fn = importlib_resources.files(__package__) / 'data' / 'flchain.arff'
     return get_x_y(loadarff(fn), attr_labels=['death', 'futime'], pos_label='dead')

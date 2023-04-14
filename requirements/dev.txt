@@ -1,7 +1,0 @@
--r prod.txt
-
-coverage
-cython >=0.29
-packaging
-pytest
-setuptools_scm
