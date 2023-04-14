@@ -434,5 +434,5 @@ def test_cond_avail_property():
         del test_obj.prop
 
     with pytest.raises(AttributeError, match='already had a check set'):
-        oldcheck = test_obj.check
+        oldcheck = test_obj.prop.check
         test_obj.prop.check = oldcheck
