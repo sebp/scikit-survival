@@ -228,15 +228,37 @@ class TestGradientBoosting:
         assert tree.node_count > subtree.node_count
         assert tree.max_depth > subtree.max_depth
 
+    def test_early_stopping(self):
+        X, y = self.data
+
+        model = GradientBoostingSurvivalAnalysis(
+            n_estimators=1000, max_depth=2, n_iter_no_change=3, validation_fraction=0.2, random_state=0,
+        )
+        model.fit(X, y)
+
+        assert model.n_estimators_ == 36
+
     @staticmethod
     def test_negative_ccp_alpha(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         clf = GradientBoostingSurvivalAnalysis()
         msg = "The 'ccp_alpha' parameter of GradientBoostingSurvivalAnalysis must be a float in the range " \
-              r"\[0\.0, inf\). Got -1\.0 instead\."
+              r"\[0\.0, inf\)\. Got -1\.0 instead\."
 
         clf.set_params(ccp_alpha=-1.0)
+        with pytest.raises(ValueError, match=msg):
+            clf.fit(whas500_data.x, whas500_data.y)
+
+    @staticmethod
+    def test_negative_n_iter_no_change(make_whas500):
+        whas500_data = make_whas500(with_std=False, to_numeric=True)
+
+        clf = GradientBoostingSurvivalAnalysis()
+        msg = "The 'n_iter_no_change' parameter of GradientBoostingSurvivalAnalysis must be an int in the range " \
+              r"\[1, inf\) or None\. Got -1 instead\."
+
+        clf.set_params(n_iter_no_change=-1)
         with pytest.raises(ValueError, match=msg):
             clf.fit(whas500_data.x, whas500_data.y)
 
