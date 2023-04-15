@@ -34,7 +34,7 @@ def _create_survival_ensemble(**kwargs):
         base_estimators.append(("gbm_%d" % i, model))
 
     for i, params in enumerate(svm_grid):
-        model = FastSurvivalSVM(max_iter=100, tol=1e-6, random_state=0, **params)
+        model = FastSurvivalSVM(max_iter=256, tol=5e-6, random_state=0, **params)
         base_estimators.append(("svm_%d" % i, model))
 
     cv = KFold(n_splits=3, shuffle=True, random_state=0)
