@@ -14,6 +14,7 @@ fi
 
 #conda update -q conda
 conda config --set always_yes yes --set changeps1 no
+conda config --add pkgs_dirs "${CONDA_PKGS_DIR:-conda_pkgs_dir}"
 
 conda install -n base conda-libmamba-solver
 

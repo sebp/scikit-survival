@@ -37,14 +37,14 @@ jobs:
           echo "CI_NUMPY_VERSION=${CI_NUMPY_VERSION}" >> $GITHUB_ENV
           echo "CI_SKLEARN_VERSION=${CI_SKLEARN_VERSION}" >> $GITHUB_ENV
           echo "CI_NO_SLOW=${CI_NO_SLOW}" >> $GITHUB_ENV
-          echo "py_version=$(cut -d'.' -f 1-2 <<< ${CONDA_PYTHON_VERSION})" >> $GITHUB_OUTPUT
+          echo "CONDA_PKGS_DIR=${HOME}/conda_pkgs_dir" >> $GITHUB_ENV
+          echo "py_version=$(cut -d'.' -f 1-2 <<< ${CI_PYTHON_VERSION})" >> $GITHUB_OUTPUT
           echo "requirements=ci/deps/${{ matrix.config }}.sh" >> $GITHUB_OUTPUT
-          echo "conda_pkgs=$(${CONDA}/bin/python -c "from conda.base.context import context; print(context.pkgs_dirs[0])")" >> $GITHUB_OUTPUT
       - name: Cache downloaded packages
         uses: actions/cache@v3
         with:
-          path: ${{ steps.dependencies.outputs.conda_pkgs }}
-          key: ${{ runner.os }}-conda-${{ steps.dependencies.outputs.py_version }}-${{ hashFiles(steps.dependencies.outputs.requirements, 'requirements/*.txt') }}
+          path: ${{ env.CONDA_PKGS_DIR }}
+          key: ${{ runner.os }}-conda-${{ steps.dependencies.outputs.py_version }}-${{ hashFiles(steps.dependencies.outputs.requirements, 'pyproject.toml', 'ci/deps/requirements.yaml.tmpl') }}
           restore-keys: |
             ${{ runner.os }}-conda-${{ steps.dependencies.outputs.py_version }}-
       - name: Create Conda Environment
@@ -68,7 +68,7 @@ jobs:
       - name: Check whether to create coverage report
         id: coverage
         run: |
-          if [ ${{ env.NO_SLOW }} = 'false' ] && [ ${{ runner.os }} = 'Linux' ]; then
+          if [ ${{ env.CI_NO_SLOW }} = 'false' ] && [ ${{ runner.os }} = 'Linux' ]; then
             echo "do=true" >> $GITHUB_OUTPUT
           else
             echo "do=false" >> $GITHUB_OUTPUT
@@ -109,13 +109,13 @@ jobs:
           echo "CI_NUMPY_VERSION=${CI_NUMPY_VERSION}" >> $GITHUB_ENV
           echo "CI_SKLEARN_VERSION=${CI_SKLEARN_VERSION}" >> $GITHUB_ENV
           echo "CI_NO_SLOW=${CI_NO_SLOW}" >> $GITHUB_ENV
+          echo "CONDA_PKGS_DIR=${HOME}/conda_pkgs_dir" >> $GITHUB_ENV
           echo "requirements=ci/deps/${DEPS_CONFIG}.sh" >> $GITHUB_OUTPUT
-          echo "conda_pkgs=$(${CONDA}/bin/python -c "from conda.base.context import context; print(context.pkgs_dirs[0])")" >> $GITHUB_OUTPUT
       - name: Cache downloaded packages
         uses: actions/cache@v3
         with:
-          path: ${{ steps.dependencies.outputs.conda_pkgs }}
-          key: ${{ runner.os }}-conda-${{ hashFiles(steps.dependencies.outputs.requirements) }}
+          path: ${{ env.CONDA_PKGS_DIR }}
+          key: ${{ runner.os }}-conda-3.10-${{ hashFiles(steps.dependencies.outputs.requirements, 'pyproject.toml', 'ci/deps/requirements.yaml.tmpl') }}
       - name: Create Conda Environment
         run: |
           sudo chown -R $USER $CONDA
