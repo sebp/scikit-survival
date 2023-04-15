@@ -123,13 +123,17 @@ minversion = "6.0"
 addopts = "--strict-markers"
 testpaths = ["tests"]
 filterwarnings = [
+    # Treat all warnings as errors other than the ignored ones
+    "error",
     # distutils is deprecated in 3.10, scheduled for removal in 3.12
     "ignore:The distutils package is deprecated:DeprecationWarning",
     "ignore:Setuptools is replacing distutils",
+    "ignore:distutils Version classes are deprecated.*:DeprecationWarning",
     # check_less_precise has been deprecated in pandas 1.1.0
     "ignore:The 'check_less_precise' keyword in testing\\.assert_\\*_equal is deprecated and will be removed in a future version.*:FutureWarning",
     # iteritems has been deprecated in pandas 1.5.0
-    "ignore:iteritems is deprecated and will be removed in a future version. Use \\.items instead:FutureWarning:",
+    "ignore:iteritems is deprecated and will be removed in a future version. Use \\.items instead:FutureWarning",
+    "ignore:Jupyter is migrating its paths to use standard platformdirs:DeprecationWarning",
 ]
 
 [tool.coverage.run]
