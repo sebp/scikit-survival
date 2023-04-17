@@ -388,7 +388,7 @@ class TestFastSurvivalSVM:
 
         c = ssvm.score(whas500.x, whas500.y)
 
-        assert round(abs(0.7860650174985695 - c), 6) == 0
+        assert pytest.approx(0.7860650174985695) == c
 
     @staticmethod
     @pytest.mark.slow()
@@ -407,13 +407,13 @@ class TestFastSurvivalSVM:
         if expected_intercept is None:
             assert not hasattr(ssvm, "intercept_")
         else:
-            assert round(abs(expected_intercept - ssvm.intercept_), 7) == 0
+            assert pytest.approx(expected_intercept, 1e-7) == ssvm.intercept_
 
         assert_array_almost_equal(expected_coef, ssvm.coef_)
 
         pred = ssvm.predict(whas500.x)
         rmse = np.sqrt(mean_squared_error(whas500.y['lenfol'], pred))
-        assert round(abs(expected_rmse - rmse), 7) == 0
+        assert pytest.approx(expected_rmse, 1e-7) == rmse
 
     @staticmethod
     @pytest.mark.slow()
@@ -448,7 +448,7 @@ class TestKernelSurvivalSVM:
         i = np.arange(250)
         np.random.RandomState(0).shuffle(i)
         c = ssvm.score(x[i], whas500.y[i])
-        assert round(abs(c - 0.76923445664157997), 6) == 0
+        assert c == pytest.approx(0.76923445664157997)
 
     @staticmethod
     @pytest.mark.parametrize("kernel", ["linear", "precomputed"])
@@ -466,7 +466,7 @@ class TestKernelSurvivalSVM:
 
         assert ssvm._get_tags()["pairwise"] is (kernel == "precomputed")
 
-        assert round(abs(ssvm.intercept_ - 6.416017539824949), 5) == 0
+        assert ssvm.intercept_ == pytest.approx(6.416017539824949, 1e-5)
 
         i = np.arange(250)
         np.random.RandomState(0).shuffle(i)
@@ -475,7 +475,7 @@ class TestKernelSurvivalSVM:
         assert rmse <= 1342.274550652291 + 0.293
 
         c = ssvm.score(x[i], whas500.y[i])
-        assert round(abs(c - 0.7630027323714108), 6) == 0
+        assert c == pytest.approx(0.7630027323714108)
 
     @staticmethod
     def test_fit_and_predict_linear_regression_no_intercept(make_whas500):
@@ -490,7 +490,7 @@ class TestKernelSurvivalSVM:
 
         pred = ssvm.predict(whas500.x)
         rmse = np.sqrt(mean_squared_error(whas500.y['lenfol'], pred))
-        assert round(abs(rmse - 15837.658418546907), 4) == 0
+        assert rmse == pytest.approx(15837.658418546907, 1e-4)
 
     @staticmethod
     @pytest.mark.slow()
@@ -522,11 +522,11 @@ class TestKernelSurvivalSVM:
         ssvm.fit(whas500.x, whas500.y)
 
         assert not ssvm._get_tags()["pairwise"]
-        assert round(abs(ssvm.intercept_ - 4.9267218894089533), 7) == 0
+        assert ssvm.intercept_ == pytest.approx(4.9267218894089533, 1e-7)
 
         pred = ssvm.predict(whas500.x)
         rmse = np.sqrt(mean_squared_error(whas500.y['lenfol'], pred))
-        assert round(abs(rmse - 783.525277), 6) == 0
+        assert rmse == pytest.approx(783.525277)
 
     @staticmethod
     @pytest.mark.slow()
@@ -539,11 +539,11 @@ class TestKernelSurvivalSVM:
         ssvm.fit(whas500.x, whas500.y)
 
         assert not ssvm._get_tags()["pairwise"]
-        assert round(abs(6.105417583975533 - ssvm.intercept_), 5) == 0
+        assert pytest.approx(6.105417583975533, 1e-5) == ssvm.intercept_
 
         pred = ssvm.predict(whas500.x)
         rmse = np.sqrt(mean_squared_error(whas500.y['lenfol'], pred))
-        assert round(abs(754.7810877051903 - rmse), 5) == 0
+        assert pytest.approx(754.7810877051903, 1e-5) == rmse
 
     @staticmethod
     @pytest.mark.slow()
@@ -812,7 +812,7 @@ class TestNaiveSurvivalSVM:
         assert nrsvm.coef_.shape == (1, 14)
 
         cindex = nrsvm.score(x, y)
-        assert round(abs(cindex - 0.7760582309811175), 7) == 0
+        assert cindex == pytest.approx(0.7760582309811175, 1e-7)
 
     @staticmethod
     def test_fit_uncomparable(whas500_uncomparable):

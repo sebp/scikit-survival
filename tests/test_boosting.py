@@ -210,7 +210,7 @@ class TestGradientBoosting:
             model.fit(X, y)
 
         if expected_features is not None:
-            assert round(abs(model.max_features_ - int(expected_features)), 7) == 0
+            assert model.max_features_ == int(expected_features)
 
     def test_ccp_alpha(self):
         est_full = self.assert_fit_and_predict(
@@ -280,13 +280,13 @@ class TestGradientBoosting:
         event_true = y["fstat"]
 
         rmse_all = np.sqrt(mean_squared_error(time_true, time_predicted))
-        assert round(abs(rmse_all - 590.5441693629117), 7) == 0
+        assert rmse_all == pytest.approx(590.5441693629117, 1e-7)
 
         rmse_uncensored = np.sqrt(mean_squared_error(time_true[event_true], time_predicted[event_true]))
-        assert round(abs(rmse_uncensored - 392.97741487479743), 7) == 0
+        assert rmse_uncensored == pytest.approx(392.97741487479743, 1e-7)
 
         cindex = model.score(X, y)
-        assert round(abs(cindex - 0.8979161399), 7) == 0
+        assert cindex == pytest.approx(0.8979161399, 1e-7)
 
         with pytest.raises(ValueError, match="`fit` must be called with the loss option set to 'coxph'"):
             model.predict_survival_function(X)
@@ -309,13 +309,13 @@ class TestGradientBoosting:
         event_true = y["fstat"]
 
         rmse_all = np.sqrt(mean_squared_error(time_true, time_predicted))
-        assert round(abs(rmse_all - 580.23345259002951), 7) == 0
+        assert rmse_all == pytest.approx(580.23345259002951, 1e-7)
 
         rmse_uncensored = np.sqrt(mean_squared_error(time_true[event_true], time_predicted[event_true]))
-        assert round(abs(rmse_uncensored - 383.10639243317951), 7) == 0
+        assert rmse_uncensored == pytest.approx(383.10639243317951, 1e-7)
 
         cindex = model.score(X, y)
-        assert round(abs(cindex - 0.9021810004), 7) == 0
+        assert cindex == pytest.approx(0.9021810004, 1e-7)
 
         with pytest.raises(ValueError, match="`fit` must be called with the loss option set to 'coxph'"):
             model.predict_survival_function(X)
@@ -529,13 +529,13 @@ class TestComponentwiseGradientBoosting:
         event_true = whas500_data.y["fstat"]
 
         rmse_all = np.sqrt(mean_squared_error(time_true, time_predicted))
-        assert round(abs(rmse_all - 806.283308322), 7) == 0
+        assert rmse_all == pytest.approx(806.283308322, 1e-7)
 
         rmse_uncensored = np.sqrt(mean_squared_error(time_true[event_true], time_predicted[event_true]))
-        assert round(abs(rmse_uncensored - 542.884585289), 7) == 0
+        assert rmse_uncensored == pytest.approx(542.884585289, 1e-7)
 
         cindex = model.score(whas500_data.x, whas500_data.y)
-        assert round(abs(cindex - 0.7773356931), 7) == 0
+        assert cindex == pytest.approx(0.7773356931, 1e-7)
 
         with pytest.raises(ValueError, match="`fit` must be called with the loss option set to 'coxph'"):
             model.predict_survival_function(whas500_data.x)
@@ -557,13 +557,13 @@ class TestComponentwiseGradientBoosting:
         event_true = whas500_data.y["fstat"]
 
         rmse_all = np.sqrt(mean_squared_error(time_true, time_predicted))
-        assert round(abs(rmse_all - 793.6256945839657), 7) == 0
+        assert rmse_all == pytest.approx(793.6256945839657, 1e-7)
 
         rmse_uncensored = np.sqrt(mean_squared_error(time_true[event_true], time_predicted[event_true]))
-        assert round(abs(rmse_uncensored - 542.83358120153525), 7) == 0
+        assert rmse_uncensored == pytest.approx(542.83358120153525, 1e-7)
 
         cindex = model.score(whas500_data.x, whas500_data.y)
-        assert round(abs(cindex - 0.7777082862), 7) == 0
+        assert cindex == pytest.approx(0.7777082862, 1e-7)
 
         with pytest.raises(ValueError, match="`fit` must be called with the loss option set to 'coxph'"):
             model.predict_survival_function(whas500_data.x)

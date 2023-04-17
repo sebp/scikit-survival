@@ -53,7 +53,7 @@ def assert_gradient_correctness(cph):
                      grad,
                      coef)
 
-    assert round(err, 4) == 0
+    assert err == pytest.approx(0.0, abs=1e-4)
 
 
 @pytest.fixture(params=["predict_cumulative_hazard_function", "predict_survival_function"])
@@ -195,7 +195,7 @@ class TestCoxPH:
 
         actual_loss = cph.nlog_likelihood(w)
 
-        assert round(abs(659.1206 - rossi.x.shape[0] * actual_loss), 4) == 0
+        assert pytest.approx(659.1206, 1e-4) == rossi.x.shape[0] * actual_loss
 
     @staticmethod
     def test_gradient_breslow(rossi):
@@ -224,7 +224,7 @@ class TestCoxPH:
 
         actual_loss = cph.nlog_likelihood(w)
 
-        assert round(abs(658.7477 - rossi.x.shape[0] * actual_loss), 4) == 0
+        assert pytest.approx(658.7477, 1e-4) == rossi.x.shape[0] * actual_loss
 
     @staticmethod
     def test_gradient_efron(rossi):

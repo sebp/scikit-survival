@@ -661,7 +661,7 @@ def test_uno_auc(y_train, y_test, estimate, times, expect_auc, expect_iauc):
     if isinstance(expect_iauc, np.ndarray):
         assert_almost_equal(iauc, expect_iauc)
     else:
-        assert round(abs(iauc - expect_iauc), 6) == 0
+        assert iauc == pytest.approx(expect_iauc)
 
 
 class UnoCAucFailureCases(BaseUnoCAucCases):
@@ -900,7 +900,7 @@ def test_brier_nottingham(brier_npi_data):
     pred, y, times, expected_score = brier_npi_data
 
     _, score = brier_score(y, y, pred.squeeze(), times=times)
-    assert round(abs(score[0] - expected_score), 6) == 0
+    assert score[0] == pytest.approx(expected_score)
 
 
 def test_brier_nottingham_many(nottingham_prognostic_index):
@@ -960,7 +960,7 @@ def test_brier_coxph():
 
     _, score = brier_score(y, y, preds, 1825)
 
-    assert round(abs(score[0] - 0.208817407492645), 5) == 0
+    assert score[0] == pytest.approx(0.208817407492645, 1e-5)
 
 
 def test_brier_score_int_dtype():
@@ -990,10 +990,10 @@ def test_ibs_nottingham_1(nottingham_prognostic_index):
     preds, y = nottingham_prognostic_index(times)
 
     score = integrated_brier_score(y, y, preds, times=times)
-    assert round(abs(score - 0.197936392255733), 6) == 0
+    assert score == pytest.approx(0.197936392255733)
 
     score = integrated_brier_score(y, y, preds[:, :4], times=times[:4])
-    assert round(abs(score - 0.185922397142833), 6) == 0
+    assert score == pytest.approx(0.185922397142833)
 
 
 def test_ibs_nottingham_2(nottingham_prognostic_index):
@@ -1002,7 +1002,7 @@ def test_ibs_nottingham_2(nottingham_prognostic_index):
 
     score = integrated_brier_score(y, y, preds, times=times)
 
-    assert round(abs(score - 0.231553687189643), 6) == 0
+    assert score == pytest.approx(0.231553687189643)
 
 
 def test_ibs_single_time_point(nottingham_prognostic_index):
@@ -1068,7 +1068,7 @@ def test_scorers(scorers_data):
     est_wrap.fit(X_train, y_train)
     actual = est_wrap.score(X_test, y_test)
 
-    assert round(abs(actual - expected), 6) == 0
+    assert actual == pytest.approx(expected)
 
     assert_array_almost_equal(est_wrap.predict(X_test), est_std.predict(X_test))
 

@@ -239,7 +239,7 @@ class TestStackingSurvivalAnalysis:
         meta.fit(x, y)
         c_index = meta.score(x, y)
 
-        assert round(abs(c_index - 0.7848807), 5) == 0
+        assert c_index == pytest.approx(0.7848807, 1e-5)
 
     @staticmethod
     def test_feature_names_in(make_whas500):

@@ -1,5 +1,6 @@
 import numpy as np
 from numpy.testing import assert_array_almost_equal
+import pytest
 
 from sksurv.linear_model import IPCRidge
 from sksurv.testing import assert_cindex_almost_equal
@@ -13,7 +14,7 @@ class TestIPCRidge:
         model = IPCRidge()
         model.fit(whas500.x, whas500.y)
 
-        assert round(abs(model.intercept_ - 5.867520370855396), 7) == 0
+        assert model.intercept_ == pytest.approx(5.867520370855396, 1e-7)
         expected = np.array([
             0.168481, -0.24962, 2.185086, 0.53682, -0.514611, 0.09124,
             0.613114, 0.480357, -0.055972, 0.238472, -0.127209, -0.144063,
