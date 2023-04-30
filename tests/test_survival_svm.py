@@ -8,7 +8,7 @@ import pytest
 from sklearn.decomposition import KernelPCA
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics import mean_squared_error
-from sklearn.preprocessing import normalize
+from sklearn.preprocessing import MinMaxScaler, normalize
 
 from sksurv.bintrees import AVLTree, RBTree
 from sksurv.column import encode_categorical
@@ -512,7 +512,7 @@ class TestKernelSurvivalSVM:
 
     @staticmethod
     @pytest.mark.slow()
-    @pytest.mark.filterwarnings("ignore:Optimization did not converge")
+    @pytest.mark.filterwarnings("ignore:Optimization did not converge.*:sklearn.exceptions.ConvergenceWarning")
     def test_fit_and_predict_regression_rbf(make_whas500):
         whas500 = make_whas500(to_numeric=True)
         ssvm = FastKernelSurvivalSVM(
@@ -530,24 +530,27 @@ class TestKernelSurvivalSVM:
 
     @staticmethod
     @pytest.mark.slow()
+    @pytest.mark.filterwarnings("ignore:Optimization did not converge.*:sklearn.exceptions.ConvergenceWarning")
     def test_fit_and_predict_hybrid_polynomial(make_whas500):
-        whas500 = make_whas500(to_numeric=True)
+        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
+        X = MinMaxScaler(feature_range=(0, 1)).fit_transform(whas500.x)
+
         ssvm = FastKernelSurvivalSVM(
-            optimizer="rbtree", rank_ratio=0.5, kernel="poly", coef0=1e-4, degree=2,
-            max_iter=50, fit_intercept=True, random_state=0
+            optimizer="rbtree", rank_ratio=0.5, kernel="poly", coef0=0, degree=2,
+            max_iter=100, fit_intercept=True, random_state=0
         )
-        ssvm.fit(whas500.x, whas500.y)
+        ssvm.fit(X, whas500.y)
 
         assert not ssvm._get_tags()["pairwise"]
-        assert pytest.approx(6.105417583975533, 1e-5) == ssvm.intercept_
+        assert pytest.approx(6.482593184472981, 1e-5) == ssvm.intercept_
 
-        pred = ssvm.predict(whas500.x)
+        pred = ssvm.predict(X)
         rmse = np.sqrt(mean_squared_error(whas500.y['lenfol'], pred))
-        assert pytest.approx(754.7810877051903, 1e-5) == rmse
+        assert pytest.approx(766.2061731844626, 1e-5) == rmse
 
     @staticmethod
     @pytest.mark.slow()
-    @pytest.mark.filterwarnings("ignore:Optimization did not converge")
+    @pytest.mark.filterwarnings("ignore:Optimization did not converge.*:sklearn.exceptions.ConvergenceWarning")
     def test_fit_and_predict_clinical_kernel(make_whas500):
         whas500 = make_whas500(to_numeric=True)
 
@@ -581,7 +584,7 @@ class TestKernelSurvivalSVM:
 
     @staticmethod
     @pytest.mark.slow()
-    @pytest.mark.filterwarnings("ignore:Optimization did not converge")
+    @pytest.mark.filterwarnings("ignore:Optimization did not converge.*:sklearn.exceptions.ConvergenceWarning")
     def test_compare_builtin_kernel(make_whas500):
         whas500 = make_whas500(to_numeric=True)
         x = normalize(whas500.x)
@@ -602,7 +605,7 @@ class TestKernelSurvivalSVM:
 
     @staticmethod
     @pytest.mark.slow()
-    @pytest.mark.filterwarnings("ignore:Optimization did not converge")
+    @pytest.mark.filterwarnings("ignore:Optimization did not converge.*:sklearn.exceptions.ConvergenceWarning")
     def test_compare_clinical_kernel(make_whas500):
         whas500 = make_whas500(to_numeric=True)
 
