@@ -68,7 +68,7 @@ jobs:
       - name: Check whether to create coverage report
         id: coverage
         run: |
-          if [ ${{ env.CI_NO_SLOW }} = 'false' ] && [ ${{ runner.os }} = 'Linux' ]; then
+          if [ ${{ env.CI_NO_SLOW }} = 'false' ] && [ ${{ runner.os }} = 'Linux' ] && [ ${{ github.actor }} != 'dependabot[bot]' ]; then
             echo "do=true" >> $GITHUB_OUTPUT
           else
             echo "do=false" >> $GITHUB_OUTPUT
