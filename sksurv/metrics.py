@@ -103,11 +103,8 @@ def _get_comparable(event_indicator, event_time, order):
         censored_at_same_time = ~event_at_same_time
         for j in range(i, end):
             if event_indicator[order[j]]:
-                mask = np.zeros(n_samples, dtype=bool)
-                mask[end:] = True
-                # an event is comparable to censored samples at same time point
-                mask[i:end] = censored_at_same_time
-                comparable[j] = mask
+                mask_info = (i, end, censored_at_same_time)
+                comparable[j] = mask_info
                 tied_time += censored_at_same_time.sum()
         i = end
 
@@ -115,6 +112,7 @@ def _get_comparable(event_indicator, event_time, order):
 
 
 def _estimate_concordance_index(event_indicator, event_time, estimate, weights, tied_tol=1e-8):
+    n_samples = len(event_time)
     order = np.argsort(event_time)
 
     comparable, tied_time = _get_comparable(event_indicator, event_time, order)
@@ -128,7 +126,17 @@ def _estimate_concordance_index(event_indicator, event_time, estimate, weights, 
     tied_risk = 0
     numerator = 0.0
     denominator = 0.0
-    for ind, mask in comparable.items():
+    for ind, mask_info in comparable.items():
+        # mask info in three parts
+        i = mask_info[0]
+        end = mask_info[1]
+        censored_at_same_time = mask_info[2]
+        # construct (potentially large) mask from (smaller) mask info
+        mask = np.zeros(n_samples, dtype=bool)
+        mask[end:] = True
+        # an event is comparable to censored samples at same time point
+        mask[i:end] = censored_at_same_time
+
         est_i = estimate[order[ind]]
         event_i = event_indicator[order[ind]]
         w_i = weights[order[ind]]
