@@ -93,8 +93,7 @@ def _get_comparable(event_indicator, event_time, order):
     i = 0
     while i < n_samples - 1:
         time_i = event_time[order[i]]
-        start = i + 1
-        end = start
+        end = i + 1
         while end < n_samples and event_time[order[end]] == time_i:
             end += 1
 
