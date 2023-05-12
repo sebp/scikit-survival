@@ -86,7 +86,7 @@ def _check_estimate_2d(estimate, test_time, time_points, estimator):
     return estimate, time_points
 
 
-def _get_comparable(event_indicator, event_time, order):
+def _iter_comparable(event_indicator, event_time, order):
     n_samples = len(event_time)
     tied_time = 0
     i = 0
@@ -121,7 +121,7 @@ def _estimate_concordance_index(event_indicator, event_time, estimate, weights, 
     tied_risk = 0
     numerator = 0.0
     denominator = 0.0
-    for (ind, mask, tied_time) in _get_comparable(event_indicator, event_time, order):
+    for (ind, mask, tied_time) in _iter_comparable(event_indicator, event_time, order):
 
         est_i = estimate[order[ind]]
         event_i = event_indicator[order[ind]]
