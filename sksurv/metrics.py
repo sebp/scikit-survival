@@ -89,7 +89,6 @@ def _check_estimate_2d(estimate, test_time, time_points, estimator):
 def _get_comparable(event_indicator, event_time, order):
     n_samples = len(event_time)
     tied_time = 0
-    comparable = {}
     i = 0
     while i < n_samples - 1:
         time_i = event_time[order[i]]
@@ -104,22 +103,16 @@ def _get_comparable(event_indicator, event_time, order):
         for j in range(i, end):
             if event_indicator[order[j]]:
                 mask_info = (i, end, censored_at_same_time)
-                comparable[j] = mask_info
                 tied_time += censored_at_same_time.sum()
+                yield (j, mask_info, tied_time)
         i = end
-
-    return comparable, tied_time
 
 
 def _estimate_concordance_index(event_indicator, event_time, estimate, weights, tied_tol=1e-8):
     n_samples = len(event_time)
     order = np.argsort(event_time)
 
-    comparable, tied_time = _get_comparable(event_indicator, event_time, order)
-
-    if len(comparable) == 0:
-        raise NoComparablePairException(
-            "Data has no comparable pairs, cannot estimate concordance index.")
+    tied_time = None
 
     concordant = 0
     discordant = 0
@@ -127,7 +120,7 @@ def _estimate_concordance_index(event_indicator, event_time, estimate, weights, 
     numerator = 0.0
     denominator = 0.0
     mask = np.empty(n_samples, dtype=bool)
-    for ind, mask_info in comparable.items():
+    for (ind, mask_info, tied_time) in _get_comparable(event_indicator, event_time, order):
         # mask info in three parts
         i = mask_info[0]
         end = mask_info[1]
@@ -158,6 +151,10 @@ def _estimate_concordance_index(event_indicator, event_time, estimate, weights, 
         tied_risk += n_ties
         concordant += n_con
         discordant += est.size - n_con - n_ties
+
+    if tied_time is None:
+        raise NoComparablePairException(
+            "Data has no comparable pairs, cannot estimate concordance index.")
 
     cindex = numerator / denominator
     return cindex, concordant, discordant, tied_risk, tied_time
