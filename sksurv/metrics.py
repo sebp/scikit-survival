@@ -126,13 +126,14 @@ def _estimate_concordance_index(event_indicator, event_time, estimate, weights, 
     tied_risk = 0
     numerator = 0.0
     denominator = 0.0
+    mask = np.empty(n_samples, dtype=bool)
     for ind, mask_info in comparable.items():
         # mask info in three parts
         i = mask_info[0]
         end = mask_info[1]
         censored_at_same_time = mask_info[2]
         # construct (potentially large) mask from (smaller) mask info
-        mask = np.zeros(n_samples, dtype=bool)
+        mask.fill(False)
         mask[end:] = True
         # an event is comparable to censored samples at same time point
         mask[i:end] = censored_at_same_time
