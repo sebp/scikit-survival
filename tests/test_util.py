@@ -421,7 +421,7 @@ def test_cond_avail_property():
         test_obj.prop = testval-3
     with pytest.raises(AttributeError, match=msg):
         del test_obj.prop
-        
+
     test_obj.avail = True
     WithCondProp.prop.fget = None
     with pytest.raises(AttributeError, match='has no getter'):
