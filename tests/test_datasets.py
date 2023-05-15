@@ -1,3 +1,4 @@
+from contextlib import ExitStack
 from contextlib import nullcontext as does_not_raise
 from io import StringIO
 import os
@@ -442,17 +443,17 @@ class LoadArffFilesWithTempFileCases(FixtureParameterFactory):
     def data_with_index(self):
         args_train = (100, 10, True, True, 0)
         args_test = None
-        return args_train, {}, args_test, {}, does_not_raise()
+        return args_train, {}, args_test, {}, (does_not_raise(),)
 
     def data_train_and_test_with_labels(self):
         args_train = (100, 10, True, True, 0)
         args_test = (20, 10, True, True, 0)
-        return args_train, {}, args_test, {}, does_not_raise()
+        return args_train, {}, args_test, {}, (does_not_raise(),)
 
     def data_train_and_test_no_labels(self):
         args_train = (100, 10, True, True, 0)
         args_test = (20, 10, True, False, 0)
-        return args_train, {}, args_test, {}, does_not_raise()
+        return args_train, {}, args_test, {}, (does_not_raise(),)
 
     def data_train_and_test_with_different_columns(self):
         args_train = (100, 19, False, True, 0)
@@ -461,7 +462,7 @@ class LoadArffFilesWithTempFileCases(FixtureParameterFactory):
             UserWarning,
             match="Restricting columns to intersection between training and testing data",
         )
-        return args_train, {}, args_test, {}, error
+        return args_train, {}, args_test, {}, (error,)
 
     def data_train_and_test_columns_dont_intersect(self):
         args_train = (100, 19, True, True, 0)
@@ -472,14 +473,18 @@ class LoadArffFilesWithTempFileCases(FixtureParameterFactory):
             ValueError,
             match="columns of training and test data do not intersect",
         )
-        return args_train, kwargs_train, args_test, kwargs_test, error
+        warning = pytest.warns(
+            UserWarning,
+            match="Restricting columns to intersection between training and testing data",
+        )
+        return args_train, kwargs_train, args_test, kwargs_test, (error, warning,)
 
 
 @pytest.mark.parametrize(
-    "args_train,kwargs_train,args_test,kwargs_test,error_expected",
+    "args_train,kwargs_train,args_test,kwargs_test,errors_expected",
     LoadArffFilesWithTempFileCases().get_cases()
 )
-def test_load_from_temp_file(args_train, kwargs_train, args_test, kwargs_test, error_expected, temp_file_pair):
+def test_load_from_temp_file(args_train, kwargs_train, args_test, kwargs_test, errors_expected, temp_file_pair):
     tmp_train, tmp_test = temp_file_pair
 
     train_dataset = _make_and_write_data(tmp_train, *args_train, **kwargs_train)
@@ -493,7 +498,9 @@ def test_load_from_temp_file(args_train, kwargs_train, args_test, kwargs_test, e
         check_y_test = False
         tmp_test.close()
 
-    with error_expected:
+    with ExitStack() as stack:
+        for error_expected in errors_expected:
+            stack.enter_context(error_expected)
         x_train, y_train, x_test, y_test = sdata.load_arff_files_standardized(
             tmp_train.name,
             ["event", "time"],
@@ -504,7 +511,7 @@ def test_load_from_temp_file(args_train, kwargs_train, args_test, kwargs_test, e
             to_numeric=False,
         )
 
-    if not isinstance(error_expected, does_not_raise):
+    if all(not isinstance(err, does_not_raise) for err in errors_expected):
         return
 
     cols = ["event", "time"]

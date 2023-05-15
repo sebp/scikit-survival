@@ -124,7 +124,7 @@ def test_oob_score(make_whas500, forest_cls, expected_oob_score):
     forest.fit(whas500.x, whas500.y)
 
     assert forest.oob_prediction_.shape == (whas500.x.shape[0],)
-    assert round(abs(forest.oob_score_ - expected_oob_score), 6) == 0.0
+    assert forest.oob_score_ == pytest.approx(expected_oob_score)
 
 
 @pytest.mark.parametrize('forest_cls', FORESTS)

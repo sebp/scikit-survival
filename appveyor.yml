@@ -28,13 +28,16 @@ install:
   - ps: conda init powershell
   - ps: conda config --set always_yes yes --set changeps1 no
   - ps: conda config --set auto_update_conda false
+  - ps: conda config --set notify_outdated_conda false
 #  - ps: conda update --yes --quiet conda
   - ps: conda info -a
 
   # Install the build and runtime dependencies of the project.
-  - cmd: conda env create -n sksurv-test --file ci\appveyor\requirements_%CONDA_PY%.yaml
+  - ps: $envScript=".\ci\appveyor\py$($env:CONDA_PY).ps1"
+  - ps: "& $envScript"
+  - ps: python "ci\render-requirements.py" "ci\deps\requirements.yaml.tmpl" > environment.yaml
+  - ps: conda env create -n sksurv-test --file environment.yaml
   - cmd: call %CONDA_INSTALL_LOCN%\Scripts\activate.bat sksurv-test
-  - cmd: python -m pip install build
   - cmd: conda list
   # Initialize the submodules
   - cmd: git submodule update --init --recursive

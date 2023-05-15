@@ -34,8 +34,8 @@ def test_logrank_rossi(rossi):
     expected_chisq = 0.576101713683918
     expected_pval = 0.447844394252168
 
-    assert round(abs(chisq - expected_chisq), 6) == 0
-    assert round(abs(pval - expected_pval), 6) == 0
+    assert chisq == pytest.approx(expected_chisq)
+    assert pval == pytest.approx(expected_pval)
 
 
 def test_logrank_veterans():
@@ -63,8 +63,8 @@ def test_logrank_veterans():
     expected_chisq = 25.4037003457854
     expected_pval = 1.27124593900609e-05
 
-    assert round(abs(chisq - expected_chisq), 6) == 0
-    assert round(abs(pval - expected_pval), 6) == 0
+    assert chisq == pytest.approx(expected_chisq)
+    assert pval == pytest.approx(expected_pval)
 
 
 class LogRankToyCases(FixtureParameterFactory):
@@ -172,8 +172,8 @@ def test_toy_compare_survival(inputs, expectation):
     chisq, pval = compare_survival(*inputs)
 
     expected_chisq, expected_pval = expectation
-    assert round(abs(chisq - expected_chisq), 6) == 0
-    assert round(abs(pval - expected_pval), 6) == 0
+    assert chisq == pytest.approx(expected_chisq)
+    assert pval == pytest.approx(expected_pval)
 
 
 class LogRankFailureCases(FixtureParameterFactory):

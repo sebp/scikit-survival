@@ -34,7 +34,7 @@ def _create_survival_ensemble(**kwargs):
         base_estimators.append(("gbm_%d" % i, model))
 
     for i, params in enumerate(svm_grid):
-        model = FastSurvivalSVM(max_iter=100, tol=1e-6, random_state=0, **params)
+        model = FastSurvivalSVM(max_iter=256, tol=5e-6, random_state=0, **params)
         base_estimators.append(("svm_%d" % i, model))
 
     cv = KFold(n_splits=3, shuffle=True, random_state=0)
@@ -61,7 +61,7 @@ class TestEnsembleSelectionSurvivalAnalysis:
         )
 
         c_index = meta.score(whas500.x, whas500.y)
-        assert round(abs(c_index - 0.7863312), 6) == 0
+        assert c_index == pytest.approx(0.7863312)
 
     @staticmethod
     @pytest.mark.slow()
@@ -312,7 +312,7 @@ class TestEnsembleSelectionRegressor:
         assert abs(score - 423.82894756865056) <= 0.1
 
         c_index = meta.score(whas500.x_data_frame.iloc[:400], whas500.y[:400])
-        assert round(abs(c_index - 0.767067946974157), 6) == 0
+        assert c_index == pytest.approx(0.767067946974157)
 
     @staticmethod
     def test_fit_dummy(make_whas500):

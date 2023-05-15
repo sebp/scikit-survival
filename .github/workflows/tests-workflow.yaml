@@ -32,30 +32,25 @@ jobs:
         id: dependencies
         run: |
           source ci/deps/${{ matrix.config }}.sh
-          echo "CONDA_PYTHON_VERSION=${CONDA_PYTHON_VERSION}" >> $GITHUB_ENV
-          echo "PANDAS_VERSION=${PANDAS_VERSION}" >> $GITHUB_ENV
-          echo "NUMPY_VERSION=${NUMPY_VERSION}" >> $GITHUB_ENV
-          echo "SKLEARN_VERSION=${SKLEARN_VERSION}" >> $GITHUB_ENV
-          echo "NO_SLOW=${NO_SLOW}" >> $GITHUB_ENV
-          echo "py_version=$(cut -d'.' -f 1-2 <<< ${CONDA_PYTHON_VERSION})" >> $GITHUB_OUTPUT
+          echo "CI_PYTHON_VERSION=${CI_PYTHON_VERSION}" >> $GITHUB_ENV
+          echo "CI_PANDAS_VERSION=${CI_PANDAS_VERSION}" >> $GITHUB_ENV
+          echo "CI_NUMPY_VERSION=${CI_NUMPY_VERSION}" >> $GITHUB_ENV
+          echo "CI_SKLEARN_VERSION=${CI_SKLEARN_VERSION}" >> $GITHUB_ENV
+          echo "CI_NO_SLOW=${CI_NO_SLOW}" >> $GITHUB_ENV
+          echo "CONDA_PKGS_DIR=${HOME}/conda_pkgs_dir" >> $GITHUB_ENV
+          echo "py_version=$(cut -d'.' -f 1-2 <<< ${CI_PYTHON_VERSION})" >> $GITHUB_OUTPUT
           echo "requirements=ci/deps/${{ matrix.config }}.sh" >> $GITHUB_OUTPUT
-          echo "conda_pkgs=$(${CONDA}/bin/python -c "from conda.base.context import context; print(context.pkgs_dirs[0])")" >> $GITHUB_OUTPUT
       - name: Cache downloaded packages
         uses: actions/cache@v3
         with:
-          path: ${{ steps.dependencies.outputs.conda_pkgs }}
-          key: ${{ runner.os }}-conda-${{ steps.dependencies.outputs.py_version }}-${{ hashFiles(steps.dependencies.outputs.requirements, 'requirements/*.txt') }}
+          path: ${{ env.CONDA_PKGS_DIR }}
+          key: ${{ runner.os }}-conda-${{ steps.dependencies.outputs.py_version }}-${{ hashFiles(steps.dependencies.outputs.requirements, 'pyproject.toml', 'ci/deps/requirements.yaml.tmpl') }}
           restore-keys: |
             ${{ runner.os }}-conda-${{ steps.dependencies.outputs.py_version }}-
       - name: Create Conda Environment
         run: |
           sudo chown -R $USER $CONDA
           ci/setup_env.sh ${{ runner.os }}
-      - name: Install Dependencies
-        run: |
-          python3 ci/list-requirements.py requirements/dev.txt > /tmp/conda-req.txt
-          conda install --solver=libmamba -c sebp -n sksurv-test --file /tmp/conda-req.txt
-          conda list -n sksurv-test
       - name: Configure Xcode
         run: |
           sudo xcode-select -s "/Applications/Xcode_13.2.1.app"
@@ -73,7 +68,7 @@ jobs:
       - name: Check whether to create coverage report
         id: coverage
         run: |
-          if [ ${{ env.NO_SLOW }} = 'false' ] && [ ${{ runner.os }} = 'Linux' ]; then
+          if [ ${{ env.CI_NO_SLOW }} = 'false' ] && [ ${{ runner.os }} = 'Linux' ] && [ ${{ github.actor }} != 'dependabot[bot]' ]; then
             echo "do=true" >> $GITHUB_OUTPUT
           else
             echo "do=false" >> $GITHUB_OUTPUT
@@ -109,29 +104,22 @@ jobs:
           DEPS_CONFIG: py310_pandas14_numpy121_sklearn12
         run: |
           source ci/deps/${DEPS_CONFIG}.sh
-          echo "CONDA_PYTHON_VERSION=${CONDA_PYTHON_VERSION}" >> $GITHUB_ENV
-          echo "PANDAS_VERSION=${PANDAS_VERSION}" >> $GITHUB_ENV
-          echo "NUMPY_VERSION=${NUMPY_VERSION}" >> $GITHUB_ENV
-          echo "SKLEARN_VERSION=${SKLEARN_VERSION}" >> $GITHUB_ENV
-          echo "NO_SLOW=${NO_SLOW}" >> $GITHUB_ENV
+          echo "CI_PYTHON_VERSION=${CI_PYTHON_VERSION}" >> $GITHUB_ENV
+          echo "CI_PANDAS_VERSION=${CI_PANDAS_VERSION}" >> $GITHUB_ENV
+          echo "CI_NUMPY_VERSION=${CI_NUMPY_VERSION}" >> $GITHUB_ENV
+          echo "CI_SKLEARN_VERSION=${CI_SKLEARN_VERSION}" >> $GITHUB_ENV
+          echo "CI_NO_SLOW=${CI_NO_SLOW}" >> $GITHUB_ENV
+          echo "CONDA_PKGS_DIR=${HOME}/conda_pkgs_dir" >> $GITHUB_ENV
           echo "requirements=ci/deps/${DEPS_CONFIG}.sh" >> $GITHUB_OUTPUT
-          echo "conda_pkgs=$(${CONDA}/bin/python -c "from conda.base.context import context; print(context.pkgs_dirs[0])")" >> $GITHUB_OUTPUT
       - name: Cache downloaded packages
         uses: actions/cache@v3
         with:
-          path: ${{ steps.dependencies.outputs.conda_pkgs }}
-          key: ${{ runner.os }}-conda-${{ hashFiles(steps.dependencies.outputs.requirements) }}
+          path: ${{ env.CONDA_PKGS_DIR }}
+          key: ${{ runner.os }}-conda-3.10-${{ hashFiles(steps.dependencies.outputs.requirements, 'pyproject.toml', 'ci/deps/requirements.yaml.tmpl') }}
       - name: Create Conda Environment
         run: |
           sudo chown -R $USER $CONDA
           ci/setup_env.sh ${{ runner.os }}
-      - name: Install Dependencies
-        run: |
-          python3 ci/list-requirements.py requirements/dev.txt > /tmp/conda-req.txt
-          conda install --solver=libmamba -c sebp -n sksurv-test --file /tmp/conda-req.txt
-          conda install --solver=libmamba -n sksurv-test ipykernel 'matplotlib==3.5.1' nbformat 'seaborn==0.11.2' 'ipython!=8.7.0'
-          conda run -n sksurv-test pip install 'nbval>=0.10.0'
-          conda list -n sksurv-test
       - name: Configure matplotlib
         run: |
           mkdir -p ${XDG_CONFIG_HOME}/matplotlib

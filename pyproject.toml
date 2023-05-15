@@ -3,7 +3,7 @@ requires = [
     "setuptools>=61.0.0",
     "packaging",
     "wheel",
-    "setuptools_scm[toml]>=6.4",
+    "setuptools-scm[toml]>=6.4",
     "Cython>=0.29.16",
 
     # arm64 on Darwin supports Python 3.8 and above requires numpy>=1.21.0
@@ -15,7 +15,8 @@ requires = [
     "numpy==1.17.3; python_version=='3.8' and platform_machine != 'arm64'",
     "numpy==1.19.3; python_version=='3.9' and platform_machine != 'arm64'",
     "numpy==1.21.6; python_version=='3.10'",
-    "numpy; python_version>'3.10'",
+    "numpy==1.23.2; python_version=='3.11'",
+    "numpy; python_version>'3.11'",
 
     # scikit-learn requirements
     "scikit-learn~=1.2.0; python_version<='3.9'",
@@ -49,10 +50,22 @@ classifiers = [
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Topic :: Software Development",
     "Topic :: Scientific/Engineering"
 ]
-dynamic = ["version", "dependencies"]
+dependencies = [
+    "ecos",
+    "importlib-resources >=1.3; python_version<'3.9'",
+    "joblib",
+    "numexpr",
+    "numpy",
+    "osqp !=0.6.0,!=0.6.1",
+    "pandas >=1.0.5,<2",
+    "scipy >=1.3.2",
+    "scikit-learn >=1.2.0,<1.3",
+]
+dynamic = ["version"]
 
 [project.urls]
 "Homepage" = "https://github.com/sebp/scikit-survival"
@@ -61,8 +74,40 @@ dynamic = ["version", "dependencies"]
 "Bug Tracker" = "https://github.com/sebp/scikit-survival/issues"
 "Release Notes" = "https://scikit-survival.readthedocs.io/en/latest/release_notes.html"
 
-[tool.setuptools.dynamic]
-dependencies = {file = "requirements/prod.txt"}
+[project.optional-dependencies]
+dev = [
+    "build",
+    "coverage",
+    "cython >=0.29",
+    "packaging",
+    "pre-commit",
+    "pytest",
+    "ruff",
+    "setuptools-scm >=6.4",
+    "tomli",
+    "tox",
+]
+
+# This file purposely does not contain libraries that depend on C modules.
+# See https://docs.readthedocs.io/en/latest/faq.html#i-get-import-errors-on-libraries-that-depend-on-c-modules
+docs = [
+    "ipython !=8.7.0",
+    "nbsphinx",
+    "docutils",
+    "setuptools-scm",
+    "sphinx ~=4.4.0",
+    "pydata-sphinx-theme ~=0.8.1",
+    "sphinxcontrib-spelling",
+]
+
+nbval = [
+    "ipykernel",
+    "ipython!=8.7.0",
+    "matplotlib~=3.6.2",
+    "nbformat",
+    "nbval>=0.10.0",
+    "seaborn~=0.11.2",
+]
 
 [tool.setuptools.packages.find]
 include = ["sksurv*"]
@@ -79,13 +124,17 @@ minversion = "6.0"
 addopts = "--strict-markers"
 testpaths = ["tests"]
 filterwarnings = [
+    # Treat all warnings as errors other than the ignored ones
+    "error",
     # distutils is deprecated in 3.10, scheduled for removal in 3.12
     "ignore:The distutils package is deprecated:DeprecationWarning",
     "ignore:Setuptools is replacing distutils",
+    "ignore:distutils Version classes are deprecated.*:DeprecationWarning",
     # check_less_precise has been deprecated in pandas 1.1.0
     "ignore:The 'check_less_precise' keyword in testing\\.assert_\\*_equal is deprecated and will be removed in a future version.*:FutureWarning",
     # iteritems has been deprecated in pandas 1.5.0
-    "ignore:iteritems is deprecated and will be removed in a future version. Use \\.items instead:FutureWarning:",
+    "ignore:iteritems is deprecated and will be removed in a future version. Use \\.items instead:FutureWarning",
+    "ignore:Jupyter is migrating its paths to use standard platformdirs:DeprecationWarning",
 ]
 
 [tool.coverage.run]
