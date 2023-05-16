@@ -7,9 +7,18 @@ from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
 
 from sksurv.datasets import load_gbsg2
+from sksurv.ensemble import (
+    ComponentwiseGradientBoostingSurvivalAnalysis,
+    ExtraSurvivalTrees,
+    GradientBoostingSurvivalAnalysis,
+    RandomSurvivalForest,
+)
 from sksurv.exceptions import NoComparablePairException
 from sksurv.functions import StepFunction
-from sksurv.linear_model import CoxPHSurvivalAnalysis
+from sksurv.linear_model import (
+    CoxnetSurvivalAnalysis,
+    CoxPHSurvivalAnalysis,
+)
 from sksurv.metrics import (
     as_concordance_index_ipcw_scorer,
     as_cumulative_dynamic_auc_scorer,
@@ -24,6 +33,7 @@ from sksurv.nonparametric import kaplan_meier_estimator
 from sksurv.preprocessing import OneHotEncoder
 from sksurv.svm import FastSurvivalSVM
 from sksurv.testing import FixtureParameterFactory, assert_cindex_almost_equal
+from sksurv.tree import SurvivalTree
 from sksurv.util import Surv
 
 
@@ -1081,6 +1091,28 @@ def test_scorers(scorers_data):
     surv_actual = est_wrap.predict_survival_function(X_test)
     assert_array_almost_equal([v.x for v in surv_expected], [v.x for v in surv_actual])
     assert_array_almost_equal([v.y for v in surv_expected], [v.y for v in surv_actual])
+
+
+def test_issue_249():
+    X = np.array([[0.2, 0], [4.4, 2], [5.5, 0], [8.8, 4], [1.0, 0]])
+    y = Surv.from_arrays(time=(2, 4, 6, 8, 10),
+                         event=(False, True, False, True, False))
+
+    all_times = range(2, 10+1)
+    event_times = range(4, 8+1)
+
+    for (times, model) in [
+      (all_times, CoxPHSurvivalAnalysis()),
+      (all_times, CoxnetSurvivalAnalysis(fit_baseline_model=True)),
+      (all_times, ComponentwiseGradientBoostingSurvivalAnalysis()),
+      (event_times, ExtraSurvivalTrees()),
+      (all_times, GradientBoostingSurvivalAnalysis()),
+      (event_times, RandomSurvivalForest()),
+      (event_times, SurvivalTree())
+    ]:
+        for fn in model.fit(X, y).predict_survival_function(X):
+            for t in times:
+                assert fn(t) is not None
 
 
 def test_brier_scorer_no_predict_survival_function(make_whas500):
