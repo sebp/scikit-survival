@@ -5,6 +5,7 @@ from numpy.testing import assert_almost_equal, assert_array_almost_equal, assert
 import pytest
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
 from sksurv.datasets import load_gbsg2
 from sksurv.ensemble import (
@@ -1094,7 +1095,8 @@ def test_scorers(scorers_data):
 
 
 def test_issue_249():
-    X = np.array([[0.2, 0], [4.4, 2], [5.5, 0], [8.8, 4], [1.0, 0]])
+    X = np.array([[0], [2], [0], [4], [0]])
+    X = StandardScaler(with_std=False).fit_transform(X)
     y = Surv.from_arrays(time=(2, 4, 6, 8, 10),
                          event=(False, True, False, True, False))
 
@@ -1111,8 +1113,15 @@ def test_issue_249():
       (event_times, SurvivalTree())
     ]:
         for fn in model.fit(X, y).predict_survival_function(X):
-            for t in times:
-                assert fn(t) is not None
+            for t in all_times:
+                if t in times:
+                    assert fn(t) is not None
+                else:
+                    with pytest.raises(
+                        ValueError,
+                        match=r"x must be within \[%f; %f\]" % (times[0], times[-1])
+                    ):
+                        fn(t)
 
 
 def test_brier_scorer_no_predict_survival_function(make_whas500):
