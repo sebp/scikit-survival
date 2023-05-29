@@ -1122,7 +1122,9 @@ def test_issue_249():
                         match=r"x must be within \[%f; %f\]" % (times[0], times[-1])
                     ):
                         fn(t)
+                assert fn(t, clip=True) is not None
 
+            assert fn(all_times, clip=True) is not None
 
 def test_brier_scorer_no_predict_survival_function(make_whas500):
     with pytest.raises(
