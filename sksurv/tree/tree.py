@@ -229,14 +229,14 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         self.n_classes_ = np.ones(self.n_outputs_, dtype=np.intp) * 2
 
         # Build tree
-        criterion = LogrankCriterion(self.n_outputs_, n_samples, self.event_times_)
+        self.criterion = LogrankCriterion(self.n_outputs_, n_samples, self.event_times_)
 
         SPLITTERS = SPARSE_SPLITTERS if issparse(X) else DENSE_SPLITTERS
 
         splitter = self.splitter
         if not isinstance(self.splitter, Splitter):
             splitter = SPLITTERS[self.splitter](
-                criterion,
+                self.criterion,
                 self.max_features_,
                 params["min_samples_leaf"],
                 params["min_weight_leaf"],
