@@ -107,6 +107,9 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         Best nodes are defined as relative reduction in impurity.
         If None then unlimited number of leaf nodes.
 
+    low_memory : boolean, default: False
+        If set, adjust computations to avoid heavy memory usage.
+
     Attributes
     ----------
     event_times_ : array of shape = (n_event_times,)
@@ -163,6 +166,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         ],
         "random_state": ["random_state"],
         "max_leaf_nodes": [Interval(Integral, 2, None, closed="left"), None],
+        "low_memory": ["boolean"],
     }
 
     def __init__(self,
@@ -174,7 +178,8 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
                  min_weight_fraction_leaf=0.,
                  max_features=None,
                  random_state=None,
-                 max_leaf_nodes=None):
+                 max_leaf_nodes=None,
+                 low_memory=False):
         self.splitter = splitter
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
@@ -183,6 +188,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         self.max_features = max_features
         self.random_state = random_state
         self.max_leaf_nodes = max_leaf_nodes
+        self.low_memory = low_memory
 
     def fit(self, X, y, sample_weight=None, check_input=True):
         """Build a survival tree from the training set (X, y).
@@ -369,7 +375,12 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         risk_scores : ndarray, shape = (n_samples,)
             Predicted risk scores.
         """
-        return self.predict_cumulative_hazard_function(X, check_input, return_array="sum")
+
+        if self.low_memory:
+            return self.predict_cumulative_hazard_function(X, check_input, return_array="sum")
+
+        chf = self.predict_cumulative_hazard_function(X, check_input, return_array=True)
+        return chf.sum(1)
 
     def predict_cumulative_hazard_function(self, X, check_input=True, return_array=False):
         """Predict cumulative hazard function.
