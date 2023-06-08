@@ -576,3 +576,34 @@ def test_predict_sparse(make_whas500):
     assert_array_equal(y_pred, y_pred_csr)
     assert_array_equal(y_cum_h, y_cum_h_csr)
     assert_array_equal(y_surv, y_surv_csr)
+
+
+def test_predict_low_memory(make_whas500):
+    seed = 42
+    whas500 = make_whas500(to_numeric=True)
+    X, y = whas500.x, whas500.y
+    # Duplicates values in whas500 leads to assert errors because of
+    # tie resolution during tree fitting.
+    # Using a synthetic dataset resolves this issue.
+    X = np.random.RandomState(seed).binomial(n=5, p=.1, size=X.shape)
+
+    X_train, X_test, y_train, _ = train_test_split(X, y, random_state=seed)
+
+    tree0 = SurvivalTree(min_samples_leaf=10, random_state=seed, low_memory=False)
+    tree0.fit(X_train, y_train)
+    y_pred_0 = tree0.predict(X_test)
+    y_cum_h_0 = tree0.predict_cumulative_hazard_function(X_test)
+    y_surv_0 = tree0.predict_survival_function(X_test)
+
+    tree1 = SurvivalTree(min_samples_leaf=10, random_state=seed, low_memory=True)
+    tree1.fit(X_train, y_train)
+    y_pred_1 = tree1.predict(X_test)
+    y_cum_h_1 = tree1.predict_cumulative_hazard_function(X_test)
+    y_surv_1 = tree1.predict_survival_function(X_test)
+
+    assert y_pred_0.shape[0] == X_test.shape[0]
+    assert y_pred_1.shape[0] == X_test.shape[0]
+
+    assert_array_equal(y_pred_0, y_pred_1)
+    assert_array_equal(y_cum_h_0, y_cum_h_1)
+    assert_array_equal(y_surv_0, y_surv_1)
