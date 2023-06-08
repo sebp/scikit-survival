@@ -369,8 +369,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         risk_scores : ndarray, shape = (n_samples,)
             Predicted risk scores.
         """
-        chf = self.predict_cumulative_hazard_function(X, check_input, return_array=True)
-        return chf.sum(1)
+        return self.predict_cumulative_hazard_function(X, check_input, return_array="sum")
 
     def predict_cumulative_hazard_function(self, X, check_input=True, return_array=False):
         """Predict cumulative hazard function.
@@ -390,10 +389,13 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             Allow to bypass several input checking.
             Don't use this parameter unless you know what you do.
 
-        return_array : boolean, default: False
-            If set, return an array with the cumulative hazard rate
-            for each `self.event_times_`, otherwise an array of
+        return_array : boolean or "sum" string, default: False
+            If set to False return an array of
             :class:`sksurv.functions.StepFunction`.
+            If set to True return an array with the cumulative hazard rate
+            for each `self.event_times_`.
+            If set to "sum" return an array with the sum of the cumulative
+            hazard rates for each `self.event_times_` for each sample.
 
         Returns
         -------
@@ -431,6 +433,13 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         """
         check_is_fitted(self, 'tree_')
         X = self._validate_X_predict(X, check_input, accept_sparse="csr")
+
+        if return_array == "sum":
+            n_samples = X.shape[0]
+            array_of_sums = np.empty(n_samples)
+            for idx in range(0, n_samples):
+                array_of_sums[idx] = self.tree_.predict(X[idx:idx+1])[..., 0].sum()
+            return array_of_sums
 
         pred = self.tree_.predict(X)
         arr = pred[..., 0]
