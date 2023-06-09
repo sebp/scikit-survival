@@ -232,7 +232,8 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         self.n_outputs_ = self.event_times_.shape[0]
         # one "class" for CHF, one for survival function
-        self.n_classes_ = np.ones(self.n_outputs_, dtype=np.intp) * 2
+        j_delta = 2
+        self.n_classes_ = np.ones(self.n_outputs_, dtype=np.intp) * j_delta
 
         # Build tree
         self.criterion = "logrank"

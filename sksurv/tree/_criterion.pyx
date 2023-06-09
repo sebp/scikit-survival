@@ -315,13 +315,14 @@ cdef class LogrankCriterion(Criterion):
         dest[0] = ratio  # Nelson-Aalen estimator
         dest[1] = 1.0 - ratio  # Kaplan-Meier estimator
 
-        j = 2
+        j_delta = 2
+        j = j_delta
         for k in range(1, self.n_event_times):
             rs = &self.riskset_total[k]
-            dest[j] = dest[j - 2]
-            dest[j + 1] = dest[j - 1]
+            dest[j] = dest[j - j_delta]
+            dest[j + 1] = dest[j + 1 - j_delta]
             if rs.n_at_risk != 0:
                 ratio = rs.n_events / (<double> rs.n_at_risk)
                 dest[j] += ratio
                 dest[j + 1] *= 1.0 - ratio
-            j += 2
+            j += j_delta
