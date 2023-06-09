@@ -231,8 +231,8 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         params = self._check_params(n_samples)
 
         self.n_outputs_ = self.event_times_.shape[0]
-        # one "class" for CHF, one for survival function
-        j_delta = 2
+        # one "class" for CHF, one for survival function, one as placeholder
+        j_delta = 3
         self.n_classes_ = np.ones(self.n_outputs_, dtype=np.intp) * j_delta
 
         # Build tree
