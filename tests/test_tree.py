@@ -68,6 +68,7 @@ def assert_curve_almost_equal(x, y):
     jumps_x = np.diff(x) != 0
     jumps_y = np.diff(y) != 0
 
+    pytest.approx(y[0], x[0])
     assert_array_almost_equal(x[:1], y[:1])
     assert_array_almost_equal(x[1:][jumps_x], y[1:][jumps_y])
 
@@ -165,13 +166,14 @@ def test_tree_one_split(veterans):
         1, 2, 3, 4, 7, 8, 10, 11, 12, 13, 15, 16, 18, 19, 20,
         21, 22, 24, 25, 27, 29, 30, 31, 33, 35, 36, 42, 43, 44,
         45, 48, 49, 51, 52, 53, 54, 56, 59, 61, 63, 72, 73, 80,
-        82, 84, 87, 90, 92, 95, 99, 100, 103, 105, 110, 111, 112,
-        117, 118, 122, 126, 132, 133, 139, 140, 143, 144, 151, 153,
-        156, 162, 164, 177, 186, 200, 201, 216, 228, 231, 242, 250,
+        82, 83, 84, 87, 90, 92, 95, 97, 99, 100, 103, 105, 110, 111, 112,
+        117, 118, 122, 123, 126, 132, 133, 139, 140, 143, 144, 151, 153,
+        156, 162, 164, 177, 182, 186, 200, 201, 216, 228, 231, 242, 250,
         260, 278, 283, 287, 314, 340, 357, 378, 384, 389, 392, 411,
         467, 553, 587, 991, 999,
     ], dtype=float)
-    assert_array_equal(tree.event_times_, expected_time)
+    assert_array_equal(tree.unique_times_, expected_time)
+    assert_array_equal(tree.unique_times_[~tree.is_event_time_], np.array([83, 97, 123, 182], dtype=float))
 
     threshold = stats.loc[0, "threshold"]
     m = X[:, 0] <= threshold
@@ -349,7 +351,7 @@ def test_fit_int_time(breast_cancer):
         random_state=6,
     ).fit(X, y_int)
 
-    assert_array_almost_equal(tree_f.event_times_, tree_i.event_times_)
+    assert_array_almost_equal(tree_f.unique_times_, tree_i.unique_times_)
     assert_array_equal(tree_f.tree_.feature, tree_i.tree_.feature)
     assert_array_equal(tree_f.tree_.n_node_samples, tree_i.tree_.n_node_samples)
     assert_array_almost_equal(tree_f.tree_.threshold, tree_i.tree_.threshold)
@@ -377,7 +379,7 @@ def test_predict_step_function(breast_cancer, func):
     assert ret_array.shape[0] == fn_array.shape[0]
 
     for fn, arr in zip(fn_array, ret_array):
-        assert_array_almost_equal(fn.x, tree.event_times_)
+        assert_array_almost_equal(fn.x, tree.unique_times_)
         assert_array_almost_equal(fn.y, arr)
 
 

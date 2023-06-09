@@ -14,7 +14,7 @@ from sklearn.utils.validation import check_is_fitted, check_random_state
 from ..base import SurvivalAnalysisMixin
 from ..functions import StepFunction
 from ..util import check_array_survival
-from ._criterion import LogrankCriterion
+from ._criterion import LogrankCriterion, get_unique_times
 
 __all__ = ["SurvivalTree"]
 
@@ -109,8 +109,8 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
     Attributes
     ----------
-    event_times_ : array of shape = (n_event_times,)
-        Unique time points where events occurred.
+    unique_times_ : array of shape = (n_unique_times,)
+        Unique time points.
 
     max_features_ : int,
         The inferred value of max_features.
@@ -211,7 +211,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             X = self._validate_data(X, ensure_min_samples=2, accept_sparse="csc")
             event, time = check_array_survival(X, y)
             time = time.astype(np.float64)
-            self.event_times_ = np.unique(time[event])
+            self.unique_times_, self.is_event_time_ = get_unique_times(time, event)
             if issparse(X):
                 X.sort_indices()
 
@@ -219,18 +219,18 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             y_numeric[:, 0] = time
             y_numeric[:, 1] = event.astype(np.float64)
         else:
-            y_numeric, self.event_times_ = y
+            y_numeric, self.unique_times_, self.is_event_time_ = y
 
         n_samples, self.n_features_in_ = X.shape
         params = self._check_params(n_samples)
 
-        self.n_outputs_ = self.event_times_.shape[0]
+        self.n_outputs_ = self.unique_times_.shape[0]
         # one "class" for CHF, one for survival function
         self.n_classes_ = np.ones(self.n_outputs_, dtype=np.intp) * 2
 
         # Build tree
         self.criterion = "logrank"
-        criterion = LogrankCriterion(self.n_outputs_, n_samples, self.event_times_)
+        criterion = LogrankCriterion(self.n_outputs_, n_samples, self.unique_times_)
 
         SPLITTERS = SPARSE_SPLITTERS if issparse(X) else DENSE_SPLITTERS
 
@@ -370,7 +370,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             Predicted risk scores.
         """
         chf = self.predict_cumulative_hazard_function(X, check_input, return_array=True)
-        return chf.sum(1)
+        return chf[:, self.is_event_time_].sum(1)
 
     def predict_cumulative_hazard_function(self, X, check_input=True, return_array=False):
         """Predict cumulative hazard function.
@@ -392,14 +392,14 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         return_array : boolean, default: False
             If set, return an array with the cumulative hazard rate
-            for each `self.event_times_`, otherwise an array of
+            for each `self.unique_times_`, otherwise an array of
             :class:`sksurv.functions.StepFunction`.
 
         Returns
         -------
         cum_hazard : ndarray
             If `return_array` is set, an array with the cumulative hazard rate
-            for each `self.event_times_`, otherwise an array of length `n_samples`
+            for each `self.unique_times_`, otherwise an array of length `n_samples`
             of :class:`sksurv.functions.StepFunction` instances will be returned.
 
         Examples
@@ -436,7 +436,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         arr = pred[..., 0]
         if return_array:
             return arr
-        return _array_to_step_function(self.event_times_, arr)
+        return _array_to_step_function(self.unique_times_, arr)
 
     def predict_survival_function(self, X, check_input=True, return_array=False):
         """Predict survival function.
@@ -458,14 +458,14 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         return_array : boolean, default: False
             If set, return an array with the probability
-            of survival for each `self.event_times_`,
+            of survival for each `self.unique_times_`,
             otherwise an array of :class:`sksurv.functions.StepFunction`.
 
         Returns
         -------
         survival : ndarray
             If `return_array` is set, an array with the probability of
-            survival for each `self.event_times_`, otherwise an array of
+            survival for each `self.unique_times_`, otherwise an array of
             length `n_samples` of :class:`sksurv.functions.StepFunction`
             instances will be returned.
 
@@ -503,7 +503,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         arr = pred[..., 1]
         if return_array:
             return arr
-        return _array_to_step_function(self.event_times_, arr)
+        return _array_to_step_function(self.unique_times_, arr)
 
     def apply(self, X, check_input=True):
         """Return the index of the leaf that each sample is predicted as.
