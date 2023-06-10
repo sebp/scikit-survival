@@ -8,7 +8,7 @@ import pandas.testing as tm
 import pytest
 
 from sksurv.testing import FixtureParameterFactory
-from sksurv.util import Surv, conditionalAvailableProperty, safe_concat
+from sksurv.util import Surv, _PropertyAvailableIfDescriptor, property_available_if, safe_concat
 
 
 class ConcatCasesFactory(FixtureParameterFactory):
@@ -377,17 +377,11 @@ def test_cond_avail_property():
             self.avail = False
             self._prop = val
 
-        @conditionalAvailableProperty(lambda self: self.avail)
+        @property_available_if(lambda self: self.avail)
         def prop(self):
             return self._prop
 
-        @prop.setter
-        def prop(self, new):
-            self._prop = new
-
-        @prop.deleter
-        def prop(self):
-            self.avail = False
+        no_prop = _PropertyAvailableIfDescriptor(lambda self: self.avail, fget=None)
 
     testval = 43
     msg = "has no attribute 'prop'"
@@ -397,30 +391,15 @@ def test_cond_avail_property():
     test_obj = WithCondProp(testval)
     with pytest.raises(AttributeError, match=msg):
         _ = test_obj.prop
-    with pytest.raises(AttributeError, match=msg):
-        test_obj.prop = testval - 1
-    with pytest.raises(AttributeError, match=msg):
-        del test_obj.prop
-    test_obj.avail = True
-    assert test_obj.prop == testval
-    test_obj.prop = testval - 2
-    assert test_obj.prop == testval - 2
-    del test_obj.prop
     assert test_obj.avail is False
-    with pytest.raises(AttributeError, match=msg):
-        _ = test_obj.prop
-    with pytest.raises(AttributeError, match=msg):
-        test_obj.prop = testval - 3
-    with pytest.raises(AttributeError, match=msg):
-        del test_obj.prop
 
     test_obj.avail = True
-    WithCondProp.prop.fget = None
-    with pytest.raises(AttributeError, match="has no getter"):
+    assert test_obj.prop == testval
+
+    test_obj.avail = False
+    with pytest.raises(AttributeError, match=msg):
         _ = test_obj.prop
-    WithCondProp.prop.fset = None
-    with pytest.raises(AttributeError, match="has no setter"):
-        test_obj.prop = testval - 4
-    WithCondProp.prop.fdel = None
-    with pytest.raises(AttributeError, match="has no deleter"):
-        del test_obj.prop
+
+    test_obj.avail = True
+    with pytest.raises(AttributeError, match="has no getter"):
+        _ = test_obj.no_prop

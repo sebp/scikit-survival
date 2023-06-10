@@ -6,7 +6,7 @@ import sys
 from sklearn.pipeline import Pipeline, _final_estimator_has
 from sklearn.utils.metaestimators import available_if
 
-from .util import conditionalAvailableProperty
+from .util import property_available_if
 
 
 def _get_version(name):
@@ -127,7 +127,7 @@ def predict_survival_function(self, X, **kwargs):
     return self.steps[-1][-1].predict_survival_function(Xt, **kwargs)
 
 
-@conditionalAvailableProperty(_final_estimator_has('_predict_risk_score'))
+@property_available_if(_final_estimator_has("_predict_risk_score"))
 def _predict_risk_score(self):
     return self.steps[-1][-1]._predict_risk_score
 
