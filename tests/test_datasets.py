@@ -311,7 +311,6 @@ def assert_x_equal(x_true, x_train):
         check_index_type=False,
         check_column_type=True,
         check_names=False,
-        check_less_precise=True,
     )
 
 
@@ -335,11 +334,8 @@ class LoadArffFilesCases(FixtureParameterFactory):
         return StringIO(ARFF_CATEGORICAL_INDEX_2)
 
     def data_with_categorical_index_1(self):
-        index = pd.Index(
-            ["SampleOne", "SampleTwo", "SampleThree", "SampleFour"],
-            name="index",
-            dtype=object,
-        )
+        values = ["SampleOne", "SampleTwo", "SampleThree", "SampleFour"]
+        index = pd.Index(values, name="index", dtype=object)
         x = pd.DataFrame.from_dict(
             {
                 "size": pd.Series(
@@ -375,11 +371,8 @@ class LoadArffFilesCases(FixtureParameterFactory):
         return args, kwargs, x, y, None, None
 
     def data_with_categorical_index_2(self):
-        index = pd.Index(
-            ["ASampleOne", "ASampleTwo", "ASampleThree", "ASampleFour", "ASampleFive"],
-            name="index",
-            dtype=object,
-        )
+        values = ["ASampleOne", "ASampleTwo", "ASampleThree", "ASampleFour", "ASampleFive"]
+        index = pd.Index(values, name="index", dtype=object)
 
         y = pd.DataFrame.from_dict(
             {

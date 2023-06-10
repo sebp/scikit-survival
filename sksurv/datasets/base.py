@@ -3,6 +3,7 @@ import warnings
 
 import numpy as np
 import pandas as pd
+from pandas.api.types import is_categorical_dtype
 
 from ..column import categorical_to_numeric, standardize
 from ..io import loadarff
@@ -98,6 +99,17 @@ def get_x_y(data_frame, attr_labels, pos_label=None, survival=True):
     return _get_x_y_other(data_frame, attr_labels)
 
 
+def _loadarff_with_index(filename):
+    dataset = loadarff(filename)
+    if "index" in dataset.columns:
+        if is_categorical_dtype(dataset["index"].dtype):
+            # concatenating categorical index may raise TypeError
+            # see https://github.com/pandas-dev/pandas/issues/14586
+            dataset["index"] = dataset["index"].astype(object)
+        dataset.set_index("index", inplace=True)
+    return dataset
+
+
 def load_arff_files_standardized(
     path_training,
     attr_labels,
@@ -154,10 +166,7 @@ def load_arff_files_standardized(
     y_test : None or pandas.DataFrame, shape = (n_train, n_labels)
         Dependent variables of testing data if `path_testing` was provided.
     """
-    dataset = loadarff(path_training)
-    if "index" in dataset.columns:
-        dataset.index = dataset["index"].astype(object)
-        dataset.drop("index", axis=1, inplace=True)
+    dataset = _loadarff_with_index(path_training)
 
     x_train, y_train = get_x_y(dataset, attr_labels, pos_label, survival)
 
@@ -196,10 +205,7 @@ def load_arff_files_standardized(
 
 
 def _load_arff_testing(path_testing, attr_labels, pos_label, survival):
-    test_dataset = loadarff(path_testing)
-    if "index" in test_dataset.columns:
-        test_dataset.index = test_dataset["index"].astype(object)
-        test_dataset.drop("index", axis=1, inplace=True)
+    test_dataset = _loadarff_with_index(path_testing)
 
     has_labels = pd.Index(attr_labels).isin(test_dataset.columns).all()
     if not has_labels:
