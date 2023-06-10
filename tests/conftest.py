@@ -58,7 +58,7 @@ def whas500_sparse_data():
     data = []
     index_i = []
     index_j = []
-    for j, (_, col) in enumerate(x_dense.iteritems()):
+    for j, (_, col) in enumerate(x_dense.items()):
         idx = np.flatnonzero(col.values)
         data.extend([1] * len(idx))
         index_i.extend(idx)

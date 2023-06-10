@@ -11,7 +11,7 @@ from sksurv.preprocessing import OneHotEncoder
 
 def _encoded_data(data):
     expected = []
-    for nam, col in data.iteritems():
+    for nam, col in data.items():
         if hasattr(col, "cat"):
             for cat in col.cat.categories[1:]:
                 name = f"{nam}={cat}"

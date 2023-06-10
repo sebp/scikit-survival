@@ -66,7 +66,7 @@ def _write_header(data, fp, relation_name, index):
 
     attribute_names = _sanitize_column_names(data)
 
-    for column, series in data.iteritems():
+    for column, series in data.items():
         name = attribute_names[column]
         fp.write(f"@attribute {name}\t")
 

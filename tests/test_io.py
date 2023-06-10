@@ -70,7 +70,7 @@ class DataFrameCases(FixtureParameterFactory):
 
     def data_nominal_as_category(self):
         data, rel_name, expected = self.data_nominal_with_quotes()
-        for name, series in data.iteritems():
+        for name, series in data.items():
             data[name] = pd.Categorical(series, ordered=False)
 
         expected[3] = '@attribute attr_nominal_spaces\t{"hard liquor","red wine",mate}\n'

@@ -243,7 +243,7 @@ def safe_concat(objs, *args, **kwargs):
                 categories[df.name] = {"categories": df.cat.categories, "ordered": df.cat.ordered}
         else:
             dfc = df.select_dtypes(include=["category"])
-            for name, s in dfc.iteritems():
+            for name, s in dfc.items():
                 if name in categories:
                     if axis == 1:
                         raise ValueError(f"duplicate columns {name}")
