@@ -52,7 +52,7 @@ def test_fit_int_time(make_whas500, forest_cls):
     assert len(forest_f.estimators_) == len(forest_i.estimators_)
     assert forest_f.n_features_in_ == forest_i.n_features_in_
     assert forest_f.oob_score_ == forest_i.oob_score_
-    assert_array_almost_equal(forest_f.event_times_, forest_i.event_times_)
+    assert_array_almost_equal(forest_f.unique_times_, forest_i.unique_times_)
 
     pred_f = forest_f.predict(whas500.x[:50])
     pred_i = forest_i.predict(whas500.x[:50])
@@ -70,7 +70,7 @@ def test_fit_predict_chf(make_whas500, forest_cls):
     assert len(forest.estimators_) == 10
 
     chf = forest.predict_cumulative_hazard_function(whas500.x, return_array=True)
-    assert chf.shape == (500, forest.event_times_.shape[0])
+    assert chf.shape == (500, forest.unique_times_.shape[0])
 
     assert np.isfinite(chf).all()
     assert np.all(chf >= 0.0)
@@ -93,7 +93,7 @@ def test_fit_predict_surv(make_whas500, forest_cls):
     assert len(forest.estimators_) == 10
 
     surv = forest.predict_survival_function(whas500.x, return_array=True)
-    assert surv.shape == (500, forest.event_times_.shape[0])
+    assert surv.shape == (500, forest.unique_times_.shape[0])
 
     assert np.isfinite(surv).all()
     assert np.all(surv >= 0.0)
@@ -143,7 +143,7 @@ def test_predict_step_function(make_whas500, forest_cls, func):
     assert ret_array.shape[0] == fn_array.shape[0]
 
     for fn, arr in zip(fn_array, ret_array):
-        assert_array_almost_equal(fn.x, forest.event_times_)
+        assert_array_almost_equal(fn.x, forest.unique_times_)
         assert_array_almost_equal(fn.y, arr)
 
 

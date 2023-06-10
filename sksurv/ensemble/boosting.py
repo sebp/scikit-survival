@@ -161,8 +161,8 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
 
-    event_times_ : array of shape = (n_event_times,)
-        Unique time points where events occurred.
+    unique_times_ : array of shape = (n_unique_times,)
+        Unique time points.
 
     References
     ----------
@@ -379,14 +379,14 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         return_array : boolean, default: False
             If set, return an array with the cumulative hazard rate
-            for each `self.event_times_`, otherwise an array of
+            for each `self.unique_times_`, otherwise an array of
             :class:`sksurv.functions.StepFunction`.
 
         Returns
         -------
         cum_hazard : ndarray
             If `return_array` is set, an array with the cumulative hazard rate
-            for each `self.event_times_`, otherwise an array of length `n_samples`
+            for each `self.unique_times_`, otherwise an array of length `n_samples`
             of :class:`sksurv.functions.StepFunction` instances will be returned.
 
         Examples
@@ -443,14 +443,14 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         return_array : boolean, default: False
             If set, return an array with the probability
-            of survival for each `self.event_times_`,
+            of survival for each `self.unique_times_`,
             otherwise an array of :class:`sksurv.functions.StepFunction`.
 
         Returns
         -------
         survival : ndarray
             If `return_array` is set, an array with the probability of
-            survival for each `self.event_times_`, otherwise an array of
+            survival for each `self.unique_times_`, otherwise an array of
             length `n_samples` of :class:`sksurv.functions.StepFunction`
             instances will be returned.
 
@@ -495,7 +495,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         return coef
 
     @property
-    def event_times_(self):
+    def unique_times_(self):
         return self._get_baseline_model().unique_times_
 
     @property
@@ -725,8 +725,8 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
 
-    event_times_ : array of shape = (n_event_times,)
-        Unique time points where events occurred.
+    unique_times_ : array of shape = (n_unique_times,)
+        Unique time points.
 
     References
     ----------
@@ -1272,14 +1272,14 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         return_array : boolean, default: False
             If set, return an array with the cumulative hazard rate
-            for each `self.event_times_`, otherwise an array of
+            for each `self.unique_times_`, otherwise an array of
             :class:`sksurv.functions.StepFunction`.
 
         Returns
         -------
         cum_hazard : ndarray
             If `return_array` is set, an array with the cumulative hazard rate
-            for each `self.event_times_`, otherwise an array of length `n_samples`
+            for each `self.unique_times_`, otherwise an array of length `n_samples`
             of :class:`sksurv.functions.StepFunction` instances will be returned.
 
         Examples
@@ -1336,14 +1336,14 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         return_array : boolean, default: False
             If set, return an array with the probability
-            of survival for each `self.event_times_`,
+            of survival for each `self.unique_times_`,
             otherwise an array of :class:`sksurv.functions.StepFunction`.
 
         Returns
         -------
         survival : ndarray
             If `return_array` is set, an array with the probability of
-            survival for each `self.event_times_`, otherwise an array of
+            survival for each `self.unique_times_`, otherwise an array of
             length `n_samples` of :class:`sksurv.functions.StepFunction`
             instances will be returned.
 
@@ -1379,5 +1379,5 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         )
 
     @property
-    def event_times_(self):
+    def unique_times_(self):
         return self._get_baseline_model().unique_times_

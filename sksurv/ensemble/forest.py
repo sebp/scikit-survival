@@ -19,6 +19,7 @@ from sklearn.utils.validation import check_is_fitted, check_random_state
 from ..base import SurvivalAnalysisMixin
 from ..metrics import concordance_index_censored
 from ..tree import SurvivalTree
+from ..tree._criterion import get_unique_times
 from ..tree.tree import _array_to_step_function
 from ..util import check_array_survival
 
@@ -91,8 +92,8 @@ class _BaseSurvivalForest(BaseForest,
 
         self.n_features_in_ = X.shape[1]
         time = time.astype(np.float64)
-        self.event_times_ = np.unique(time[event])
-        self.n_outputs_ = self.event_times_.shape[0]
+        self.unique_times_, self.is_event_time_ = get_unique_times(time, event)
+        self.n_outputs_ = self.unique_times_.shape[0]
 
         y_numeric = np.empty((X.shape[0], 2), dtype=np.float64)
         y_numeric[:, 0] = time
@@ -139,6 +140,7 @@ class _BaseSurvivalForest(BaseForest,
                                           random_state=random_state)
                      for i in range(n_more_estimators)]
 
+            y_tree = y_numeric, self.unique_times_, self.is_event_time_,
             # Parallel loop: we prefer the threading backend as the Cython code
             # for fitting the trees is internally releasing the Python GIL
             # making threading more efficient than multiprocessing in
@@ -148,7 +150,7 @@ class _BaseSurvivalForest(BaseForest,
             trees = Parallel(n_jobs=self.n_jobs, verbose=self.verbose,
                              prefer='threads')(
                 delayed(_parallel_build_trees)(
-                    t, self.bootstrap, X, (y_numeric, self.event_times_), sample_weight, i, len(trees),
+                    t, self.bootstrap, X, y_tree, sample_weight, i, len(trees),
                     verbose=self.verbose,
                     n_samples_bootstrap=n_samples_bootstrap)
                 for i, t in enumerate(trees))
@@ -258,13 +260,13 @@ class _BaseSurvivalForest(BaseForest,
         arr = self._predict("predict_cumulative_hazard_function", X)
         if return_array:
             return arr
-        return _array_to_step_function(self.event_times_, arr)
+        return _array_to_step_function(self.unique_times_, arr)
 
     def predict_survival_function(self, X, return_array=False):
         arr = self._predict("predict_survival_function", X)
         if return_array:
             return arr
-        return _array_to_step_function(self.event_times_, arr)
+        return _array_to_step_function(self.unique_times_, arr)
 
 
 class RandomSurvivalForest(_BaseSurvivalForest):
@@ -380,8 +382,8 @@ class RandomSurvivalForest(_BaseSurvivalForest):
     estimators_ : list of SurvivalTree instances
         The collection of fitted sub-estimators.
 
-    event_times_ : array of shape = (n_event_times,)
-        Unique time points where events occurred.
+    unique_times_ : array of shape = (n_unique_times,)
+        Unique time points.
 
     n_features_in_ : int
         Number of features seen during ``fit``.
@@ -497,14 +499,14 @@ class RandomSurvivalForest(_BaseSurvivalForest):
 
         return_array : boolean, default: False
             If set, return an array with the cumulative hazard rate
-            for each `self.event_times_`, otherwise an array of
+            for each `self.unique_times_`, otherwise an array of
             :class:`sksurv.functions.StepFunction`.
 
         Returns
         -------
         cum_hazard : ndarray
             If `return_array` is set, an array with the cumulative hazard rate
-            for each `self.event_times_`, otherwise an array of length `n_samples`
+            for each `self.unique_times_`, otherwise an array of length `n_samples`
             of :class:`sksurv.functions.StepFunction` instances will be returned.
 
         Examples
@@ -555,14 +557,14 @@ class RandomSurvivalForest(_BaseSurvivalForest):
 
         return_array : boolean
             If set, return an array with the probability
-            of survival for each `self.event_times_`,
+            of survival for each `self.unique_times_`,
             otherwise an array of :class:`sksurv.functions.StepFunction`.
 
         Returns
         -------
         survival : ndarray
             If `return_array` is set, an array with the probability
-            of survival for each `self.event_times_`,
+            of survival for each `self.unique_times_`,
             otherwise an array of :class:`sksurv.functions.StepFunction`
             will be returned.
 
@@ -713,8 +715,8 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
     estimators_ : list of SurvivalTree instances
         The collection of fitted sub-estimators.
 
-    event_times_ : array of shape = (n_event_times,)
-        Unique time points where events occurred.
+    unique_times_ : array of shape = (n_unique_times,)
+        Unique time points.
 
     n_features_in_ : int
         The number of features when ``fit`` is performed.
@@ -799,14 +801,14 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
 
         return_array : boolean, default: False
             If set, return an array with the cumulative hazard rate
-            for each `self.event_times_`, otherwise an array of
+            for each `self.unique_times_`, otherwise an array of
             :class:`sksurv.functions.StepFunction`.
 
         Returns
         -------
         cum_hazard : ndarray
             If `return_array` is set, an array with the cumulative hazard rate
-            for each `self.event_times_`, otherwise an array of length `n_samples`
+            for each `self.unique_times_`, otherwise an array of length `n_samples`
             of :class:`sksurv.functions.StepFunction` instances will be returned.
 
         Examples
@@ -857,14 +859,14 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
 
         return_array : boolean, default: False
             If set, return an array with the probability
-            of survival for each `self.event_times_`,
+            of survival for each `self.unique_times_`,
             otherwise an array of :class:`sksurv.functions.StepFunction`.
 
         Returns
         -------
         survival : ndarray
             If `return_array` is set, an array with the probability of
-            survival for each `self.event_times_`, otherwise an array of
+            survival for each `self.unique_times_`, otherwise an array of
             length `n_samples` of :class:`sksurv.functions.StepFunction`
             instances will be returned.
 

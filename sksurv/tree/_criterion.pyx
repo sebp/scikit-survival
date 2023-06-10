@@ -2,8 +2,8 @@
 # cython: boundscheck=False
 # cython: wraparound=False
 
-from libc.math cimport INFINITY, fabs, sqrt
-from libc.stdlib cimport calloc, free, malloc, qsort, realloc
+from libc.math cimport INFINITY, NAN, fabs, sqrt
+from libc.stdlib cimport free, malloc
 from libc.string cimport memset
 
 import numpy as np
@@ -15,89 +15,131 @@ cnp.import_array()
 from sklearn.tree._criterion cimport Criterion
 from sklearn.tree._tree cimport DOUBLE_t, SIZE_t
 
-ctypedef struct Timepoint:
 
-    SIZE_t index
-    double time
-    double event
+cpdef get_unique_times(cnp.ndarray[DOUBLE_t, ndim=1] time, cnp.ndarray[cnp.npy_bool, ndim=1] event):
+    cdef:
+        SIZE_t[:] order = cnp.PyArray_ArgSort(time, 0, cnp.NPY_MERGESORT)
+        DOUBLE_t value
+        DOUBLE_t last_value = NAN
+        SIZE_t i
+        SIZE_t idx
+        list unique_values = []
+        list has_event = []
+
+    for i in range(time.shape[0]):
+        idx = order[i]
+        value = time[idx]
+        if value != last_value:
+            unique_values.append(value)
+            has_event.append(event[idx])
+            last_value = value
+        if event[idx]:
+            has_event[len(has_event) - 1] = True
+
+    return np.asarray(unique_values), np.asarray(has_event, dtype=np.bool_)
 
 
-ctypedef struct Riskset:
+cdef class RisksetCounter:
+    cdef:
+        const DOUBLE_t[:] unique_times
+        cnp.npy_int64 * n_events
+        cnp.npy_int64 * n_at_risk
+        const DOUBLE_t[:, ::1] data
+        size_t nbytes
 
-    double n_events
-    SIZE_t n_at_risk
+    def __cinit__(self, const DOUBLE_t[:] unique_times):
+        cdef SIZE_t n_unique_times = unique_times.shape[0]
+        self.nbytes = n_unique_times * sizeof(cnp.npy_int64)
+        self.n_events = <cnp.npy_int64 *> malloc(self.nbytes)
+        self.n_at_risk = <cnp.npy_int64 *> malloc(self.nbytes)
+        self.unique_times = unique_times
+
+    def __dealloc__(self):
+        """Destructor."""
+        free(self.n_events)
+        free(self.n_at_risk)
+
+    cdef void reset(self) nogil:
+        memset(self.n_events, 0, self.nbytes)
+        memset(self.n_at_risk, 0, self.nbytes)
+
+    cdef void set_data(self, const DOUBLE_t[:, ::1] data) nogil:
+        self.data = data
+
+    cdef void update(self, const SIZE_t* samples, SIZE_t start, SIZE_t end) nogil:
+        cdef:
+            SIZE_t i
+            SIZE_t idx
+            SIZE_t ti
+            DOUBLE_t time
+            DOUBLE_t event
+            const DOUBLE_t[:] unique_times = self.unique_times
+            SIZE_t n_times = unique_times.shape[0]
+            const DOUBLE_t[:, ::1] y = self.data
+
+        self.reset()
+
+        for i in range(start, end):
+            idx = samples[i]
+            time, event = y[idx, 0], y[idx, 1]
+
+            # i-th sample is in all risk sets with time <= i-th time
+            ti = 0
+            while ti < n_times and unique_times[ti] < time:
+                self.n_at_risk[ti] += 1
+                ti += 1
+
+            if ti < n_times:  # unique_times[ti] == time
+                self.n_at_risk[ti] += 1
+                if event != 0.0:
+                    self.n_events[ti] += 1
+
+    cdef inline void at(self, SIZE_t index, DOUBLE_t * at_risk, DOUBLE_t * events) nogil:
+        if at_risk != NULL:
+            at_risk[0] = <DOUBLE_t> self.n_at_risk[index]
+        if events != NULL:
+            events[0] = <DOUBLE_t> self.n_events[index]
 
 
-cdef int compare_timepoint_desc(const void* a, const void* b) nogil:
-    """Comparison function for sort by time (descending order)."""
-    cdef double ta = (<Timepoint *> a).time
-    cdef double tb = (<Timepoint *> b).time
+cdef int argbinsearch(const DOUBLE_t[:] arr, DOUBLE_t key_val, SIZE_t * ret) nogil except -1:
+    cdef:
+        SIZE_t arr_len = arr.shape[0]
+        SIZE_t min_idx = 0
+        SIZE_t max_idx = arr_len
+        SIZE_t mid_idx
+        DOUBLE_t mid_val
 
-    if ta > tb:
-        return -1
-    if ta < tb:
-        return 1
+    while min_idx < max_idx:
+        mid_idx = min_idx + ((max_idx - min_idx) >> 1)
+
+        if mid_idx < 0 or mid_idx >= arr_len:
+            return -1
+
+        mid_val = arr[mid_idx]
+        if mid_val < key_val:
+            min_idx = mid_idx + 1
+        else:
+            max_idx = mid_idx
+
+    ret[0] = min_idx
+
     return 0
-
-
-cdef inline Riskset* set_risk_set(Riskset * riskset, SIZE_t n_events, SIZE_t n_at_risk) nogil:
-    riskset.n_events = <double> n_events
-    riskset.n_at_risk = n_at_risk
-    return riskset
-
-
-cdef inline Timepoint* set_time_point(Timepoint * tp_ptr, SIZE_t i, const DOUBLE_t[:, ::1] y) nogil:
-    tp_ptr.index = i
-    tp_ptr.time = y[i, 0]
-    tp_ptr.event = y[i, 1]
-    return tp_ptr
-
-
-cdef void compute_risksets(const Timepoint * time_arr, SIZE_t n_samples,
-                           const DOUBLE_t[::1] event_times,
-                           Riskset * riskset) nogil:
-    cdef DOUBLE_t time_idx
-    cdef DOUBLE_t tp
-    cdef SIZE_t total_events
-    cdef SIZE_t n_event_times = event_times.shape[0]
-    cdef SIZE_t idx = 0  # index over time_arr
-    cdef SIZE_t idx_tp = n_event_times - 1  # index over event_times and riskset
-
-    while idx_tp >= 0 and idx < n_samples:
-        time_idx = time_arr[idx].time
-        tp = event_times[idx_tp]
-        if time_idx < tp:
-            set_risk_set(&riskset[idx_tp], 0, idx)
-            idx_tp -= 1  # move to next smaller event time point
-            continue
-        if time_idx > tp:
-            idx += 1  # move to to next smaller sample time point
-            continue
-
-        total_events = 0
-        while idx < n_samples and tp == time_arr[idx].time:
-            if time_arr[idx].event != 0.0:
-                total_events += 1
-            idx += 1
-
-        set_risk_set(&riskset[idx_tp], total_events, idx)
-        idx_tp -= 1  # move to next smaller event time point
-
-    # for remaining smaller time points, everyone is at risk
-    while idx_tp >= 0:
-        set_risk_set(&riskset[idx_tp], 0, n_samples)
-        idx_tp -= 1
 
 
 cdef class LogrankCriterion(Criterion):
 
-    # unique time points sorted in ascending order
-    cdef const DOUBLE_t[::1] event_times
-    cdef SIZE_t n_event_times
-    cdef Riskset * riskset_total
-    cdef Riskset * riskset_left
+    cdef:
+        # unique time points sorted in ascending order
+        const DOUBLE_t[::1] unique_times
+        SIZE_t n_unique_times
+        size_t nbytes
+        RisksetCounter riskset_total
+        cnp.npy_int64 * delta_n_at_risk_left
+        cnp.npy_int64 * n_events_left
+        SIZE_t * samples_time_idx
+        SIZE_t n_samples_left
 
-    def __cinit__(self, SIZE_t n_outputs, SIZE_t n_samples, const DOUBLE_t[::1] event_times):
+    def __cinit__(self, SIZE_t n_outputs, SIZE_t n_samples, const DOUBLE_t[::1] unique_times):
         # Default values
         self.samples = NULL
         self.start = 0
@@ -106,25 +148,27 @@ cdef class LogrankCriterion(Criterion):
 
         self.n_outputs = n_outputs
         self.n_samples = n_samples
-        self.event_times = event_times
-        self.n_event_times = event_times.shape[0]
+        self.unique_times = unique_times
+        self.n_unique_times = unique_times.shape[0]
+        self.nbytes = self.n_unique_times * sizeof(cnp.npy_int64)
         self.n_node_samples = 0
         self.weighted_n_node_samples = 0.0
         self.weighted_n_left = 0.0
         self.weighted_n_right = 0.0
 
-        self.riskset_total = NULL
-        self.riskset_left = NULL
+        self.riskset_total = RisksetCounter(unique_times)
+        self.delta_n_at_risk_left = <cnp.npy_int64 *> malloc(self.nbytes)
+        self.n_events_left = <cnp.npy_int64 *> malloc(self.nbytes)
+        self.samples_time_idx = <SIZE_t *> malloc(n_samples * sizeof(SIZE_t))
 
     def __dealloc__(self):
         """Destructor."""
-        cdef SIZE_t p
-        if self.riskset_total is not NULL:
-            free(self.riskset_total)
-            free(self.riskset_left)
+        free(self.delta_n_at_risk_left)
+        free(self.n_events_left)
+        free(self.samples_time_idx)
 
     def __reduce__(self):
-        return (type(self), (self.n_outputs, self.n_samples, self.event_times), self.__getstate__())
+        return (type(self), (self.n_outputs, self.n_samples, self.unique_times), self.__getstate__())
 
     cdef int init(self, const DOUBLE_t[:, ::1] y, const DOUBLE_t[:] sample_weight,
                   double weighted_n_samples, SIZE_t* samples, SIZE_t start,
@@ -141,42 +185,25 @@ cdef class LogrankCriterion(Criterion):
         self.weighted_n_samples = weighted_n_samples
         self.weighted_n_node_samples = 0.
 
-        cdef SIZE_t i
-        cdef SIZE_t p
-        cdef SIZE_t k
-        cdef DOUBLE_t w = 1.0
-        cdef Timepoint * time_arr
+        cdef:
+            SIZE_t i
+            SIZE_t idx
+            DOUBLE_t time
+            DOUBLE_t w = 1.0
+            const DOUBLE_t[::1] unique_times = self.unique_times
 
-        time_arr = < Timepoint * > malloc(self.n_node_samples * sizeof(Timepoint))
-        if time_arr is NULL:
-            raise MemoryError()
+        self.riskset_total.set_data(y)
+        self.riskset_total.update(samples, start, end)
 
-        for k, p in enumerate(range(start, end)):
-            i = samples[p]
-            set_time_point(&time_arr[k], i, self.y)
+        for i in range(start, end):
+            idx = samples[i]
+            time = y[idx, 0]
+            argbinsearch(unique_times, time, &self.samples_time_idx[idx])
 
             if sample_weight is not None:
-                w = sample_weight[i]
+                w = sample_weight[idx]
 
             self.weighted_n_node_samples += w
-
-        qsort(time_arr, self.n_node_samples, sizeof(Timepoint), compare_timepoint_desc)
-
-        if self.riskset_total is not NULL:
-            free(self.riskset_total)
-            free(self.riskset_left)
-
-        self.riskset_total = < Riskset * > malloc(self.n_event_times * sizeof(Riskset))
-        if self.riskset_total is NULL:
-            raise MemoryError()
-
-        compute_risksets(time_arr, self.n_node_samples, self.event_times, self.riskset_total)
-
-        free(time_arr)
-
-        self.riskset_left = < Riskset * > malloc(self.n_event_times * sizeof(Riskset))
-        if self.riskset_left is NULL:
-            raise MemoryError()
 
         # Reset to pos=start
         self.reset()
@@ -184,9 +211,6 @@ cdef class LogrankCriterion(Criterion):
 
     cdef int reset(self) nogil except -1:
         """Reset the criterion at pos=start."""
-        # cdef SIZE_t n_bytes = self.n_samples * sizeof(double)
-        # memset(self.time_points, 0, n_bytes)
-
         self.weighted_n_left = 0.0
         self.weighted_n_right = self.weighted_n_node_samples
         self.pos = self.start
@@ -194,9 +218,6 @@ cdef class LogrankCriterion(Criterion):
 
     cdef int reverse_reset(self) nogil except -1:
         """Reset the criterion at pos=end."""
-        # cdef SIZE_t n_bytes = self.n_samples * sizeof(double)
-        # memset(self.time_points, 0, n_bytes)
-
         self.weighted_n_right = 0.0
         self.weighted_n_left = self.weighted_n_node_samples
         self.pos = self.end
@@ -204,40 +225,37 @@ cdef class LogrankCriterion(Criterion):
 
     cdef int update(self, SIZE_t new_pos) nogil except -1:
         """Updated statistics by moving samples[pos:new_pos] to the left."""
-        cdef const DOUBLE_t[:] sample_weight = self.sample_weight
-        cdef const SIZE_t* samples = self.samples
+        cdef:
+            const DOUBLE_t[:] sample_weight = self.sample_weight
+            const SIZE_t* samples = self.samples
+            const DOUBLE_t[:, ::1] y = self.y
 
-        cdef SIZE_t pos = self.start  # always start from the beginning
-        cdef SIZE_t n_samples_left = new_pos - pos
-        cdef SIZE_t i
-        cdef SIZE_t idx_left
-        cdef SIZE_t k
-        cdef DOUBLE_t w = 1.0
-        cdef Timepoint * time_arr
+            SIZE_t pos = self.start  # always start from the beginning
+            SIZE_t i
+            SIZE_t idx
+            DOUBLE_t event
+            SIZE_t time_idx
+            DOUBLE_t w = 1.0
 
-        time_arr = < Timepoint * > malloc(n_samples_left * sizeof(Timepoint))
-        if time_arr is NULL:
-            raise MemoryError()
+        self.n_samples_left = new_pos - pos
+        memset(self.delta_n_at_risk_left, 0, self.nbytes)
+        memset(self.n_events_left, 0, self.nbytes)
 
         # Update statistics up to new_pos
         self.weighted_n_left = 0.0
-        for k, idx_left in enumerate(range(pos, new_pos)):
-            i = samples[idx_left]
-            set_time_point(&time_arr[k], i, self.y)
+        for i in range(pos, new_pos):
+            idx = samples[i]
+            event = y[idx, 1]
+            time_idx = self.samples_time_idx[idx]
+
+            self.delta_n_at_risk_left[time_idx] += 1
+            if event != 0.0:
+                self.n_events_left[time_idx] += 1
 
             if sample_weight is not None:
-                w = sample_weight[i]
+                w = sample_weight[idx]
 
             self.weighted_n_left += w
-
-        qsort(time_arr, n_samples_left, sizeof(Timepoint), compare_timepoint_desc)
-
-        memset(self.riskset_left, 0, self.n_event_times * sizeof(Riskset))
-
-        # use same time points as in riskset_total
-        compute_risksets(time_arr, n_samples_left, self.event_times, self.riskset_left)
-
-        free(time_arr)
 
         self.weighted_n_right = (self.weighted_n_node_samples -
                                  self.weighted_n_left)
@@ -254,32 +272,31 @@ cdef class LogrankCriterion(Criterion):
     cdef double proxy_impurity_improvement(self) nogil:
         """Compute a proxy of the impurity reduction"""
 
-        # cdef double impurity_left
-        # cdef double impurity_right
-        #
-        # self.children_impurity(&impurity_left, &impurity_right)
+        cdef:
+            SIZE_t i
+            DOUBLE_t at_risk = <DOUBLE_t> self.n_samples_left
+            DOUBLE_t events
+            DOUBLE_t total_at_risk
+            DOUBLE_t total_events
+            DOUBLE_t ratio
+            DOUBLE_t v
+            DOUBLE_t denom = 0.0
+            DOUBLE_t numer = 0.0
 
-        cdef SIZE_t i
-        cdef double at_risk
-        cdef double total_at_risk
-        cdef double v
-        cdef Riskset * rs_total
-        cdef Riskset * rs_left
-        cdef double denom = 0.0
-        cdef double numer = 0.0
-
-        for i in range(self.n_event_times):
-            rs_total = &self.riskset_total[i]
-            rs_left = &self.riskset_left[i]
-            total_at_risk = <double> rs_total.n_at_risk
+        for i in range(self.n_unique_times):
+            events = <DOUBLE_t> self.n_events_left[i]
+            self.riskset_total.at(i, &total_at_risk, &total_events)
 
             if total_at_risk == 0:
                 break  # we reached the end
-            at_risk = rs_left.n_at_risk / total_at_risk
-            numer += rs_left.n_events - rs_total.n_events * at_risk
+            ratio = at_risk / total_at_risk
+            numer += events - total_events * ratio
             if total_at_risk > 1.0:
-                v = (total_at_risk - rs_total.n_events) / (total_at_risk - 1.0) * rs_total.n_events
-                denom += at_risk * (1.0 - at_risk) * v
+                v = (total_at_risk - total_events) / (total_at_risk - 1.0) * total_events
+                denom += ratio * (1.0 - ratio) * v
+
+            # Update number of samples at risk for next bigger timepoint
+            at_risk -= <DOUBLE_t> self.delta_n_at_risk_left[i]
 
         if denom != 0.0:
             # absolute value is the measure of node separation
@@ -305,23 +322,25 @@ cdef class LogrankCriterion(Criterion):
     cdef void node_value(self, double* dest) nogil:
         """Compute the node value of samples[start:end] into dest."""
         # Estimate cumulative hazard function
-        cdef SIZE_t k
-        cdef SIZE_t j
-        cdef double ratio
-        cdef Riskset * rs
+        cdef:
+            SIZE_t i
+            SIZE_t j
+            DOUBLE_t ratio
+            DOUBLE_t n_events
+            DOUBLE_t n_at_risk
 
-        rs = &self.riskset_total[0]
-        ratio = rs.n_events / (<double> rs.n_at_risk)
+        self.riskset_total.at(0, &n_at_risk, &n_events)
+        ratio = n_events / n_at_risk
         dest[0] = ratio  # Nelson-Aalen estimator
         dest[1] = 1.0 - ratio  # Kaplan-Meier estimator
 
         j = 2
-        for k in range(1, self.n_event_times):
-            rs = &self.riskset_total[k]
+        for i in range(1, self.n_unique_times):
+            self.riskset_total.at(i, &n_at_risk, &n_events)
             dest[j] = dest[j - 2]
             dest[j + 1] = dest[j - 1]
-            if rs.n_at_risk != 0:
-                ratio = rs.n_events / (<double> rs.n_at_risk)
+            if n_at_risk != 0:
+                ratio = n_events / n_at_risk
                 dest[j] += ratio
                 dest[j + 1] *= 1.0 - ratio
             j += 2

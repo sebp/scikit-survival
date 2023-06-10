@@ -26,7 +26,7 @@ def test_survival_functions(estimator, make_whas500):
     fns_cls = estimator.predict_survival_function(data.x[:150])
     fns_arr = estimator.predict_survival_function(data.x[:150], return_array=True)
 
-    times = estimator.event_times_
+    times = estimator.unique_times_
     arr = np.row_stack([fn(times) for fn in fns_cls])
 
     assert_array_almost_equal(arr, fns_arr)
