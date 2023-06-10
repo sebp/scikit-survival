@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_categorical_dtype
 
-__all__ = ['categorical_to_numeric', 'encode_categorical', 'standardize']
+__all__ = ["categorical_to_numeric", "encode_categorical", "standardize"]
 
 
 def _apply_along_column(array, func1d, **kwargs):
@@ -65,7 +65,7 @@ def standardize(table, with_std=True):
         Categorical columns in the input table remain unchanged.
     """
     if isinstance(table, pd.DataFrame):
-        cat_columns = table.select_dtypes(include=['category']).columns
+        cat_columns = table.select_dtypes(include=["category"]).columns
     else:
         cat_columns = []
 
@@ -160,7 +160,8 @@ def _get_dummies_1d(data, allow_drop=True):
     # if all NaN or only one level
     if allow_drop and number_of_cols < 2:
         logging.getLogger(__package__).warning(
-            "dropped categorical variable '%s', because it has only %d values", data.name, number_of_cols)
+            "dropped categorical variable '%s', because it has only %d values", data.name, number_of_cols
+        )
         return
     if number_of_cols == 0:
         return None, levels
@@ -188,6 +189,7 @@ def categorical_to_numeric(table):
         Table with categorical columns encoded as numeric.
         Numeric columns in the input table remain unchanged.
     """
+
     def transform(column):
         if is_categorical_dtype(column.dtype):
             return column.cat.codes
@@ -206,4 +208,4 @@ def categorical_to_numeric(table):
 
     if isinstance(table, pd.Series):
         return pd.Series(transform(table), name=table.name, index=table.index)
-    return table.apply(transform, axis=0, result_type='expand')
+    return table.apply(transform, axis=0, result_type="expand")

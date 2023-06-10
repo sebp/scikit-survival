@@ -8,14 +8,16 @@ from ..column import categorical_to_numeric, standardize
 from ..io import loadarff
 from ..util import safe_concat
 
-__all__ = ["get_x_y",
-           "load_arff_files_standardized",
-           "load_aids",
-           "load_breast_cancer",
-           "load_flchain",
-           "load_gbsg2",
-           "load_whas500",
-           "load_veterans_lung_cancer"]
+__all__ = [
+    "get_x_y",
+    "load_arff_files_standardized",
+    "load_aids",
+    "load_breast_cancer",
+    "load_flchain",
+    "load_gbsg2",
+    "load_whas500",
+    "load_veterans_lung_cancer",
+]
 
 
 def _get_data_path(name):
@@ -96,8 +98,15 @@ def get_x_y(data_frame, attr_labels, pos_label=None, survival=True):
     return _get_x_y_other(data_frame, attr_labels)
 
 
-def load_arff_files_standardized(path_training, attr_labels, pos_label=None, path_testing=None, survival=True,
-                                 standardize_numeric=True, to_numeric=True):
+def load_arff_files_standardized(
+    path_training,
+    attr_labels,
+    pos_label=None,
+    path_testing=None,
+    survival=True,
+    standardize_numeric=True,
+    to_numeric=True,
+):
     """Load dataset in ARFF format.
 
     Parameters
@@ -156,8 +165,7 @@ def load_arff_files_standardized(path_training, attr_labels, pos_label=None, pat
         x_test, y_test = _load_arff_testing(path_testing, attr_labels, pos_label, survival)
 
         if len(x_train.columns.symmetric_difference(x_test.columns)) > 0:
-            warnings.warn("Restricting columns to intersection between training and testing data",
-                          stacklevel=2)
+            warnings.warn("Restricting columns to intersection between training and testing data", stacklevel=2)
 
             cols = x_train.columns.intersection(x_test.columns)
             if len(cols) == 0:
@@ -230,8 +238,8 @@ def load_whas500():
         "Applied Survival Analysis: Regression Modeling of Time to Event Data."
         John Wiley & Sons, Inc. (2008)
     """
-    fn = _get_data_path('whas500.arff')
-    return get_x_y(loadarff(fn), attr_labels=['fstat', 'lenfol'], pos_label='1')
+    fn = _get_data_path("whas500.arff")
+    return get_x_y(loadarff(fn), attr_labels=["fstat", "lenfol"], pos_label="1")
 
 
 def load_gbsg2():
@@ -262,8 +270,8 @@ def load_gbsg2():
         in node-positive breast cancer patients."
         Journal of Clinical Oncology 12, 2086–2093. (1994)
     """
-    fn = _get_data_path('GBSG2.arff')
-    return get_x_y(loadarff(fn), attr_labels=['cens', 'time'], pos_label='1')
+    fn = _get_data_path("GBSG2.arff")
+    return get_x_y(loadarff(fn), attr_labels=["cens", "time"], pos_label="1")
 
 
 def load_veterans_lung_cancer():
@@ -291,8 +299,8 @@ def load_veterans_lung_cancer():
     .. [1] Kalbfleisch, J.D., Prentice, R.L.:
         "The Statistical Analysis of Failure Time Data." John Wiley & Sons, Inc. (2002)
     """
-    fn = _get_data_path('veteran.arff')
-    return get_x_y(loadarff(fn), attr_labels=['Status', 'Survival_in_days'], pos_label="dead")
+    fn = _get_data_path("veteran.arff")
+    return get_x_y(loadarff(fn), attr_labels=["Status", "Survival_in_days"], pos_label="dead")
 
 
 def load_aids(endpoint="aids"):
@@ -332,8 +340,8 @@ def load_aids(endpoint="aids"):
         "Applied Survival Analysis: Regression Modeling of Time to Event Data."
         John Wiley & Sons, Inc. (2008)
     """
-    labels_aids = ['censor', 'time']
-    labels_death = ['censor_d', 'time_d']
+    labels_aids = ["censor", "time"]
+    labels_death = ["censor_d", "time_d"]
     if endpoint == "aids":
         attr_labels = labels_aids
         drop_columns = labels_death
@@ -343,8 +351,8 @@ def load_aids(endpoint="aids"):
     else:
         raise ValueError("endpoint must be 'aids' or 'death'")
 
-    fn = _get_data_path('actg320.arff')
-    x, y = get_x_y(loadarff(fn), attr_labels=attr_labels, pos_label='1')
+    fn = _get_data_path("actg320.arff")
+    x, y = get_x_y(loadarff(fn), attr_labels=attr_labels, pos_label="1")
     x.drop(drop_columns, axis=1, inplace=True)
     return x, y
 
@@ -377,8 +385,8 @@ def load_breast_cancer():
         Patients in the TRANSBIG Multicenter Independent Validation Series."
         Clin. Cancer Res. 13(11), 3207–14 (2007)
     """
-    fn = _get_data_path('breast_cancer_GSE7390-metastasis.arff')
-    return get_x_y(loadarff(fn), attr_labels=['e.tdm', 't.tdm'], pos_label="1")
+    fn = _get_data_path("breast_cancer_GSE7390-metastasis.arff")
+    return get_x_y(loadarff(fn), attr_labels=["e.tdm", "t.tdm"], pos_label="1")
 
 
 def load_flchain():
@@ -421,5 +429,5 @@ def load_flchain():
            Use of nonclonal serum immunoglobulin free light chains to predict overall survival in
            the general population, Mayo Clinic Proceedings 87:512-523. (2012)
     """
-    fn = _get_data_path('flchain.arff')
-    return get_x_y(loadarff(fn), attr_labels=['death', 'futime'], pos_label='dead')
+    fn = _get_data_path("flchain.arff")
+    return get_x_y(loadarff(fn), attr_labels=["death", "futime"], pos_label="dead")

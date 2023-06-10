@@ -133,9 +133,7 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
            doi:10.1006/jmva.1993.1028.
     """
 
-    _parameter_constraints = {
-        **Ridge._parameter_constraints
-    }
+    _parameter_constraints = {**Ridge._parameter_constraints}
 
     def __init__(
         self,

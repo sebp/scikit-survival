@@ -21,23 +21,21 @@ from .nonparametric import CensoringDistributionEstimator, SurvivalFunctionEstim
 from .util import check_y_survival
 
 __all__ = [
-    'as_concordance_index_ipcw_scorer',
-    'as_cumulative_dynamic_auc_scorer',
-    'as_integrated_brier_score_scorer',
-    'brier_score',
-    'concordance_index_censored',
-    'concordance_index_ipcw',
-    'cumulative_dynamic_auc',
-    'integrated_brier_score',
+    "as_concordance_index_ipcw_scorer",
+    "as_cumulative_dynamic_auc_scorer",
+    "as_integrated_brier_score_scorer",
+    "brier_score",
+    "concordance_index_censored",
+    "concordance_index_ipcw",
+    "cumulative_dynamic_auc",
+    "integrated_brier_score",
 ]
 
 
 def _check_estimate_1d(estimate, test_time):
     estimate = check_array(estimate, ensure_2d=False, input_name="estimate")
     if estimate.ndim != 1:
-        raise ValueError(
-            'Expected 1D array, got {:d}D array instead:\narray={}.\n'.format(
-                estimate.ndim, estimate))
+        raise ValueError("Expected 1D array, got {:d}D array instead:\narray={}.\n".format(estimate.ndim, estimate))
     check_consistent_length(test_time, estimate)
     return estimate
 
@@ -50,8 +48,10 @@ def _check_inputs(event_indicator, event_time, estimate):
 
     if not np.issubdtype(event_indicator.dtype, np.bool_):
         raise ValueError(
-            'only boolean arrays are supported as class labels for survival analysis, got {0}'.format(
-                event_indicator.dtype))
+            "only boolean arrays are supported as class labels for survival analysis, got {0}".format(
+                event_indicator.dtype
+            )
+        )
 
     if len(event_time) < 2:
         raise ValueError("Need a minimum of two samples")
@@ -68,8 +68,8 @@ def _check_times(test_time, times):
 
     if times.max() >= test_time.max() or times.min() < test_time.min():
         raise ValueError(
-            'all times must be within follow-up time of test data: [{}; {}['.format(
-                test_time.min(), test_time.max()))
+            "all times must be within follow-up time of test data: [{}; {}[".format(test_time.min(), test_time.max())
+        )
 
     return times
 
@@ -80,8 +80,9 @@ def _check_estimate_2d(estimate, test_time, time_points, estimator):
     check_consistent_length(test_time, estimate)
 
     if estimate.ndim == 2 and estimate.shape[1] != time_points.shape[0]:
-        raise ValueError("expected estimate with {} columns, but got {}".format(
-            time_points.shape[0], estimate.shape[1]))
+        raise ValueError(
+            "expected estimate with {} columns, but got {}".format(time_points.shape[0], estimate.shape[1])
+        )
 
     return estimate, time_points
 
@@ -120,15 +121,14 @@ def _estimate_concordance_index(event_indicator, event_time, estimate, weights, 
     tied_risk = 0
     numerator = 0.0
     denominator = 0.0
-    for (ind, mask, tied_time) in _iter_comparable(event_indicator, event_time, order):
-
+    for ind, mask, tied_time in _iter_comparable(event_indicator, event_time, order):
         est_i = estimate[order[ind]]
         event_i = event_indicator[order[ind]]
         w_i = weights[order[ind]]
 
         est = estimate[order[mask]]
 
-        assert event_i, 'got censored sample at index %d, but expected uncensored' % order[ind]
+        assert event_i, "got censored sample at index %d, but expected uncensored" % order[ind]
 
         ties = np.absolute(est - est_i) <= tied_tol
         n_ties = ties.sum()
@@ -144,8 +144,7 @@ def _estimate_concordance_index(event_indicator, event_time, estimate, weights, 
         discordant += est.size - n_con - n_ties
 
     if tied_time is None:
-        raise NoComparablePairException(
-            "Data has no comparable pairs, cannot estimate concordance index.")
+        raise NoComparablePairException("Data has no comparable pairs, cannot estimate concordance index.")
 
     cindex = numerator / denominator
     return cindex, concordant, discordant, tied_risk, tied_time
@@ -216,8 +215,7 @@ def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1
            evaluating assumptions and adequacy, and measuring and reducing errors",
            Statistics in Medicine, 15(4), 361-87, 1996.
     """
-    event_indicator, event_time, estimate = _check_inputs(
-        event_indicator, event_time, estimate)
+    event_indicator, event_time, estimate = _check_inputs(event_indicator, event_time, estimate)
 
     w = np.ones_like(estimate)
 
@@ -450,9 +448,7 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
            Statistical Methods in Medical Research, 2014.
     """
     test_event, test_time = check_y_survival(survival_test)
-    estimate, times = _check_estimate_2d(
-        estimate, test_time, times, estimator="cumulative_dynamic_auc"
-    )
+    estimate, times = _check_estimate_2d(estimate, test_time, times, estimator="cumulative_dynamic_auc")
 
     n_samples = estimate.shape[0]
     n_times = times.shape[0]
@@ -611,9 +607,7 @@ def brier_score(survival_train, survival_test, estimate, times):
            Statistics in Medicine, vol. 18, no. 17-18, pp. 2529–2545, 1999.
     """
     test_event, test_time = check_y_survival(survival_test)
-    estimate, times = _check_estimate_2d(
-        estimate, test_time, times, estimator="brier_score"
-    )
+    estimate, times = _check_estimate_2d(estimate, test_time, times, estimator="brier_score")
     if estimate.ndim == 1 and times.shape[0] == 1:
         estimate = estimate.reshape(-1, 1)
 
@@ -814,7 +808,7 @@ class _ScoreOverrideMixin:
             score = score[self._score_index]
         return self._sign * score
 
-    @available_if(_estimator_has('predict'))
+    @available_if(_estimator_has("predict"))
     def predict(self, X):
         """Call predict on the estimator.
 
@@ -829,7 +823,7 @@ class _ScoreOverrideMixin:
         check_is_fitted(self, "estimator_")
         return self.estimator_.predict(X)
 
-    @available_if(_estimator_has('predict_cumulative_hazard_function'))
+    @available_if(_estimator_has("predict_cumulative_hazard_function"))
     def predict_cumulative_hazard_function(self, X):
         """Call predict_cumulative_hazard_function on the estimator.
 
@@ -844,7 +838,7 @@ class _ScoreOverrideMixin:
         check_is_fitted(self, "estimator_")
         return self.estimator_.predict_cumulative_hazard_function(X)
 
-    @available_if(_estimator_has('predict_survival_function'))
+    @available_if(_estimator_has("predict_survival_function"))
     def predict_survival_function(self, X):
         """Call predict_survival_function on the estimator.
 

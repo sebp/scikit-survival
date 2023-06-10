@@ -19,17 +19,14 @@ def _get_version(name):
         version = getattr(module, "__version__", None)
 
     if version is None:  # pragma: no cover
-        raise ImportError("Can't determine version for {}".format(
-            module.__name__))
+        raise ImportError("Can't determine version for {}".format(module.__name__))
     return version
 
 
 def show_versions():
     sys_info = {
         "Platform": platform.platform(),
-        "Python version": "{} {}".format(
-            platform.python_implementation(),
-            platform.python_version()),
+        "Python version": "{} {}".format(platform.python_implementation(), platform.python_version()),
         "Python interpreter": sys.executable,
     }
 
@@ -68,7 +65,7 @@ def show_versions():
         print(fmt.format(dep, version))
 
 
-@available_if(_final_estimator_has('predict_cumulative_hazard_function'))
+@available_if(_final_estimator_has("predict_cumulative_hazard_function"))
 def predict_cumulative_hazard_function(self, X, **kwargs):
     """Predict cumulative hazard function.
 
@@ -98,7 +95,7 @@ def predict_cumulative_hazard_function(self, X, **kwargs):
     return self.steps[-1][-1].predict_cumulative_hazard_function(Xt, **kwargs)
 
 
-@available_if(_final_estimator_has('predict_survival_function'))
+@available_if(_final_estimator_has("predict_survival_function"))
 def predict_survival_function(self, X, **kwargs):
     """Predict survival function.
 
@@ -134,9 +131,9 @@ def patch_pipeline():
 
 
 try:
-    __version__ = distribution('scikit-survival').version
+    __version__ = distribution("scikit-survival").version
 except PackageNotFoundError:  # pragma: no cover
     # package is not installed
-    __version__ = 'unknown'
+    __version__ = "unknown"
 
 patch_pipeline()

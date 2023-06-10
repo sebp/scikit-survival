@@ -25,8 +25,7 @@ def _array_to_step_function(x, array):
     n_samples = array.shape[0]
     funcs = np.empty(n_samples, dtype=np.object_)
     for i in range(n_samples):
-        funcs[i] = StepFunction(x=x,
-                                y=array[i])
+        funcs[i] = StepFunction(x=x, y=array[i])
     return funcs
 
 
@@ -165,16 +164,18 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         "max_leaf_nodes": [Interval(Integral, 2, None, closed="left"), None],
     }
 
-    def __init__(self,
-                 *,
-                 splitter="best",
-                 max_depth=None,
-                 min_samples_split=6,
-                 min_samples_leaf=3,
-                 min_weight_fraction_leaf=0.,
-                 max_features=None,
-                 random_state=None,
-                 max_leaf_nodes=None):
+    def __init__(
+        self,
+        *,
+        splitter="best",
+        max_depth=None,
+        min_samples_split=6,
+        min_samples_leaf=3,
+        min_weight_fraction_leaf=0.0,
+        max_features=None,
+        random_state=None,
+        max_leaf_nodes=None,
+    ):
         self.splitter = splitter
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
@@ -237,11 +238,8 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         splitter = self.splitter
         if not isinstance(self.splitter, Splitter):
             splitter = SPLITTERS[self.splitter](
-                criterion,
-                self.max_features_,
-                params["min_samples_leaf"],
-                params["min_weight_leaf"],
-                random_state)
+                criterion, self.max_features_, params["min_samples_leaf"], params["min_weight_leaf"], random_state
+            )
 
         self.tree_ = Tree(self.n_features_in_, self.n_classes_, self.n_outputs_)
 
@@ -274,11 +272,9 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         self._validate_params()
 
         # Check parameters
-        max_depth = ((2 ** 31) - 1 if self.max_depth is None
-                     else self.max_depth)
+        max_depth = (2**31) - 1 if self.max_depth is None else self.max_depth
 
-        max_leaf_nodes = (-1 if self.max_leaf_nodes is None
-                          else self.max_leaf_nodes)
+        max_leaf_nodes = -1 if self.max_leaf_nodes is None else self.max_leaf_nodes
 
         if isinstance(self.min_samples_leaf, (Integral, np.integer)):
             min_samples_leaf = self.min_samples_leaf
@@ -321,8 +317,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             max_features = self.max_features
         else:  # float
             if self.max_features > 0.0:
-                max_features = max(1,
-                                   int(self.max_features * self.n_features_in_))
+                max_features = max(1, int(self.max_features * self.n_features_in_))
             else:
                 max_features = 0
 
@@ -429,7 +424,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         >>> plt.ylim(0, 1)
         >>> plt.show()
         """
-        check_is_fitted(self, 'tree_')
+        check_is_fitted(self, "tree_")
         X = self._validate_X_predict(X, check_input, accept_sparse="csr")
 
         pred = self.tree_.predict(X)
@@ -496,7 +491,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         >>> plt.ylim(0, 1)
         >>> plt.show()
         """
-        check_is_fitted(self, 'tree_')
+        check_is_fitted(self, "tree_")
         X = self._validate_X_predict(X, check_input, accept_sparse="csr")
 
         pred = self.tree_.predict(X)

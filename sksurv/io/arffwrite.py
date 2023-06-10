@@ -39,7 +39,7 @@ def writearff(data, filename, relation_name=None, index=True):
         Write row names (index)
     """
     if isinstance(filename, str):
-        fp = open(filename, 'w')
+        fp = open(filename, "w")
 
         if relation_name is None:
             relation_name = os.path.basename(filename)
@@ -79,7 +79,7 @@ def _write_header(data, fp, relation_name, index):
         elif np.issubdtype(series.dtype, np.datetime64):
             fp.write("date 'yyyy-MM-dd HH:mm:ss'")
         else:
-            raise TypeError('unsupported type %s' % series.dtype)
+            raise TypeError("unsupported type %s" % series.dtype)
 
         fp.write("\n")
     return data
@@ -104,8 +104,8 @@ def _check_str_value(x):
             if x[0] in ('"', "'"):
                 x = x[1:]
             if x[-1] in ('"', "'"):
-                x = x[:len(x) - 1]
-            x = '"' + x.replace('"', "\\\"") + '"'
+                x = x[: len(x) - 1]
+            x = '"' + x.replace('"', '\\"') + '"'
     return str(x)
 
 
@@ -133,7 +133,7 @@ def _write_data(data, fp):
 
     def to_str(x):
         if pd.isnull(x):
-            return '?'
+            return "?"
         return str(x)
 
     data = data.applymap(to_str)

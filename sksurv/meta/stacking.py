@@ -91,9 +91,11 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
 
         for t in estimators:
             if not hasattr(t, "fit") or not (hasattr(t, "predict") or hasattr(t, "predict_proba")):
-                raise TypeError("All base estimators should implement "
-                                "fit and predict/predict_proba"
-                                " '%s' (type %s) doesn't)" % (t, type(t)))
+                raise TypeError(
+                    "All base estimators should implement "
+                    "fit and predict/predict_proba"
+                    " '%s' (type %s) doesn't)" % (t, type(t))
+                )
 
     def set_params(self, **params):
         """
@@ -144,7 +146,7 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
     def _split_fit_params(self, fit_params):
         fit_params_steps = {step: {} for step, _ in self.base_estimators}
         for pname, pval in fit_params.items():
-            step, param = pname.split('__', 1)
+            step, param = pname.split("__", 1)
             fit_params_steps[step][param] = pval
         return fit_params_steps
 
@@ -175,7 +177,6 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
         Xt = None
         start = 0
         for estimator in self.estimators_:
-
             if self.probabilities and hasattr(estimator, "predict_proba"):
                 p = estimator.predict_proba(X)
             else:
@@ -187,7 +188,7 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
             if Xt is None:
                 # assume that prediction array has the same size for all base learners
                 n_classes = p.shape[1]
-                Xt = np.empty((p.shape[0], n_classes * len(self.base_estimators)), order='F')
+                Xt = np.empty((p.shape[0], n_classes * len(self.base_estimators)), order="F")
             Xt[:, slice(start, start + n_classes)] = p
             start += n_classes
 
@@ -219,7 +220,7 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
 
         return self
 
-    @available_if(_meta_estimator_has('predict'))
+    @available_if(_meta_estimator_has("predict"))
     def predict(self, X):
         """Perform prediction.
 
@@ -241,7 +242,7 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
         Xt = self._predict_estimators(X)
         return self.final_estimator_.predict(Xt)
 
-    @available_if(_meta_estimator_has('predict_proba'))
+    @available_if(_meta_estimator_has("predict_proba"))
     def predict_proba(self, X):
         """Perform prediction.
 
@@ -263,7 +264,7 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
         Xt = self._predict_estimators(X)
         return self.final_estimator_.predict_proba(Xt)
 
-    @available_if(_meta_estimator_has('predict_log_proba'))
+    @available_if(_meta_estimator_has("predict_log_proba"))
     def predict_log_proba(self, X):
         """Perform prediction.
 

@@ -76,6 +76,7 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 dev = [
+    "black[jupyter]",
     "build",
     "coverage",
     "cython >=0.29",
@@ -118,6 +119,11 @@ include-package-data = false
 
 [tool.setuptools.package-data]
 "sksurv.datasets" = ["data/*.arff"]
+
+[tool.black]
+line-length = 120
+extend-exclude = "sksurv/linear_model/src/eigen"
+target-version = ["py38"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"

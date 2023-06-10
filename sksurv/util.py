@@ -15,7 +15,7 @@ import pandas as pd
 from pandas.api.types import is_categorical_dtype
 from sklearn.utils import check_array, check_consistent_length
 
-__all__ = ['check_array_survival', 'check_y_survival', 'safe_concat', 'Surv']
+__all__ = ["check_array_survival", "check_y_survival", "safe_concat", "Surv"]
 
 
 class Surv:
@@ -43,10 +43,10 @@ class Surv:
         y : np.array
             Structured array with two fields.
         """
-        name_event = name_event or 'event'
-        name_time = name_time or 'time'
+        name_event = name_event or "event"
+        name_time = name_time or "time"
         if name_time == name_event:
-            raise ValueError('name_time must be different from name_event')
+            raise ValueError("name_time must be different from name_event")
 
         time = np.asanyarray(time, dtype=float)
         y = np.empty(time.shape[0], dtype=[(name_event, bool), (name_time, float)])
@@ -61,12 +61,12 @@ class Surv:
             events = np.unique(event)
             events.sort()
             if len(events) != 2:
-                raise ValueError('event indicator must be binary')
+                raise ValueError("event indicator must be binary")
 
             if np.all(events == np.array([0, 1], dtype=events.dtype)):
                 y[name_event] = event.astype(bool)
             else:
-                raise ValueError('non-boolean event indicator must contain 0 and 1 only')
+                raise ValueError("non-boolean event indicator must contain 0 and 1 only")
 
         return y
 
@@ -89,14 +89,11 @@ class Surv:
             Structured array with two fields.
         """
         if not isinstance(data, pd.DataFrame):
-            raise TypeError(
-                "exepected pandas.DataFrame, but got {!r}".format(type(data)))
+            raise TypeError("exepected pandas.DataFrame, but got {!r}".format(type(data)))
 
         return Surv.from_arrays(
-            data.loc[:, event].values,
-            data.loc[:, time].values,
-            name_event=str(event),
-            name_time=str(time))
+            data.loc[:, event].values, data.loc[:, time].values, name_event=str(event), name_time=str(time)
+        )
 
 
 def check_y_survival(y_or_event, *args, allow_all_censored=False):
@@ -129,9 +126,11 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False):
         y = y_or_event
 
         if not isinstance(y, np.ndarray) or y.dtype.fields is None or len(y.dtype.fields) != 2:
-            raise ValueError('y must be a structured array with the first field'
-                             ' being a binary class event indicator and the second field'
-                             ' the time of the event/censoring')
+            raise ValueError(
+                "y must be a structured array with the first field"
+                " being a binary class event indicator and the second field"
+                " the time of the event/censoring"
+            )
 
         event_field, time_field = y.dtype.names
         y_event = y[event_field]
@@ -142,10 +141,10 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False):
 
     event = check_array(y_event, ensure_2d=False)
     if not np.issubdtype(event.dtype, np.bool_):
-        raise ValueError('elements of event indicator must be boolean, but found {0}'.format(event.dtype))
+        raise ValueError("elements of event indicator must be boolean, but found {0}".format(event.dtype))
 
     if not (allow_all_censored or np.any(event)):
-        raise ValueError('all samples are censored')
+        raise ValueError("all samples are censored")
 
     return_val = [event]
     for i, yt in enumerate(time_args):
@@ -155,7 +154,7 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False):
 
         yt = check_array(yt, ensure_2d=False)
         if not np.issubdtype(yt.dtype, np.number):
-            raise ValueError('time must be numeric, but found {} for argument {}'.format(yt.dtype, i + 2))
+            raise ValueError("time must be numeric, but found {} for argument {}".format(yt.dtype, i + 2))
 
         return_val.append(yt)
 

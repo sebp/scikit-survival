@@ -50,10 +50,11 @@ def iris_data_with_estimator():
             LogisticRegression(**params),
             [
                 ("tree", DecisionTreeClassifier(max_depth=1, random_state=0)),
-                ("svm", SVC(probability=True, gamma="auto", random_state=0))
-            ]
+                ("svm", SVC(probability=True, gamma="auto", random_state=0)),
+            ],
         )
         return x, y, meta
+
     return _make_estimator
 
 
@@ -64,7 +65,7 @@ def whas_data_with_estimator(make_whas500):
     meta = Stacking(
         MeanEstimator(),
         [("coxph", CoxPHSurvivalAnalysis()), ("svm", FastSurvivalSVM(random_state=0))],
-        probabilities=False
+        probabilities=False,
     )
     return whas500.x, whas500.y, meta
 
@@ -75,8 +76,9 @@ class TestStackingClassifier:
     def test_base_estimator(estimator, dummy_data):
         est = Stacking(_PredictDummy(), [("m1", estimator)])
         X, y = dummy_data
-        with pytest.raises(TypeError,
-                           match=r"All base estimators should implement fit and predict/predict_proba (.+) doesn't"):
+        with pytest.raises(
+            TypeError, match=r"All base estimators should implement fit and predict/predict_proba (.+) doesn't"
+        ):
             est.fit(X, y)
 
     @staticmethod
@@ -84,21 +86,19 @@ class TestStackingClassifier:
         est = Stacking(_NoFitEstimator(), [("m1", _PredictDummy())])
         X, y = dummy_data
 
-        msg = "The 'meta_estimator' parameter of Stacking must be an object " \
-              r"implementing 'fit'\. Got _NoFitEstimator\(\) instead\."
+        msg = (
+            "The 'meta_estimator' parameter of Stacking must be an object "
+            r"implementing 'fit'\. Got _NoFitEstimator\(\) instead\."
+        )
 
         with pytest.raises(TypeError, match=msg):
             est.fit(X, y)
 
     @staticmethod
     def test_names_not_unique(dummy_data):
-        est = Stacking(
-            _NoPredictDummy(),
-            [("m1", _PredictDummy()), ("m2", _PredictDummy()), ("m1", _PredictDummy())]
-        )
+        est = Stacking(_NoPredictDummy(), [("m1", _PredictDummy()), ("m2", _PredictDummy()), ("m1", _PredictDummy())])
         X, y = dummy_data
-        with pytest.raises(ValueError,
-                           match=r"Names provided are not unique: \('m1', 'm2', 'm1'\)"):
+        with pytest.raises(ValueError, match=r"Names provided are not unique: \('m1', 'm2', 'm1'\)"):
             est.fit(X, y)
 
     @staticmethod
@@ -122,11 +122,12 @@ class TestStackingClassifier:
     @staticmethod
     def test_set_params():
         meta = Stacking(
-            LogisticRegression(), [
+            LogisticRegression(),
+            [
                 ("tree", DecisionTreeClassifier(max_depth=1, random_state=0)),
-                ("svm", SVC(probability=True, random_state=0))
+                ("svm", SVC(probability=True, random_state=0)),
             ],
-            probabilities=True
+            probabilities=True,
         )
         assert 2 == len(meta)
         meta.set_params(tree__min_samples_split=7, svm__C=0.05)
@@ -176,8 +177,8 @@ class TestStackingClassifier:
             LogisticRegression(),
             [
                 ("tree", DecisionTreeClassifier(max_depth=1, random_state=0)),
-                ("svm", SVC(probability=True, gamma="auto", random_state=0))
-            ]
+                ("svm", SVC(probability=True, gamma="auto", random_state=0)),
+            ],
         )
         meta.fit(x, y)
         assert meta.n_features_in_ == len(data["feature_names"])
@@ -201,10 +202,11 @@ class TestStackingSurvivalAnalysis:
 
     @staticmethod
     def test_set_params():
-        meta = Stacking(_PredictDummy(),
-                        [('coxph', CoxPHSurvivalAnalysis()),
-                         ('svm', FastSurvivalSVM(random_state=0))],
-                        probabilities=False)
+        meta = Stacking(
+            _PredictDummy(),
+            [("coxph", CoxPHSurvivalAnalysis()), ("svm", FastSurvivalSVM(random_state=0))],
+            probabilities=False,
+        )
 
         meta.set_params(coxph__alpha=1.0, svm__alpha=0.4132)
 
@@ -218,19 +220,17 @@ class TestStackingSurvivalAnalysis:
 
         # result is different if randomForestSRC has not been compiled with OpenMP support
         p = meta.predict(x)
-        assert_cindex_almost_equal(y["fstat"], y["lenfol"], p,
-                                   (0.7848807, 58983, 16166, 0, 14))
+        assert_cindex_almost_equal(y["fstat"], y["lenfol"], p, (0.7848807, 58983, 16166, 0, 14))
 
     @staticmethod
     def test_predict_proba():
         meta = Stacking(
             _PredictDummy(),
-            [('coxph', CoxPHSurvivalAnalysis()), ('svm', FastSurvivalSVM(random_state=0))],
-            probabilities=False
+            [("coxph", CoxPHSurvivalAnalysis()), ("svm", FastSurvivalSVM(random_state=0))],
+            probabilities=False,
         )
 
-        with pytest.raises(AttributeError,
-                           match="'_PredictDummy' object has no attribute 'predict_proba'"):
+        with pytest.raises(AttributeError, match="'_PredictDummy' object has no attribute 'predict_proba'"):
             meta.predict_proba  # pylint: disable=pointless-statement
 
     @staticmethod
@@ -248,7 +248,7 @@ class TestStackingSurvivalAnalysis:
         meta = Stacking(
             MeanEstimator(),
             [("coxph", CoxPHSurvivalAnalysis()), ("svm", FastSurvivalSVM(random_state=0))],
-            probabilities=False
+            probabilities=False,
         )
         meta.fit(whas500.x_data_frame, whas500.y)
         names = whas500.x_data_frame.columns.values

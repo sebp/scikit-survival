@@ -29,9 +29,7 @@ def test_pandas_inputs(estimator_cls):
         estimator.predict(X_bad)
 
     # warns when fitted on dataframe and transforming a ndarray
-    msg = "X does not have valid feature names, but {} was fitted with feature names".format(
-        estimator_cls.__name__
-    )
+    msg = "X does not have valid feature names, but {} was fitted with feature names".format(estimator_cls.__name__)
     with pytest.warns(UserWarning, match=msg):
         estimator.predict(X_np)
 

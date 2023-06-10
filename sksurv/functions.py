@@ -14,7 +14,7 @@
 import numpy as np
 from sklearn.utils import check_consistent_length
 
-__all__ = ['StepFunction']
+__all__ = ["StepFunction"]
 
 
 class StepFunction:
@@ -39,7 +39,8 @@ class StepFunction:
     b : float, optional, default: 0.0
         Constant offset term.
     """
-    def __init__(self, x, y, *, a=1., b=0.):
+
+    def __init__(self, x, y, *, a=1.0, b=0.0):
         check_consistent_length(x, y)
         self.x = x
         self.y = y
@@ -63,9 +64,8 @@ class StepFunction:
         if not np.isfinite(x).all():
             raise ValueError("x must be finite")
         if np.min(x) < self.x[0] or np.max(x) > self.x[-1]:
-            raise ValueError(
-                "x must be within [%f; %f]" % (self.x[0], self.x[-1]))
-        i = np.searchsorted(self.x, x, side='left')
+            raise ValueError("x must be within [%f; %f]" % (self.x[0], self.x[-1]))
+        i = np.searchsorted(self.x, x, side="left")
         not_exact = self.x[i] != x
         i[not_exact] -= 1
         value = self.a * self.y[i] + self.b
@@ -78,10 +78,5 @@ class StepFunction:
 
     def __eq__(self, other):
         if isinstance(other, type(self)):
-            return (
-                all(self.x == other.x)
-                and all(self.y == other.y)
-                and self.a == other.a
-                and self.b == other.b
-            )
+            return all(self.x == other.x) and all(self.y == other.y) and self.a == other.a and self.b == other.b
         return False

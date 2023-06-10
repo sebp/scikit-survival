@@ -13,19 +13,18 @@ from sksurv.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis, Gradi
 from sksurv.testing import FixtureParameterFactory, assert_cindex_almost_equal
 from sksurv.util import Surv
 
-CGBOOST_CUMHAZ_FILE = join(dirname(__file__), 'data', 'compnentwise-gradient-boosting-coxph-cumhazard.csv')
-CGBOOST_SURV_FILE = join(dirname(__file__), 'data', 'compnentwise-gradient-boosting-coxph-surv.csv')
-GBOOST_CUMHAZ_FILE = join(dirname(__file__), 'data', 'gradient-boosting-coxph-cumhazard.csv')
-GBOOST_SURV_FILE = join(dirname(__file__), 'data', 'gradient-boosting-coxph-surv.csv')
+CGBOOST_CUMHAZ_FILE = join(dirname(__file__), "data", "compnentwise-gradient-boosting-coxph-cumhazard.csv")
+CGBOOST_SURV_FILE = join(dirname(__file__), "data", "compnentwise-gradient-boosting-coxph-surv.csv")
+GBOOST_CUMHAZ_FILE = join(dirname(__file__), "data", "gradient-boosting-coxph-cumhazard.csv")
+GBOOST_SURV_FILE = join(dirname(__file__), "data", "gradient-boosting-coxph-surv.csv")
 
 
 def early_stopping_monitor(i, est, locals_):  # pylint: disable=unused-argument
-    """Returns True on the 10th iteration. """
+    """Returns True on the 10th iteration."""
     return i == 9
 
 
 class MaxFeaturesCases(FixtureParameterFactory):
-
     _prefix = (
         "The 'max_features' parameter of GradientBoostingSurvivalAnalysis must be "
         r"an int in the range \[1, inf\), a float in the range \(0\.0, 1\.0\], a str "
@@ -58,10 +57,7 @@ class MaxFeaturesCases(FixtureParameterFactory):
         return -1.125, None, pytest.raises(ValueError, match=MaxFeaturesCases._prefix + r"Got -1\.125 instead\.")
 
     def data_fail_me(self):
-        return "fail_me", None, pytest.raises(
-            ValueError,
-            match=MaxFeaturesCases._prefix + r"Got 'fail_me' instead\."
-        )
+        return "fail_me", None, pytest.raises(ValueError, match=MaxFeaturesCases._prefix + r"Got 'fail_me' instead\.")
 
 
 class TestGradientBoosting:
@@ -89,7 +85,10 @@ class TestGradientBoosting:
             p = model.predict(X_test)
 
             assert_cindex_almost_equal(
-                y_test['fstat'], y_test['lenfol'], p, expected_cindex,
+                y_test["fstat"],
+                y_test["lenfol"],
+                p,
+                expected_cindex,
             )
 
         return model
@@ -97,7 +96,9 @@ class TestGradientBoosting:
     def test_fit(self):
         model = self.assert_fit_and_predict(
             expected_cindex=(0.86272605091218779, 64826, 10309, 14, 14),
-            n_estimators=100, max_depth=3, min_samples_split=10,
+            n_estimators=100,
+            max_depth=3,
+            min_samples_split=10,
         )
 
         with pytest.warns(FutureWarning):
@@ -117,12 +118,61 @@ class TestGradientBoosting:
             model.predict(np.random.randn(10, 2))
 
     def test_fit_subsample(self):
-        idx = np.array([
-            229, 337, 327, 416, 306, 131, 5, 431, 434, 134, 276, 264, 34, 274, 489,
-            11, 378, 467, 425, 241, 93, 310, 189, 277, 138, 332, 313, 59, 212, 171,
-            375, 85, 266, 36, 272, 287, 185, 338, 33, 343, 363, 9, 204, 472, 48,
-            280, 15, 184, 24, 82,
-        ], dtype=int)
+        idx = np.array(
+            [
+                229,
+                337,
+                327,
+                416,
+                306,
+                131,
+                5,
+                431,
+                434,
+                134,
+                276,
+                264,
+                34,
+                274,
+                489,
+                11,
+                378,
+                467,
+                425,
+                241,
+                93,
+                310,
+                189,
+                277,
+                138,
+                332,
+                313,
+                59,
+                212,
+                171,
+                375,
+                85,
+                266,
+                36,
+                272,
+                287,
+                185,
+                338,
+                33,
+                343,
+                363,
+                9,
+                204,
+                472,
+                48,
+                280,
+                15,
+                184,
+                24,
+                82,
+            ],
+            dtype=int,
+        )
         incl_mask = np.zeros(500, dtype=bool)
         incl_mask[idx] = True
 
@@ -146,7 +196,10 @@ class TestGradientBoosting:
     def test_fit_dropout(self):
         model = self.assert_fit_and_predict(
             expected_cindex=(0.9094333, 68343, 6806, 0, 14),
-            n_estimators=100, max_features=8, learning_rate=1.0, dropout_rate=0.03,
+            n_estimators=100,
+            max_features=8,
+            learning_rate=1.0,
+            dropout_rate=0.03,
         )
 
         assert not hasattr(model, "oob_improvement_")
@@ -159,22 +212,22 @@ class TestGradientBoosting:
             ("n_estimators", 100.0),
             ("max_leaf_nodes", 15.0),
             ("min_samples_split", 10.0),
-        ]
+        ],
     )
     def test_fit_int_param_as_float(self, parameter, value):
         kwargs = {parameter: value}
         model = GradientBoostingSurvivalAnalysis(**kwargs)
 
-        msg = f"The '{parameter}' parameter of GradientBoostingSurvivalAnalysis " \
-              "must be an int in the range "
+        msg = f"The '{parameter}' parameter of GradientBoostingSurvivalAnalysis " "must be an int in the range "
 
         X, y = self.data
         with pytest.raises(ValueError, match=msg):
             model.fit(X, y)
 
-    @pytest.mark.parametrize("fn,expected_file",
-                             [("predict_survival_function", GBOOST_SURV_FILE),
-                              ("predict_cumulative_hazard_function", GBOOST_CUMHAZ_FILE)])
+    @pytest.mark.parametrize(
+        "fn,expected_file",
+        [("predict_survival_function", GBOOST_SURV_FILE), ("predict_cumulative_hazard_function", GBOOST_CUMHAZ_FILE)],
+    )
     def test_predict_function(self, fn, expected_file):
         X, y = self.data
 
@@ -186,7 +239,8 @@ class TestGradientBoosting:
         model = self.assert_fit_and_predict(
             expected_cindex=None,
             mask_test=test_mask,
-            n_estimators=100, max_depth=2,
+            n_estimators=100,
+            max_depth=2,
         )
 
         surv_fn = getattr(model, fn)(test_x)
@@ -203,7 +257,10 @@ class TestGradientBoosting:
         X, y = self.data
 
         model = GradientBoostingSurvivalAnalysis(
-            n_estimators=10, max_features=max_features, max_depth=3, random_state=0,
+            n_estimators=10,
+            max_features=max_features,
+            max_depth=3,
+            random_state=0,
         )
 
         with expected_error:
@@ -215,12 +272,17 @@ class TestGradientBoosting:
     def test_ccp_alpha(self):
         est_full = self.assert_fit_and_predict(
             expected_cindex=None,
-            n_estimators=10, max_leaf_nodes=20, random_state=1,
+            n_estimators=10,
+            max_leaf_nodes=20,
+            random_state=1,
         )
 
         est_pruned = self.assert_fit_and_predict(
             expected_cindex=None,
-            n_estimators=10, max_leaf_nodes=20, ccp_alpha=10.0, random_state=1,
+            n_estimators=10,
+            max_leaf_nodes=20,
+            ccp_alpha=10.0,
+            random_state=1,
         )
 
         tree = est_full.estimators_[0, 0].tree_
@@ -232,7 +294,11 @@ class TestGradientBoosting:
         X, y = self.data
 
         model = GradientBoostingSurvivalAnalysis(
-            n_estimators=1000, max_depth=2, n_iter_no_change=3, validation_fraction=0.2, random_state=0,
+            n_estimators=1000,
+            max_depth=2,
+            n_iter_no_change=3,
+            validation_fraction=0.2,
+            random_state=0,
         )
         model.fit(X, y)
 
@@ -243,8 +309,10 @@ class TestGradientBoosting:
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         clf = GradientBoostingSurvivalAnalysis()
-        msg = "The 'ccp_alpha' parameter of GradientBoostingSurvivalAnalysis must be a float in the range " \
-              r"\[0\.0, inf\)\. Got -1\.0 instead\."
+        msg = (
+            "The 'ccp_alpha' parameter of GradientBoostingSurvivalAnalysis must be a float in the range "
+            r"\[0\.0, inf\)\. Got -1\.0 instead\."
+        )
 
         clf.set_params(ccp_alpha=-1.0)
         with pytest.raises(ValueError, match=msg):
@@ -255,8 +323,10 @@ class TestGradientBoosting:
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
         clf = GradientBoostingSurvivalAnalysis()
-        msg = "The 'n_iter_no_change' parameter of GradientBoostingSurvivalAnalysis must be an int in the range " \
-              r"\[1, inf\) or None\. Got -1 instead\."
+        msg = (
+            "The 'n_iter_no_change' parameter of GradientBoostingSurvivalAnalysis must be an int in the range "
+            r"\[1, inf\) or None\. Got -1 instead\."
+        )
 
         clf.set_params(n_iter_no_change=-1)
         with pytest.raises(ValueError, match=msg):
@@ -268,7 +338,9 @@ class TestGradientBoosting:
     def test_ipcwls_loss(self):
         model = self.assert_fit_and_predict(
             expected_cindex=None,
-            loss="ipcwls", n_estimators=100, max_depth=3,
+            loss="ipcwls",
+            n_estimators=100,
+            max_depth=3,
         )
 
         with pytest.warns(FutureWarning):
@@ -297,7 +369,9 @@ class TestGradientBoosting:
     def test_squared_loss(self):
         model = self.assert_fit_and_predict(
             expected_cindex=None,
-            loss="squared", n_estimators=100, max_depth=3,
+            loss="squared",
+            n_estimators=100,
+            max_depth=3,
         )
 
         with pytest.warns(FutureWarning):
@@ -341,7 +415,10 @@ class TestGradientBoosting:
         # the same prediction.
         model = self.assert_fit_and_predict(
             expected_cindex=None,
-            loss=loss, dropout_rate=dropout_rate, n_estimators=100, max_depth=3,
+            loss=loss,
+            dropout_rate=dropout_rate,
+            n_estimators=100,
+            max_depth=3,
         )
 
         X, _ = self.data
@@ -351,7 +428,11 @@ class TestGradientBoosting:
         X, y = self.data
 
         est = GradientBoostingSurvivalAnalysis(
-            loss="ipcwls", n_estimators=50, max_depth=1, subsample=0.5, random_state=0,
+            loss="ipcwls",
+            n_estimators=50,
+            max_depth=1,
+            subsample=0.5,
+            random_state=0,
         )
         est.fit(X, y, monitor=early_stopping_monitor)
 
@@ -378,25 +459,32 @@ class TestSparseGradientBoosting:
 
         return model
 
-    @pytest.mark.parametrize('loss', ['coxph', 'squared', 'ipcwls'])
+    @pytest.mark.parametrize("loss", ["coxph", "squared", "ipcwls"])
     def test_fit(self, whas500_sparse_data, loss):
         model = self.assert_fit_and_predict(
             whas500_sparse_data,
-            loss=loss, n_estimators=100, max_depth=1, min_samples_split=10, subsample=0.5,
+            loss=loss,
+            n_estimators=100,
+            max_depth=1,
+            min_samples_split=10,
+            subsample=0.5,
         )
         assert model.oob_improvement_.shape == (100,)
 
-    @pytest.mark.parametrize('loss', ['coxph', 'squared', 'ipcwls'])
+    @pytest.mark.parametrize("loss", ["coxph", "squared", "ipcwls"])
     @pytest.mark.slow()
     def test_dropout(self, whas500_sparse_data, loss):
         self.assert_fit_and_predict(
             whas500_sparse_data,
-            loss=loss, n_estimators=100, max_depth=1, min_samples_split=10, dropout_rate=0.03,
+            loss=loss,
+            n_estimators=100,
+            max_depth=1,
+            min_samples_split=10,
+            dropout_rate=0.03,
         )
 
 
 class TestComponentwiseGradientBoosting:
-
     @staticmethod
     def test_fit(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
@@ -408,23 +496,27 @@ class TestComponentwiseGradientBoosting:
 
         p = model.predict(whas500_data.x)
 
-        assert_cindex_almost_equal(whas500_data.y['fstat'], whas500_data.y['lenfol'], p,
-                                   (0.7755659, 58283, 16866, 0, 14))
+        assert_cindex_almost_equal(
+            whas500_data.y["fstat"], whas500_data.y["lenfol"], p, (0.7755659, 58283, 16866, 0, 14)
+        )
 
         expected_coef = pd.Series(np.zeros(15, dtype=float), index=whas500_data.names)
-        expected_coef['age'] = 0.040919
-        expected_coef['hr'] = 0.004977
-        expected_coef['diasbp'] = -0.003407
-        expected_coef['bmi'] = -0.017938
-        expected_coef['sho'] = 0.429904
-        expected_coef['chf'] = 0.508211
+        expected_coef["age"] = 0.040919
+        expected_coef["hr"] = 0.004977
+        expected_coef["diasbp"] = -0.003407
+        expected_coef["bmi"] = -0.017938
+        expected_coef["sho"] = 0.429904
+        expected_coef["chf"] = 0.508211
 
         assert_array_almost_equal(expected_coef.values, model.coef_)
 
         assert (100,) == model.train_score_.shape
 
-        with pytest.raises(ValueError, match="X has 2 features, but ComponentwiseGradientBoostingSurvivalAnalysis is "
-                                             "expecting 14 features as input."):
+        with pytest.raises(
+            ValueError,
+            match="X has 2 features, but ComponentwiseGradientBoostingSurvivalAnalysis is "
+            "expecting 14 features as input.",
+        ):
             model.predict(whas500_data.x[:, :2])
 
     @staticmethod
@@ -435,53 +527,60 @@ class TestComponentwiseGradientBoosting:
         model.fit(whas500_data.x, whas500_data.y)
         p = model.predict(whas500_data.x)
 
-        assert_cindex_almost_equal(whas500_data.y['fstat'], whas500_data.y['lenfol'], p,
-                                   (0.7750602, 58245, 16904, 0, 14))
+        assert_cindex_almost_equal(
+            whas500_data.y["fstat"], whas500_data.y["lenfol"], p, (0.7750602, 58245, 16904, 0, 14)
+        )
 
         expected_coef = pd.Series(np.zeros(15, dtype=float), index=whas500_data.names)
-        expected_coef['age'] = 0.041299
-        expected_coef['hr'] = 0.00487
-        expected_coef['diasbp'] = -0.003381
-        expected_coef['bmi'] = -0.017018
-        expected_coef['sho'] = 0.433685
-        expected_coef['chf'] = 0.510277
+        expected_coef["age"] = 0.041299
+        expected_coef["hr"] = 0.00487
+        expected_coef["diasbp"] = -0.003381
+        expected_coef["bmi"] = -0.017018
+        expected_coef["sho"] = 0.433685
+        expected_coef["chf"] = 0.510277
 
         assert_array_almost_equal(expected_coef.values, model.coef_)
 
         assert (100,) == model.train_score_.shape
         assert (100,) == model.oob_improvement_.shape
 
-        with pytest.raises(ValueError, match="X has 2 features, but ComponentwiseGradientBoostingSurvivalAnalysis is "
-                                             "expecting 14 features as input."):
+        with pytest.raises(
+            ValueError,
+            match="X has 2 features, but ComponentwiseGradientBoostingSurvivalAnalysis is "
+            "expecting 14 features as input.",
+        ):
             model.predict(whas500_data.x[:, :2])
 
     @staticmethod
     def test_fit_dropout(make_whas500):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
-        model = ComponentwiseGradientBoostingSurvivalAnalysis(n_estimators=100, learning_rate=1.0,
-                                                              dropout_rate=0.03, random_state=0)
+        model = ComponentwiseGradientBoostingSurvivalAnalysis(
+            n_estimators=100, learning_rate=1.0, dropout_rate=0.03, random_state=0
+        )
         model.fit(whas500_data.x, whas500_data.y)
         p = model.predict(whas500_data.x)
 
-        assert_cindex_almost_equal(whas500_data.y['fstat'], whas500_data.y['lenfol'], p,
-                                   (0.7772425, 58409, 16740, 0, 14))
+        assert_cindex_almost_equal(
+            whas500_data.y["fstat"], whas500_data.y["lenfol"], p, (0.7772425, 58409, 16740, 0, 14)
+        )
 
         expected_coef = pd.Series(np.zeros(15, dtype=float), index=whas500_data.names)
-        expected_coef['age'] = 0.275537
-        expected_coef['hr'] = 0.040048
-        expected_coef['diasbp'] = -0.029998
-        expected_coef['bmi'] = -0.138909
-        expected_coef['sho'] = 3.318941
-        expected_coef['chf'] = 2.851386
-        expected_coef['mitype'] = -0.075817
+        expected_coef["age"] = 0.275537
+        expected_coef["hr"] = 0.040048
+        expected_coef["diasbp"] = -0.029998
+        expected_coef["bmi"] = -0.138909
+        expected_coef["sho"] = 3.318941
+        expected_coef["chf"] = 2.851386
+        expected_coef["mitype"] = -0.075817
 
         assert_array_almost_equal(expected_coef.values, model.coef_)
 
     @staticmethod
-    @pytest.mark.parametrize("fn,expected_file",
-                             [("predict_survival_function", CGBOOST_SURV_FILE),
-                              ("predict_cumulative_hazard_function", CGBOOST_CUMHAZ_FILE)])
+    @pytest.mark.parametrize(
+        "fn,expected_file",
+        [("predict_survival_function", CGBOOST_SURV_FILE), ("predict_cumulative_hazard_function", CGBOOST_CUMHAZ_FILE)],
+    )
     def test_predict_function(make_whas500, fn, expected_file):
         whas500_data = make_whas500(with_std=False, to_numeric=True)
 
@@ -585,9 +684,11 @@ def test_param_n_estimators(sample_gb_class, n_estimators):
     est_cls, x, y = sample_gb_class
     model = est_cls(n_estimators=n_estimators)
 
-    msg = f"The 'n_estimators' parameter of {est_cls.__name__} must be an int " \
-          r"in the range \[1, inf\)\. " \
-          f"Got {n_estimators} instead\\."
+    msg = (
+        f"The 'n_estimators' parameter of {est_cls.__name__} must be an int "
+        r"in the range \[1, inf\)\. "
+        f"Got {n_estimators} instead\\."
+    )
 
     with pytest.raises(ValueError, match=msg):
         model.fit(x, y)
@@ -598,9 +699,11 @@ def test_param_learning_rate(sample_gb_class, learning_rate):
     est_cls, x, y = sample_gb_class
     model = est_cls(learning_rate=learning_rate)
 
-    msg = f"The 'learning_rate' parameter of {est_cls.__name__} must be a float " \
-          r"in the range \[0\.0, inf\)\. " \
-          f"Got {learning_rate} instead\\."
+    msg = (
+        f"The 'learning_rate' parameter of {est_cls.__name__} must be a float "
+        r"in the range \[0\.0, inf\)\. "
+        f"Got {learning_rate} instead\\."
+    )
 
     with pytest.raises(ValueError, match=msg):
         model.fit(x, y)
@@ -611,9 +714,11 @@ def test_param_subsample(sample_gb_class, subsample):
     est_cls, x, y = sample_gb_class
     model = est_cls(subsample=subsample)
 
-    msg = f"The 'subsample' parameter of {est_cls.__name__} must be a float " \
-          r"in the range \(0\.0, 1\.0\]\. " \
-          f"Got {subsample} instead\\."
+    msg = (
+        f"The 'subsample' parameter of {est_cls.__name__} must be a float "
+        r"in the range \(0\.0, 1\.0\]\. "
+        f"Got {subsample} instead\\."
+    )
 
     with pytest.raises(ValueError, match=msg):
         model.fit(x, y)
@@ -624,9 +729,11 @@ def test_param_dropout_rate(sample_gb_class, dropout_rate):
     est_cls, x, y = sample_gb_class
     model = est_cls(dropout_rate=dropout_rate)
 
-    msg = f"The 'dropout_rate' parameter of {est_cls.__name__} must be a float " \
-          r"in the range \[0\.0, 1\.0\)\. " \
-          f"Got {dropout_rate} instead\\."
+    msg = (
+        f"The 'dropout_rate' parameter of {est_cls.__name__} must be a float "
+        r"in the range \[0\.0, 1\.0\)\. "
+        f"Got {dropout_rate} instead\\."
+    )
 
     with pytest.raises(ValueError, match=msg):
         model.fit(x, y)
@@ -649,9 +756,7 @@ def test_param_loss(sample_gb_class, loss):
     est_cls, x, y = sample_gb_class
     model = est_cls(loss=loss)
 
-    msg = f"The 'loss' parameter of {est_cls.__name__} must be a str among " \
-          r"{.+}\. " \
-          f"Got {loss!r} instead\\."
+    msg = f"The 'loss' parameter of {est_cls.__name__} must be a str among " r"{.+}\. " f"Got {loss!r} instead\\."
 
     with pytest.raises(ValueError, match=msg):
         model.fit(x, y)

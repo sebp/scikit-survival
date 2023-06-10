@@ -14,7 +14,6 @@ def a_step_function():
 
 
 class TestStepFunction:
-
     @staticmethod
     def test_exact(a_step_function):
         actual = np.array([a_step_function(v) for v in a_step_function.x])
@@ -29,10 +28,12 @@ class TestStepFunction:
     @staticmethod
     def test_out_of_bounds(a_step_function):
         eps = np.finfo(float).eps * 8
-        values = [a_step_function.x[0] - 100,
-                  a_step_function.x[-1] + 100,
-                  a_step_function.x[0] - eps,
-                  a_step_function.x[-1] + eps]
+        values = [
+            a_step_function.x[0] - 100,
+            a_step_function.x[-1] + 100,
+            a_step_function.x[0] - eps,
+            a_step_function.x[-1] + eps,
+        ]
 
         for v in values:
             with pytest.raises(ValueError, match=r"x must be within \[0.0+; 9.0+\]"):
@@ -51,7 +52,7 @@ class TestStepFunction:
 
         assert a_step_function == other_step_function
 
-        different_step_function = StepFunction(x+1, y)
+        different_step_function = StepFunction(x + 1, y)
         assert a_step_function != different_step_function
 
         assert a_step_function != x

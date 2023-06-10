@@ -25,7 +25,7 @@ from ..functions import StepFunction
 from ..nonparametric import _compute_counts
 from ..util import check_array_survival
 
-__all__ = ['CoxPHSurvivalAnalysis']
+__all__ = ["CoxPHSurvivalAnalysis"]
 
 
 class BreslowEstimator:
@@ -72,7 +72,7 @@ class BreslowEstimator:
         k = 0
         for i in range(1, len(n_at_risk)):
             d = n_at_risk[i - 1] - n_at_risk[i]
-            value -= risk_score[k:(k + d)].sum()
+            value -= risk_score[k : (k + d)].sum()
             k += d
             divisor[i] = value
 
@@ -101,9 +101,7 @@ class BreslowEstimator:
         n_samples = risk_score.shape[0]
         funcs = np.empty(n_samples, dtype=object)
         for i in range(n_samples):
-            funcs[i] = StepFunction(x=self.cum_baseline_hazard_.x,
-                                    y=self.cum_baseline_hazard_.y,
-                                    a=risk_score[i])
+            funcs[i] = StepFunction(x=self.cum_baseline_hazard_.x, y=self.cum_baseline_hazard_.y, a=risk_score[i])
         return funcs
 
     def get_survival_function(self, linear_predictor):
@@ -123,8 +121,7 @@ class BreslowEstimator:
         n_samples = risk_score.shape[0]
         funcs = np.empty(n_samples, dtype=object)
         for i in range(n_samples):
-            funcs[i] = StepFunction(x=self.baseline_survival_.x,
-                                    y=np.power(self.baseline_survival_.y, risk_score[i]))
+            funcs[i] = StepFunction(x=self.baseline_survival_.x, y=np.power(self.baseline_survival_.y, risk_score[i]))
         return funcs
 
 
@@ -187,7 +184,7 @@ class CoxPHOptimizer:
                         loss -= (numerator - np.log(risk_set)) / n_samples
 
         # add regularization term to log-likelihood
-        return loss + np.sum(self.alpha * np.square(w)) / (2. * n_samples)
+        return loss + np.sum(self.alpha * np.square(w)) / (2.0 * n_samples)
 
     def update(self, w, offset=0):
         """Compute gradient and Hessian matrix with respect to `w`."""
@@ -200,7 +197,7 @@ class CoxPHOptimizer:
         gradient = np.zeros((1, n_features), dtype=w.dtype)
         hessian = np.zeros((n_features, n_features), dtype=w.dtype)
 
-        inv_n_samples = 1. / n_samples
+        inv_n_samples = 1.0 / n_samples
         risk_set = 0
         risk_set_x = np.zeros((1, n_features), dtype=w.dtype)
         risk_set_xx = np.zeros((n_features, n_features), dtype=w.dtype)
@@ -215,7 +212,7 @@ class CoxPHOptimizer:
             risk_set_xx2 = np.zeros_like(risk_set_xx)
             while k < n_samples and ti == time[k]:
                 # preserve 2D shape of row vector
-                xk = x[k:k + 1]
+                xk = x[k : k + 1]
 
                 # outer product
                 xx = np.dot(xk.T, xk)
@@ -273,7 +270,6 @@ class CoxPHOptimizer:
 
 
 class VerboseReporter:
-
     def __init__(self, verbose):
         self.verbose = verbose
 
@@ -426,15 +422,13 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         else:
             alphas = self.alpha
 
-        alphas = check_array(
-            alphas, ensure_2d=False, ensure_min_samples=0, estimator=self, input_name="alpha"
-        )
+        alphas = check_array(alphas, ensure_2d=False, ensure_min_samples=0, estimator=self, input_name="alpha")
         if np.any(alphas < 0):
             raise ValueError("alpha must be positive, but was %r" % self.alpha)
         if alphas.shape[0] != X.shape[1]:
             raise ValueError(
-                "Length alphas ({}) must match number of features ({}).".format(
-                    alphas.shape[0], X.shape[1]))
+                "Length alphas ({}) must match number of features ({}).".format(alphas.shape[0], X.shape[1])
+            )
 
         optimizer = CoxPHOptimizer(X, event, time, alphas, self.ties)
 
@@ -442,17 +436,21 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         w = np.zeros(X.shape[1])
         w_prev = w
         i = 0
-        loss = float('inf')
+        loss = float("inf")
         while True:
             if i >= self.n_iter:
                 verbose_reporter.end_max_iter(i)
-                warnings.warn(('Optimization did not converge: Maximum number of iterations has been exceeded.'),
-                              stacklevel=2, category=ConvergenceWarning)
+                warnings.warn(
+                    ("Optimization did not converge: Maximum number of iterations has been exceeded."),
+                    stacklevel=2,
+                    category=ConvergenceWarning,
+                )
                 break
 
             optimizer.update(w)
-            delta = solve(optimizer.hessian, optimizer.gradient,
-                          overwrite_a=False, overwrite_b=False, check_finite=False)
+            delta = solve(
+                optimizer.hessian, optimizer.gradient, overwrite_a=False, overwrite_b=False, check_finite=False
+            )
 
             if not np.all(np.isfinite(delta)):
                 raise ValueError("search direction contains NaN or infinite values")
@@ -559,9 +557,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         >>> plt.ylim(0, 1)
         >>> plt.show()
         """
-        return self._predict_cumulative_hazard_function(
-            self._baseline_model, self.predict(X), return_array
-        )
+        return self._predict_cumulative_hazard_function(self._baseline_model, self.predict(X), return_array)
 
     def predict_survival_function(self, X, return_array=False):
         """Predict survival function.
@@ -621,6 +617,4 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         >>> plt.ylim(0, 1)
         >>> plt.show()
         """
-        return self._predict_survival_function(
-            self._baseline_model, self.predict(X), return_array
-        )
+        return self._predict_survival_function(self._baseline_model, self.predict(X), return_array)
