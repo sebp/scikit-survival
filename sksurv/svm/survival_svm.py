@@ -37,7 +37,7 @@ class Counter(metaclass=ABCMeta):
     def __init__(self, x, y, status, time=None):
         self.x, self.y = check_X_y(x, y)
 
-        assert np.issubdtype(y.dtype, np.integer), "y vector must have integer type, but was {0}".format(y.dtype)
+        assert np.issubdtype(y.dtype, np.integer), f"y vector must have integer type, but was {y.dtype}"
         assert y.min() == 0, "minimum element of y vector must be 0"
 
         if time is None:
@@ -756,7 +756,7 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
 
         if self.rank_ratio < 1.0:
             if self.optimizer in {"simple", "PRSVM"}:
-                raise ValueError("optimizer '%s' does not implement regression objective" % self.optimizer)
+                raise ValueError(f"optimizer {self.optimizer!r} does not implement regression objective")
 
             if (time <= 0).any():
                 raise ValueError("observed time contains values smaller or equal to zero")

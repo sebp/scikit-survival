@@ -59,7 +59,7 @@ def writearff(data, filename, relation_name=None, index=True):
 
 def _write_header(data, fp, relation_name, index):
     """Write header containing attribute names and types"""
-    fp.write("@relation {0}\n\n".format(relation_name))
+    fp.write(f"@relation {relation_name}\n\n")
 
     if index:
         data = data.reset_index()
@@ -68,7 +68,7 @@ def _write_header(data, fp, relation_name, index):
 
     for column, series in data.iteritems():
         name = attribute_names[column]
-        fp.write("@attribute {0}\t".format(name))
+        fp.write(f"@attribute {name}\t")
 
         if is_categorical_dtype(series) or is_object_dtype(series):
             _write_attribute_categorical(series, fp)
@@ -79,7 +79,7 @@ def _write_header(data, fp, relation_name, index):
         elif np.issubdtype(series.dtype, np.datetime64):
             fp.write("date 'yyyy-MM-dd HH:mm:ss'")
         else:
-            raise TypeError("unsupported type %s" % series.dtype)
+            raise TypeError(f"unsupported type {series.dtype}")
 
         fp.write("\n")
     return data

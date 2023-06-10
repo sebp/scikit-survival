@@ -946,7 +946,7 @@ class TestCoxPH:
     def test_ties(rossi):
         cph = CoxPHSurvivalAnalysis(ties="xyz")
 
-        msg = "The 'ties' parameter of CoxPHSurvivalAnalysis must be a str " r"among {.+}\. Got 'xyz' instead\."
+        msg = r"The 'ties' parameter of CoxPHSurvivalAnalysis must be a str among {.+}\. Got 'xyz' instead\."
 
         with pytest.raises(ValueError, match=msg):
             cph.fit(rossi.x.values, rossi.y)

@@ -93,7 +93,7 @@ def _encode_categorical_series(series, allow_drop=True):
 
     names = []
     for key in range(1, enc.shape[1]):
-        names.append("{}={}".format(series.name, levels[key]))
+        names.append(f"{series.name}={levels[key]}")
     series = pd.DataFrame(enc[:, 1:], columns=names, index=series.index)
 
     return series
@@ -126,7 +126,7 @@ def encode_categorical(table, columns=None, **kwargs):
     """
     if isinstance(table, pd.Series):
         if not is_categorical_dtype(table.dtype) and not table.dtype.char == "O":
-            raise TypeError("series must be of categorical dtype, but was {}".format(table.dtype))
+            raise TypeError(f"series must be of categorical dtype, but was {table.dtype}")
         return _encode_categorical_series(table, **kwargs)
 
     def _is_categorical_or_object(series):
@@ -160,7 +160,7 @@ def _get_dummies_1d(data, allow_drop=True):
     # if all NaN or only one level
     if allow_drop and number_of_cols < 2:
         logging.getLogger(__package__).warning(
-            "dropped categorical variable '%s', because it has only %d values", data.name, number_of_cols
+            f"dropped categorical variable {data.name!r}, because it has only {number_of_cols} values"
         )
         return
     if number_of_cols == 0:

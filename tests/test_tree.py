@@ -601,7 +601,7 @@ def test_predict_wrong_features(toy_data, n_features):
 
     X_new = np.random.randn(12, n_features)
     with pytest.raises(
-        ValueError, match="X has {} features, but SurvivalTree is " "expecting 4 features as input.".format(n_features)
+        ValueError, match=f"X has {n_features} features, but SurvivalTree is expecting 4 features as input."
     ):
         tree.predict(X_new)
 
@@ -613,7 +613,7 @@ def test_max_depth(fake_data, val):
 
     msg = (
         r"The 'max_depth' parameter of SurvivalTree must be "
-        r"an int in the range \[1, inf\) or None\. Got {!r} instead\.".format(val)
+        rf"an int in the range \[1, inf\) or None\. Got {val!r} instead\."
     )
     with pytest.raises(ValueError, match=msg):
         tree.fit(X, y)
@@ -626,7 +626,7 @@ def test_min_samples_leaf(fake_data, val):
 
     msg = (
         r"The 'min_samples_leaf' parameter of SurvivalTree must be an int in the range \[1, inf\) or "
-        r"a float in the range \(0\.0, 0\.5\]\. Got {!r} instead\.".format(val)
+        rf"a float in the range \(0\.0, 0\.5\]\. Got {val!r} instead\."
     )
     with pytest.raises(ValueError, match=msg):
         tree.fit(X, y)
@@ -639,7 +639,7 @@ def test_min_samples_split(fake_data, val):
 
     msg = (
         r"The 'min_samples_split' parameter of SurvivalTree must be an int in the range \[2, inf\) or "
-        r"a float in the range \(0\.0, 1\.0\)\. Got {!r} instead\.".format(val)
+        rf"a float in the range \(0\.0, 1\.0\)\. Got {val!r} instead\."
     )
     with pytest.raises(ValueError, match=msg):
         tree.fit(X, y)
@@ -652,7 +652,7 @@ def test_min_weight_fraction_leaf(fake_data, val):
 
     msg = (
         r"The 'min_weight_fraction_leaf' parameter of SurvivalTree must be "
-        r"a float in the range \[0\.0, 0\.5\]\. Got {!r} instead\.".format(val)
+        rf"a float in the range \[0\.0, 0\.5\]\. Got {val!r} instead\."
     )
     with pytest.raises(ValueError, match=msg):
         tree.fit(X, y)

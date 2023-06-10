@@ -90,7 +90,7 @@ def get_x_y(data_frame, attr_labels, pos_label=None, survival=True):
     """
     if survival:
         if len(attr_labels) != 2:
-            raise ValueError("expected sequence of length two for attr_labels, but got %d" % len(attr_labels))
+            raise ValueError(f"expected sequence of length two for attr_labels, but got {len(attr_labels)}")
         if pos_label is None:
             raise ValueError("pos_label needs to be specified if survival=True")
         return _get_x_y_survival(data_frame, attr_labels[0], attr_labels[1], pos_label)

@@ -426,7 +426,7 @@ def test_unknown_solver(gbsg2, solver):
     x, y = gbsg2
     m = MinlipSurvivalAnalysis(solver=solver)
 
-    msg = "The 'solver' parameter of MinlipSurvivalAnalysis must be " r"a str among \{.+\}\. " r"Got .+ instead\."
+    msg = r"The 'solver' parameter of MinlipSurvivalAnalysis must be a str among \{.+\}\. Got .+ instead\."
     with pytest.raises(ValueError, match=msg):
         m.fit(x, y)
 

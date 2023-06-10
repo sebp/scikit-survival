@@ -54,13 +54,13 @@ class OsqpSolver(QPSolver):
 
         if results.info.status_val == -2:  # max iter reached
             warnings.warn(
-                ("OSQP solver did not converge: {}".format(results.info.status)),
+                (f"OSQP solver did not converge: {results.info.status}"),
                 category=ConvergenceWarning,
                 stacklevel=2,
             )
         elif results.info.status_val not in (1, 2):  # pragma: no cover
             # non of solved, solved inaccurate
-            raise RuntimeError("OSQP solver failed: {}".format(results.info.status))
+            raise RuntimeError(f"OSQP solver failed: {results.info.status}")
 
         n_iter = results.info.iter
         return results.x[np.newaxis], n_iter
@@ -156,7 +156,7 @@ class EcosSolver(QPSolver):
         elif exit_flag == EcosSolver.EXIT_DINF:  # pragma: no cover
             raise RuntimeError("Certificate of dual infeasibility found")
         else:  # pragma: no cover
-            raise RuntimeError("Unknown problem in ECOS solver, exit status: {}".format(exit_flag))
+            raise RuntimeError(f"Unknown problem in ECOS solver, exit status: {exit_flag}")
 
     def _decompose(self, P):
         # from scipy.linalg.pinvh
@@ -169,7 +169,7 @@ class EcosSolver(QPSolver):
             cond = largest_eigenvalue * max(P.shape) * np.finfo(t).eps
 
         not_below_cutoff = abs(s) > -cond
-        assert not_below_cutoff.all(), "matrix has negative eigenvalues: {}".format(s.min())
+        assert not_below_cutoff.all(), f"matrix has negative eigenvalues: {s.min()}"
 
         above_cutoff = abs(s) > cond
         u = u[:, above_cutoff]

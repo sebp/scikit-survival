@@ -201,9 +201,9 @@ class EncodeCategoricalCases(CategoricalCases):
                 "a_binary_int=1": a.astype(float),
                 "a_three_int=2": (b == 2).astype(float),
                 "a_three_int=3": (b == 3).astype(float),
-                "a_four_float={}".format(1.0 / 32): (c == 1.0 / 32).astype(float),
-                "a_four_float={}".format(1.0 / 8): (c == 1.0 / 8).astype(float),
-                "a_four_float={}".format(1.0): (c == 1.0).astype(float),
+                f"a_four_float={1.0 / 32}": (c == 1.0 / 32).astype(float),
+                f"a_four_float={1.0 / 8}": (c == 1.0 / 8).astype(float),
+                f"a_four_float={1.0}": (c == 1.0).astype(float),
             }
         )
 

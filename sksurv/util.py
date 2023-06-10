@@ -89,7 +89,7 @@ class Surv:
             Structured array with two fields.
         """
         if not isinstance(data, pd.DataFrame):
-            raise TypeError("exepected pandas.DataFrame, but got {!r}".format(type(data)))
+            raise TypeError(f"expected pandas.DataFrame, but got {type(data)!r}")
 
         return Surv.from_arrays(
             data.loc[:, event].values, data.loc[:, time].values, name_event=str(event), name_time=str(time)
@@ -141,7 +141,7 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False):
 
     event = check_array(y_event, ensure_2d=False)
     if not np.issubdtype(event.dtype, np.bool_):
-        raise ValueError("elements of event indicator must be boolean, but found {0}".format(event.dtype))
+        raise ValueError(f"elements of event indicator must be boolean, but found {event.dtype}")
 
     if not (allow_all_censored or np.any(event)):
         raise ValueError("all samples are censored")
@@ -154,7 +154,7 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False):
 
         yt = check_array(yt, ensure_2d=False)
         if not np.issubdtype(yt.dtype, np.number):
-            raise ValueError("time must be numeric, but found {} for argument {}".format(yt.dtype, i + 2))
+            raise ValueError(f"time must be numeric, but found {yt.dtype} for argument {i + 2}")
 
         return_val.append(yt)
 
@@ -246,9 +246,9 @@ def safe_concat(objs, *args, **kwargs):
             for name, s in dfc.iteritems():
                 if name in categories:
                     if axis == 1:
-                        raise ValueError("duplicate columns %s" % name)
+                        raise ValueError(f"duplicate columns {name}")
                     if not categories[name]["categories"].equals(s.cat.categories):
-                        raise ValueError("categories for column %s do not match" % name)
+                        raise ValueError(f"categories for column {name} do not match")
                 else:
                     categories[name] = {"categories": s.cat.categories, "ordered": s.cat.ordered}
                 df[name] = df[name].astype(object)

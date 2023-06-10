@@ -350,14 +350,14 @@ class SurvDataFrameCases(SurvCases):
     def data_wrong_class_0(self):
         data, _ = self.get_surv_data_frame()
 
-        err = pytest.raises(TypeError, match=r"exepected pandas.DataFrame, but got <class 'dict'>")
+        err = pytest.raises(TypeError, match=r"expected pandas.DataFrame, but got <class 'dict'>")
         inputs = ("event", "time", data.to_dict())
         return inputs, None, err
 
     def data_wrong_class_1(self):
         data, _ = self.get_surv_data_frame()
 
-        err = pytest.raises(TypeError, match=r"exepected pandas.DataFrame, but got <class 'numpy.ndarray'>")
+        err = pytest.raises(TypeError, match=r"expected pandas.DataFrame, but got <class 'numpy.ndarray'>")
         inputs = ("event", "time", data.values)
         return inputs, None, err
 

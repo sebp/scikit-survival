@@ -270,7 +270,7 @@ Feature names unseen at fit time:
 
         with pytest.raises(
             ValueError,
-            match=r"Incompatible dimension for X and Y matrices: " r"X.shape\[1\] == 4 while Y.shape\[1\] == 17",
+            match=r"Incompatible dimension for X and Y matrices: X.shape\[1\] == 4 while Y.shape\[1\] == 17",
         ):
             pairwise_kernels(t.X_fit_, np.zeros((2, 17), dtype=float), metric=t.pairwise_kernel, n_jobs=1)
 

@@ -275,21 +275,21 @@ class VerboseReporter:
 
     def end_max_iter(self, i):
         if self.verbose > 0:
-            print("iter {:>6d}: reached maximum number of iterations. Stopping.".format(i + 1))
+            print(f"iter {i + 1:>6d}: reached maximum number of iterations. Stopping.")
 
     def end_converged(self, i):
         if self.verbose > 0:
-            print("iter {:>6d}: optimization converged".format(i + 1))
+            print(f"iter {i + 1:>6d}: optimization converged")
 
     def update(self, i, delta, loss_new):
         if self.verbose > 2:
-            print("iter {:>6d}: update = {}".format(i + 1, delta))
+            print(f"iter {i + 1:>6d}: update = {delta}")
         if self.verbose > 1:
-            print("iter {:>6d}: loss = {:.10f}".format(i + 1, loss_new))
+            print(f"iter {i + 1:>6d}: loss = {loss_new:.10f}")
 
     def step_halving(self, i, loss):
         if self.verbose > 1:
-            print("iter {:>6d}: loss increased, performing step-halving. loss = {:.10f}".format(i, loss))
+            print(f"iter {i:>6d}: loss increased, performing step-halving. loss = {loss:.10f}")
 
 
 class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
@@ -424,11 +424,9 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         alphas = check_array(alphas, ensure_2d=False, ensure_min_samples=0, estimator=self, input_name="alpha")
         if np.any(alphas < 0):
-            raise ValueError("alpha must be positive, but was %r" % self.alpha)
+            raise ValueError(f"alpha must be positive, but was {self.alpha!r}")
         if alphas.shape[0] != X.shape[1]:
-            raise ValueError(
-                "Length alphas ({}) must match number of features ({}).".format(alphas.shape[0], X.shape[1])
-            )
+            raise ValueError(f"Length alphas ({alphas.shape[0]}) must match number of features ({X.shape[1]}).")
 
         optimizer = CoxPHOptimizer(X, event, time, alphas, self.ties)
 

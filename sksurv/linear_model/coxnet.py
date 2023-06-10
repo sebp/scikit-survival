@@ -202,7 +202,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
             pf = column_or_1d(self.penalty_factor, warn=True)
             if pf.shape[0] != n_features:
                 raise ValueError(
-                    "penalty_factor must be array of length n_features (%d), " "but got %d" % (n_features, pf.shape[0])
+                    f"penalty_factor must be array of length n_features ({n_features}), but got {pf.shape[0]}"
                 )
             assert_all_finite(pf, input_name="penalty_factor")
             check_non_negative(pf, "penalty_factor")
@@ -287,7 +287,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         if n_iter >= self.max_iter:
             warnings.warn(
                 "Optimization terminated early, you might want"
-                " to increase the number of iterations (max_iter=%d)." % self.max_iter,
+                f" to increase the number of iterations (max_iter={self.max_iter}).",
                 category=ConvergenceWarning,
                 stacklevel=2,
             )
@@ -383,7 +383,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
                 idx = np.flatnonzero(is_close)[0]
                 baseline_model = self._baseline_models[idx]
             else:
-                raise ValueError("alpha must be one value of alphas_: %s" % self.alphas_)
+                raise ValueError(f"alpha must be one value of alphas_: {self.alphas_}")
 
         return baseline_model
 
@@ -453,7 +453,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         >>> for alpha, chf_alpha in chf_funcs.items():
         ...     for fn in chf_alpha:
         ...         plt.step(fn.x, fn(fn.x), where="post",
-        ...                  label="alpha = {:.3f}".format(alpha))
+        ...                  label=f"alpha = {alpha:.3f}")
         ...
         >>> plt.ylim(0, 1)
         >>> plt.legend()
@@ -529,7 +529,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         >>> for alpha, surv_alpha in surv_funcs.items():
         ...     for fn in surv_alpha:
         ...         plt.step(fn.x, fn(fn.x), where="post",
-        ...                  label="alpha = {:.3f}".format(alpha))
+        ...                  label=f"alpha = {alpha:.3f}")
         ...
         >>> plt.ylim(0, 1)
         >>> plt.legend()

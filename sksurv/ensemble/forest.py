@@ -108,7 +108,7 @@ class _BaseSurvivalForest(BaseForest, SurvivalAnalysisMixin, metaclass=ABCMeta):
         self._validate_estimator()
 
         if not self.bootstrap and self.oob_score:
-            raise ValueError("Out of bag estimation only available" " if bootstrap=True")
+            raise ValueError("Out of bag estimation only available if bootstrap=True")
 
         random_state = check_random_state(self.random_state)
 
@@ -120,8 +120,8 @@ class _BaseSurvivalForest(BaseForest, SurvivalAnalysisMixin, metaclass=ABCMeta):
 
         if n_more_estimators < 0:
             raise ValueError(
-                "n_estimators=%d must be larger or equal to "
-                "len(estimators_)=%d when warm_start==True" % (self.n_estimators, len(self.estimators_))
+                f"n_estimators={self.n_estimators} must be larger or equal to "
+                f"len(estimators_)={len(self.estimators_)} when warm_start==True"
             )
 
         if n_more_estimators == 0:

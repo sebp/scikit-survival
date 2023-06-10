@@ -21,7 +21,7 @@ __all__ = ["OneHotEncoder"]
 def check_columns_exist(actual, expected):
     missing_features = expected.difference(actual)
     if len(missing_features) != 0:
-        raise ValueError("%d features are missing from data: %s" % (len(missing_features), missing_features.tolist()))
+        raise ValueError(f"{len(missing_features)} features are missing from data: {missing_features.tolist()}")
 
 
 class OneHotEncoder(BaseEstimator, TransformerMixin):

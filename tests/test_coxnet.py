@@ -1304,12 +1304,12 @@ class TestCoxnetBaselineModel:
         for k, (a_1, a_2) in enumerate(zip(coxnet_1.alphas_, coxnet_2.alphas_)):
             c0 = coxnet_1.predict(X_test, a_1)
             c1 = coxnet_2.predict(X_test_t, a_2)
-            assert_array_almost_equal(c0, c1, err_msg="alphas[{}]".format(k))
+            assert_array_almost_equal(c0, c1, err_msg=f"alphas[{k}]")
 
             pred_1 = getattr(coxnet_1._baseline_models[k], fn)
             pred_2 = getattr(coxnet_2._baseline_models[k], fn)
 
-            assert_array_almost_equal(pred_1.y, pred_2.y, decimal=3, err_msg="alphas[{}]".format(k))
+            assert_array_almost_equal(pred_1.y, pred_2.y, decimal=3, err_msg=f"alphas[{k}]")
 
     @pytest.mark.parametrize("fn", ["predict_survival_function", "predict_cumulative_hazard_function"])
     def test_baseline_predict(self, breast_cancer, fn, normalize_options):
@@ -1324,13 +1324,13 @@ class TestCoxnetBaselineModel:
             pred_2 = getattr(coxnet_2, fn)(X_test_t, alpha=a_2)
 
             for i, (f1, f2) in enumerate(zip(pred_1, pred_2)):
-                assert_array_almost_equal(f1.a, f2.a, 5, err_msg="alphas[{}] [{}].a mismatch".format(k, i))
-                assert_array_almost_equal(f1.x, f2.x, err_msg="alphas[{}] [{}].a mismatch".format(k, i))
-                assert_array_almost_equal(f1.y, f2.y, err_msg="alphas[{}] [{}].a mismatch".format(k, i))
+                assert_array_almost_equal(f1.a, f2.a, 5, err_msg=f"alphas[{k}] [{i}].a mismatch")
+                assert_array_almost_equal(f1.x, f2.x, err_msg=f"alphas[{k}] [{i}].x mismatch")
+                assert_array_almost_equal(f1.y, f2.y, err_msg=f"alphas[{k}] [{i}].y mismatch")
 
                 out_1 = f1(time_points)
                 out_2 = f2(time_points)
-                assert_array_almost_equal(out_1, out_2, 5, err_msg="alphas[{}] {}() mismatch".format(k, i))
+                assert_array_almost_equal(out_1, out_2, 5, err_msg=f"alphas[{k}] {i}() mismatch")
 
 
 class TestCoxnetSurvivalAnalysis:
@@ -1488,7 +1488,7 @@ class TestCoxnetSurvivalAnalysis:
 
     @pytest.mark.parametrize("length", [0, 1, 29, 31])
     def test_invalid_penalty_factor_length(self, length):
-        msg = r"penalty_factor must be array of length " r"n_features \(30\), but got {:d}".format(length)
+        msg = rf"penalty_factor must be array of length n_features \(30\), but got {length:d}"
 
         array = np.empty(length, dtype=float)
         with pytest.raises(ValueError, match=msg):

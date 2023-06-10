@@ -87,14 +87,14 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
     def _validate_estimators(self):
         names, estimators = zip(*self.base_estimators)
         if len(set(names)) != len(self.base_estimators):
-            raise ValueError("Names provided are not unique: %s" % (names,))
+            raise ValueError(f"Names provided are not unique: {names}")
 
         for t in estimators:
             if not hasattr(t, "fit") or not (hasattr(t, "predict") or hasattr(t, "predict_proba")):
                 raise TypeError(
                     "All base estimators should implement "
                     "fit and predict/predict_proba"
-                    " '%s' (type %s) doesn't)" % (t, type(t))
+                    f" {t!s} (type {type(t)}) doesn't)"
                 )
 
     def set_params(self, **params):

@@ -64,7 +64,7 @@ class StepFunction:
         if not np.isfinite(x).all():
             raise ValueError("x must be finite")
         if np.min(x) < self.x[0] or np.max(x) > self.x[-1]:
-            raise ValueError("x must be within [%f; %f]" % (self.x[0], self.x[-1]))
+            raise ValueError(f"x must be within [{self.x[0]:f}; {self.x[-1]:f}]")
         i = np.searchsorted(self.x, x, side="left")
         not_exact = self.x[i] != x
         i[not_exact] -= 1
@@ -74,7 +74,7 @@ class StepFunction:
         return value
 
     def __repr__(self):
-        return "StepFunction(x=%r, y=%r, a=%r, b=%r)" % (self.x, self.y, self.a, self.b)
+        return f"StepFunction(x={self.x!r}, y={self.y!r}, a={self.a!r}, b={self.b!r})"
 
     def __eq__(self, other):
         if isinstance(other, type(self)):

@@ -113,7 +113,7 @@ def test_oob_score(make_whas500, forest_cls, expected_oob_score):
     whas500 = make_whas500(to_numeric=True)
 
     forest = forest_cls(oob_score=True, bootstrap=False, random_state=2)
-    with pytest.raises(ValueError, match="Out of bag estimation only available " "if bootstrap=True"):
+    with pytest.raises(ValueError, match="Out of bag estimation only available if bootstrap=True"):
         forest.fit(whas500.x, whas500.y)
 
     forest.set_params(bootstrap=True)
@@ -180,14 +180,12 @@ def test_fit_warm_start(make_whas500, forest_cls):
     assert all((e.max_depth == 2 for e in forest.estimators_))
 
     forest.set_params(warm_start=True)
-    with pytest.warns(
-        UserWarning, match="Warm-start fitting without increasing " "n_estimators does not fit new trees."
-    ):
+    with pytest.warns(UserWarning, match="Warm-start fitting without increasing n_estimators does not fit new trees."):
         forest.fit(whas500.x, whas500.y)
 
     forest.set_params(n_estimators=3)
     with pytest.raises(
-        ValueError, match="n_estimators=3 must be larger or equal to " r"len\(estimators_\)=11 when warm_start==True"
+        ValueError, match=r"n_estimators=3 must be larger or equal to len\(estimators_\)=11 when warm_start==True"
     ):
         forest.fit(whas500.x, whas500.y)
 

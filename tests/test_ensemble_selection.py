@@ -31,11 +31,11 @@ def _create_survival_ensemble(**kwargs):
     base_estimators = []
     for i, params in enumerate(boosting_grid):
         model = ComponentwiseGradientBoostingSurvivalAnalysis(random_state=0, **params)
-        base_estimators.append(("gbm_%d" % i, model))
+        base_estimators.append((f"gbm_{i}", model))
 
     for i, params in enumerate(svm_grid):
         model = FastSurvivalSVM(max_iter=256, tol=5e-6, random_state=0, **params)
-        base_estimators.append(("svm_%d" % i, model))
+        base_estimators.append((f"svm_{i}", model))
 
     cv = KFold(n_splits=3, shuffle=True, random_state=0)
     meta = EnsembleSelection(base_estimators, n_estimators=0.4, scorer=score_cindex, cv=cv, **kwargs)
@@ -100,13 +100,13 @@ class TestEnsembleSelectionSurvivalAnalysis:
         base_estimators = []
         for i, params in enumerate(svm_grid):
             model = FastSurvivalSVM(max_iter=100, random_state=0, **params)
-            base_estimators.append(("svm_linear_%d" % i, model))
+            base_estimators.append((f"svm_linear_{i}", model))
 
         for i, params in enumerate(svm_grid):
             model = FastKernelSurvivalSVM(
                 kernel=transform.pairwise_kernel, max_iter=45, tol=1e-5, random_state=0, **params
             )
-            base_estimators.append(("svm_kernel_%d" % i, model))
+            base_estimators.append((f"svm_kernel_{i}", model))
 
         cv = KFold(n_splits=3, shuffle=True, random_state=0)
         meta = EnsembleSelection(base_estimators, n_estimators=0.4, scorer=score_cindex, cv=cv, n_jobs=4)
@@ -123,7 +123,7 @@ class TestEnsembleSelectionSurvivalAnalysis:
     def test_feature_names_in(make_whas500):
         whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
 
-        base_estimators = [("tree%d" % i, SurvivalTree(max_depth=1, max_features=1, random_state=i)) for i in range(10)]
+        base_estimators = [(f"tree{i}", SurvivalTree(max_depth=1, max_features=1, random_state=i)) for i in range(10)]
 
         cv = KFold(n_splits=3, shuffle=True, random_state=0)
         meta = EnsembleSelection(base_estimators, n_estimators=0.5, scorer=score_cindex, cv=cv)
@@ -155,9 +155,9 @@ class EnsembleSelectionFailureCases(FixtureParameterFactory):
         "Got {value} instead\\."
     )
     _msg_correlation = (
-        "The 'correlation' parameter of EnsembleSelection must be " r"a str among {{.+}}\. " "Got {value!r} instead\\."
+        r"The 'correlation' parameter of EnsembleSelection must be a str among {{.+}}\. Got {value!r} instead\."
     )
-    _msg_scorer = "The 'scorer' parameter of EnsembleSelection must be " r"a callable\. Got {value} instead\."
+    _msg_scorer = r"The 'scorer' parameter of EnsembleSelection must be a callable\. Got {value} instead\."
 
     def data_min_score(self):
         params = {"scorer": score_cindex, "min_score": 1.0, "cv": 3}
@@ -260,11 +260,11 @@ def _create_regression_ensemble():
     base_estimators = []
     for i, params in enumerate(aft_grid):
         model = IPCRidge(max_iter=1000, **params)
-        base_estimators.append(("aft_%d" % i, model))
+        base_estimators.append((f"aft_{i}", model))
 
     for i, params in enumerate(svm_grid):
         model = FastSurvivalSVM(rank_ratio=0, fit_intercept=True, max_iter=100, random_state=1, **params)
-        base_estimators.append(("svm_%d" % i, model))
+        base_estimators.append((f"svm_{i}", model))
 
     cv = KFold(n_splits=4, shuffle=True, random_state=0)
     meta = EnsembleSelectionRegressor(
@@ -343,7 +343,5 @@ class TestEnsembleSelectionRegressor:
             scorer=_score,
         )
 
-        with pytest.raises(
-            ValueError, match=r"scoring must return a number, got invalid " r"\(<class 'str'>\) instead\."
-        ):
+        with pytest.raises(ValueError, match=r"scoring must return a number, got invalid \(<class 'str'>\) instead\."):
             meta.fit(whas500.x, whas500.y)

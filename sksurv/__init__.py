@@ -19,14 +19,14 @@ def _get_version(name):
         version = getattr(module, "__version__", None)
 
     if version is None:  # pragma: no cover
-        raise ImportError("Can't determine version for {}".format(module.__name__))
+        raise ImportError(f"Can't determine version for {module.__name__}")
     return version
 
 
 def show_versions():
     sys_info = {
         "Platform": platform.platform(),
-        "Python version": "{} {}".format(platform.python_implementation(), platform.python_version()),
+        "Python version": f"{platform.python_implementation()} {platform}",
         "Python interpreter": sys.executable,
     }
 

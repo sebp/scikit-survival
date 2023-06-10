@@ -190,7 +190,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
                 numeric_ranges.append(col.max() - col.min())
                 numeric_columns.append(i)
             else:
-                raise TypeError("unsupported dtype: %r" % dt)
+                raise TypeError(f"unsupported dtype: {dt!r}")
 
             fit_data[:, i] = col.values
 
@@ -225,7 +225,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
             Returns the instance itself.
         """
         if X.ndim != 2:
-            raise ValueError("expected 2d array, but got %d" % X.ndim)
+            raise ValueError(f"expected 2d array, but got {X.ndim}")
 
         self._check_feature_names(X, reset=True)
         self._check_n_features(X, reset=True)

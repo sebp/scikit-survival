@@ -218,7 +218,7 @@ class TestGradientBoosting:
         kwargs = {parameter: value}
         model = GradientBoostingSurvivalAnalysis(**kwargs)
 
-        msg = f"The '{parameter}' parameter of GradientBoostingSurvivalAnalysis " "must be an int in the range "
+        msg = f"The '{parameter}' parameter of GradientBoostingSurvivalAnalysis must be an int in the range "
 
         X, y = self.data
         with pytest.raises(ValueError, match=msg):
@@ -756,7 +756,7 @@ def test_param_loss(sample_gb_class, loss):
     est_cls, x, y = sample_gb_class
     model = est_cls(loss=loss)
 
-    msg = f"The 'loss' parameter of {est_cls.__name__} must be a str among " r"{.+}\. " f"Got {loss!r} instead\\."
+    msg = rf"The 'loss' parameter of {est_cls.__name__} must be a str among {{.+}}\. Got {loss!r} instead\."
 
     with pytest.raises(ValueError, match=msg):
         model.fit(x, y)

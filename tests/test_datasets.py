@@ -103,7 +103,7 @@ class GetXyCases(FixtureParameterFactory):
 
     @property
     def columns(self):
-        return ["V{}".format(i) for i in range(10)]
+        return [f"V{i}" for i in range(10)]
 
     def data_survival_data(self):
         x, event, time = self.survival_data
@@ -281,7 +281,7 @@ class TestLoadDatasets:
 def _make_and_write_data(fp, n_samples, n_features, with_index, with_labels, seed, column_prefix="V"):
     x, event, time = _make_survival_data(n_samples, n_features, seed)
 
-    columns = ["{}{}".format(column_prefix, i) for i in range(n_features)]
+    columns = [f"{column_prefix}{i}" for i in range(n_features)]
     if with_labels:
         columns += ["event", "time"]
         arr = np.column_stack((x, event, time))

@@ -2385,7 +2385,7 @@ def make_aids():
         elif kind == "adults":
             f = AIDS_ADULTS_FILE
         else:
-            raise ValueError("unknown kind {!r}".format(kind))
+            raise ValueError(f"unknown kind {kind!r}")
         data = pd.read_csv(f, comment="#").query("(8 - DIAG) > INF")
 
         event = np.repeat(True, data.shape[0])

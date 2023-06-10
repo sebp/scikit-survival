@@ -122,9 +122,7 @@ class FastSurvivalSVMFailureCases(FixtureParameterFactory):
 
     def _regression_not_supported(self, optimizer):
         params = {"rank_ratio": 0, "optimizer": optimizer}
-        error = pytest.raises(
-            ValueError, match="optimizer {!r} does not implement regression objective".format(optimizer)
-        )
+        error = pytest.raises(ValueError, match=f"optimizer {optimizer!r} does not implement regression objective")
         return params, None, None, error
 
     def data_regression_not_supported_simple(self):
@@ -709,7 +707,7 @@ class TestKernelSurvivalSVM:
 
         with pytest.raises(
             ValueError,
-            match=r"Precomputed metric requires shape \(n_queries, n_indexed\)\. " r"Got \(100, 11\) for 100 indexed\.",
+            match=r"Precomputed metric requires shape \(n_queries, n_indexed\)\. Got \(100, 11\) for 100 indexed\.",
         ):
             ssvm.fit(x, y)
 
@@ -734,7 +732,7 @@ class TestKernelSurvivalSVM:
         x_new = np.random.randn(100, 14)
         with pytest.raises(
             ValueError,
-            match=r"Precomputed metric requires shape \(n_queries, n_indexed\)\. " r"Got \(100, 14\) for 500 indexed\.",
+            match=r"Precomputed metric requires shape \(n_queries, n_indexed\)\. Got \(100, 14\) for 500 indexed\.",
         ):
             ssvm.predict(x_new)
 

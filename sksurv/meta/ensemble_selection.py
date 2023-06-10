@@ -143,8 +143,8 @@ class BaseEnsembleSelection(Stacking):
 
         if self.n_estimators > len(self.base_estimators):
             raise ValueError(
-                "n_estimators (%d) must not exceed number of base learners (%d)"
-                % (self.n_estimators, len(self.base_estimators))
+                f"n_estimators ({self.n_estimators}) must not exceed"
+                f" number of base learners ({len(self.base_estimators)})"
             )
 
         if isinstance(self.n_estimators, numbers.Integral):
@@ -216,7 +216,7 @@ class BaseEnsembleSelection(Stacking):
             if hasattr(estimator, "kernel") and callable(estimator.kernel):
                 if not hasattr(estimator, "_get_kernel"):
                     raise ValueError(
-                        "estimator %s uses a custom kernel function, but does not have a _get_kernel method" % name
+                        f"estimator {name} uses a custom kernel function, but does not have a _get_kernel method"
                     )
 
                 kernel_mat = kernel_fns.get(estimator.kernel, None)
@@ -244,8 +244,8 @@ class BaseEnsembleSelection(Stacking):
             if idx in kernel_cache:
                 if not hasattr(est, "fit_X_"):
                     raise ValueError(
-                        "estimator %s uses a custom kernel function, "
-                        "but does not have the attribute `fit_X_` after training" % self.base_estimators[idx][0]
+                        f"estimator {self.base_estimators[idx][0]} uses a custom kernel function, "
+                        "but does not have the attribute `fit_X_` after training"
                     )
 
                 est.set_params(kernel=self.base_estimators[idx][1].kernel)

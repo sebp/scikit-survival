@@ -89,12 +89,12 @@ def get_module_from_sources(sources):
     for src_path in map(Path, sources):
         if src_path.suffix == ".pyx":
             return ".".join(src_path.parts[:-1] + (src_path.stem,))
-    raise ValueError("could not find module from sources: {!r}".format(sources))
+    raise ValueError(f"could not find module from sources: {sources!r}")
 
 
 def _check_cython_version():
-    message = ("Please install Cython with a version >= {0} in order " "to build a scikit-learn from source.").format(
-        CYTHON_MIN_VERSION
+    message = (
+        f"Please install Cython with a version >= {CYTHON_MIN_VERSION} in order to build a scikit-learn from source."
     )
     try:
         import Cython
@@ -103,7 +103,7 @@ def _check_cython_version():
         raise ModuleNotFoundError(message)
 
     if Version(Cython.__version__) < CYTHON_MIN_VERSION:
-        message += " The current version of Cython is {} installed in {}.".format(Cython.__version__, Cython.__path__)
+        message += f" The current version of Cython is {Cython.__version__} installed in {Cython.__path__}."
         raise ValueError(message)
 
 
@@ -132,8 +132,7 @@ def _check_eigen_source():
     eigen_src = Path("sksurv/linear_model/src/eigen/Eigen")
     if not eigen_src.is_dir():
         raise RuntimeError(
-            "{} directory not found. You might have to run "
-            "'git submodule update --init'.".format(eigen_src.resolve())
+            f"{eigen_src.resolve()} directory not found. You might have to run 'git submodule update --init'."
         )
 
 

@@ -35,7 +35,7 @@ __all__ = [
 def _check_estimate_1d(estimate, test_time):
     estimate = check_array(estimate, ensure_2d=False, input_name="estimate")
     if estimate.ndim != 1:
-        raise ValueError("Expected 1D array, got {:d}D array instead:\narray={}.\n".format(estimate.ndim, estimate))
+        raise ValueError(f"Expected 1D array, got {estimate.ndim}D array instead:\narray={estimate}.\n")
     check_consistent_length(test_time, estimate)
     return estimate
 
@@ -48,9 +48,7 @@ def _check_inputs(event_indicator, event_time, estimate):
 
     if not np.issubdtype(event_indicator.dtype, np.bool_):
         raise ValueError(
-            "only boolean arrays are supported as class labels for survival analysis, got {0}".format(
-                event_indicator.dtype
-            )
+            f"only boolean arrays are supported as class labels for survival analysis, got {event_indicator.dtype}"
         )
 
     if len(event_time) < 2:
@@ -68,7 +66,7 @@ def _check_times(test_time, times):
 
     if times.max() >= test_time.max() or times.min() < test_time.min():
         raise ValueError(
-            "all times must be within follow-up time of test data: [{}; {}[".format(test_time.min(), test_time.max())
+            f"all times must be within follow-up time of test data: [{test_time.min()}; {test_time.max()}["
         )
 
     return times
@@ -80,9 +78,7 @@ def _check_estimate_2d(estimate, test_time, time_points, estimator):
     check_consistent_length(test_time, estimate)
 
     if estimate.ndim == 2 and estimate.shape[1] != time_points.shape[0]:
-        raise ValueError(
-            "expected estimate with {} columns, but got {}".format(time_points.shape[0], estimate.shape[1])
-        )
+        raise ValueError(f"expected estimate with {time_points.shape[0]} columns, but got {estimate.shape[1]}")
 
     return estimate, time_points
 
@@ -128,7 +124,7 @@ def _estimate_concordance_index(event_indicator, event_time, estimate, weights, 
 
         est = estimate[order[mask]]
 
-        assert event_i, "got censored sample at index %d, but expected uncensored" % order[ind]
+        assert event_i, f"got censored sample at index {order[ind]}, but expected uncensored"
 
         ties = np.absolute(est - est_i) <= tied_tol
         n_ties = ties.sum()
@@ -757,7 +753,7 @@ def _estimator_has(attr):
 class _ScoreOverrideMixin:
     def __init__(self, estimator, predict_func, score_func, score_index, greater_is_better):
         if not hasattr(estimator, predict_func):
-            raise AttributeError("{!r} object has no attribute {!r}".format(estimator, predict_func))
+            raise AttributeError(f"{estimator!r} object has no attribute {predict_func!r}")
 
         self.estimator = estimator
         self._predict_func = predict_func

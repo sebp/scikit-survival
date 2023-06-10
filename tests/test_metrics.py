@@ -383,7 +383,7 @@ class UnoCFailureCases(FixtureParameterFactory):
         y_train = self.y_train
         y_test = self.y_test
         y_test["time"][-1] = 20
-        match = "time must be smaller than largest " "observed time point:"
+        match = "time must be smaller than largest observed time point:"
 
         inputs = (y_train, y_test, self.estimate)
         return inputs, match
@@ -1204,5 +1204,5 @@ def test_scorer_no_predict_function(make_whas500, pred_func):
     scorer = as_concordance_index_ipcw_scorer(FastSurvivalSVM())
     scorer.fit(whas500_data.x, whas500_data.y)
 
-    with pytest.raises(AttributeError, match="'FastSurvivalSVM' object has no attribute {!r}".format(pred_func)):
+    with pytest.raises(AttributeError, match=f"'FastSurvivalSVM' object has no attribute {pred_func!r}"):
         getattr(scorer, pred_func)
