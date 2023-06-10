@@ -6,6 +6,8 @@ import sys
 from sklearn.pipeline import Pipeline, _final_estimator_has
 from sklearn.utils.metaestimators import available_if
 
+from .util import property_available_if
+
 
 def _get_version(name):
     try:
@@ -125,9 +127,15 @@ def predict_survival_function(self, X, **kwargs):
     return self.steps[-1][-1].predict_survival_function(Xt, **kwargs)
 
 
+@property_available_if(_final_estimator_has("_predict_risk_score"))
+def _predict_risk_score(self):
+    return self.steps[-1][-1]._predict_risk_score
+
+
 def patch_pipeline():
     Pipeline.predict_survival_function = predict_survival_function
     Pipeline.predict_cumulative_hazard_function = predict_cumulative_hazard_function
+    Pipeline._predict_risk_score = _predict_risk_score
 
 
 try:

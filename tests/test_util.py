@@ -8,7 +8,7 @@ import pandas.testing as tm
 import pytest
 
 from sksurv.testing import FixtureParameterFactory
-from sksurv.util import Surv, safe_concat
+from sksurv.util import Surv, _PropertyAvailableIfDescriptor, property_available_if, safe_concat
 
 
 class ConcatCasesFactory(FixtureParameterFactory):
@@ -369,3 +369,37 @@ def test_from_dataframe(args, expected, expected_error):
 
     if expected is not None:
         assert_array_equal(y, expected)
+
+
+def test_cond_avail_property():
+    class WithCondProp:
+        def __init__(self, val):
+            self.avail = False
+            self._prop = val
+
+        @property_available_if(lambda self: self.avail)
+        def prop(self):
+            return self._prop
+
+        no_prop = _PropertyAvailableIfDescriptor(lambda self: self.avail, fget=None)
+
+    testval = 43
+    msg = "has no attribute 'prop'"
+
+    assert WithCondProp.prop is not None
+
+    test_obj = WithCondProp(testval)
+    with pytest.raises(AttributeError, match=msg):
+        _ = test_obj.prop
+    assert test_obj.avail is False
+
+    test_obj.avail = True
+    assert test_obj.prop == testval
+
+    test_obj.avail = False
+    with pytest.raises(AttributeError, match=msg):
+        _ = test_obj.prop
+
+    test_obj.avail = True
+    with pytest.raises(AttributeError, match="has no getter"):
+        _ = test_obj.no_prop
