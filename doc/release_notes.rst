@@ -44,7 +44,7 @@ Enhancements
   (:issue:`362`).
 - Set `criterion` attribute in :class:`sksurv.tree.SurvivalTree`
   such that :func:`sklearn.tree.plot_tree` can be used (:issue:`366`).
-- Significantly improve speed to fit a :class:`sksurv.tree.SurvivalTree`.
+- Significantly improve speed to fit a :class:`sksurv.tree.SurvivalTree`,
   :class:`sksurv.ensemble.RandomSurvivalForest`, or :class:`sksurv.ensemble.ExtraSurvivalTrees`
   (:issue:`371`).
 - Expose ``_predict_risk_score`` attribute in :class:`sklearn.pipeline.Pipeline`
