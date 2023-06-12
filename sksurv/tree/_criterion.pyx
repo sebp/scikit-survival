@@ -346,8 +346,9 @@ cdef class LogrankCriterion(Criterion):
                     ratio = n_events / n_at_risk
                     dest_j0 += ratio
                     dest_j1 *= 1.0 - ratio
-                dest[0] += dest_j0
-                dest[1] += dest_j1
+                if True: # TODO: only sum for event times
+                    dest[0] += dest_j0
+                    dest[1] += dest_j1
             return
 
         j = 2
