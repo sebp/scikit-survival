@@ -180,7 +180,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         max_features=None,
         random_state=None,
         max_leaf_nodes=None,
-       low_memory=False,
+        low_memory=False,
     ):
         self.splitter = splitter
         self.max_depth = max_depth
@@ -378,7 +378,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         """
 
         if self.low_memory:
-            check_is_fitted(self, 'tree_')
+            check_is_fitted(self, "tree_")
             X = self._validate_X_predict(X, check_input, accept_sparse="csr")
             pred = self.tree_.predict(X)
             return pred[..., 0]

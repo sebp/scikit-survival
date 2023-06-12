@@ -788,7 +788,7 @@ def test_predict_low_memory(make_whas500):
     # Duplicates values in whas500 leads to assert errors because of
     # tie resolution during tree fitting.
     # Using a synthetic dataset resolves this issue.
-    X = np.random.RandomState(seed).binomial(n=5, p=.1, size=X.shape)
+    X = np.random.RandomState(seed).binomial(n=5, p=0.1, size=X.shape)
 
     X_train, X_test, y_train, _ = train_test_split(X, y, random_state=seed)
 
