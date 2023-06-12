@@ -592,18 +592,20 @@ def test_predict_low_memory(make_whas500):
     tree0 = SurvivalTree(min_samples_leaf=10, random_state=seed, low_memory=False)
     tree0.fit(X_train, y_train)
     y_pred_0 = tree0.predict(X_test)
-    y_cum_h_0 = tree0.predict_cumulative_hazard_function(X_test)
-    y_surv_0 = tree0.predict_survival_function(X_test)
 
     tree1 = SurvivalTree(min_samples_leaf=10, random_state=seed, low_memory=True)
     tree1.fit(X_train, y_train)
     y_pred_1 = tree1.predict(X_test)
-    y_cum_h_1 = tree1.predict_cumulative_hazard_function(X_test)
-    y_surv_1 = tree1.predict_survival_function(X_test)
 
     assert y_pred_0.shape[0] == X_test.shape[0]
     assert y_pred_1.shape[0] == X_test.shape[0]
 
-    assert_array_equal(y_pred_0, y_pred_1)
-    assert_array_equal(y_cum_h_0, y_cum_h_1)
-    assert_array_equal(y_surv_0, y_surv_1)
+    assert_array_almost_equal(y_pred_0, y_pred_1)
+
+    msg = r"predict_cumulative_hazard_function is not implemented in low memory mode."
+    with pytest.raises(NotImplementedError, match=msg):
+        tree1.predict_cumulative_hazard_function(X_test)
+
+    msg = r"predict_survival_function is not implemented in low memory mode."
+    with pytest.raises(NotImplementedError, match=msg):
+        tree1.predict_survival_function(X_test)

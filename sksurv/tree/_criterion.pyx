@@ -310,19 +310,35 @@ cdef class LogrankCriterion(Criterion):
         cdef double ratio
         cdef Riskset * rs
 
+        cdef double dest_j0
+        cdef double dest_j1
+
         rs = &self.riskset_total[0]
         ratio = rs.n_events / (<double> rs.n_at_risk)
         dest[0] = ratio  # Nelson-Aalen estimator
         dest[1] = 1.0 - ratio  # Kaplan-Meier estimator
 
-        j_delta = 3
-        j = j_delta
+        # low memory mode
+        if  self.n_outputs == 1:
+            dest_j0 = dest[0]
+            dest_j1 = dest[1]
+            for k in range(1, self.n_event_times):
+                rs = &self.riskset_total[k]
+                if rs.n_at_risk != 0:
+                    ratio = rs.n_events / (<double> rs.n_at_risk)
+                    dest_j0 += ratio
+                    dest_j1 *= 1.0 - ratio
+                dest[0] += dest_j0
+                dest[1] += dest_j1
+            return
+
+        j = 2
         for k in range(1, self.n_event_times):
             rs = &self.riskset_total[k]
-            dest[j] = dest[j - j_delta]
-            dest[j + 1] = dest[j + 1 - j_delta]
+            dest[j] = dest[j - 2]
+            dest[j + 1] = dest[j - 1]
             if rs.n_at_risk != 0:
                 ratio = rs.n_events / (<double> rs.n_at_risk)
                 dest[j] += ratio
                 dest[j + 1] *= 1.0 - ratio
-            j += j_delta
+            j += 2

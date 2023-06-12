@@ -108,7 +108,8 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         If None then unlimited number of leaf nodes.
 
     low_memory : boolean, default: False
-        If set, adjust computations to avoid heavy memory usage.
+        If set, ``predict`` computations use heavy memory but ``predict_cumulative_hazard_function``
+        and ``predict_survival_function`` are not implemented.
 
     Attributes
     ----------
@@ -231,9 +232,13 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         params = self._check_params(n_samples)
 
         self.n_outputs_ = self.event_times_.shape[0]
-        # one "class" for CHF, one for survival function, one as placeholder
-        j_delta = 3
-        self.n_classes_ = np.ones(self.n_outputs_, dtype=np.intp) * j_delta
+        # one "class" for CHF, one for survival function
+        self.n_classes_ = np.ones(self.n_outputs_, dtype=np.intp) * 2
+
+        if self.low_memory:
+            self.n_outputs_ = 1
+            # one "class" for the sum over the CHF, one for the sum over the survival function
+            self.n_classes_ = np.ones(self.n_outputs_, dtype=np.intp) * 2
 
         # Build tree
         self.criterion = "logrank"
@@ -378,7 +383,10 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         """
 
         if self.low_memory:
-            return self.predict_cumulative_hazard_function(X, check_input, return_array="sum")
+            check_is_fitted(self, 'tree_')
+            X = self._validate_X_predict(X, check_input, accept_sparse="csr")
+            pred = self.tree_.predict(X)
+            return pred[..., 0]
 
         chf = self.predict_cumulative_hazard_function(X, check_input, return_array=True)
         return chf.sum(1)
@@ -401,13 +409,10 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             Allow to bypass several input checking.
             Don't use this parameter unless you know what you do.
 
-        return_array : boolean or "sum" string, default: False
-            If set to False return an array of
+        return_array : boolean, default: False
+            If set, return an array with the cumulative hazard rate
+            for each `self.event_times_`, otherwise an array of
             :class:`sksurv.functions.StepFunction`.
-            If set to True return an array with the cumulative hazard rate
-            for each `self.event_times_`.
-            If set to "sum" return an array with the sum of the cumulative
-            hazard rates for each `self.event_times_` for each sample.
 
         Returns
         -------
@@ -443,15 +448,12 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         >>> plt.ylim(0, 1)
         >>> plt.show()
         """
+
+        if self.low_memory:
+            raise NotImplementedError("predict_cumulative_hazard_function is not implemented in low memory mode.")
+
         check_is_fitted(self, 'tree_')
         X = self._validate_X_predict(X, check_input, accept_sparse="csr")
-
-        if return_array == "sum":
-            n_samples = X.shape[0]
-            array_of_sums = np.empty(n_samples)
-            for idx in range(0, n_samples):
-                array_of_sums[idx] = self.tree_.predict(X[idx:idx+1])[..., 0].sum()
-            return array_of_sums
 
         pred = self.tree_.predict(X)
         arr = pred[..., 0]
@@ -517,6 +519,10 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         >>> plt.ylim(0, 1)
         >>> plt.show()
         """
+
+        if self.low_memory:
+            raise NotImplementedError("predict_survival_function is not implemented in low memory mode.")
+
         check_is_fitted(self, 'tree_')
         X = self._validate_X_predict(X, check_input, accept_sparse="csr")
 
