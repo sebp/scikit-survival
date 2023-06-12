@@ -30,7 +30,6 @@ def _fit_and_score(est, x, y, scorer, train_index, test_index, parameters, fit_p
 
     score = scorer(est, X_test, y_test, **test_predict_params)
     if not isinstance(score, numbers.Number):
-        raise ValueError("scoring must return a number, got %s (%s) instead."
-                         % (str(score), type(score)))
+        raise ValueError(f"scoring must return a number, got {score!s} ({type(score)}) instead.")
 
     return score

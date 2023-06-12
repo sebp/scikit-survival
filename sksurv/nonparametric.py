@@ -21,11 +21,11 @@ from sklearn.utils.validation import check_array, check_consistent_length, check
 from .util import check_y_survival
 
 __all__ = [
-    'CensoringDistributionEstimator',
-    'kaplan_meier_estimator',
-    'nelson_aalen_estimator',
-    'ipc_weights',
-    'SurvivalFunctionEstimator',
+    "CensoringDistributionEstimator",
+    "kaplan_meier_estimator",
+    "nelson_aalen_estimator",
+    "ipc_weights",
+    "SurvivalFunctionEstimator",
 ]
 
 
@@ -191,15 +191,10 @@ def _ci_logmlog(prob_survival, sigma_t, z):
 
 def _km_ci_estimator(prob_survival, ratio_var, conf_level, conf_type):
     if conf_type not in {"log-log"}:
-        raise ValueError("conf_type must be None or a str among {{'log-log'}}, but was {!r}".format(conf_type))
+        raise ValueError(f"conf_type must be None or a str among {{'log-log'}}, but was {conf_type!r}")
 
-    if (
-        not isinstance(conf_level, numbers.Real)
-        or not np.isfinite(conf_level)
-        or conf_level <= 0
-        or conf_level >= 1.0
-    ):
-        raise ValueError("conf_level must be a float in the range (0.0, 1.0), but was {!r}".format(conf_level))
+    if not isinstance(conf_level, numbers.Real) or not np.isfinite(conf_level) or conf_level <= 0 or conf_level >= 1.0:
+        raise ValueError(f"conf_level must be a float in the range (0.0, 1.0), but was {conf_level!r}")
 
     z = stats.norm.isf((1.0 - conf_level) / 2.0)
     sigma = np.sqrt(np.cumsum(ratio_var))
@@ -208,7 +203,13 @@ def _km_ci_estimator(prob_survival, ratio_var, conf_level, conf_type):
 
 
 def kaplan_meier_estimator(
-    event, time_exit, time_enter=None, time_min=None, reverse=False, conf_level=0.95, conf_type=None,
+    event,
+    time_exit,
+    time_enter=None,
+    time_min=None,
+    reverse=False,
+    conf_level=0.95,
+    conf_type=None,
 ):
     """Kaplan-Meier estimator of survival function.
 
@@ -303,7 +304,8 @@ def kaplan_meier_estimator(
 
     # account for 0/0 = nan
     ratio = np.divide(
-        n_events, n_at_risk,
+        n_events,
+        n_at_risk,
         out=np.zeros(uniq_times.shape[0], dtype=float),
         where=n_events != 0,
     )
@@ -465,7 +467,7 @@ class SurvivalFunctionEstimator(BaseEstimator):
             self.conf_int_ = np.column_stack((np.ones((2, 1)), conf_int))
 
         self.unique_time_ = np.r_[-np.infty, unique_time]
-        self.prob_ = np.r_[1., prob]
+        self.prob_ = np.r_[1.0, prob]
 
         return self
 
@@ -505,8 +507,7 @@ class SurvivalFunctionEstimator(BaseEstimator):
         # K-M is undefined if estimate at last time point is non-zero
         extends = time > self.unique_time_[-1]
         if self.prob_[-1] > 0 and extends.any():
-            raise ValueError("time must be smaller than largest "
-                             "observed time point: {}".format(self.unique_time_[-1]))
+            raise ValueError(f"time must be smaller than largest observed time point: {self.unique_time_[-1]}")
 
         # beyond last time point is zero probability
         Shat = np.empty(time.shape, dtype=float)
@@ -554,7 +555,7 @@ class CensoringDistributionEstimator(SurvivalFunctionEstimator):
         else:
             unique_time, prob = kaplan_meier_estimator(event, time, reverse=True)
             self.unique_time_ = np.r_[-np.infty, unique_time]
-            self.prob_ = np.r_[1., prob]
+            self.prob_ = np.r_[1.0, prob]
 
         return self
 

@@ -12,4 +12,4 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from ._binarytrees import AATree, AVLTree, RBTree
 
-__all__ = ['RBTree', 'AVLTree', 'AATree']
+__all__ = ["RBTree", "AVLTree", "AATree"]

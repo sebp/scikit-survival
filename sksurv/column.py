@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_categorical_dtype
 
-__all__ = ['categorical_to_numeric', 'encode_categorical', 'standardize']
+__all__ = ["categorical_to_numeric", "encode_categorical", "standardize"]
 
 
 def _apply_along_column(array, func1d, **kwargs):
@@ -65,7 +65,7 @@ def standardize(table, with_std=True):
         Categorical columns in the input table remain unchanged.
     """
     if isinstance(table, pd.DataFrame):
-        cat_columns = table.select_dtypes(include=['category']).columns
+        cat_columns = table.select_dtypes(include=["category"]).columns
     else:
         cat_columns = []
 
@@ -93,7 +93,7 @@ def _encode_categorical_series(series, allow_drop=True):
 
     names = []
     for key in range(1, enc.shape[1]):
-        names.append("{}={}".format(series.name, levels[key]))
+        names.append(f"{series.name}={levels[key]}")
     series = pd.DataFrame(enc[:, 1:], columns=names, index=series.index)
 
     return series
@@ -126,7 +126,7 @@ def encode_categorical(table, columns=None, **kwargs):
     """
     if isinstance(table, pd.Series):
         if not is_categorical_dtype(table.dtype) and not table.dtype.char == "O":
-            raise TypeError("series must be of categorical dtype, but was {}".format(table.dtype))
+            raise TypeError(f"series must be of categorical dtype, but was {table.dtype}")
         return _encode_categorical_series(table, **kwargs)
 
     def _is_categorical_or_object(series):
@@ -134,12 +134,12 @@ def encode_categorical(table, columns=None, **kwargs):
 
     if columns is None:
         # for columns containing categories
-        columns_to_encode = {nam for nam, s in table.iteritems() if _is_categorical_or_object(s)}
+        columns_to_encode = {nam for nam, s in table.items() if _is_categorical_or_object(s)}
     else:
         columns_to_encode = set(columns)
 
     items = []
-    for name, series in table.iteritems():
+    for name, series in table.items():
         if name in columns_to_encode:
             series = _encode_categorical_series(series, **kwargs)
             if series is None:
@@ -160,7 +160,8 @@ def _get_dummies_1d(data, allow_drop=True):
     # if all NaN or only one level
     if allow_drop and number_of_cols < 2:
         logging.getLogger(__package__).warning(
-            "dropped categorical variable '%s', because it has only %d values", data.name, number_of_cols)
+            f"dropped categorical variable {data.name!r}, because it has only {number_of_cols} values"
+        )
         return
     if number_of_cols == 0:
         return None, levels
@@ -188,6 +189,7 @@ def categorical_to_numeric(table):
         Table with categorical columns encoded as numeric.
         Numeric columns in the input table remain unchanged.
     """
+
     def transform(column):
         if is_categorical_dtype(column.dtype):
             return column.cat.codes
@@ -206,4 +208,4 @@ def categorical_to_numeric(table):
 
     if isinstance(table, pd.Series):
         return pd.Series(transform(table), name=table.name, index=table.index)
-    return table.apply(transform, axis=0, result_type='expand')
+    return table.apply(transform, axis=0, result_type="expand")

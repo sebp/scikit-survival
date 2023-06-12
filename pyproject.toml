@@ -61,7 +61,7 @@ dependencies = [
     "numexpr",
     "numpy",
     "osqp !=0.6.0,!=0.6.1",
-    "pandas >=1.0.5,<2",
+    "pandas >=1.0.5",
     "scipy >=1.3.2",
     "scikit-learn >=1.2.0,<1.3",
 ]
@@ -76,6 +76,7 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 dev = [
+    "black[jupyter]",
     "build",
     "coverage",
     "cython >=0.29",
@@ -119,6 +120,11 @@ include-package-data = false
 [tool.setuptools.package-data]
 "sksurv.datasets" = ["data/*.arff"]
 
+[tool.black]
+line-length = 120
+extend-exclude = "sksurv/linear_model/src/eigen"
+target-version = ["py38"]
+
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "--strict-markers"
@@ -130,10 +136,6 @@ filterwarnings = [
     "ignore:The distutils package is deprecated:DeprecationWarning",
     "ignore:Setuptools is replacing distutils",
     "ignore:distutils Version classes are deprecated.*:DeprecationWarning",
-    # check_less_precise has been deprecated in pandas 1.1.0
-    "ignore:The 'check_less_precise' keyword in testing\\.assert_\\*_equal is deprecated and will be removed in a future version.*:FutureWarning",
-    # iteritems has been deprecated in pandas 1.5.0
-    "ignore:iteritems is deprecated and will be removed in a future version. Use \\.items instead:FutureWarning",
     "ignore:Jupyter is migrating its paths to use standard platformdirs:DeprecationWarning",
 ]
 

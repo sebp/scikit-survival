@@ -15,7 +15,7 @@ import pandas as pd
 from pandas.api.types import is_categorical_dtype
 from sklearn.utils import check_array, check_consistent_length
 
-__all__ = ['check_array_survival', 'check_y_survival', 'safe_concat', 'Surv']
+__all__ = ["check_array_survival", "check_y_survival", "safe_concat", "Surv"]
 
 
 class Surv:
@@ -43,10 +43,10 @@ class Surv:
         y : np.array
             Structured array with two fields.
         """
-        name_event = name_event or 'event'
-        name_time = name_time or 'time'
+        name_event = name_event or "event"
+        name_time = name_time or "time"
         if name_time == name_event:
-            raise ValueError('name_time must be different from name_event')
+            raise ValueError("name_time must be different from name_event")
 
         time = np.asanyarray(time, dtype=float)
         y = np.empty(time.shape[0], dtype=[(name_event, bool), (name_time, float)])
@@ -61,12 +61,12 @@ class Surv:
             events = np.unique(event)
             events.sort()
             if len(events) != 2:
-                raise ValueError('event indicator must be binary')
+                raise ValueError("event indicator must be binary")
 
             if np.all(events == np.array([0, 1], dtype=events.dtype)):
                 y[name_event] = event.astype(bool)
             else:
-                raise ValueError('non-boolean event indicator must contain 0 and 1 only')
+                raise ValueError("non-boolean event indicator must contain 0 and 1 only")
 
         return y
 
@@ -89,14 +89,11 @@ class Surv:
             Structured array with two fields.
         """
         if not isinstance(data, pd.DataFrame):
-            raise TypeError(
-                "exepected pandas.DataFrame, but got {!r}".format(type(data)))
+            raise TypeError(f"expected pandas.DataFrame, but got {type(data)!r}")
 
         return Surv.from_arrays(
-            data.loc[:, event].values,
-            data.loc[:, time].values,
-            name_event=str(event),
-            name_time=str(time))
+            data.loc[:, event].values, data.loc[:, time].values, name_event=str(event), name_time=str(time)
+        )
 
 
 def check_y_survival(y_or_event, *args, allow_all_censored=False):
@@ -129,9 +126,11 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False):
         y = y_or_event
 
         if not isinstance(y, np.ndarray) or y.dtype.fields is None or len(y.dtype.fields) != 2:
-            raise ValueError('y must be a structured array with the first field'
-                             ' being a binary class event indicator and the second field'
-                             ' the time of the event/censoring')
+            raise ValueError(
+                "y must be a structured array with the first field"
+                " being a binary class event indicator and the second field"
+                " the time of the event/censoring"
+            )
 
         event_field, time_field = y.dtype.names
         y_event = y[event_field]
@@ -142,10 +141,10 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False):
 
     event = check_array(y_event, ensure_2d=False)
     if not np.issubdtype(event.dtype, np.bool_):
-        raise ValueError('elements of event indicator must be boolean, but found {0}'.format(event.dtype))
+        raise ValueError(f"elements of event indicator must be boolean, but found {event.dtype}")
 
     if not (allow_all_censored or np.any(event)):
-        raise ValueError('all samples are censored')
+        raise ValueError("all samples are censored")
 
     return_val = [event]
     for i, yt in enumerate(time_args):
@@ -155,7 +154,7 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False):
 
         yt = check_array(yt, ensure_2d=False)
         if not np.issubdtype(yt.dtype, np.number):
-            raise ValueError('time must be numeric, but found {} for argument {}'.format(yt.dtype, i + 2))
+            raise ValueError(f"time must be numeric, but found {yt.dtype} for argument {i + 2}")
 
         return_val.append(yt)
 
@@ -244,12 +243,12 @@ def safe_concat(objs, *args, **kwargs):
                 categories[df.name] = {"categories": df.cat.categories, "ordered": df.cat.ordered}
         else:
             dfc = df.select_dtypes(include=["category"])
-            for name, s in dfc.iteritems():
+            for name, s in dfc.items():
                 if name in categories:
                     if axis == 1:
-                        raise ValueError("duplicate columns %s" % name)
+                        raise ValueError(f"duplicate columns {name}")
                     if not categories[name]["categories"].equals(s.cat.categories):
-                        raise ValueError("categories for column %s do not match" % name)
+                        raise ValueError(f"categories for column {name} do not match")
                 else:
                     categories[name] = {"categories": s.cat.categories, "ordered": s.cat.ordered}
                 df[name] = df[name].astype(object)
@@ -260,3 +259,63 @@ def safe_concat(objs, *args, **kwargs):
         concatenated[name] = pd.Categorical(concatenated[name], **params)
 
     return concatenated
+
+
+class _PropertyAvailableIfDescriptor:
+    """Implements a conditional property using the descriptor protocol based on the property decorator.
+
+    The corresponding class in scikit-learn (`_AvailableIfDescriptor`) only supports callables.
+    This class adopts the property decorator as described in the descriptor guide in the offical Python documentation.
+
+    See also
+    --------
+    https://docs.python.org/3/howto/descriptor.html
+        Descriptor HowTo Guide
+
+    :class:`sklearn.utils.available_if._AvailableIfDescriptor`
+        The original class in scikit-learn.
+    """
+
+    def __init__(self, check, fget, doc=None):
+        self.check = check
+        self.fget = fget
+        if doc is None and fget is not None:
+            doc = fget.__doc__
+        self.__doc__ = doc
+        self._name = ""
+
+    def __set_name__(self, owner, name):
+        self._name = name
+
+    def __get__(self, obj, objtype=None):
+        if obj is None:
+            return self
+
+        attr_err = AttributeError(f"This {obj!r} has no attribute {self._name!r}")
+        if not self.check(obj):
+            raise attr_err
+
+        if self.fget is None:
+            raise AttributeError(f"property '{self._name}' has no getter")
+        return self.fget(obj)
+
+
+def property_available_if(check):
+    """A property attribute that is available only if check returns a truthy value.
+
+    Only supports getting an attribute value, setting or deleting an attribute value are not supported.
+
+    Parameters
+    ----------
+    check : callable
+        When passed the object of the decorated method, this should return
+        `True` if the property attribute is available, and either return `False`
+        or raise an `AttributeError` if not available.
+
+    Returns
+    -------
+    callable
+        Callable makes the decorated property available if `check` returns
+        `True`, otherwise the decorated property is unavailable.
+    """
+    return lambda fn: _PropertyAvailableIfDescriptor(check=check, fget=fn)

@@ -14,7 +14,7 @@ from ..exceptions import NoComparablePairException
 from ..util import check_array_survival
 from ._minlip import create_difference_matrix
 
-__all__ = ['MinlipSurvivalAnalysis', 'HingeLossSurvivalSVM']
+__all__ = ["MinlipSurvivalAnalysis", "HingeLossSurvivalSVM"]
 
 
 class QPSolver(metaclass=ABCMeta):
@@ -24,6 +24,7 @@ class QPSolver(metaclass=ABCMeta):
         minimize    (1/2)*x'*P*x + q'*x
         subject to  G*x <= h
     """
+
     @abstractmethod
     def __init__(self, max_iter, verbose):
         self.max_iter = max_iter
@@ -52,13 +53,14 @@ class OsqpSolver(QPSolver):
         results = m.solve()
 
         if results.info.status_val == -2:  # max iter reached
-            warnings.warn(("OSQP solver did not converge: {}".format(
-                results.info.status)),
+            warnings.warn(
+                (f"OSQP solver did not converge: {results.info.status}"),
                 category=ConvergenceWarning,
-                stacklevel=2)
+                stacklevel=2,
+            )
         elif results.info.status_val not in (1, 2):  # pragma: no cover
             # non of solved, solved inaccurate
-            raise RuntimeError("OSQP solver failed: {}".format(results.info.status))
+            raise RuntimeError(f"OSQP solver failed: {results.info.status}")
 
         n_iter = results.info.iter
         return results.x[np.newaxis], n_iter
@@ -112,27 +114,27 @@ class EcosSolver(QPSolver):
         c[0] = 0.5 * max_eigval
 
         zerorow = np.zeros((1, L.shape[1]))
-        G_quad = np.block([
-            [-1, zerorow],
-            [1, zerorow],
-            [np.zeros((L.shape[0], 1)), -2 * L],
-        ])
+        G_quad = np.block(
+            [
+                [-1, zerorow],
+                [1, zerorow],
+                [np.zeros((L.shape[0], 1)), -2 * L],
+            ]
+        )
         G_lin = sparse.hstack((sparse.csc_matrix((G.shape[0], 1)), G))
         G_all = sparse.vstack((G_lin, sparse.csc_matrix(G_quad)), format="csc")
 
         n_constraints = G.shape[0]
         h_all = np.empty(G_all.shape[0])
         h_all[:n_constraints] = h
-        h_all[n_constraints:(n_constraints + 2)] = 1
-        h_all[(n_constraints + 2):] = 0
+        h_all[n_constraints : (n_constraints + 2)] = 1
+        h_all[(n_constraints + 2) :] = 0
 
         dims = {
             "l": G.shape[0],  # scalar, dimension of positive orthant
-            "q": [G_quad.shape[0]]  # vector with dimensions of second order cones
+            "q": [G_quad.shape[0]],  # vector with dimensions of second order cones
         }
-        results = ecos.solve(
-            c, G_all, h_all, dims, verbose=self.verbose, max_iters=self.max_iter or 1000
-        )
+        results = ecos.solve(c, G_all, h_all, dims, verbose=self.verbose, max_iters=self.max_iter or 1000)
         self._check_success(results)
 
         # drop solution for t
@@ -142,21 +144,19 @@ class EcosSolver(QPSolver):
 
     def _check_success(self, results):  # pylint: disable=no-self-use
         exit_flag = results["info"]["exitFlag"]
-        if exit_flag in (EcosSolver.EXIT_OPTIMAL,
-                         EcosSolver.EXIT_OPTIMAL + EcosSolver.EXIT_INACC_OFFSET):
+        if exit_flag in (EcosSolver.EXIT_OPTIMAL, EcosSolver.EXIT_OPTIMAL + EcosSolver.EXIT_INACC_OFFSET):
             return
 
         if exit_flag == EcosSolver.EXIT_MAXIT:
             warnings.warn(
-                "ECOS solver did not converge: maximum iterations reached",
-                category=ConvergenceWarning,
-                stacklevel=3)
+                "ECOS solver did not converge: maximum iterations reached", category=ConvergenceWarning, stacklevel=3
+            )
         elif exit_flag == EcosSolver.EXIT_PINF:  # pragma: no cover
             raise RuntimeError("Certificate of primal infeasibility found")
         elif exit_flag == EcosSolver.EXIT_DINF:  # pragma: no cover
             raise RuntimeError("Certificate of dual infeasibility found")
         else:  # pragma: no cover
-            raise RuntimeError("Unknown problem in ECOS solver, exit status: {}".format(exit_flag))
+            raise RuntimeError(f"Unknown problem in ECOS solver, exit status: {exit_flag}")
 
     def _decompose(self, P):
         # from scipy.linalg.pinvh
@@ -168,10 +168,10 @@ class EcosSolver(QPSolver):
             t = u.dtype
             cond = largest_eigenvalue * max(P.shape) * np.finfo(t).eps
 
-        not_below_cutoff = (abs(s) > -cond)
-        assert not_below_cutoff.all(), "matrix has negative eigenvalues: {}".format(s.min())
+        not_below_cutoff = abs(s) > -cond
+        assert not_below_cutoff.all(), f"matrix has negative eigenvalues: {s.min()}"
 
-        above_cutoff = (abs(s) > cond)
+        above_cutoff = abs(s) > cond
         u = u[:, above_cutoff]
         s = s[above_cutoff]
 
@@ -303,9 +303,21 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         "max_iter": [Interval(numbers.Integral, 1, None, closed="left"), None],
     }
 
-    def __init__(self, alpha=1.0, *, solver="ecos",
-                 kernel="linear", gamma=None, degree=3, coef0=1, kernel_params=None,
-                 pairs="nearest", verbose=False, timeit=None, max_iter=None):
+    def __init__(
+        self,
+        alpha=1.0,
+        *,
+        solver="ecos",
+        kernel="linear",
+        gamma=None,
+        degree=3,
+        coef0=1,
+        kernel_params=None,
+        pairs="nearest",
+        verbose=False,
+        timeit=None,
+        max_iter=None,
+    ):
         self.solver = solver
         self.alpha = alpha
         self.kernel = kernel
@@ -326,11 +338,8 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         if callable(self.kernel):
             params = self.kernel_params or {}
         else:
-            params = {"gamma": self.gamma,
-                      "degree": self.degree,
-                      "coef0": self.coef0}
-        return pairwise_kernels(X, Y, metric=self.kernel,
-                                filter_params=True, **params)
+            params = {"gamma": self.gamma, "degree": self.degree, "coef0": self.coef0}
+        return pairwise_kernels(X, Y, metric=self.kernel, filter_params=True, **params)
 
     def _setup_qp(self, K, D, time):
         n_pairs = D.shape[0]
@@ -338,16 +347,17 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         q = -D.dot(time)
 
         Dt = D.T.astype(P.dtype)  # cast constraints to correct type
-        G = sparse.vstack((
-            Dt,  # upper bound
-            - Dt,  # lower bound
-            - sparse.eye(n_pairs, dtype=P.dtype),  # lower bound >= 0
-        ),
-            format="csc"
+        G = sparse.vstack(
+            (
+                Dt,  # upper bound
+                -Dt,  # lower bound
+                -sparse.eye(n_pairs, dtype=P.dtype),  # lower bound >= 0
+            ),
+            format="csc",
         )
         n_constraints = Dt.shape[0]
         h = np.empty(G.shape[0], dtype=float)
-        h[:2 * n_constraints] = self.alpha
+        h[: 2 * n_constraints] = self.alpha
         h[-n_pairs:] = 0.0
 
         return {"P": P, "q": q, "G": G, "h": h}
@@ -549,11 +559,34 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
 
     _parameter_constraints = MinlipSurvivalAnalysis._parameter_constraints
 
-    def __init__(self, alpha=1.0, *, solver="ecos",
-                 kernel="linear", gamma=None, degree=3, coef0=1, kernel_params=None,
-                 pairs="all", verbose=False, timeit=None, max_iter=None):
-        super().__init__(solver=solver, alpha=alpha, kernel=kernel, gamma=gamma, degree=degree, coef0=coef0,
-                         kernel_params=kernel_params, pairs=pairs, verbose=verbose, timeit=timeit, max_iter=max_iter)
+    def __init__(
+        self,
+        alpha=1.0,
+        *,
+        solver="ecos",
+        kernel="linear",
+        gamma=None,
+        degree=3,
+        coef0=1,
+        kernel_params=None,
+        pairs="all",
+        verbose=False,
+        timeit=None,
+        max_iter=None,
+    ):
+        super().__init__(
+            solver=solver,
+            alpha=alpha,
+            kernel=kernel,
+            gamma=gamma,
+            degree=degree,
+            coef0=coef0,
+            kernel_params=kernel_params,
+            pairs=pairs,
+            verbose=verbose,
+            timeit=timeit,
+            max_iter=max_iter,
+        )
 
     def _setup_qp(self, K, D, time):
         n_pairs = D.shape[0]
@@ -561,11 +594,7 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
         P = D.dot(D.dot(K).T).T
         q = -np.ones(n_pairs)
 
-        G = sparse.vstack((
-            -sparse.eye(n_pairs),
-            sparse.eye(n_pairs)),
-            format="csc"
-        )
+        G = sparse.vstack((-sparse.eye(n_pairs), sparse.eye(n_pairs)), format="csc")
         h = np.empty(2 * n_pairs)
         h[:n_pairs] = 0
         h[n_pairs:] = self.alpha

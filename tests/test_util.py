@@ -8,7 +8,7 @@ import pandas.testing as tm
 import pytest
 
 from sksurv.testing import FixtureParameterFactory
-from sksurv.util import Surv, safe_concat
+from sksurv.util import Surv, _PropertyAvailableIfDescriptor, property_available_if, safe_concat
 
 
 class ConcatCasesFactory(FixtureParameterFactory):
@@ -24,31 +24,17 @@ class ConcatCasesFactory(FixtureParameterFactory):
 
     def make_categorical_5_series(self, name):
         return pd.Series(
-            pd.Categorical.from_codes(
-                self.rnd.binomial(4, 0.6, 100), ["C1", "C2", "C3", "C4", "C5"]
-            ), name=name
+            pd.Categorical.from_codes(self.rnd.binomial(4, 0.6, 100), ["C1", "C2", "C3", "C4", "C5"]), name=name
         )
 
     def make_categorical_4_series(self, name):
-        return pd.Series(
-            pd.Categorical.from_codes(
-                self.rnd.binomial(3, 0.6, 100), ["C1", "C2", "C3", "C4"]
-            ), name=name
-        )
+        return pd.Series(pd.Categorical.from_codes(self.rnd.binomial(3, 0.6, 100), ["C1", "C2", "C3", "C4"]), name=name)
 
     def make_categorical_3_series(self, name):
-        return pd.Series(
-            pd.Categorical.from_codes(
-                self.rnd.binomial(2, 0.6, 100), ["C1", "C2", "C3"]
-            ), name=name
-        )
+        return pd.Series(pd.Categorical.from_codes(self.rnd.binomial(2, 0.6, 100), ["C1", "C2", "C3"]), name=name)
 
     def make_binary_series(self, name):
-        return pd.Series(
-            pd.Categorical.from_codes(
-                self.rnd.binomial(1, 0.6, 100), ["Yes", "No"]
-            ), name=name
-        )
+        return pd.Series(pd.Categorical.from_codes(self.rnd.binomial(1, 0.6, 100), ["Yes", "No"]), name=name)
 
 
 class ConcatCasesAxes1(ConcatCasesFactory):
@@ -67,10 +53,12 @@ class ConcatCasesAxes1(ConcatCasesFactory):
         return (a, b), self.to_data_frame(expected), does_not_raise()
 
     def data_frame_numeric_categorical(self):
-        numeric_df = self.to_data_frame([
-            ("col_A", self.make_numeric_series("col_A")),
-            ("col_B", self.make_categorical_5_series("col_B")),
-        ])
+        numeric_df = self.to_data_frame(
+            [
+                ("col_A", self.make_numeric_series("col_A")),
+                ("col_B", self.make_categorical_5_series("col_B")),
+            ]
+        )
 
         cat_series = self.make_categorical_5_series("col_C")
 
@@ -79,16 +67,22 @@ class ConcatCasesAxes1(ConcatCasesFactory):
         return (numeric_df, cat_series), expected_df, does_not_raise()
 
     def data_duplicate_columns(self):
-        numeric_df = self.to_data_frame([
-            ("col_N", self.make_numeric_series("col_N")),
-            ("col_B", self.make_categorical_5_series("col_B")),
-            ("col_A", self.make_categorical_5_series("col_A")),
-        ])
+        numeric_df = self.to_data_frame(
+            [
+                ("col_N", self.make_numeric_series("col_N")),
+                ("col_B", self.make_categorical_5_series("col_B")),
+                ("col_A", self.make_categorical_5_series("col_A")),
+            ]
+        )
 
-        cat_df = pd.DataFrame.from_dict(OrderedDict([
-            ("col_A", self.make_categorical_5_series("col_A")),
-            ("col_C", self.make_binary_series("col_C")),
-        ]))
+        cat_df = pd.DataFrame.from_dict(
+            OrderedDict(
+                [
+                    ("col_A", self.make_categorical_5_series("col_A")),
+                    ("col_C", self.make_binary_series("col_C")),
+                ]
+            )
+        )
 
         err = pytest.raises(ValueError, match="duplicate columns col_A")
         return (numeric_df, cat_df), None, err
@@ -96,21 +90,26 @@ class ConcatCasesAxes1(ConcatCasesFactory):
 
 class ConcatCasesAxes0(ConcatCasesFactory):
     def data_categorical(self):
-        a = self.to_data_frame([
-            ("col_A", self.make_categorical_3_series("col_A")),
-            ("col_B", self.make_numeric_series("col_B")),
-        ])
-        b = self.to_data_frame([
-            ("col_A", self.make_categorical_3_series("col_A")),
-            ("col_B", self.make_numeric_series("col_B"))
-        ])
+        a = self.to_data_frame(
+            [
+                ("col_A", self.make_categorical_3_series("col_A")),
+                ("col_B", self.make_numeric_series("col_B")),
+            ]
+        )
+        b = self.to_data_frame(
+            [("col_A", self.make_categorical_3_series("col_A")), ("col_B", self.make_numeric_series("col_B"))]
+        )
 
         expected = [
-            ("col_A", pd.Series(pd.Categorical.from_codes(
-                np.r_[a.col_A.cat.codes.values, b.col_A.cat.codes.values],
-                ["C1", "C2", "C3"]
-            ))),
-            ("col_B", np.r_[a.col_B.values, b.col_B.values])
+            (
+                "col_A",
+                pd.Series(
+                    pd.Categorical.from_codes(
+                        np.r_[a.col_A.cat.codes.values, b.col_A.cat.codes.values], ["C1", "C2", "C3"]
+                    )
+                ),
+            ),
+            ("col_B", np.r_[a.col_B.values, b.col_B.values]),
         ]
         expected_df = self.to_data_frame(expected)
         expected_df.index = pd.Index(a.index.tolist() + b.index.tolist())
@@ -118,14 +117,18 @@ class ConcatCasesAxes0(ConcatCasesFactory):
         return (a, b), expected_df, does_not_raise()
 
     def data_categorical_mismatch(self):
-        a = self.to_data_frame([
-            ("col_A", self.make_categorical_3_series("col_A")),
-            ("col_B", self.make_numeric_series("col_B")),
-        ])
-        b = self.to_data_frame([
-            ("col_A", self.make_categorical_4_series("col_A")),
-            ("col_B", self.make_numeric_series("col_B")),
-        ])
+        a = self.to_data_frame(
+            [
+                ("col_A", self.make_categorical_3_series("col_A")),
+                ("col_B", self.make_numeric_series("col_B")),
+            ]
+        )
+        b = self.to_data_frame(
+            [
+                ("col_A", self.make_categorical_4_series("col_A")),
+                ("col_B", self.make_numeric_series("col_B")),
+            ]
+        )
 
         err = pytest.raises(ValueError, match="categories for column col_A do not match")
         return (a, b), None, err
@@ -158,7 +161,7 @@ class SurvCases(FixtureParameterFactory):
 
 
 class SurvArrayCases(SurvCases):
-    def get_surv_arrays(self, event_name='event', time_name='time'):
+    def get_surv_arrays(self, event_name="event", time_name="time"):
         event, time = self.event_and_time
 
         expected = np.empty(dtype=[(event_name, bool), (time_name, float)], shape=event.shape[0])
@@ -180,24 +183,24 @@ class SurvArrayCases(SurvCases):
         return inputs, {}, expected, does_not_raise()
 
     def data_with_names(self):
-        (event, time), expected = self.get_surv_arrays('death', 'survival_time')
+        (event, time), expected = self.get_surv_arrays("death", "survival_time")
 
         inputs = (event.astype(bool), time)
-        kwargs = {'name_time': 'survival_time', 'name_event': 'death'}
+        kwargs = {"name_time": "survival_time", "name_event": "death"}
         return inputs, kwargs, expected, does_not_raise()
 
     def data_with_one_name_1(self):
-        (event, time), expected = self.get_surv_arrays('death')
+        (event, time), expected = self.get_surv_arrays("death")
 
         inputs = (event.astype(bool), time)
-        kwargs = {'name_event': 'death'}
+        kwargs = {"name_event": "death"}
         return inputs, kwargs, expected, does_not_raise()
 
     def data_with_one_name_2(self):
-        (event, time), expected = self.get_surv_arrays('event', 'survival_time')
+        (event, time), expected = self.get_surv_arrays("event", "survival_time")
 
         inputs = (event.astype(bool), time)
-        kwargs = {'name_time': 'survival_time'}
+        kwargs = {"name_time": "survival_time"}
         return inputs, kwargs, expected, does_not_raise()
 
     def data_array_int_event(self):
@@ -210,9 +213,9 @@ class SurvArrayCases(SurvCases):
         time += 1
         time *= time
 
-        expected = np.empty(dtype=[('event', bool), ('time', float)], shape=event.shape[0])
-        expected['event'] = event.astype(bool)
-        expected['time'] = time.astype(int)
+        expected = np.empty(dtype=[("event", bool), ("time", float)], shape=event.shape[0])
+        expected["event"] = event.astype(bool)
+        expected["time"] = time.astype(int)
 
         inputs = (event.astype(bool), time.astype(int))
         return inputs, {}, expected, does_not_raise()
@@ -242,27 +245,21 @@ class SurvArrayCases(SurvCases):
         event, time = self.event_and_time
         event += 1
 
-        err = pytest.raises(
-            ValueError, match="non-boolean event indicator must contain 0 and 1 only"
-        )
+        err = pytest.raises(ValueError, match="non-boolean event indicator must contain 0 and 1 only")
         return (event, time), {}, None, err
 
     def data_event_value_wrong_2(self):
         event, time = self.event_and_time
         event -= 1
 
-        err = pytest.raises(
-            ValueError, match="non-boolean event indicator must contain 0 and 1 only"
-        )
+        err = pytest.raises(ValueError, match="non-boolean event indicator must contain 0 and 1 only")
         return (event, time), {}, None, err
 
     def data_event_value_wrong_3(self):
         event, time = self.event_and_time
         event[event == 0] = 3
 
-        err = pytest.raises(
-            ValueError, match="non-boolean event indicator must contain 0 and 1 only"
-        )
+        err = pytest.raises(ValueError, match="non-boolean event indicator must contain 0 and 1 only")
 
         return (event, time), {}, None, err
 
@@ -283,10 +280,8 @@ class SurvArrayCases(SurvCases):
     def data_names_match(self):
         event, time = self.event_and_time
 
-        err = pytest.raises(
-            ValueError, match="name_time must be different from name_event"
-        )
-        kwargs = {'name_event': 'time_and_event', 'name_time': 'time_and_event'}
+        err = pytest.raises(ValueError, match="name_time must be different from name_event")
+        kwargs = {"name_event": "time_and_event", "name_time": "time_and_event"}
         return (event, time), kwargs, None, err
 
 
@@ -300,7 +295,7 @@ def test_from_arrays(args, kwargs, expected, expected_error):
 
 
 class SurvDataFrameCases(SurvCases):
-    def get_surv_data_frame(self, event_name='event', time_name='time'):
+    def get_surv_data_frame(self, event_name="event", time_name="time"):
         event, time = self.event_and_time
         df = pd.DataFrame({event_name: event, time_name: time})
 
@@ -312,20 +307,20 @@ class SurvDataFrameCases(SurvCases):
 
     def data_bool(self):
         data, expected = self.get_surv_data_frame()
-        data['event'] = data['event'].astype(bool)
+        data["event"] = data["event"].astype(bool)
 
-        inputs = ('event', 'time', data)
+        inputs = ("event", "time", data)
         return inputs, expected, does_not_raise()
 
     def data_int(self):
         data, expected = self.get_surv_data_frame()
-        inputs = ('event', 'time', data)
+        inputs = ("event", "time", data)
         return inputs, expected, does_not_raise()
 
     def data_float(self):
         data, expected = self.get_surv_data_frame()
-        data['event'] = data['event'].astype(float)
-        inputs = ('event', 'time', data)
+        data["event"] = data["event"].astype(float)
+        inputs = ("event", "time", data)
         return inputs, expected, does_not_raise()
 
     def data_no_str_columns(self):
@@ -334,40 +329,36 @@ class SurvDataFrameCases(SurvCases):
         return inputs, expected, does_not_raise()
 
     def data_column_names(self):
-        data, expected = self.get_surv_data_frame(event_name='death', time_name='time_to_death')
-        inputs = ('death', 'time_to_death', data)
+        data, expected = self.get_surv_data_frame(event_name="death", time_name="time_to_death")
+        inputs = ("death", "time_to_death", data)
         return inputs, expected, does_not_raise()
 
     def data_no_such_column_0(self):
         data, _ = self.get_surv_data_frame()
 
-        err = pytest.raises(KeyError, match='unknown')
-        inputs = ('unknown', 'time', data)
+        err = pytest.raises(KeyError, match="unknown")
+        inputs = ("unknown", "time", data)
         return inputs, None, err
 
     def data_no_such_column_1(self):
         data, _ = self.get_surv_data_frame()
 
-        err = pytest.raises(KeyError, match='unknown')
-        inputs = ('event', 'unknown', data)
+        err = pytest.raises(KeyError, match="unknown")
+        inputs = ("event", "unknown", data)
         return inputs, None, err
 
     def data_wrong_class_0(self):
         data, _ = self.get_surv_data_frame()
 
-        err = pytest.raises(
-            TypeError, match=r"exepected pandas.DataFrame, but got <class 'dict'>"
-        )
-        inputs = ('event', 'time', data.to_dict())
+        err = pytest.raises(TypeError, match=r"expected pandas.DataFrame, but got <class 'dict'>")
+        inputs = ("event", "time", data.to_dict())
         return inputs, None, err
 
     def data_wrong_class_1(self):
         data, _ = self.get_surv_data_frame()
 
-        err = pytest.raises(
-            TypeError, match=r"exepected pandas.DataFrame, but got <class 'numpy.ndarray'>"
-        )
-        inputs = ('event', 'time', data.values)
+        err = pytest.raises(TypeError, match=r"expected pandas.DataFrame, but got <class 'numpy.ndarray'>")
+        inputs = ("event", "time", data.values)
         return inputs, None, err
 
 
@@ -378,3 +369,37 @@ def test_from_dataframe(args, expected, expected_error):
 
     if expected is not None:
         assert_array_equal(y, expected)
+
+
+def test_cond_avail_property():
+    class WithCondProp:
+        def __init__(self, val):
+            self.avail = False
+            self._prop = val
+
+        @property_available_if(lambda self: self.avail)
+        def prop(self):
+            return self._prop
+
+        no_prop = _PropertyAvailableIfDescriptor(lambda self: self.avail, fget=None)
+
+    testval = 43
+    msg = "has no attribute 'prop'"
+
+    assert WithCondProp.prop is not None
+
+    test_obj = WithCondProp(testval)
+    with pytest.raises(AttributeError, match=msg):
+        _ = test_obj.prop
+    assert test_obj.avail is False
+
+    test_obj.avail = True
+    assert test_obj.prop == testval
+
+    test_obj.avail = False
+    with pytest.raises(AttributeError, match=msg):
+        _ = test_obj.prop
+
+    test_obj.avail = True
+    with pytest.raises(AttributeError, match="has no getter"):
+        _ = test_obj.no_prop

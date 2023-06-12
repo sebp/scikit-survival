@@ -11,10 +11,10 @@ from sksurv.preprocessing import OneHotEncoder
 
 def _encoded_data(data):
     expected = []
-    for nam, col in data.iteritems():
+    for nam, col in data.items():
         if hasattr(col, "cat"):
             for cat in col.cat.categories[1:]:
-                name = '{}={}'.format(nam, cat)
+                name = f"{nam}={cat}"
                 s = pd.Series(col == cat, dtype=np.float64)
                 expected.append((name, s))
         else:
@@ -28,23 +28,23 @@ def _encoded_data(data):
 def create_data():
     def _create_data(n_samples=117):
         rnd = np.random.RandomState(51365192)
-        data_num = pd.DataFrame(rnd.rand(n_samples, 5),
-                                columns=["N%d" % i for i in range(5)])
+        data_num = pd.DataFrame(rnd.rand(n_samples, 5), columns=[f"N{i}" for i in range(5)])
 
-        dat_cat = pd.DataFrame(OrderedDict([
-            ("binary_1", pd.Categorical.from_codes(
-                rnd.binomial(1, 0.6, n_samples),
-                ["Yes", "No"])),
-            ("binary_2", pd.Categorical.from_codes(
-                rnd.binomial(1, 0.376, n_samples),
-                ["East", "West"])),
-            ("trinary", pd.Categorical.from_codes(
-                rnd.binomial(2, 0.76, n_samples),
-                ["Green", "Blue", "Red"])),
-            ("many", pd.Categorical.from_codes(
-                rnd.binomial(5, 0.47, n_samples),
-                ["One", "Two", "Three", "Four", "Five", "Six"]))
-        ]))
+        dat_cat = pd.DataFrame(
+            OrderedDict(
+                [
+                    ("binary_1", pd.Categorical.from_codes(rnd.binomial(1, 0.6, n_samples), ["Yes", "No"])),
+                    ("binary_2", pd.Categorical.from_codes(rnd.binomial(1, 0.376, n_samples), ["East", "West"])),
+                    ("trinary", pd.Categorical.from_codes(rnd.binomial(2, 0.76, n_samples), ["Green", "Blue", "Red"])),
+                    (
+                        "many",
+                        pd.Categorical.from_codes(
+                            rnd.binomial(5, 0.47, n_samples), ["One", "Two", "Three", "Four", "Five", "Six"]
+                        ),
+                    ),
+                ]
+            )
+        )
         data = pd.concat((data_num, dat_cat), axis=1)
         return data, _encoded_data(data)
 
@@ -58,11 +58,10 @@ class TestOneHotEncoder:
 
         t = OneHotEncoder().fit(data)
 
-        assert t.feature_names_.tolist() == ['binary_1', 'binary_2', 'trinary', 'many']
+        assert t.feature_names_.tolist() == ["binary_1", "binary_2", "trinary", "many"]
         assert set(t.encoded_columns_) == set(expected_data.columns)
 
-        assert t.categories_ == {k: data[k].cat.categories
-                                 for k in ['binary_1', 'binary_2', 'trinary', 'many']}
+        assert t.categories_ == {k: data[k].cat.categories for k in ["binary_1", "binary_2", "trinary", "many"]}
 
     @staticmethod
     def test_fit_transform(create_data):
@@ -97,22 +96,24 @@ class TestOneHotEncoder:
     @staticmethod
     def test_get_feature_names_out_shuffled(create_data):
         data, _ = create_data()
-        order = np.array(['binary_1', 'N0', 'N3', 'trinary', 'binary_2', 'N1', 'N2', 'many'])
-        expected_columns = np.array([
-            'binary_1=No',
-            'N0',
-            'N3',
-            'trinary=Blue',
-            'trinary=Red',
-            'binary_2=West',
-            'N1',
-            'N2',
-            'many=Two',
-            'many=Three',
-            'many=Four',
-            'many=Five',
-            'many=Six',
-        ])
+        order = np.array(["binary_1", "N0", "N3", "trinary", "binary_2", "N1", "N2", "many"])
+        expected_columns = np.array(
+            [
+                "binary_1=No",
+                "N0",
+                "N3",
+                "trinary=Blue",
+                "trinary=Red",
+                "binary_2=West",
+                "N1",
+                "N2",
+                "many=Two",
+                "many=Three",
+                "many=Four",
+                "many=Five",
+                "many=Six",
+            ]
+        )
 
         t = OneHotEncoder()
         t.fit(data.loc[:, order])
@@ -134,7 +135,7 @@ class TestOneHotEncoder:
         with pytest.raises(ValueError, match=r"1 features are missing from data: \['binary_1'\]"):
             t.transform(data_renamed)
 
-        data_dropped = data.drop('trinary', axis=1)
+        data_dropped = data.drop("trinary", axis=1)
         error_msg = "X has 8 features, but OneHotEncoder is expecting 9 features as input"
         with pytest.raises(ValueError, match=error_msg):
             t.transform(data_dropped)

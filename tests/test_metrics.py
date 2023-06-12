@@ -28,7 +28,7 @@ from sksurv.util import Surv
 
 
 def whas500_pred():
-    WHAS500_DATA_FILE = os.path.join(os.path.dirname(__file__), 'data', 'whas500_predictions.csv')
+    WHAS500_DATA_FILE = os.path.join(os.path.dirname(__file__), "data", "whas500_predictions.csv")
 
     dat = np.loadtxt(WHAS500_DATA_FILE, delimiter=",")
     event = dat[:, 0] == 1
@@ -39,16 +39,41 @@ def whas500_pred():
 
 @pytest.fixture()
 def no_comparable_pairs():
-    y = np.array([
-        (False, 849.), (False, 28.), (False, 55.), (False, 727.),
-        (False, 505.), (False, 1558.), (False, 1292.), (False, 1737.),
-        (False, 944.), (False, 750.), (False, 2513.), (False, 472.),
-        (False, 2417.), (False, 538.), (False, 49.), (False, 723.),
-        (True, 3563.), (False, 1090.), (False, 1167.), (False, 587.),
-        (False, 1354.), (False, 910.), (False, 398.), (False, 854.),
-        (False, 3534.), (False, 280.), (False, 183.), (False, 883.),
-        (False, 32.), (False, 144.)
-    ], dtype=[("event", bool), ("time", float)])
+    y = np.array(
+        [
+            (False, 849.0),
+            (False, 28.0),
+            (False, 55.0),
+            (False, 727.0),
+            (False, 505.0),
+            (False, 1558.0),
+            (False, 1292.0),
+            (False, 1737.0),
+            (False, 944.0),
+            (False, 750.0),
+            (False, 2513.0),
+            (False, 472.0),
+            (False, 2417.0),
+            (False, 538.0),
+            (False, 49.0),
+            (False, 723.0),
+            (True, 3563.0),
+            (False, 1090.0),
+            (False, 1167.0),
+            (False, 587.0),
+            (False, 1354.0),
+            (False, 910.0),
+            (False, 398.0),
+            (False, 854.0),
+            (False, 3534.0),
+            (False, 280.0),
+            (False, 183.0),
+            (False, 883.0),
+            (False, 32.0),
+            (False, 144.0),
+        ],
+        dtype=[("event", bool), ("time", float)],
+    )
     scores = np.random.randn(y.shape[0])
     return y, scores
 
@@ -343,16 +368,12 @@ class UnoCFailureCases(FixtureParameterFactory):
     @property
     def y_train(self):
         return Surv.from_arrays(
-            time=(2, 4, 6, 8, 10, 11, 15, 19),
-            event=(False, True, False, True, False, False, False, True)
+            time=(2, 4, 6, 8, 10, 11, 15, 19), event=(False, True, False, True, False, False, False, True)
         )
 
     @property
     def y_test(self):
-        return Surv.from_arrays(
-            time=(1, 3, 5, 7, 12, 13, 19),
-            event=(True, False, False, True, True, False, True)
-        )
+        return Surv.from_arrays(time=(1, 3, 5, 7, 12, 13, 19), event=(True, False, False, True, True, False, True))
 
     @property
     def estimate(self):
@@ -362,18 +383,14 @@ class UnoCFailureCases(FixtureParameterFactory):
         y_train = self.y_train
         y_test = self.y_test
         y_test["time"][-1] = 20
-        match = "time must be smaller than largest " \
-                "observed time point:"
+        match = "time must be smaller than largest observed time point:"
 
         inputs = (y_train, y_test, self.estimate)
         return inputs, match
 
     def data_last_time_uncensored_2(self):
         y_train = self.y_train
-        y_test = Surv.from_arrays(
-            time=(1, 23, 5, 27, 12),
-            event=(True, False, True, True, False)
-        )
+        y_test = Surv.from_arrays(time=(1, 23, 5, 27, 12), event=(True, False, True, True, False))
         estimate = (5, 13, 11, 9, 4)
         match = "time must be smaller than largest observed time point:"
 
@@ -448,7 +465,7 @@ def test_uno_c_all_censored():
     estimate = (5, 8, 13, 11, 9, 7, 4)
 
     ret_uno = concordance_index_ipcw(y_train, y_test, estimate)
-    ret_harrell = concordance_index_censored(y_test['event'], y_test['time'], estimate)
+    ret_harrell = concordance_index_censored(y_test["event"], y_test["time"], estimate)
     assert ret_uno == ret_harrell
 
 
@@ -470,8 +487,21 @@ class BaseUnoCAucCases(FixtureParameterFactory):
     @property
     def uno_auc_data_15(self):
         estimate = [
-            -1.019, -0.016, 0.132, 0.269, -0.777, -1.077, 0.894, -1.227, -0.417, 0.072, -1.275, -0.91, -0.825, -0.292,
-            -0.045
+            -1.019,
+            -0.016,
+            0.132,
+            0.269,
+            -0.777,
+            -1.077,
+            0.894,
+            -1.227,
+            -0.417,
+            0.072,
+            -1.275,
+            -0.91,
+            -0.825,
+            -0.292,
+            -0.045,
         ]
         return self.uno_auc_y, estimate
 
@@ -479,27 +509,107 @@ class BaseUnoCAucCases(FixtureParameterFactory):
     def uno_auc_data_20(self):
         y_train = Surv.from_arrays(
             time=[
-                77.6, 57.6, 66.6, 67.0, 31.5, 5.5, 67.4, 43.7, 31.7, 71.9, 81.1, 56.2, 88.1, 2.9, 62.0, 17.2, 88.0,
-                26.4, 93.5, 79.9
+                77.6,
+                57.6,
+                66.6,
+                67.0,
+                31.5,
+                5.5,
+                67.4,
+                43.7,
+                31.7,
+                71.9,
+                81.1,
+                56.2,
+                88.1,
+                2.9,
+                62.0,
+                17.2,
+                88.0,
+                26.4,
+                93.5,
+                79.9,
             ],
             event=[1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1],
         )
-        estimate = [-1.019, -0.016, 0.132, 0.269, -0.777, -1.077, 0.894, -1.227, -0.417, 0.072, -1.275, -0.91, -0.825,
-                    -0.292, -0.045]
+        estimate = [
+            -1.019,
+            -0.016,
+            0.132,
+            0.269,
+            -0.777,
+            -1.077,
+            0.894,
+            -1.227,
+            -0.417,
+            0.072,
+            -1.275,
+            -0.91,
+            -0.825,
+            -0.292,
+            -0.045,
+        ]
         return y_train, self.uno_auc_y, estimate
 
     @property
     def uno_auc_time_dependent_20(self):
         y_train, y_test, _ = self.uno_auc_data_20
 
-        estimate = np.array([
-            [0.566, 0.576, 0.506, 1.871, -0.04, 0.281, 0.335, -1.181, 1.368, -0.192, 0.955, 0.221, 0.057, -0.996,
-             -1.27],
-            [-2.658, -1.121, 1.903, -0.7, -1.013, -0.472, -0.668, -0.537, 1.659, 0.657, -1.317, -1.103, 2.159, 0.625,
-             -0.067],
-            [-1.004, -1.67, 0.775, -2.512, 1.179, 0.073, 0.103, -0.379, -0.082, -0.617, 1.287, -0.449, -0.477, 0.24,
-             0.838],
-        ]).T
+        estimate = np.array(
+            [
+                [
+                    0.566,
+                    0.576,
+                    0.506,
+                    1.871,
+                    -0.04,
+                    0.281,
+                    0.335,
+                    -1.181,
+                    1.368,
+                    -0.192,
+                    0.955,
+                    0.221,
+                    0.057,
+                    -0.996,
+                    -1.27,
+                ],
+                [
+                    -2.658,
+                    -1.121,
+                    1.903,
+                    -0.7,
+                    -1.013,
+                    -0.472,
+                    -0.668,
+                    -0.537,
+                    1.659,
+                    0.657,
+                    -1.317,
+                    -1.103,
+                    2.159,
+                    0.625,
+                    -0.067,
+                ],
+                [
+                    -1.004,
+                    -1.67,
+                    0.775,
+                    -2.512,
+                    1.179,
+                    0.073,
+                    0.103,
+                    -0.379,
+                    -0.082,
+                    -0.617,
+                    1.287,
+                    -0.449,
+                    -0.477,
+                    0.24,
+                    0.838,
+                ],
+            ]
+        ).T
 
         return y_train, y_test, estimate
 
@@ -523,8 +633,8 @@ class UnoCAucCases(BaseUnoCAucCases):
 
     def data_two_times_int(self):
         y_train, estimate = self.uno_auc_data_15
-        y_train['time'] = y_train['time'] * 100.
-        y_train = y_train.astype([('event', bool), ('time', int)])
+        y_train["time"] = y_train["time"] * 100.0
+        y_train = y_train.astype([("event", bool), ("time", int)])
         estimate = (np.array(estimate) * 1000).astype(int)
         times = np.array([1500, 6600], dtype=int)
         iauc = 0.3943949
@@ -534,7 +644,7 @@ class UnoCAucCases(BaseUnoCAucCases):
 
     def data_min_to_max_times(self):
         y_train, estimate = self.uno_auc_data_15
-        times = (y_train['time'].min(), 15, 66, y_train['time'].max() - 1e-6)
+        times = (y_train["time"].min(), 15, 66, y_train["time"].max() - 1e-6)
         iauc = 0.3999539
         expected = np.array([0.6428571, 0.3030303, 0.4500000, 0.3162996])
 
@@ -550,7 +660,7 @@ class UnoCAucCases(BaseUnoCAucCases):
 
     def data_tied_test_time(self):
         y_train, y_test, estimate = self.uno_auc_data_20
-        y_test['time'][0] = y_test['time'][1]
+        y_test["time"][0] = y_test["time"][1]
         times = [15, 66]
         iauc = 0.4204885
         expected = np.array([0.3750000, 0.4357061])
@@ -595,9 +705,7 @@ class UnoCAucCases(BaseUnoCAucCases):
         return y_train, y_test, estimate, times, expected, iauc
 
     def _compute_roc_auc(self, y, times, estimate):
-        expected_auc = np.array(
-            [roc_auc_score(y["time"] > t, e) for t, e in zip(times, estimate)]
-        )
+        expected_auc = np.array([roc_auc_score(y["time"] > t, e) for t, e in zip(times, estimate)])
         km_delta = np.array([1 - 0.8, 0.8 - 0.5, 0.5 - 0.2])
         expected_iauc = np.sum(km_delta * expected_auc) / 0.8
 
@@ -607,18 +715,21 @@ class UnoCAucCases(BaseUnoCAucCases):
     def y_roc_auc(self):
         return Surv.from_arrays(
             time=[7, 9, 11, 12, 13, 15, 28, 39, 41, 76],
-            event=[True, True, True, True, True, True, True, True, True, True])
+            event=[True, True, True, True, True, True, True, True, True, True],
+        )
 
     @property
     def times_roc_auc(self):
         return [10, 14, 40]
 
     def data_time_dependent_without_censoring(self):
-        estimate = np.array([
-            [1, 6, 18, 56, 32, 3, 99, 7, 67, 541],
-            [6, 9, 11, 5, 3, 12, 56, 56.1, 81, 77],
-            [13, 11, 12, 76, 55, 134, 70, 78, 75, 99],
-        ])
+        estimate = np.array(
+            [
+                [1, 6, 18, 56, 32, 3, 99, 7, 67, 541],
+                [6, 9, 11, 5, 3, 12, 56, 56.1, 81, 77],
+                [13, 11, 12, 76, 55, 134, 70, 78, 75, 99],
+            ]
+        )
         y = self.y_roc_auc
         times = self.times_roc_auc
         expected_auc, expected_iauc = self._compute_roc_auc(y, times, estimate)
@@ -626,11 +737,13 @@ class UnoCAucCases(BaseUnoCAucCases):
         return y, y, -estimate.T, times, expected_auc, expected_iauc
 
     def data_time_dependent_with_ties_without_censoring(self):
-        estimate = np.array([
-            [1, 6, 7, 56, 32, 3, 99, 7, 79, 17],
-            [3, 6, 11, 5, 17, 12, 17, 56.1, 81, 77],
-            [13, 11, 12, 17, 17, 134, 70, 78, 13, 99],
-        ])
+        estimate = np.array(
+            [
+                [1, 6, 7, 56, 32, 3, 99, 7, 79, 17],
+                [3, 6, 11, 5, 17, 12, 17, 56.1, 81, 77],
+                [13, 11, 12, 17, 17, 134, 70, 78, 13, 99],
+            ]
+        )
         y = self.y_roc_auc
         times = self.times_roc_auc
         expected_auc, expected_iauc = self._compute_roc_auc(y, times, estimate)
@@ -671,48 +784,48 @@ class UnoCAucFailureCases(BaseUnoCAucCases):
 
     def data_time_too_big_1(self):
         y_train, y_test, _ = self.uno_auc_data_20
-        y_test['time'][11] = 100
+        y_test["time"][11] = 100
         match = "time must be smaller than largest observed time point:"
 
         return y_train, y_test, self.times, match
 
     def data__time_too_big_2(self):
         y_train, y_test, _ = self.uno_auc_data_20
-        idx = np.argmax(y_test['time'])
-        y_test['event'][idx] = True
+        idx = np.argmax(y_test["time"])
+        y_test["event"][idx] = True
         match = "time must be smaller than largest observed time point:"
 
         return y_train, y_test, self.times, match
 
     def data_ipcw_undefined_1(self):
         y_train, y_test, _ = self.uno_auc_data_20
-        idx = np.argmax(y_train['time'])
-        y_train['event'][idx] = 0
-        y_test['time'][0] = y_train['time'][idx]
+        idx = np.argmax(y_train["time"])
+        y_train["event"][idx] = 0
+        y_test["time"][0] = y_train["time"][idx]
         match = "censoring survival function is zero at one or more time points"
 
         return y_train, y_test, self.times, match
 
     def data_ipcw_undefined_2(self):
         y_train, y_test, _ = self.uno_auc_data_20
-        idx = np.argmax(y_train['time'])
-        y_train['event'][idx] = 0
-        y_test['time'][-1] = y_train['time'][idx] * 2
-        y_test['event'][-1] = True
+        idx = np.argmax(y_train["time"])
+        y_train["event"][idx] = 0
+        y_test["time"][-1] = y_train["time"][idx] * 2
+        y_test["event"][-1] = True
         match = "censoring survival function is zero at one or more time points"
 
         return y_train, y_test, self.times, match
 
     def data_all_censored_train(self):
         y_train, y_test, _ = self.uno_auc_data_20
-        y_train['event'] = False
+        y_train["event"] = False
         match = "all samples are censored"
 
         return y_train, y_test, self.times, match
 
     def data_all_censored_test(self):
         y_train, y_test, _ = self.uno_auc_data_20
-        y_test['event'] = False
+        y_test["event"] = False
         match = "all samples are censored"
 
         return y_train, y_test, self.times, match
@@ -740,9 +853,9 @@ class UnoCAucFailureCases(BaseUnoCAucCases):
 
     def data_times_too_big_1(self):
         y_train, y_test, _ = self.uno_auc_data_20
-        idx = np.argmax(y_test['time'])
-        y_test['event'][idx] = False
-        t_max = y_test['time'][idx]
+        idx = np.argmax(y_test["time"])
+        y_test["event"][idx] = False
+        t_max = y_test["time"][idx]
         times = (33, t_max / 2, t_max)
         match = r"all times must be within follow-up time of test data: \[3\.19; 99\.51\["
 
@@ -757,10 +870,10 @@ class UnoCAucFailureCases(BaseUnoCAucCases):
 
     def data_times_too_big_3(self):
         y_train, y_test, _ = self.uno_auc_data_20
-        max_train = np.max(y_train['time'])
-        idx_test = y_test['time'] > max_train
-        y_test['event'][idx_test] = False
-        y_test['time'][idx_test] = max_train
+        max_train = np.max(y_train["time"])
+        idx_test = y_test["time"] > max_train
+        y_test["event"][idx_test] = False
+        y_test["time"][idx_test] = max_train
         times = (33, max_train)
         match = r"all times must be within follow-up time of test data: \[3\.19; 93\.5\["
 
@@ -768,9 +881,9 @@ class UnoCAucFailureCases(BaseUnoCAucCases):
 
     def data_times_too_small_1(self):
         y_train, y_test, _ = self.uno_auc_data_20
-        idx = np.argmin(y_test['time'])
-        y_test['event'][idx] = True
-        t_min = y_test['time'][idx]
+        idx = np.argmin(y_test["time"])
+        y_test["event"][idx] = True
+        t_min = y_test["time"][idx]
         times = (t_min - 1e-6, 33)
         match = r"all times must be within follow-up time of test data: \[3\.19; 99\.51\["
 
@@ -778,9 +891,9 @@ class UnoCAucFailureCases(BaseUnoCAucCases):
 
     def data_times_too_small_2(self):
         y_train, y_test, _ = self.uno_auc_data_20
-        idx = np.argmin(y_test['time'])
-        y_test['event'][idx] = True
-        t_min = y_test['time'][idx]
+        idx = np.argmin(y_test["time"])
+        y_test["event"][idx] = True
+        t_min = y_test["time"][idx]
         times = (33, t_min - 0.1, t_min / 2)
         match = r"all times must be within follow-up time of test data: \[3\.19; 99\.51\["
 
@@ -789,7 +902,7 @@ class UnoCAucFailureCases(BaseUnoCAucCases):
     def data_times_empty(self):
         y_train, y_test, _ = self.uno_auc_data_20
         times = []
-        match = r'Found array with 0 sample\(s\)'
+        match = r"Found array with 0 sample\(s\)"
 
         return y_train, y_test, times, match
 
@@ -907,13 +1020,15 @@ def test_brier_nottingham_many(nottingham_prognostic_index):
     times = [365, 730, 1095, 1460, 1825]
     pred, y = nottingham_prognostic_index(times)
 
-    expected_score = np.array([
-        0.0762922458520448,
-        0.182536421174199,
-        0.220017747254941,
-        0.234133800146671,
-        0.233822955042198,
-    ])
+    expected_score = np.array(
+        [
+            0.0762922458520448,
+            0.182536421174199,
+            0.220017747254941,
+            0.234133800146671,
+            0.233822955042198,
+        ]
+    )
 
     t1, score = brier_score(y, y, pred.squeeze(), times=times)
     assert_array_almost_equal(score, expected_score)
@@ -926,24 +1041,20 @@ def test_brier_nottingham_many(nottingham_prognostic_index):
 def test_brier_times_too_large(nottingham_prognostic_index):
     pred, y = nottingham_prognostic_index([1825])
 
-    with pytest.raises(ValueError,
-                       match="all times must be within follow-up time of test data:"):
+    with pytest.raises(ValueError, match="all times must be within follow-up time of test data:"):
         brier_score(y, y, pred, times=9999)
 
 
 def test_brier_wrong_estimate_shape(nottingham_prognostic_index):
     pred, y = nottingham_prognostic_index([720, 1825])
 
-    with pytest.raises(ValueError,
-                       match="expected estimate with 2 columns, but got 1"):
+    with pytest.raises(ValueError, match="expected estimate with 2 columns, but got 1"):
         brier_score(y, y, pred[:, :1], times=[720, 1825])
 
-    with pytest.raises(ValueError,
-                       match="expected estimate with 3 columns, but got 2"):
+    with pytest.raises(ValueError, match="expected estimate with 3 columns, but got 2"):
         brier_score(y, y, pred, times=[720, 960, 1825])
 
-    with pytest.raises(ValueError,
-                       match=r"Found input variables with inconsistent numbers of samples: \[686, 10\]"):
+    with pytest.raises(ValueError, match=r"Found input variables with inconsistent numbers of samples: \[686, 10\]"):
         brier_score(y, y, pred[:10], times=[720, 1825])
 
 
@@ -1008,8 +1119,7 @@ def test_ibs_nottingham_2(nottingham_prognostic_index):
 def test_ibs_single_time_point(nottingham_prognostic_index):
     pred, y = nottingham_prognostic_index([1825])
 
-    with pytest.raises(ValueError,
-                       match="At least two time points must be given"):
+    with pytest.raises(ValueError, match="At least two time points must be given"):
         integrated_brier_score(y, y, pred, times=1825)
 
 
@@ -1018,12 +1128,11 @@ def scorers_data(request, make_whas500):
     t = request.param
 
     whas500_data = make_whas500(to_numeric=True)
-    data = train_test_split(
-        whas500_data.x, whas500_data.y, random_state=0, stratify=whas500_data.y["fstat"]
-    )
+    data = train_test_split(whas500_data.x, whas500_data.y, random_state=0, stratify=whas500_data.y["fstat"])
     times = np.percentile(whas500_data.y["lenfol"], np.linspace(5, 81, 15))
 
     if t == "cindex":
+
         def func(*args, **kwargs):
             ret = concordance_index_ipcw(*args, **kwargs)
             return ret[0]
@@ -1031,6 +1140,7 @@ def scorers_data(request, make_whas500):
         wrapper_cls = as_concordance_index_ipcw_scorer
         args = {}
     elif t == "auc":
+
         def func(*args, **kwargs):
             ret = cumulative_dynamic_auc(*args, **kwargs)
             return ret[1]
@@ -1054,9 +1164,7 @@ def test_scorers(scorers_data):
     est_std = CoxPHSurvivalAnalysis().fit(X_train, y_train)
     if issubclass(wrapper_cls, as_integrated_brier_score_scorer):
         times = score_args["times"]
-        pred = np.row_stack(
-            [fn(times) for fn in est_std.predict_survival_function(X_test)]
-        )
+        pred = np.row_stack([fn(times) for fn in est_std.predict_survival_function(X_test)])
         sign = -1
     else:
         pred = est_std.predict(X_test)
@@ -1085,12 +1193,9 @@ def test_scorers(scorers_data):
 
 def test_brier_scorer_no_predict_survival_function(make_whas500):
     with pytest.raises(
-        AttributeError,
-        match=r"FastSurvivalSVM\(\) object has no attribute 'predict_survival_function'"
+        AttributeError, match=r"FastSurvivalSVM\(\) object has no attribute 'predict_survival_function'"
     ):
-        as_integrated_brier_score_scorer(
-            FastSurvivalSVM(), times=[100, 200, 300]
-        )
+        as_integrated_brier_score_scorer(FastSurvivalSVM(), times=[100, 200, 300])
 
 
 @pytest.mark.parametrize("pred_func", ["predict_cumulative_hazard_function", "predict_survival_function"])
@@ -1099,8 +1204,5 @@ def test_scorer_no_predict_function(make_whas500, pred_func):
     scorer = as_concordance_index_ipcw_scorer(FastSurvivalSVM())
     scorer.fit(whas500_data.x, whas500_data.y)
 
-    with pytest.raises(
-        AttributeError,
-        match="'FastSurvivalSVM' object has no attribute {!r}".format(pred_func)
-    ):
+    with pytest.raises(AttributeError, match=f"'FastSurvivalSVM' object has no attribute {pred_func!r}"):
         getattr(scorer, pred_func)

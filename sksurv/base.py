@@ -89,6 +89,7 @@ class SurvivalAnalysisMixin:
             Estimated concordance index.
         """
         from .metrics import concordance_index_censored
+
         name_event, name_time = y.dtype.names
 
         risk_score = self.predict(X)

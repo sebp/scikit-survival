@@ -15,15 +15,13 @@ from sklearn.utils.validation import _check_feature_names_in, check_is_fitted
 
 from .column import encode_categorical
 
-__all__ = ['OneHotEncoder']
+__all__ = ["OneHotEncoder"]
 
 
 def check_columns_exist(actual, expected):
     missing_features = expected.difference(actual)
     if len(missing_features) != 0:
-        raise ValueError("%d features are missing from data: %s" % (
-            len(missing_features), missing_features.tolist()
-        ))
+        raise ValueError(f"{len(missing_features)} features are missing from data: {missing_features.tolist()}")
 
 
 class OneHotEncoder(BaseEstimator, TransformerMixin):
@@ -58,6 +56,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
     """
+
     def __init__(self, *, allow_drop=True):
         self.allow_drop = allow_drop
 

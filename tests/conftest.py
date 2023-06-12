@@ -11,15 +11,13 @@ from sksurv.column import categorical_to_numeric, encode_categorical, standardiz
 from sksurv.datasets import load_breast_cancer, load_whas500
 from sksurv.util import Surv
 
-DataSet = namedtuple('DataSet', ['x', 'y'])
-DataSetWithNames = namedtuple('DataSetWithNames', ['x', 'y', 'names', 'x_data_frame'])
-SparseDataSet = namedtuple('SparseDataSet', ['x_dense', 'x_sparse', 'y'])
+DataSet = namedtuple("DataSet", ["x", "y"])
+DataSetWithNames = namedtuple("DataSetWithNames", ["x", "y", "names", "x_data_frame"])
+SparseDataSet = namedtuple("SparseDataSet", ["x_dense", "x_sparse", "y"])
 
 
 def pytest_configure(config):
-    config.addinivalue_line(
-        "markers", "slow: marks test as slow (deselect with '-m \"not slow\"')"
-    )
+    config.addinivalue_line("markers", "slow: marks test as slow (deselect with '-m \"not slow\"')")
 
 
 @pytest.fixture()
@@ -39,14 +37,16 @@ def breast_cancer():
 @pytest.fixture()
 def make_whas500():
     """Load and standardize WHAS500 data."""
+
     def _make_whas500(with_mean=True, with_std=True, to_numeric=False):
         x, y = load_whas500()
         if with_mean:
             x = standardize(x, with_std=with_std)
         if to_numeric:
             x = categorical_to_numeric(x)
-        names = ['(Intercept)'] + x.columns.tolist()
+        names = ["(Intercept)"] + x.columns.tolist()
         return DataSetWithNames(x=x.values, y=y, names=names, x_data_frame=x)
+
     return _make_whas500
 
 
@@ -58,7 +58,7 @@ def whas500_sparse_data():
     data = []
     index_i = []
     index_j = []
-    for j, (_, col) in enumerate(x_dense.iteritems()):
+    for j, (_, col) in enumerate(x_dense.items()):
         idx = np.flatnonzero(col.values)
         data.extend([1] * len(idx))
         index_i.extend(idx)
@@ -81,7 +81,7 @@ def whas500_uncomparable(make_whas500):
 def rossi():
     """Load rossi.csv"""
     p = Path(__file__)
-    f = p.parent / 'data' / 'rossi.csv'
+    f = p.parent / "data" / "rossi.csv"
     data = pd.read_csv(f)
     y = Surv.from_dataframe("arrest", "week", data)
     x = data.drop(["arrest", "week"], axis=1)

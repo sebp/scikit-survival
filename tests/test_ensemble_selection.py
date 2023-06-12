@@ -19,7 +19,7 @@ from sksurv.util import check_array_survival
 def score_cindex(est, X_test, y_test, **predict_params):
     prediction = est.predict(X_test, **predict_params)
 
-    res = concordance_index_censored(y_test['fstat'], y_test['lenfol'], prediction)
+    res = concordance_index_censored(y_test["fstat"], y_test["lenfol"], prediction)
     return res[0]
 
 
@@ -31,11 +31,11 @@ def _create_survival_ensemble(**kwargs):
     base_estimators = []
     for i, params in enumerate(boosting_grid):
         model = ComponentwiseGradientBoostingSurvivalAnalysis(random_state=0, **params)
-        base_estimators.append(("gbm_%d" % i, model))
+        base_estimators.append((f"gbm_{i}", model))
 
     for i, params in enumerate(svm_grid):
         model = FastSurvivalSVM(max_iter=256, tol=5e-6, random_state=0, **params)
-        base_estimators.append(("svm_%d" % i, model))
+        base_estimators.append((f"svm_{i}", model))
 
     cv = KFold(n_splits=3, shuffle=True, random_state=0)
     meta = EnsembleSelection(base_estimators, n_estimators=0.4, scorer=score_cindex, cv=cv, **kwargs)
@@ -56,9 +56,7 @@ class TestEnsembleSelectionSurvivalAnalysis:
 
         p = meta.predict(whas500.x)
 
-        assert_cindex_almost_equal(
-            whas500.y['fstat'], whas500.y['lenfol'], p, (0.7863312, 59088, 16053, 8, 14)
-        )
+        assert_cindex_almost_equal(whas500.y["fstat"], whas500.y["lenfol"], p, (0.7863312, 59088, 16053, 8, 14))
 
         c_index = meta.score(whas500.x, whas500.y)
         assert c_index == pytest.approx(0.7863312)
@@ -74,9 +72,7 @@ class TestEnsembleSelectionSurvivalAnalysis:
 
         p = meta.predict(whas500.x)
 
-        assert_cindex_almost_equal(
-            whas500.y['fstat'], whas500.y['lenfol'], p, (0.7863312, 59088, 16053, 8, 14)
-        )
+        assert_cindex_almost_equal(whas500.y["fstat"], whas500.y["lenfol"], p, (0.7863312, 59088, 16053, 8, 14))
 
     @staticmethod
     @pytest.mark.slow()
@@ -89,9 +85,7 @@ class TestEnsembleSelectionSurvivalAnalysis:
 
         p = meta.predict(whas500.x)
 
-        assert_cindex_almost_equal(
-            whas500.y['fstat'], whas500.y['lenfol'], p, (0.7663043, 57570, 17545, 34, 14)
-        )
+        assert_cindex_almost_equal(whas500.y["fstat"], whas500.y["lenfol"], p, (0.7663043, 57570, 17545, 34, 14))
 
     @staticmethod
     @pytest.mark.slow()
@@ -106,13 +100,13 @@ class TestEnsembleSelectionSurvivalAnalysis:
         base_estimators = []
         for i, params in enumerate(svm_grid):
             model = FastSurvivalSVM(max_iter=100, random_state=0, **params)
-            base_estimators.append(("svm_linear_%d" % i, model))
+            base_estimators.append((f"svm_linear_{i}", model))
 
         for i, params in enumerate(svm_grid):
             model = FastKernelSurvivalSVM(
                 kernel=transform.pairwise_kernel, max_iter=45, tol=1e-5, random_state=0, **params
             )
-            base_estimators.append(("svm_kernel_%d" % i, model))
+            base_estimators.append((f"svm_kernel_{i}", model))
 
         cv = KFold(n_splits=3, shuffle=True, random_state=0)
         meta = EnsembleSelection(base_estimators, n_estimators=0.4, scorer=score_cindex, cv=cv, n_jobs=4)
@@ -123,17 +117,13 @@ class TestEnsembleSelectionSurvivalAnalysis:
 
         p = meta.predict(whas500.x)
 
-        assert_cindex_almost_equal(whas500.y['fstat'], whas500.y['lenfol'], p,
-                                   (0.7978084, 59938, 15178, 33, 14))
+        assert_cindex_almost_equal(whas500.y["fstat"], whas500.y["lenfol"], p, (0.7978084, 59938, 15178, 33, 14))
 
     @staticmethod
     def test_feature_names_in(make_whas500):
         whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
 
-        base_estimators = [
-            ('tree%d' % i, SurvivalTree(max_depth=1, max_features=1, random_state=i))
-            for i in range(10)
-        ]
+        base_estimators = [(f"tree{i}", SurvivalTree(max_depth=1, max_features=1, random_state=i)) for i in range(10)]
 
         cv = KFold(n_splits=3, shuffle=True, random_state=0)
         meta = EnsembleSelection(base_estimators, n_estimators=0.5, scorer=score_cindex, cv=cv)
@@ -165,14 +155,9 @@ class EnsembleSelectionFailureCases(FixtureParameterFactory):
         "Got {value} instead\\."
     )
     _msg_correlation = (
-        "The 'correlation' parameter of EnsembleSelection must be "
-        r"a str among {{.+}}\. "
-        "Got {value!r} instead\\."
+        r"The 'correlation' parameter of EnsembleSelection must be a str among {{.+}}\. Got {value!r} instead\."
     )
-    _msg_scorer = (
-        "The 'scorer' parameter of EnsembleSelection must be "
-        r"a callable\. Got {value} instead\."
-    )
+    _msg_scorer = r"The 'scorer' parameter of EnsembleSelection must be a callable\. Got {value} instead\."
 
     def data_min_score(self):
         params = {"scorer": score_cindex, "min_score": 1.0, "cv": 3}
@@ -231,7 +216,7 @@ class EnsembleSelectionFailureCases(FixtureParameterFactory):
 
     def data_correlation_str(self):
         params = {"scorer": score_cindex, "correlation": "clearly wrong"}
-        match = self._msg_correlation.format(value='clearly wrong')
+        match = self._msg_correlation.format(value="clearly wrong")
         return params, ValueError, match
 
 
@@ -240,8 +225,8 @@ class EnsembleSelectionFailureCases(FixtureParameterFactory):
 def test_ensemble_selection_failures(params, error_cls, error, make_whas500):
     whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
     base_estimators = [
-        ('gbm', ComponentwiseGradientBoostingSurvivalAnalysis()),
-        ('svm', FastSurvivalSVM()),
+        ("gbm", ComponentwiseGradientBoostingSurvivalAnalysis()),
+        ("svm", FastSurvivalSVM()),
     ]
     meta = EnsembleSelection(base_estimators, **params)
 
@@ -252,8 +237,8 @@ def test_ensemble_selection_failures(params, error_cls, error, make_whas500):
 def _score_rmse(est, X_test, y_test, **predict_params):
     prediction = est.predict(X_test, **predict_params)
 
-    m = y_test['fstat']
-    res = mean_squared_error(y_test['lenfol'][m], prediction[m])
+    m = y_test["fstat"]
+    res = mean_squared_error(y_test["lenfol"][m], prediction[m])
     return np.sqrt(res)
 
 
@@ -269,23 +254,25 @@ class DummySurvivalRegressor(DummyRegressor):
 
 
 def _create_regression_ensemble():
-    aft_grid = ParameterGrid({"alpha": 2. ** np.arange(-2, 12, 2)})
-    svm_grid = ParameterGrid({"alpha": 2. ** np.arange(-12, 0, 2)})
+    aft_grid = ParameterGrid({"alpha": 2.0 ** np.arange(-2, 12, 2)})
+    svm_grid = ParameterGrid({"alpha": 2.0 ** np.arange(-12, 0, 2)})
 
     base_estimators = []
     for i, params in enumerate(aft_grid):
         model = IPCRidge(max_iter=1000, **params)
-        base_estimators.append(("aft_%d" % i, model))
+        base_estimators.append((f"aft_{i}", model))
 
     for i, params in enumerate(svm_grid):
-        model = FastSurvivalSVM(
-            rank_ratio=0, fit_intercept=True, max_iter=100, random_state=1, **params
-        )
-        base_estimators.append(("svm_%d" % i, model))
+        model = FastSurvivalSVM(rank_ratio=0, fit_intercept=True, max_iter=100, random_state=1, **params)
+        base_estimators.append((f"svm_{i}", model))
 
     cv = KFold(n_splits=4, shuffle=True, random_state=0)
     meta = EnsembleSelectionRegressor(
-        base_estimators, n_estimators=0.4, scorer=_score_rmse, cv=cv, n_jobs=1,
+        base_estimators,
+        n_estimators=0.4,
+        scorer=_score_rmse,
+        cv=cv,
+        n_jobs=1,
     )
     return meta
 
@@ -308,7 +295,7 @@ class TestEnsembleSelectionRegressor:
         assert_array_equal(meta.feature_names_in_, feature_names)
 
         p = meta.predict(whas500.x_data_frame.iloc[400:])
-        score = np.sqrt(mean_squared_error(whas500.y[400:]['lenfol'], p))
+        score = np.sqrt(mean_squared_error(whas500.y[400:]["lenfol"], p))
         assert abs(score - 423.82894756865056) <= 0.1
 
         c_index = meta.score(whas500.x_data_frame.iloc[:400], whas500.y[:400])
@@ -318,38 +305,43 @@ class TestEnsembleSelectionRegressor:
     def test_fit_dummy(make_whas500):
         whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
         base_estimators = [
-            ('dummy_0', DummySurvivalRegressor(strategy="mean")),
-            ('dummy_1', DummySurvivalRegressor(strategy="median")),
-            ('dummy_2', DummySurvivalRegressor(strategy="quantile", quantile=0.1)),
-            ('dummy_3', DummySurvivalRegressor(strategy="quantile", quantile=0.9)),
-            ('dummy_4', DummySurvivalRegressor(strategy="quantile", quantile=0.89)),
-            ('dummy_5', DummySurvivalRegressor(strategy="quantile", quantile=0.91)),
+            ("dummy_0", DummySurvivalRegressor(strategy="mean")),
+            ("dummy_1", DummySurvivalRegressor(strategy="median")),
+            ("dummy_2", DummySurvivalRegressor(strategy="quantile", quantile=0.1)),
+            ("dummy_3", DummySurvivalRegressor(strategy="quantile", quantile=0.9)),
+            ("dummy_4", DummySurvivalRegressor(strategy="quantile", quantile=0.89)),
+            ("dummy_5", DummySurvivalRegressor(strategy="quantile", quantile=0.91)),
         ]
 
         meta = EnsembleSelectionRegressor(
-            base_estimators, n_estimators=1, min_score=5, cv=5, scorer=_score_rmse,
+            base_estimators,
+            n_estimators=1,
+            min_score=5,
+            cv=5,
+            scorer=_score_rmse,
         )
 
-        with pytest.raises(ValueError,
-                           match="no base estimator exceeds min_score, try decreasing it"):
+        with pytest.raises(ValueError, match="no base estimator exceeds min_score, try decreasing it"):
             meta.fit(whas500.x, whas500.y)
 
     @staticmethod
     def test_invalid_scorer(make_whas500):
         whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
         base_estimators = [
-            ('dummy_0', DummySurvivalRegressor(strategy="mean")),
-            ('dummy_1', DummySurvivalRegressor(strategy="median")),
+            ("dummy_0", DummySurvivalRegressor(strategy="mean")),
+            ("dummy_1", DummySurvivalRegressor(strategy="median")),
         ]
 
         def _score(est, X_test, y_test, **predict_params):  # pylint: disable=unused-argument
-            return 'invalid'
+            return "invalid"
 
         meta = EnsembleSelectionRegressor(
-            base_estimators, n_estimators=1, min_score=5, cv=5, scorer=_score,
+            base_estimators,
+            n_estimators=1,
+            min_score=5,
+            cv=5,
+            scorer=_score,
         )
 
-        with pytest.raises(ValueError,
-                           match=r"scoring must return a number, got invalid "
-                                 r"\(<class 'str'>\) instead\."):
+        with pytest.raises(ValueError, match=r"scoring must return a number, got invalid \(<class 'str'>\) instead\."):
             meta.fit(whas500.x, whas500.y)

@@ -19,6 +19,7 @@ from sklearn.utils.validation import check_is_fitted, check_random_state
 from ..base import SurvivalAnalysisMixin
 from ..metrics import concordance_index_censored
 from ..tree import SurvivalTree
+from ..tree._criterion import get_unique_times
 from ..tree.tree import _array_to_step_function
 from ..util import check_array_survival
 
@@ -27,9 +28,7 @@ __all__ = ["RandomSurvivalForest", "ExtraSurvivalTrees"]
 MAX_INT = np.iinfo(np.int32).max
 
 
-class _BaseSurvivalForest(BaseForest,
-                          SurvivalAnalysisMixin,
-                          metaclass=ABCMeta):
+class _BaseSurvivalForest(BaseForest, SurvivalAnalysisMixin, metaclass=ABCMeta):
     """
     Base class for forest-based estimators for survival analysis.
 
@@ -38,17 +37,20 @@ class _BaseSurvivalForest(BaseForest,
     """
 
     @abstractmethod
-    def __init__(self,
-                 estimator,
-                 n_estimators=100, *,
-                 estimator_params=tuple(),
-                 bootstrap=False,
-                 oob_score=False,
-                 n_jobs=None,
-                 random_state=None,
-                 verbose=0,
-                 warm_start=False,
-                 max_samples=None):
+    def __init__(
+        self,
+        estimator,
+        n_estimators=100,
+        *,
+        estimator_params=tuple(),
+        bootstrap=False,
+        oob_score=False,
+        n_jobs=None,
+        random_state=None,
+        verbose=0,
+        warm_start=False,
+        max_samples=None,
+    ):
         super().__init__(
             estimator,
             n_estimators=n_estimators,
@@ -60,7 +62,8 @@ class _BaseSurvivalForest(BaseForest,
             verbose=verbose,
             warm_start=warm_start,
             class_weight=None,
-            max_samples=max_samples)
+            max_samples=max_samples,
+        )
 
     @property
     def feature_importances_(self):
@@ -91,25 +94,21 @@ class _BaseSurvivalForest(BaseForest,
 
         self.n_features_in_ = X.shape[1]
         time = time.astype(np.float64)
-        self.event_times_ = np.unique(time[event])
-        self.n_outputs_ = self.event_times_.shape[0]
+        self.unique_times_, self.is_event_time_ = get_unique_times(time, event)
+        self.n_outputs_ = self.unique_times_.shape[0]
 
         y_numeric = np.empty((X.shape[0], 2), dtype=np.float64)
         y_numeric[:, 0] = time
         y_numeric[:, 1] = event.astype(np.float64)
 
         # Get bootstrap sample size
-        n_samples_bootstrap = _get_n_samples_bootstrap(
-            n_samples=X.shape[0],
-            max_samples=self.max_samples
-        )
+        n_samples_bootstrap = _get_n_samples_bootstrap(n_samples=X.shape[0], max_samples=self.max_samples)
 
         # Check parameters
         self._validate_estimator()
 
         if not self.bootstrap and self.oob_score:
-            raise ValueError("Out of bag estimation only available"
-                             " if bootstrap=True")
+            raise ValueError("Out of bag estimation only available if bootstrap=True")
 
         random_state = check_random_state(self.random_state)
 
@@ -120,38 +119,46 @@ class _BaseSurvivalForest(BaseForest,
         n_more_estimators = self.n_estimators - len(self.estimators_)
 
         if n_more_estimators < 0:
-            raise ValueError("n_estimators=%d must be larger or equal to "
-                             "len(estimators_)=%d when warm_start==True"
-                             % (self.n_estimators, len(self.estimators_)))
+            raise ValueError(
+                f"n_estimators={self.n_estimators} must be larger or equal to "
+                f"len(estimators_)={len(self.estimators_)} when warm_start==True"
+            )
 
         if n_more_estimators == 0:
-            warnings.warn(
-                "Warm-start fitting without increasing n_estimators does not fit new trees.",
-                stacklevel=2
-            )
+            warnings.warn("Warm-start fitting without increasing n_estimators does not fit new trees.", stacklevel=2)
         else:
             if self.warm_start and len(self.estimators_) > 0:
                 # We draw from the random state to get the random state we
                 # would have got if we hadn't used a warm_start.
                 random_state.randint(MAX_INT, size=len(self.estimators_))
 
-            trees = [self._make_estimator(append=False,
-                                          random_state=random_state)
-                     for i in range(n_more_estimators)]
+            trees = [self._make_estimator(append=False, random_state=random_state) for i in range(n_more_estimators)]
 
+            y_tree = (
+                y_numeric,
+                self.unique_times_,
+                self.is_event_time_,
+            )
             # Parallel loop: we prefer the threading backend as the Cython code
             # for fitting the trees is internally releasing the Python GIL
             # making threading more efficient than multiprocessing in
             # that case. However, for joblib 0.12+ we respect any
             # parallel_backend contexts set at a higher level,
             # since correctness does not rely on using threads.
-            trees = Parallel(n_jobs=self.n_jobs, verbose=self.verbose,
-                             prefer='threads')(
+            trees = Parallel(n_jobs=self.n_jobs, verbose=self.verbose, prefer="threads")(
                 delayed(_parallel_build_trees)(
-                    t, self.bootstrap, X, (y_numeric, self.event_times_), sample_weight, i, len(trees),
+                    t,
+                    self.bootstrap,
+                    X,
+                    y_tree,
+                    sample_weight,
+                    i,
+                    len(trees),
                     verbose=self.verbose,
-                    n_samples_bootstrap=n_samples_bootstrap)
-                for i, t in enumerate(trees))
+                    n_samples_bootstrap=n_samples_bootstrap,
+                )
+                for i, t in enumerate(trees)
+            )
 
             # Collect newly grown trees
             self.estimators_.extend(trees)
@@ -169,15 +176,11 @@ class _BaseSurvivalForest(BaseForest,
         predictions = np.zeros(n_samples)
         n_predictions = np.zeros(n_samples)
 
-        n_samples_bootstrap = _get_n_samples_bootstrap(
-            n_samples, self.max_samples
-        )
+        n_samples_bootstrap = _get_n_samples_bootstrap(n_samples, self.max_samples)
 
         for estimator in self.estimators_:
-            unsampled_indices = _generate_unsampled_indices(
-                estimator.random_state, n_samples, n_samples_bootstrap)
-            p_estimator = estimator.predict(
-                X[unsampled_indices, :], check_input=False)
+            unsampled_indices = _generate_unsampled_indices(estimator.random_state, n_samples, n_samples_bootstrap)
+            p_estimator = estimator.predict(X[unsampled_indices, :], check_input=False)
 
             predictions[unsampled_indices] += p_estimator
             n_predictions[unsampled_indices] += 1
@@ -187,18 +190,17 @@ class _BaseSurvivalForest(BaseForest,
                 "Some inputs do not have OOB scores. "
                 "This probably means too few trees were used "
                 "to compute any reliable oob estimates.",
-                stacklevel=3
+                stacklevel=3,
             )
             n_predictions[n_predictions == 0] = 1
 
         predictions /= n_predictions
         self.oob_prediction_ = predictions
 
-        self.oob_score_ = concordance_index_censored(
-            event, time, predictions)[0]
+        self.oob_score_ = concordance_index_censored(event, time, predictions)[0]
 
     def _predict(self, predict_fn, X):
-        check_is_fitted(self, 'estimators_')
+        check_is_fitted(self, "estimators_")
         # Check data
         X = self._validate_X_predict(X)
 
@@ -219,10 +221,9 @@ class _BaseSurvivalForest(BaseForest,
 
         # Parallel loop
         lock = threading.Lock()
-        Parallel(n_jobs=n_jobs, verbose=self.verbose,
-                 require="sharedmem")(
-            delayed(_accumulate_prediction)(_get_fn(e, predict_fn), X, [y_hat], lock)
-            for e in self.estimators_)
+        Parallel(n_jobs=n_jobs, verbose=self.verbose, require="sharedmem")(
+            delayed(_accumulate_prediction)(_get_fn(e, predict_fn), X, [y_hat], lock) for e in self.estimators_
+        )
 
         y_hat /= len(self.estimators_)
 
@@ -258,13 +259,13 @@ class _BaseSurvivalForest(BaseForest,
         arr = self._predict("predict_cumulative_hazard_function", X)
         if return_array:
             return arr
-        return _array_to_step_function(self.event_times_, arr)
+        return _array_to_step_function(self.unique_times_, arr)
 
     def predict_survival_function(self, X, return_array=False):
         arr = self._predict("predict_survival_function", X)
         if return_array:
             return arr
-        return _array_to_step_function(self.event_times_, arr)
+        return _array_to_step_function(self.unique_times_, arr)
 
 
 class RandomSurvivalForest(_BaseSurvivalForest):
@@ -380,8 +381,8 @@ class RandomSurvivalForest(_BaseSurvivalForest):
     estimators_ : list of SurvivalTree instances
         The collection of fitted sub-estimators.
 
-    event_times_ : array of shape = (n_event_times,)
-        Unique time points where events occurred.
+    unique_times_ : array of shape = (n_unique_times,)
+        Unique time points.
 
     n_features_in_ : int
         Number of features seen during ``fit``.
@@ -437,39 +438,44 @@ class RandomSurvivalForest(_BaseSurvivalForest):
     }
     _parameter_constraints.pop("splitter")
 
-    def __init__(self,
-                 n_estimators=100,
-                 *,
-                 max_depth=None,
-                 min_samples_split=6,
-                 min_samples_leaf=3,
-                 min_weight_fraction_leaf=0.,
-                 max_features="sqrt",
-                 max_leaf_nodes=None,
-                 bootstrap=True,
-                 oob_score=False,
-                 n_jobs=None,
-                 random_state=None,
-                 verbose=0,
-                 warm_start=False,
-                 max_samples=None):
+    def __init__(
+        self,
+        n_estimators=100,
+        *,
+        max_depth=None,
+        min_samples_split=6,
+        min_samples_leaf=3,
+        min_weight_fraction_leaf=0.0,
+        max_features="sqrt",
+        max_leaf_nodes=None,
+        bootstrap=True,
+        oob_score=False,
+        n_jobs=None,
+        random_state=None,
+        verbose=0,
+        warm_start=False,
+        max_samples=None,
+    ):
         super().__init__(
             estimator=SurvivalTree(),
             n_estimators=n_estimators,
-            estimator_params=("max_depth",
-                              "min_samples_split",
-                              "min_samples_leaf",
-                              "min_weight_fraction_leaf",
-                              "max_features",
-                              "max_leaf_nodes",
-                              "random_state"),
+            estimator_params=(
+                "max_depth",
+                "min_samples_split",
+                "min_samples_leaf",
+                "min_weight_fraction_leaf",
+                "max_features",
+                "max_leaf_nodes",
+                "random_state",
+            ),
             bootstrap=bootstrap,
             oob_score=oob_score,
             n_jobs=n_jobs,
             random_state=random_state,
             verbose=verbose,
             warm_start=warm_start,
-            max_samples=max_samples)
+            max_samples=max_samples,
+        )
 
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
@@ -497,14 +503,14 @@ class RandomSurvivalForest(_BaseSurvivalForest):
 
         return_array : boolean, default: False
             If set, return an array with the cumulative hazard rate
-            for each `self.event_times_`, otherwise an array of
+            for each `self.unique_times_`, otherwise an array of
             :class:`sksurv.functions.StepFunction`.
 
         Returns
         -------
         cum_hazard : ndarray
             If `return_array` is set, an array with the cumulative hazard rate
-            for each `self.event_times_`, otherwise an array of length `n_samples`
+            for each `self.unique_times_`, otherwise an array of length `n_samples`
             of :class:`sksurv.functions.StepFunction` instances will be returned.
 
         Examples
@@ -555,14 +561,14 @@ class RandomSurvivalForest(_BaseSurvivalForest):
 
         return_array : boolean
             If set, return an array with the probability
-            of survival for each `self.event_times_`,
+            of survival for each `self.unique_times_`,
             otherwise an array of :class:`sksurv.functions.StepFunction`.
 
         Returns
         -------
         survival : ndarray
             If `return_array` is set, an array with the probability
-            of survival for each `self.event_times_`,
+            of survival for each `self.unique_times_`,
             otherwise an array of :class:`sksurv.functions.StepFunction`
             will be returned.
 
@@ -713,8 +719,8 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
     estimators_ : list of SurvivalTree instances
         The collection of fitted sub-estimators.
 
-    event_times_ : array of shape = (n_event_times,)
-        Unique time points where events occurred.
+    unique_times_ : array of shape = (n_unique_times,)
+        Unique time points.
 
     n_features_in_ : int
         The number of features when ``fit`` is performed.
@@ -739,39 +745,44 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
     }
     _parameter_constraints.pop("splitter")
 
-    def __init__(self,
-                 n_estimators=100,
-                 *,
-                 max_depth=None,
-                 min_samples_split=6,
-                 min_samples_leaf=3,
-                 min_weight_fraction_leaf=0.,
-                 max_features="sqrt",
-                 max_leaf_nodes=None,
-                 bootstrap=True,
-                 oob_score=False,
-                 n_jobs=None,
-                 random_state=None,
-                 verbose=0,
-                 warm_start=False,
-                 max_samples=None):
+    def __init__(
+        self,
+        n_estimators=100,
+        *,
+        max_depth=None,
+        min_samples_split=6,
+        min_samples_leaf=3,
+        min_weight_fraction_leaf=0.0,
+        max_features="sqrt",
+        max_leaf_nodes=None,
+        bootstrap=True,
+        oob_score=False,
+        n_jobs=None,
+        random_state=None,
+        verbose=0,
+        warm_start=False,
+        max_samples=None,
+    ):
         super().__init__(
             estimator=SurvivalTree(splitter="random"),
             n_estimators=n_estimators,
-            estimator_params=("max_depth",
-                              "min_samples_split",
-                              "min_samples_leaf",
-                              "min_weight_fraction_leaf",
-                              "max_features",
-                              "max_leaf_nodes",
-                              "random_state"),
+            estimator_params=(
+                "max_depth",
+                "min_samples_split",
+                "min_samples_leaf",
+                "min_weight_fraction_leaf",
+                "max_features",
+                "max_leaf_nodes",
+                "random_state",
+            ),
             bootstrap=bootstrap,
             oob_score=oob_score,
             n_jobs=n_jobs,
             random_state=random_state,
             verbose=verbose,
             warm_start=warm_start,
-            max_samples=max_samples)
+            max_samples=max_samples,
+        )
 
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
@@ -799,14 +810,14 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
 
         return_array : boolean, default: False
             If set, return an array with the cumulative hazard rate
-            for each `self.event_times_`, otherwise an array of
+            for each `self.unique_times_`, otherwise an array of
             :class:`sksurv.functions.StepFunction`.
 
         Returns
         -------
         cum_hazard : ndarray
             If `return_array` is set, an array with the cumulative hazard rate
-            for each `self.event_times_`, otherwise an array of length `n_samples`
+            for each `self.unique_times_`, otherwise an array of length `n_samples`
             of :class:`sksurv.functions.StepFunction` instances will be returned.
 
         Examples
@@ -857,14 +868,14 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
 
         return_array : boolean, default: False
             If set, return an array with the probability
-            of survival for each `self.event_times_`,
+            of survival for each `self.unique_times_`,
             otherwise an array of :class:`sksurv.functions.StepFunction`.
 
         Returns
         -------
         survival : ndarray
             If `return_array` is set, an array with the probability of
-            survival for each `self.event_times_`, otherwise an array of
+            survival for each `self.unique_times_`, otherwise an array of
             length `n_samples` of :class:`sksurv.functions.StepFunction`
             instances will be returned.
 

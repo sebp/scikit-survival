@@ -31,7 +31,7 @@ from ..linear_model.coxph import BreslowEstimator
 from ..util import check_array_survival
 from .survival_loss import LOSS_FUNCTIONS, CensoredSquaredLoss, CoxPH, IPCWLeastSquaresError
 
-__all__ = ['ComponentwiseGradientBoostingSurvivalAnalysis', 'GradientBoostingSurvivalAnalysis']
+__all__ = ["ComponentwiseGradientBoostingSurvivalAnalysis", "GradientBoostingSurvivalAnalysis"]
 
 
 def _sample_binomial_plus_one(p, size, random_state):
@@ -45,7 +45,6 @@ def _sample_binomial_plus_one(p, size, random_state):
 
 
 class ComponentwiseLeastSquares(BaseEstimator):
-
     def __init__(self, component):
         self.component = component
 
@@ -161,8 +160,8 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
 
-    event_times_ : array of shape = (n_event_times,)
-        Unique time points where events occurred.
+    unique_times_ : array of shape = (n_unique_times,)
+        Unique time points.
 
     References
     ----------
@@ -180,8 +179,17 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         "verbose": ["verbose"],
     }
 
-    def __init__(self, *, loss="coxph", learning_rate=0.1, n_estimators=100, subsample=1.0,
-                 dropout_rate=0, random_state=None, verbose=0):
+    def __init__(
+        self,
+        *,
+        loss="coxph",
+        learning_rate=0.1,
+        n_estimators=100,
+        subsample=1.0,
+        dropout_rate=0,
+        random_state=None,
+        verbose=0,
+    ):
         self.loss = loss
         self.n_estimators = n_estimators
         self.learning_rate = learning_rate
@@ -202,7 +210,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         n_samples = X.shape[0]
         # account for intercept
         Xi = np.column_stack((np.ones(n_samples), X))
-        y = np.fromiter(zip(event, time), dtype=[('event', bool), ('time', np.float64)])
+        y = np.fromiter(zip(event, time), dtype=[("event", bool), ("time", np.float64)])
         y_pred = np.zeros(n_samples)
 
         do_oob = self.subsample < 1.0
@@ -219,14 +227,11 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         for num_iter in range(int(self.n_estimators)):
             if do_oob:
-                sample_mask = _random_sample_mask(n_samples, n_inbag,
-                                                  random_state)
+                sample_mask = _random_sample_mask(n_samples, n_inbag, random_state)
                 subsample_weight = sample_weight * sample_mask.astype(np.float64)
 
                 # OOB score before adding this stage
-                old_oob_score = self._loss(y[~sample_mask],
-                                           y_pred[~sample_mask],
-                                           sample_weight[~sample_mask])
+                old_oob_score = self._loss(y[~sample_mask], y_pred[~sample_mask], sample_weight[~sample_mask])
             else:
                 subsample_weight = sample_weight
 
@@ -238,12 +243,12 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
             if do_dropout:
                 drop_model, n_dropped = _sample_binomial_plus_one(self.dropout_rate, num_iter + 1, random_state)
 
-                scale[num_iter] = 1. / (n_dropped + 1.)
+                scale[num_iter] = 1.0 / (n_dropped + 1.0)
 
                 y_pred[:] = 0
                 for m in range(num_iter + 1):
                     if drop_model[m] == 1:
-                        scale[m] *= n_dropped / (n_dropped + 1.)
+                        scale[m] *= n_dropped / (n_dropped + 1.0)
                     else:
                         y_pred += self.learning_rate * scale[m] * self.estimators_[m].predict(Xi)
             else:
@@ -251,11 +256,12 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
             # track deviance (= loss)
             if do_oob:
-                self.train_score_[num_iter] = self._loss(y[sample_mask], y_pred[sample_mask],
-                                                         sample_weight[sample_mask])
-                self.oob_improvement_[num_iter] = (old_oob_score
-                                                   - self._loss(y[~sample_mask], y_pred[~sample_mask],
-                                                                sample_weight[~sample_mask]))
+                self.train_score_[num_iter] = self._loss(
+                    y[sample_mask], y_pred[sample_mask], sample_weight[sample_mask]
+                )
+                self.oob_improvement_[num_iter] = old_oob_score - self._loss(
+                    y[~sample_mask], y_pred[~sample_mask], sample_weight[~sample_mask]
+                )
             else:
                 # no need to fancy index w/ no subsampling
                 self.train_score_[num_iter] = self._loss(y, y_pred, sample_weight)
@@ -346,7 +352,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         risk_score : array, shape = (n_samples,)
             Predicted risk scores.
         """
-        check_is_fitted(self, 'estimators_')
+        check_is_fitted(self, "estimators_")
         X = self._validate_data(X, reset=False)
 
         return self._predict(X)
@@ -379,14 +385,14 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         return_array : boolean, default: False
             If set, return an array with the cumulative hazard rate
-            for each `self.event_times_`, otherwise an array of
+            for each `self.unique_times_`, otherwise an array of
             :class:`sksurv.functions.StepFunction`.
 
         Returns
         -------
         cum_hazard : ndarray
             If `return_array` is set, an array with the cumulative hazard rate
-            for each `self.event_times_`, otherwise an array of length `n_samples`
+            for each `self.unique_times_`, otherwise an array of length `n_samples`
             of :class:`sksurv.functions.StepFunction` instances will be returned.
 
         Examples
@@ -416,9 +422,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         >>> plt.ylim(0, 1)
         >>> plt.show()
         """
-        return self._predict_cumulative_hazard_function(
-            self._get_baseline_model(), self.predict(X), return_array
-        )
+        return self._predict_cumulative_hazard_function(self._get_baseline_model(), self.predict(X), return_array)
 
     def predict_survival_function(self, X, return_array=False):
         """Predict survival function.
@@ -443,14 +447,14 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         return_array : boolean, default: False
             If set, return an array with the probability
-            of survival for each `self.event_times_`,
+            of survival for each `self.unique_times_`,
             otherwise an array of :class:`sksurv.functions.StepFunction`.
 
         Returns
         -------
         survival : ndarray
             If `return_array` is set, an array with the probability of
-            survival for each `self.event_times_`, otherwise an array of
+            survival for each `self.unique_times_`, otherwise an array of
             length `n_samples` of :class:`sksurv.functions.StepFunction`
             instances will be returned.
 
@@ -481,9 +485,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         >>> plt.ylim(0, 1)
         >>> plt.show()
         """
-        return self._predict_survival_function(
-            self._get_baseline_model(), self.predict(X), return_array
-        )
+        return self._predict_survival_function(self._get_baseline_model(), self.predict(X), return_array)
 
     @property
     def coef_(self):
@@ -495,7 +497,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         return coef
 
     @property
-    def event_times_(self):
+    def unique_times_(self):
         return self._get_baseline_model().unique_times_
 
     @property
@@ -725,8 +727,8 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
 
-    event_times_ : array of shape = (n_event_times,)
-        Unique time points where events occurred.
+    unique_times_ : array of shape = (n_unique_times,)
+        Unique time points.
 
     References
     ----------
@@ -747,7 +749,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
     _parameter_constraints = {
         **BaseGradientBoosting._parameter_constraints,
         "loss": [StrOptions(frozenset(LOSS_FUNCTIONS.keys()))],
-        "dropout_rate": [Interval(numbers.Real, 0.0, 1.0, closed="left")]
+        "dropout_rate": [Interval(numbers.Real, 0.0, 1.0, closed="left")],
     }
 
     def __init__(
@@ -760,9 +762,9 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         criterion="friedman_mse",
         min_samples_split=2,
         min_samples_leaf=1,
-        min_weight_fraction_leaf=0.,
+        min_weight_fraction_leaf=0.0,
         max_depth=3,
-        min_impurity_decrease=0.,
+        min_impurity_decrease=0.0,
         random_state=None,
         max_features=None,
         max_leaf_nodes=None,
@@ -807,7 +809,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         return isinstance(self._loss, CoxPH)
 
     def _check_params(self):
-        """Check validity of parameters and raise ValueError if not valid. """
+        """Check validity of parameters and raise ValueError if not valid."""
         self._validate_params()
 
         max_features = self._check_max_features()
@@ -829,7 +831,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         elif isinstance(self.max_features, (numbers.Integral, np.integer)):
             max_features = self.max_features
         else:  # float
-            if 0. < self.max_features <= 1.:
+            if 0.0 < self.max_features <= 1.0:
                 max_features = max(int(self.max_features * self.n_features_in_), 1)
 
         return max_features
@@ -847,13 +849,13 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         X_csc=None,
         X_csr=None,
     ):
-        """Fit another stage of ``n_classes_`` trees to the boosting model. """
+        """Fit another stage of ``n_classes_`` trees to the boosting model."""
 
         assert sample_mask.dtype == bool
         loss = self._loss
 
         # whether to use dropout in next iteration
-        do_dropout = self.dropout_rate > 0. and 0 < i < len(scale) - 1
+        do_dropout = self.dropout_rate > 0.0 and 0 < i < len(scale) - 1
 
         # Need to pass a copy of raw_predictions to negative_gradient()
         # because raw_predictions is partially updated at the end of the loop
@@ -862,13 +864,12 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         raw_predictions_copy = raw_predictions.copy()
 
         for k in range(loss.K):
-            residual = loss.negative_gradient(y, raw_predictions_copy, k=k,
-                                              sample_weight=sample_weight)
+            residual = loss.negative_gradient(y, raw_predictions_copy, k=k, sample_weight=sample_weight)
 
             # induce regression tree on residuals
             tree = DecisionTreeRegressor(
                 criterion=self.criterion,
-                splitter='best',
+                splitter="best",
                 max_depth=self.max_depth,
                 min_samples_split=self.min_samples_split,
                 min_samples_leaf=self.min_samples_leaf,
@@ -877,15 +878,15 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                 max_features=self.max_features,
                 max_leaf_nodes=self.max_leaf_nodes,
                 random_state=random_state,
-                ccp_alpha=self.ccp_alpha)
+                ccp_alpha=self.ccp_alpha,
+            )
 
             if self.subsample < 1.0:
                 # no inplace multiplication!
                 sample_weight = sample_weight * sample_mask.astype(np.float64)
 
             X = X_csr if X_csr is not None else X
-            tree.fit(X, residual, sample_weight=sample_weight,
-                     check_input=False)
+            tree.fit(X, residual, sample_weight=sample_weight, check_input=False)
 
             # add tree to ensemble
             self.estimators_[i, k] = tree
@@ -896,22 +897,31 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                 drop_model, n_dropped = _sample_binomial_plus_one(self.dropout_rate, i + 1, random_state)
 
                 # adjust scaling factor of tree that is going to be trained in next iteration
-                scale[i + 1] = 1. / (n_dropped + 1.)
+                scale[i + 1] = 1.0 / (n_dropped + 1.0)
 
                 raw_predictions[:, k] = 0
                 for m in range(i + 1):
                     if drop_model[m] == 1:
                         # adjust scaling factor of dropped trees
-                        scale[m] *= n_dropped / (n_dropped + 1.)
+                        scale[m] *= n_dropped / (n_dropped + 1.0)
                     else:
                         # pseudoresponse of next iteration (without contribution of dropped trees)
                         raw_predictions[:, k] += (
-                            self.learning_rate * scale[m] * self.estimators_[m, k].predict(X).ravel())
+                            self.learning_rate * scale[m] * self.estimators_[m, k].predict(X).ravel()
+                        )
             else:
                 # update tree leaves
                 loss.update_terminal_regions(
-                    tree.tree_, X, y, residual, raw_predictions, sample_weight,
-                    sample_mask, learning_rate=self.learning_rate, k=k)
+                    tree.tree_,
+                    X,
+                    y,
+                    residual,
+                    raw_predictions,
+                    sample_weight,
+                    sample_mask,
+                    learning_rate=self.learning_rate,
+                    k=k,
+                )
 
         return raw_predictions
 
@@ -937,7 +947,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         """
         n_samples = X.shape[0]
         do_oob = self.subsample < 1.0
-        sample_mask = np.ones((n_samples, ), dtype=bool)
+        sample_mask = np.ones((n_samples,), dtype=bool)
         n_inbag = max(1, int(self.subsample * n_samples))
         loss_ = self._loss
 
@@ -948,7 +958,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         X_csc = csc_matrix(X) if issparse(X) else None
         X_csr = csr_matrix(X) if issparse(X) else None
 
-        if self.dropout_rate > 0.:
+        if self.dropout_rate > 0.0:
             scale = np.ones(self.n_estimators, dtype=float)
         else:
             scale = None
@@ -962,11 +972,9 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         # perform boosting iterations
         i = begin_at_stage
         for i in range(begin_at_stage, self.n_estimators):
-
             # subsampling
             if do_oob:
-                sample_mask = _random_sample_mask(n_samples, n_inbag,
-                                                  random_state)
+                sample_mask = _random_sample_mask(n_samples, n_inbag, random_state)
                 # OOB score before adding this stage
                 y_oob_sample = y[~sample_mask]
                 old_oob_score = loss_(
@@ -1027,7 +1035,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                 else:
                     break
 
-        if self.dropout_rate > 0.:
+        if self.dropout_rate > 0.0:
             self.scale_ = scale
 
         return i + 1
@@ -1063,7 +1071,11 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
             Returns self.
         """
         X = self._validate_data(
-            X, ensure_min_samples=2, order='C', accept_sparse=['csr', 'csc', 'coo'], dtype=DTYPE,
+            X,
+            ensure_min_samples=2,
+            order="C",
+            accept_sparse=["csr", "csc", "coo"],
+            dtype=DTYPE,
         )
         event, time = check_array_survival(X, y)
         n_samples = X.shape[0]
@@ -1091,7 +1103,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                 test_size=self.validation_fraction,
                 stratify=event,
             )
-            y_val = np.fromiter(zip(event_val, time_val), dtype=[('event', bool), ('time', np.float64)])
+            y_val = np.fromiter(zip(event_val, time_val), dtype=[("event", bool), ("time", np.float64)])
         else:
             X_val = y_val = sample_weight_val = None
 
@@ -1108,7 +1120,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         self._rng = check_random_state(self.random_state)
 
         # fit the boosting stages
-        y = np.fromiter(zip(event, time), dtype=[('event', bool), ('time', np.float64)])
+        y = np.fromiter(zip(event, time), dtype=[("event", bool), ("time", np.float64)])
         n_stages = self._fit_stages(
             X,
             y,
@@ -1125,7 +1137,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         if n_stages != self.estimators_.shape[0]:
             self.estimators_ = self.estimators_[:n_stages]
             self.train_score_ = self.train_score_[:n_stages]
-            if hasattr(self, 'oob_improvement_'):
+            if hasattr(self, "oob_improvement_"):
                 self.oob_improvement_ = self.oob_improvement_[:n_stages]
 
         self.n_estimators_ = n_stages
@@ -1133,7 +1145,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         if isinstance(self._loss, CoxPH):
             X_pred = X
             if issparse(X):
-                X_pred = X.asformat('csr')
+                X_pred = X.asformat("csr")
             risk_scores = self._predict(X_pred)
             self._baseline_model = BreslowEstimator().fit(risk_scores, event, time)
         else:
@@ -1157,9 +1169,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         return raw_predictions
 
     def _dropout_staged_raw_predict(self, X):
-        X = self._validate_data(
-            X, dtype=DTYPE, order='C', accept_sparse='csr'
-        )
+        X = self._validate_data(X, dtype=DTYPE, order="C", accept_sparse="csr")
         raw_predictions = self._raw_predict_init(X)
 
         n_estimators, K = self.estimators_.shape
@@ -1205,7 +1215,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         y : ndarray, shape = (n_samples,)
             The risk scores.
         """
-        check_is_fitted(self, 'estimators_')
+        check_is_fitted(self, "estimators_")
 
         X = self._validate_data(X, reset=False, order="C", accept_sparse="csr", dtype=DTYPE)
         return self._predict(X)
@@ -1231,7 +1241,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         y : generator of array of shape = (n_samples,)
             The predicted value of the input samples.
         """
-        check_is_fitted(self, 'estimators_')
+        check_is_fitted(self, "estimators_")
 
         # if dropout wasn't used during training, proceed as usual,
         # otherwise consider scaling factor of individual trees
@@ -1272,14 +1282,14 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         return_array : boolean, default: False
             If set, return an array with the cumulative hazard rate
-            for each `self.event_times_`, otherwise an array of
+            for each `self.unique_times_`, otherwise an array of
             :class:`sksurv.functions.StepFunction`.
 
         Returns
         -------
         cum_hazard : ndarray
             If `return_array` is set, an array with the cumulative hazard rate
-            for each `self.event_times_`, otherwise an array of length `n_samples`
+            for each `self.unique_times_`, otherwise an array of length `n_samples`
             of :class:`sksurv.functions.StepFunction` instances will be returned.
 
         Examples
@@ -1309,9 +1319,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         >>> plt.ylim(0, 1)
         >>> plt.show()
         """
-        return self._predict_cumulative_hazard_function(
-            self._get_baseline_model(), self.predict(X), return_array
-        )
+        return self._predict_cumulative_hazard_function(self._get_baseline_model(), self.predict(X), return_array)
 
     def predict_survival_function(self, X, return_array=False):
         """Predict survival function.
@@ -1336,14 +1344,14 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         return_array : boolean, default: False
             If set, return an array with the probability
-            of survival for each `self.event_times_`,
+            of survival for each `self.unique_times_`,
             otherwise an array of :class:`sksurv.functions.StepFunction`.
 
         Returns
         -------
         survival : ndarray
             If `return_array` is set, an array with the probability of
-            survival for each `self.event_times_`, otherwise an array of
+            survival for each `self.unique_times_`, otherwise an array of
             length `n_samples` of :class:`sksurv.functions.StepFunction`
             instances will be returned.
 
@@ -1374,10 +1382,8 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         >>> plt.ylim(0, 1)
         >>> plt.show()
         """
-        return self._predict_survival_function(
-            self._get_baseline_model(), self.predict(X), return_array
-        )
+        return self._predict_survival_function(self._get_baseline_model(), self.predict(X), return_array)
 
     @property
-    def event_times_(self):
+    def unique_times_(self):
         return self._get_baseline_model().unique_times_

@@ -14,7 +14,7 @@
 import numpy as np
 from sklearn.utils import check_consistent_length
 
-__all__ = ['StepFunction']
+__all__ = ["StepFunction"]
 
 
 class StepFunction:
@@ -38,16 +38,45 @@ class StepFunction:
 
     b : float, optional, default: 0.0
         Constant offset term.
+
+    domain : tuple, optional
+        A tuple with two entries that sets the limits of the
+        domain of the step function.
+        If entry is `None`, use the first/last value of `x` as limit.
     """
-    def __init__(self, x, y, *, a=1., b=0.):
+
+    def __init__(self, x, y, *, a=1.0, b=0.0, domain=(0, None)):
         check_consistent_length(x, y)
         self.x = x
         self.y = y
         self.a = a
         self.b = b
+        domain_lower = self.x[0] if domain[0] is None else domain[0]
+        domain_upper = self.x[-1] if domain[1] is None else domain[1]
+        self._domain = (float(domain_lower), float(domain_upper))
+
+    @property
+    def domain(self):
+        """Returns the domain of the function, that means
+        the range of values that the function accepts.
+
+        Returns
+        -------
+        lower_limit : float
+            Lower limit of domain.
+
+        upper_limit : float
+            Upper limit of domain.
+        """
+        return self._domain
 
     def __call__(self, x):
         """Evaluate step function.
+
+        Values outside the interval specified by `self.domain`
+        will raise an exception.
+        Values in `x` that are in the interval `[self.domain[0]; self.x[0]]`
+        get mapped to `self.y[0]`.
 
         Parameters
         ----------
@@ -62,10 +91,13 @@ class StepFunction:
         x = np.atleast_1d(x)
         if not np.isfinite(x).all():
             raise ValueError("x must be finite")
-        if np.min(x) < self.x[0] or np.max(x) > self.x[-1]:
-            raise ValueError(
-                "x must be within [%f; %f]" % (self.x[0], self.x[-1]))
-        i = np.searchsorted(self.x, x, side='left')
+        if np.min(x) < self._domain[0] or np.max(x) > self.domain[1]:
+            raise ValueError(f"x must be within [{self.domain[0]:f}; {self.domain[1]:f}]")
+
+        # x is within the domain, but we need to account for self.domain[0] <= x < self.x[0]
+        x = np.clip(x, a_min=self.x[0], a_max=None)
+
+        i = np.searchsorted(self.x, x, side="left")
         not_exact = self.x[i] != x
         i[not_exact] -= 1
         value = self.a * self.y[i] + self.b
@@ -74,14 +106,9 @@ class StepFunction:
         return value
 
     def __repr__(self):
-        return "StepFunction(x=%r, y=%r, a=%r, b=%r)" % (self.x, self.y, self.a, self.b)
+        return f"StepFunction(x={self.x!r}, y={self.y!r}, a={self.a!r}, b={self.b!r})"
 
     def __eq__(self, other):
         if isinstance(other, type(self)):
-            return (
-                all(self.x == other.x)
-                and all(self.y == other.y)
-                and self.a == other.a
-                and self.b == other.b
-            )
+            return all(self.x == other.x) and all(self.y == other.y) and self.a == other.a and self.b == other.b
         return False

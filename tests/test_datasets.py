@@ -91,13 +91,19 @@ class GetXyCases(FixtureParameterFactory):
         return ["event", "time"]
 
     def _to_data_frame(self, data, columns):
-        if isinstance(data, (tuple, list,)):
+        if isinstance(
+            data,
+            (
+                tuple,
+                list,
+            ),
+        ):
             data = np.column_stack(data)
         return pd.DataFrame(data, columns=columns)
 
     @property
     def columns(self):
-        return ["V{}".format(i) for i in range(10)]
+        return [f"V{i}" for i in range(10)]
 
     def data_survival_data(self):
         x, event, time = self.survival_data
@@ -202,8 +208,7 @@ def test_get_xy(args, kwargs, x_expected, y_expected, error_expected):
         elif isinstance(y_expected, tuple):
             assert y_test.dtype.names == ("event", "time")
             event, time = y_expected
-            assert_array_equal(
-                y_test["event"].astype(np.uint32), event.astype(np.uint32))
+            assert_array_equal(y_test["event"].astype(np.uint32), event.astype(np.uint32))
             assert_array_almost_equal(y_test["time"], time)
         else:
             assert y_test.ndim == 2
@@ -218,41 +223,40 @@ def assert_structured_array_dtype(arr, event, time, num_events):
 
 
 class TestLoadDatasets:
-
     @staticmethod
     def test_load_whas500():
         x, y = sdata.load_whas500()
         assert x.shape == (500, 14)
         assert y.shape == (500,)
-        assert_structured_array_dtype(y, 'fstat', 'lenfol', 215)
+        assert_structured_array_dtype(y, "fstat", "lenfol", 215)
 
     @staticmethod
     def test_load_gbsg2():
         x, y = sdata.load_gbsg2()
         assert x.shape == (686, 8)
         assert y.shape == (686,)
-        assert_structured_array_dtype(y, 'cens', 'time', 299)
+        assert_structured_array_dtype(y, "cens", "time", 299)
 
     @staticmethod
     def test_load_veterans_lung_cancer():
         x, y = sdata.load_veterans_lung_cancer()
         assert x.shape == (137, 6)
         assert y.shape == (137,)
-        assert_structured_array_dtype(y, 'Status', 'Survival_in_days', 128)
+        assert_structured_array_dtype(y, "Status", "Survival_in_days", 128)
 
     @staticmethod
     def test_load_aids():
         x, y = sdata.load_aids(endpoint="aids")
         assert x.shape == (1151, 11)
         assert y.shape == (1151,)
-        assert_structured_array_dtype(y, 'censor', 'time', 96)
+        assert_structured_array_dtype(y, "censor", "time", 96)
         assert "censor_d" not in x.columns
         assert "time_d" not in x.columns
 
         x, y = sdata.load_aids(endpoint="death")
         assert x.shape == (1151, 11)
         assert y.shape == (1151,)
-        assert_structured_array_dtype(y, 'censor_d', 'time_d', 26)
+        assert_structured_array_dtype(y, "censor_d", "time_d", 26)
         assert "censor" not in x.columns
         assert "time" not in x.columns
 
@@ -264,20 +268,20 @@ class TestLoadDatasets:
         x, y = sdata.load_breast_cancer()
         assert x.shape == (198, 80)
         assert y.shape == (198,)
-        assert_structured_array_dtype(y, 'e.tdm', 't.tdm', 51)
+        assert_structured_array_dtype(y, "e.tdm", "t.tdm", 51)
 
     @staticmethod
     def test_load_flchain():
         x, y = sdata.load_flchain()
         assert x.shape == (7874, 9)
         assert y.shape == (7874,)
-        assert_structured_array_dtype(y, 'death', 'futime', 2169)
+        assert_structured_array_dtype(y, "death", "futime", 2169)
 
 
 def _make_and_write_data(fp, n_samples, n_features, with_index, with_labels, seed, column_prefix="V"):
     x, event, time = _make_survival_data(n_samples, n_features, seed)
 
-    columns = ["{}{}".format(column_prefix, i) for i in range(n_features)]
+    columns = [f"{column_prefix}{i}" for i in range(n_features)]
     if with_labels:
         columns += ["event", "time"]
         arr = np.column_stack((x, event, time))
@@ -307,7 +311,6 @@ def assert_x_equal(x_true, x_train):
         check_index_type=False,
         check_column_type=True,
         check_names=False,
-        check_less_precise=True,
     )
 
 
@@ -331,28 +334,30 @@ class LoadArffFilesCases(FixtureParameterFactory):
         return StringIO(ARFF_CATEGORICAL_INDEX_2)
 
     def data_with_categorical_index_1(self):
-        index = pd.Index(
-            ['SampleOne', 'SampleTwo', 'SampleThree', 'SampleFour'],
-            name='index', dtype=object,
-        )
-        x = pd.DataFrame.from_dict({
-            "size": pd.Series(
-                pd.Categorical(
-                    ["medium", "large", "small", "large"],
-                    categories=["small", "medium", "large"],
-                    ordered=False,
+        values = ["SampleOne", "SampleTwo", "SampleThree", "SampleFour"]
+        index = pd.Index(values, name="index", dtype=object)
+        x = pd.DataFrame.from_dict(
+            {
+                "size": pd.Series(
+                    pd.Categorical(
+                        ["medium", "large", "small", "large"],
+                        categories=["small", "medium", "large"],
+                        ordered=False,
+                    ),
+                    name="size",
                 ),
-                name="size",
-            ),
-            "value": pd.Series([15.1, 13.8, -0.2, 2.453], name="value"),
-        })
+                "value": pd.Series([15.1, 13.8, -0.2, 2.453], name="value"),
+            }
+        )
         x.index = index
 
-        y = pd.DataFrame.from_dict({
-            "label": pd.Series(pd.Categorical(
-                ["yes", "no", "yes", "yes"], categories=["no", "yes"], ordered=False
-            ), name="label")
-        })
+        y = pd.DataFrame.from_dict(
+            {
+                "label": pd.Series(
+                    pd.Categorical(["yes", "no", "yes", "yes"], categories=["no", "yes"], ordered=False), name="label"
+                )
+            }
+        )
         y.index = index
 
         args = (self.arff_1, ["label"])
@@ -366,26 +371,32 @@ class LoadArffFilesCases(FixtureParameterFactory):
         return args, kwargs, x, y, None, None
 
     def data_with_categorical_index_2(self):
-        index = pd.Index(
-            ['ASampleOne', 'ASampleTwo', 'ASampleThree', 'ASampleFour', 'ASampleFive'],
-            name='index', dtype=object,
-        )
+        values = ["ASampleOne", "ASampleTwo", "ASampleThree", "ASampleFour", "ASampleFive"]
+        index = pd.Index(values, name="index", dtype=object)
 
-        y = pd.DataFrame.from_dict({
-            "label": pd.Series(pd.Categorical(
-                ["no", "no", "yes", "yes", "no"],
-                categories=["yes", "no"], ordered=False
-            ), name="label")
-        })
+        y = pd.DataFrame.from_dict(
+            {
+                "label": pd.Series(
+                    pd.Categorical(["no", "no", "yes", "yes", "no"], categories=["yes", "no"], ordered=False),
+                    name="label",
+                )
+            }
+        )
         y.index = index
 
-        x = pd.DataFrame.from_dict({
-            "size": pd.Series(pd.Categorical(
-                ["small", "small", "large", "small", "large"],
-                categories=["small", "medium", "large"], ordered=False,
-            ), name="size"),
-            "value": pd.Series([1.51, 1.38, -20, 245.3, 3.14], name="value"),
-        })
+        x = pd.DataFrame.from_dict(
+            {
+                "size": pd.Series(
+                    pd.Categorical(
+                        ["small", "small", "large", "small", "large"],
+                        categories=["small", "medium", "large"],
+                        ordered=False,
+                    ),
+                    name="size",
+                ),
+                "value": pd.Series([1.51, 1.38, -20, 245.3, 3.14], name="value"),
+            }
+        )
         x.index = index
 
         args = (self.arff_2, ["label"])
@@ -419,10 +430,16 @@ class LoadArffFilesCases(FixtureParameterFactory):
     LoadArffFilesCases().get_cases(),
 )
 def test_load_arff_files(
-    args, kwargs, x_train_expected, y_train_expected, x_test_expected, y_test_expected,
+    args,
+    kwargs,
+    x_train_expected,
+    y_train_expected,
+    x_test_expected,
+    y_test_expected,
 ):
     x_train, y_train, x_test, y_test = sdata.load_arff_files_standardized(
-        *args, **kwargs,
+        *args,
+        **kwargs,
     )
 
     tm.assert_frame_equal(x_train, x_train_expected, check_exact=True)
@@ -477,12 +494,20 @@ class LoadArffFilesWithTempFileCases(FixtureParameterFactory):
             UserWarning,
             match="Restricting columns to intersection between training and testing data",
         )
-        return args_train, kwargs_train, args_test, kwargs_test, (error, warning,)
+        return (
+            args_train,
+            kwargs_train,
+            args_test,
+            kwargs_test,
+            (
+                error,
+                warning,
+            ),
+        )
 
 
 @pytest.mark.parametrize(
-    "args_train,kwargs_train,args_test,kwargs_test,errors_expected",
-    LoadArffFilesWithTempFileCases().get_cases()
+    "args_train,kwargs_train,args_test,kwargs_test,errors_expected", LoadArffFilesWithTempFileCases().get_cases()
 )
 def test_load_from_temp_file(args_train, kwargs_train, args_test, kwargs_test, errors_expected, temp_file_pair):
     tmp_train, tmp_test = temp_file_pair

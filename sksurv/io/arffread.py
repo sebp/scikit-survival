@@ -26,7 +26,7 @@ def _to_pandas(data, meta):
             raw = []
             for b in data[name]:
                 # replace missing values with NaN
-                if b == b'?':
+                if b == b"?":
                     raw.append(np.nan)
                 else:
                     raw.append(b.decode())

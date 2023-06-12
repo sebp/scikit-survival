@@ -69,8 +69,7 @@ def compare_survival(y, group_indicator, return_stats=False):
     groups, group_counts = np.unique(group_indicator, return_counts=True)
     n_groups = groups.shape[0]
     if n_groups == 1:
-        raise ValueError("At least two groups must be specified, "
-                         "but only one was provided.")
+        raise ValueError("At least two groups must be specified, but only one was provided.")
 
     # sort descending
     o = np.argsort(-time, kind="mergesort")

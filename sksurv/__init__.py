@@ -6,6 +6,8 @@ import sys
 from sklearn.pipeline import Pipeline, _final_estimator_has
 from sklearn.utils.metaestimators import available_if
 
+from .util import property_available_if
+
 
 def _get_version(name):
     try:
@@ -19,17 +21,14 @@ def _get_version(name):
         version = getattr(module, "__version__", None)
 
     if version is None:  # pragma: no cover
-        raise ImportError("Can't determine version for {}".format(
-            module.__name__))
+        raise ImportError(f"Can't determine version for {module.__name__}")
     return version
 
 
 def show_versions():
     sys_info = {
         "Platform": platform.platform(),
-        "Python version": "{} {}".format(
-            platform.python_implementation(),
-            platform.python_version()),
+        "Python version": f"{platform.python_implementation()} {platform}",
         "Python interpreter": sys.executable,
     }
 
@@ -68,7 +67,7 @@ def show_versions():
         print(fmt.format(dep, version))
 
 
-@available_if(_final_estimator_has('predict_cumulative_hazard_function'))
+@available_if(_final_estimator_has("predict_cumulative_hazard_function"))
 def predict_cumulative_hazard_function(self, X, **kwargs):
     """Predict cumulative hazard function.
 
@@ -98,7 +97,7 @@ def predict_cumulative_hazard_function(self, X, **kwargs):
     return self.steps[-1][-1].predict_cumulative_hazard_function(Xt, **kwargs)
 
 
-@available_if(_final_estimator_has('predict_survival_function'))
+@available_if(_final_estimator_has("predict_survival_function"))
 def predict_survival_function(self, X, **kwargs):
     """Predict survival function.
 
@@ -128,15 +127,21 @@ def predict_survival_function(self, X, **kwargs):
     return self.steps[-1][-1].predict_survival_function(Xt, **kwargs)
 
 
+@property_available_if(_final_estimator_has("_predict_risk_score"))
+def _predict_risk_score(self):
+    return self.steps[-1][-1]._predict_risk_score
+
+
 def patch_pipeline():
     Pipeline.predict_survival_function = predict_survival_function
     Pipeline.predict_cumulative_hazard_function = predict_cumulative_hazard_function
+    Pipeline._predict_risk_score = _predict_risk_score
 
 
 try:
-    __version__ = distribution('scikit-survival').version
+    __version__ = distribution("scikit-survival").version
 except PackageNotFoundError:  # pragma: no cover
     # package is not installed
-    __version__ = 'unknown'
+    __version__ = "unknown"
 
 patch_pipeline()

@@ -28,25 +28,29 @@ from sksurv.svm.survival_svm import (
 from sksurv.testing import FixtureParameterFactory, assert_cindex_almost_equal
 from sksurv.util import Surv
 
-WHAS500_NOTIES_FILE = join(dirname(__file__), 'data', 'whas500-noties.arff')
+WHAS500_NOTIES_FILE = join(dirname(__file__), "data", "whas500-noties.arff")
 
 
-@pytest.fixture(params=[
-    'simple',
-    'PRSVM',
-    'direct-count',
-    'rbtree',
-    'avltree',
-])
+@pytest.fixture(
+    params=[
+        "simple",
+        "PRSVM",
+        "direct-count",
+        "rbtree",
+        "avltree",
+    ]
+)
 def optimizer_any(request):
     return request.param
 
 
-@pytest.fixture(params=[
-    'direct-count',
-    'rbtree',
-    'avltree',
-])
+@pytest.fixture(
+    params=[
+        "direct-count",
+        "rbtree",
+        "avltree",
+    ]
+)
 def optimizer_regression(request):
     return request.param
 
@@ -69,8 +73,10 @@ def test_unknown_optimizer(svm_cls, fake_data):
     x, y = fake_data
 
     ssvm = svm_cls(optimizer="random stuff")
-    msg = f"The 'optimizer' parameter of {svm_cls.__name__} must be " \
-          r"a str among \{.+\} or None\. Got 'random stuff' instead\."
+    msg = (
+        f"The 'optimizer' parameter of {svm_cls.__name__} must be "
+        r"a str among \{.+\} or None\. Got 'random stuff' instead\."
+    )
     with pytest.raises(ValueError, match=msg):
         ssvm.fit(x, y)
 
@@ -84,17 +90,21 @@ class FastSurvivalSVMFailureCases(FixtureParameterFactory):
 
     def data_alpha_negative(self):
         params = {"alpha": -1}
-        msg = "The 'alpha' parameter of Fast(Kernel)?SurvivalSVM must be " \
-              r"a float in the range \(0\.0, inf\)\. " \
-              r"Got -1 instead\."
+        msg = (
+            "The 'alpha' parameter of Fast(Kernel)?SurvivalSVM must be "
+            r"a float in the range \(0\.0, inf\)\. "
+            r"Got -1 instead\."
+        )
         error = pytest.raises(ValueError, match=msg)
         return params, None, None, error
 
     def _rank_ratio_out_of_bounds(self, rank_ratio):
         params = {"rank_ratio": rank_ratio}
-        msg = "The 'rank_ratio' parameter of Fast(Kernel)?SurvivalSVM must be " \
-              r"a float in the range \[0\.0, 1\.0\]\. " \
-              f"Got {rank_ratio!r} instead\\."
+        msg = (
+            "The 'rank_ratio' parameter of Fast(Kernel)?SurvivalSVM must be "
+            r"a float in the range \[0\.0, 1\.0\]\. "
+            f"Got {rank_ratio!r} instead\\."
+        )
         error = pytest.raises(ValueError, match=msg)
         return params, None, None, error
 
@@ -112,9 +122,7 @@ class FastSurvivalSVMFailureCases(FixtureParameterFactory):
 
     def _regression_not_supported(self, optimizer):
         params = {"rank_ratio": 0, "optimizer": optimizer}
-        error = pytest.raises(
-            ValueError, match="optimizer {!r} does not implement regression objective".format(optimizer)
-        )
+        error = pytest.raises(ValueError, match=f"optimizer {optimizer!r} does not implement regression objective")
         return params, None, None, error
 
     def data_regression_not_supported_simple(self):
@@ -127,9 +135,9 @@ class FastSurvivalSVMFailureCases(FixtureParameterFactory):
         params = {}
         error = pytest.raises(
             ValueError,
-            match='y must be a structured array with the first field'
-                  ' being a binary class event indicator and the second field'
-                  ' the time of the event/censoring',
+            match="y must be a structured array with the first field"
+            " being a binary class event indicator and the second field"
+            " the time of the event/censoring",
         )
         return params, self.x, y, error
 
@@ -140,21 +148,19 @@ class FastSurvivalSVMFailureCases(FixtureParameterFactory):
         return self._y_invalid(np.ones(10, dtype=int))
 
     def data_y_invalid_2(self):
-        return self._y_invalid(np.ones(dtype=[('event', bool)], shape=10))
+        return self._y_invalid(np.ones(dtype=[("event", bool)], shape=10))
 
     def data_y_invalid_3(self):
-        return self._y_invalid(np.ones(dtype=[('event', bool), ('time', float), ('too_much', int)], shape=10))
+        return self._y_invalid(np.ones(dtype=[("event", bool), ("time", float), ("too_much", int)], shape=10))
 
     def _invalid_event(self, event):
         params = {}
 
-        y = np.empty(dtype=[('event', int), ('time', float)], shape=10)
-        y['event'] = event
-        y['time'] = np.arange(10)
+        y = np.empty(dtype=[("event", int), ("time", float)], shape=10)
+        y["event"] = event
+        y["time"] = np.arange(10)
 
-        error = pytest.raises(
-            ValueError, match="elements of event indicator must be boolean, but found int"
-        )
+        error = pytest.raises(ValueError, match="elements of event indicator must be boolean, but found int")
         return params, self.x, y, error
 
     def data_event_not_boolean(self):
@@ -167,9 +173,9 @@ class FastSurvivalSVMFailureCases(FixtureParameterFactory):
 
     def data_time_not_numeric(self):
         params = {}
-        y = np.empty(dtype=[('event', bool), ('time', bool)], shape=10)
-        y['event'] = np.array([0, 1, 0, 1, 1, 0, 1, 0, 0, 1], dtype=bool)
-        y['time'] = np.ones(10, dtype=bool)
+        y = np.empty(dtype=[("event", bool), ("time", bool)], shape=10)
+        y["event"] = np.array([0, 1, 0, 1, 1, 0, 1, 0, 0, 1], dtype=bool)
+        y["time"] = np.ones(10, dtype=bool)
 
         error = pytest.raises(ValueError, match="time must be numeric, but found bool")
         return params, self.x, y, error
@@ -185,27 +191,21 @@ class FastSurvivalSVMFailureCases(FixtureParameterFactory):
         params = {"rank_ratio": 0.5}
         y = Surv.from_arrays([0, 1, 0, 1, 1, 0, 1, 0, 0, 1], [0, 1, 2, 1, 1, 0, 1, 2, 3, 1])
 
-        error = pytest.raises(
-            ValueError, match="observed time contains values smaller or equal to zero"
-        )
+        error = pytest.raises(ValueError, match="observed time contains values smaller or equal to zero")
         return params, self.x, y, error
 
     def data_negative_time(self):
         params = {"rank_ratio": 0.5}
         y = Surv.from_arrays([0, 1, 0, 1, 1, 0, 1, 0, 0, 1], [1, 1, -2, 1, 1, 6, 1, 2, 3, 1])
 
-        error = pytest.raises(
-            ValueError, match="observed time contains values smaller or equal to zero"
-        )
+        error = pytest.raises(ValueError, match="observed time contains values smaller or equal to zero")
         return params, self.x, y, error
 
     def data_ranking_with_fit_intercept(self):
         params = {"rank_ratio": 1.0, "fit_intercept": True}
         y = Surv.from_arrays(np.ones(10, dtype=bool), np.arange(1, 11, dtype=float))
 
-        error = pytest.raises(
-            ValueError, match="fit_intercept=True is only meaningful if rank_ratio < 1.0"
-        )
+        error = pytest.raises(ValueError, match="fit_intercept=True is only meaningful if rank_ratio < 1.0")
         return params, self.x, y, error
 
 
@@ -219,11 +219,24 @@ class FastSurvivalSVMFitAndPredictCases(FixtureParameterFactory):
         params.update({"rank_ratio": 0.5, "fit_intercept": True})
 
         expected_intercept = 6.1409367385513729
-        expected_coef = np.array([
-            -0.0209254120718, -0.265768317208, -0.154254689136, 0.0800600947891, -0.290121131022, -0.0288851785213,
-            0.0998004550073, 0.0454100937492, -0.125863947621, 0.0343588337797, -0.000710219364914, 0.0546969104996,
-            -0.5375338235, -0.0137995110308,
-        ])
+        expected_coef = np.array(
+            [
+                -0.0209254120718,
+                -0.265768317208,
+                -0.154254689136,
+                0.0800600947891,
+                -0.290121131022,
+                -0.0288851785213,
+                0.0998004550073,
+                0.0454100937492,
+                -0.125863947621,
+                0.0343588337797,
+                -0.000710219364914,
+                0.0546969104996,
+                -0.5375338235,
+                -0.0137995110308,
+            ]
+        )
         expected_rmse = 780.52617631863893
         return params, expected_intercept, expected_coef, expected_rmse
 
@@ -232,10 +245,24 @@ class FastSurvivalSVMFitAndPredictCases(FixtureParameterFactory):
         params.update({"rank_ratio": 0.5, "fit_intercept": False})
 
         expected_intercept = None
-        expected_coef = np.array([
-            0.00669121, -0.2754864, -0.14124808, 0.0748376, -0.2812598, 0.07543884, 0.09845683,
-            0.08398258, -0.12182314, 0.02637739, 0.03060149, 0.11870598, -0.52688224, -0.01762842,
-        ])
+        expected_coef = np.array(
+            [
+                0.00669121,
+                -0.2754864,
+                -0.14124808,
+                0.0748376,
+                -0.2812598,
+                0.07543884,
+                0.09845683,
+                0.08398258,
+                -0.12182314,
+                0.02637739,
+                0.03060149,
+                0.11870598,
+                -0.52688224,
+                -0.01762842,
+            ]
+        )
         expected_rmse = 1128.4460587629746
         return params, expected_intercept, expected_coef, expected_rmse
 
@@ -244,11 +271,24 @@ class FastSurvivalSVMFitAndPredictCases(FixtureParameterFactory):
         params.update({"rank_ratio": 0.0, "fit_intercept": True})
 
         expected_intercept = 6.4160179606675278
-        expected_coef = np.array([
-            -0.0730891368237, -0.536630355029, -0.497411603275, 0.269039958377, -0.730559850692, -0.0148443526234,
-            0.285916578892, 0.165960302339, -0.301749910087, 0.334855938531, 0.0886214732161, 0.0554890272028,
-            -2.12680470014, 0.0421466831393
-        ])
+        expected_coef = np.array(
+            [
+                -0.0730891368237,
+                -0.536630355029,
+                -0.497411603275,
+                0.269039958377,
+                -0.730559850692,
+                -0.0148443526234,
+                0.285916578892,
+                0.165960302339,
+                -0.301749910087,
+                0.334855938531,
+                0.0886214732161,
+                0.0554890272028,
+                -2.12680470014,
+                0.0421466831393,
+            ]
+        )
         expected_rmse = 1206.6556186869332
         return params, expected_intercept, expected_coef, expected_rmse
 
@@ -257,16 +297,29 @@ class FastSurvivalSVMFitAndPredictCases(FixtureParameterFactory):
         params.update({"rank_ratio": 0.0, "fit_intercept": False})
 
         expected_intercept = None
-        expected_coef = np.array([
-            1.39989875, -1.16903161, -0.40195857, -0.05848903, -0.08421557, 4.11924729, 0.25135451,
-            1.89067276, -0.25751401, -0.10213143, 1.56333622, 3.10136873, -2.23644848, -0.11620715,
-        ])
+        expected_coef = np.array(
+            [
+                1.39989875,
+                -1.16903161,
+                -0.40195857,
+                -0.05848903,
+                -0.08421557,
+                4.11924729,
+                0.25135451,
+                1.89067276,
+                -0.25751401,
+                -0.10213143,
+                1.56333622,
+                3.10136873,
+                -2.23644848,
+                -0.11620715,
+            ]
+        )
         expected_rmse = 15838.510668936022
         return params, expected_intercept, expected_coef, expected_rmse
 
 
 class TestFastSurvivalSVM:
-
     @staticmethod
     @pytest.mark.parametrize("params,x,y,error", FastSurvivalSVMFailureCases().get_cases())
     def test_failure(params, x, y, error, fake_data):
@@ -292,25 +345,28 @@ class TestFastSurvivalSVM:
 
         expected_order = np.arange(len(time)).astype(int)
 
-        expected = np.array([
-            [-1, 1, 0, 0, 0, 0, 0, 0],
-            [-1, 0, 1, 0, 0, 0, 0, 0],
-            [-1, 0, 0, 1, 0, 0, 0, 0],
-            [-1, 0, 0, 0, 1, 0, 0, 0],
-            [-1, 0, 0, 0, 0, 1, 0, 0],
-            [-1, 0, 0, 0, 0, 0, 1, 0],
-            [-1, 0, 0, 0, 0, 0, 0, 1],
-            [0, -1, 1, 0, 0, 0, 0, 0],
-            [0, -1, 0, 1, 0, 0, 0, 0],
-            [0, -1, 0, 0, 1, 0, 0, 0],
-            [0, -1, 0, 0, 0, 1, 0, 0],
-            [0, -1, 0, 0, 0, 0, 1, 0],
-            [0, -1, 0, 0, 0, 0, 0, 1],
-            [0, 0, 0, -1, 1, 0, 0, 0],
-            [0, 0, 0, -1, 0, 1, 0, 0],
-            [0, 0, 0, -1, 0, 0, 1, 0],
-            [0, 0, 0, -1, 0, 0, 0, 1],
-        ], dtype=np.int8)
+        expected = np.array(
+            [
+                [-1, 1, 0, 0, 0, 0, 0, 0],
+                [-1, 0, 1, 0, 0, 0, 0, 0],
+                [-1, 0, 0, 1, 0, 0, 0, 0],
+                [-1, 0, 0, 0, 1, 0, 0, 0],
+                [-1, 0, 0, 0, 0, 1, 0, 0],
+                [-1, 0, 0, 0, 0, 0, 1, 0],
+                [-1, 0, 0, 0, 0, 0, 0, 1],
+                [0, -1, 1, 0, 0, 0, 0, 0],
+                [0, -1, 0, 1, 0, 0, 0, 0],
+                [0, -1, 0, 0, 1, 0, 0, 0],
+                [0, -1, 0, 0, 0, 1, 0, 0],
+                [0, -1, 0, 0, 0, 0, 1, 0],
+                [0, -1, 0, 0, 0, 0, 0, 1],
+                [0, 0, 0, -1, 1, 0, 0, 0],
+                [0, 0, 0, -1, 0, 1, 0, 0],
+                [0, 0, 0, -1, 0, 0, 1, 0],
+                [0, 0, 0, -1, 0, 0, 0, 1],
+            ],
+            dtype=np.int8,
+        )
 
         samples_order = FastSurvivalSVM._argsort_and_resolve_ties(time, None)
         assert_array_equal(expected_order, samples_order)
@@ -327,45 +383,48 @@ class TestFastSurvivalSVM:
         samples_order = FastSurvivalSVM._argsort_and_resolve_ties(time, np.random.RandomState(0))
         np.testing.assert_array_equal(expected_order, samples_order)
 
-        expected = np.array([
-            [-1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [-1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [-1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-            [-1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-            [-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-            [-1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-            [-1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-            [-1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-            [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-            [0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-            [0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-            [0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-            [0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-            [0, 0, -1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-            [0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-            [0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-            [0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0],
-            [0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0],
-            [0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0],
-            [0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0],
-            [0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 1],
-            [0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0],
-            [0, 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0],
-            [0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0],
-            [0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 1],
-            [0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0],
-            [0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 1],
-        ], dtype=np.int8)
+        expected = np.array(
+            [
+                [-1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [-1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [-1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                [-1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+                [-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+                [-1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+                [-1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+                [-1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+                [-1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+                [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                [0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+                [0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+                [0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+                [0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+                [0, 0, -1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                [0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+                [0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                [0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0],
+                [0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0],
+                [0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0],
+                [0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0],
+                [0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 1],
+                [0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0],
+                [0, 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0],
+                [0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0],
+                [0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 1],
+                [0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, -1, 0, 1, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0],
+                [0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 1],
+            ],
+            dtype=np.int8,
+        )
 
         A = survival_constraints_simple(np.asarray(y[samples_order], dtype=np.uint8))
         assert_array_equal(expected, A.todense())
@@ -378,10 +437,24 @@ class TestFastSurvivalSVM:
         ssvm.fit(whas500.x, whas500.y)
 
         assert not hasattr(ssvm, "intercept_")
-        expected_coef = np.array([
-            -0.02066177, -0.26449933, -0.15205399, 0.0794547, -0.28840498, -0.02864288, 0.09901995,
-            0.04505302, -0.12512215, 0.03341365, -0.00110442, 0.05446756, -0.53009875, -0.01394175,
-        ])
+        expected_coef = np.array(
+            [
+                -0.02066177,
+                -0.26449933,
+                -0.15205399,
+                0.0794547,
+                -0.28840498,
+                -0.02864288,
+                0.09901995,
+                0.04505302,
+                -0.12512215,
+                0.03341365,
+                -0.00110442,
+                0.05446756,
+                -0.53009875,
+                -0.01394175,
+            ]
+        )
         assert_array_almost_equal(expected_coef, ssvm.coef_)
 
         assert whas500.x.shape[1] == ssvm.coef_.shape[0]
@@ -397,7 +470,12 @@ class TestFastSurvivalSVM:
         FastSurvivalSVMFitAndPredictCases().get_cases(),
     )
     def test_fit_and_predict(
-        params, expected_intercept, expected_coef, expected_rmse, make_whas500, optimizer_regression,
+        params,
+        expected_intercept,
+        expected_coef,
+        expected_rmse,
+        make_whas500,
+        optimizer_regression,
     ):
         whas500 = make_whas500(to_numeric=True)
 
@@ -412,7 +490,7 @@ class TestFastSurvivalSVM:
         assert_array_almost_equal(expected_coef, ssvm.coef_)
 
         pred = ssvm.predict(whas500.x)
-        rmse = np.sqrt(mean_squared_error(whas500.y['lenfol'], pred))
+        rmse = np.sqrt(mean_squared_error(whas500.y["lenfol"], pred))
         assert pytest.approx(expected_rmse, 1e-7) == rmse
 
     @staticmethod
@@ -425,11 +503,10 @@ class TestFastSurvivalSVM:
         ssvm = FastSurvivalSVM(optimizer=optimizer_any, timeit=3, random_state=0)
         ssvm.fit(whas500.x[idx, :], whas500.y[idx])
 
-        assert 'timings' in ssvm.optimizer_result_
+        assert "timings" in ssvm.optimizer_result_
 
 
 class TestKernelSurvivalSVM:
-
     @staticmethod
     @pytest.mark.parametrize("kernel", ["linear", "precomputed"])
     def test_fit_and_predict_linear(kernel, make_whas500):
@@ -455,8 +532,7 @@ class TestKernelSurvivalSVM:
     def test_fit_and_predict_linear_regression(kernel, make_whas500):
         whas500 = make_whas500(to_numeric=True)
         ssvm = FastKernelSurvivalSVM(
-            optimizer="rbtree", rank_ratio=0.0, kernel=kernel,
-            max_iter=50, tol=1e-8, fit_intercept=True, random_state=0
+            optimizer="rbtree", rank_ratio=0.0, kernel=kernel, max_iter=50, tol=1e-8, fit_intercept=True, random_state=0
         )
         if kernel == "precomputed":
             x = np.dot(whas500.x, whas500.x.T)
@@ -471,7 +547,7 @@ class TestKernelSurvivalSVM:
         i = np.arange(250)
         np.random.RandomState(0).shuffle(i)
         pred = ssvm.predict(x[i])
-        rmse = np.sqrt(mean_squared_error(whas500.y['lenfol'][i], pred))
+        rmse = np.sqrt(mean_squared_error(whas500.y["lenfol"][i], pred))
         assert rmse <= 1342.274550652291 + 0.293
 
         c = ssvm.score(x[i], whas500.y[i])
@@ -481,27 +557,23 @@ class TestKernelSurvivalSVM:
     def test_fit_and_predict_linear_regression_no_intercept(make_whas500):
         whas500 = make_whas500(to_numeric=True)
         ssvm = FastKernelSurvivalSVM(
-            optimizer="rbtree", rank_ratio=0.0, kernel="linear",
-            max_iter=50, fit_intercept=False, random_state=0
+            optimizer="rbtree", rank_ratio=0.0, kernel="linear", max_iter=50, fit_intercept=False, random_state=0
         )
         ssvm.fit(whas500.x, whas500.y)
 
         assert not hasattr(ssvm, "intercept_")
 
         pred = ssvm.predict(whas500.x)
-        rmse = np.sqrt(mean_squared_error(whas500.y['lenfol'], pred))
+        rmse = np.sqrt(mean_squared_error(whas500.y["lenfol"], pred))
         assert rmse == pytest.approx(15837.658418546907, 1e-4)
 
     @staticmethod
     @pytest.mark.slow()
-    @pytest.mark.parametrize('optimizer', ['rbtree', 'avltree'])
+    @pytest.mark.parametrize("optimizer", ["rbtree", "avltree"])
     @pytest.mark.filterwarnings("ignore:Optimization did not converge.*:sklearn.exceptions.ConvergenceWarning")
     def test_fit_and_predict_rbf(make_whas500, optimizer):
         whas500 = make_whas500(to_numeric=True)
-        ssvm = FastKernelSurvivalSVM(
-            optimizer=optimizer, kernel='rbf',
-            tol=2e-6, max_iter=75, random_state=0
-        )
+        ssvm = FastKernelSurvivalSVM(optimizer=optimizer, kernel="rbf", tol=2e-6, max_iter=75, random_state=0)
         ssvm.fit(whas500.x, whas500.y)
 
         assert not ssvm._get_tags()["pairwise"]
@@ -516,8 +588,7 @@ class TestKernelSurvivalSVM:
     def test_fit_and_predict_regression_rbf(make_whas500):
         whas500 = make_whas500(to_numeric=True)
         ssvm = FastKernelSurvivalSVM(
-            optimizer="rbtree", rank_ratio=0.0, kernel="rbf",
-            tol=1e-6, max_iter=50, fit_intercept=True, random_state=0
+            optimizer="rbtree", rank_ratio=0.0, kernel="rbf", tol=1e-6, max_iter=50, fit_intercept=True, random_state=0
         )
         ssvm.fit(whas500.x, whas500.y)
 
@@ -525,7 +596,7 @@ class TestKernelSurvivalSVM:
         assert ssvm.intercept_ == pytest.approx(4.9267218894089533, 1e-7)
 
         pred = ssvm.predict(whas500.x)
-        rmse = np.sqrt(mean_squared_error(whas500.y['lenfol'], pred))
+        rmse = np.sqrt(mean_squared_error(whas500.y["lenfol"], pred))
         assert rmse == pytest.approx(783.525277)
 
     @staticmethod
@@ -536,8 +607,14 @@ class TestKernelSurvivalSVM:
         X = MinMaxScaler(feature_range=(0, 1)).fit_transform(whas500.x)
 
         ssvm = FastKernelSurvivalSVM(
-            optimizer="rbtree", rank_ratio=0.5, kernel="poly", coef0=0, degree=2,
-            max_iter=100, fit_intercept=True, random_state=0
+            optimizer="rbtree",
+            rank_ratio=0.5,
+            kernel="poly",
+            coef0=0,
+            degree=2,
+            max_iter=100,
+            fit_intercept=True,
+            random_state=0,
         )
         ssvm.fit(X, whas500.y)
 
@@ -545,7 +622,7 @@ class TestKernelSurvivalSVM:
         assert pytest.approx(6.482593184472981, 1e-5) == ssvm.intercept_
 
         pred = ssvm.predict(X)
-        rmse = np.sqrt(mean_squared_error(whas500.y['lenfol'], pred))
+        rmse = np.sqrt(mean_squared_error(whas500.y["lenfol"], pred))
         assert pytest.approx(766.2061731844626, 1e-5) == rmse
 
     @staticmethod
@@ -558,8 +635,7 @@ class TestKernelSurvivalSVM:
         trans.fit(whas500.x_data_frame)
 
         ssvm = FastKernelSurvivalSVM(
-            optimizer="rbtree", kernel=trans.pairwise_kernel,
-            tol=7e-7, max_iter=100, random_state=0
+            optimizer="rbtree", kernel=trans.pairwise_kernel, tol=7e-7, max_iter=100, random_state=0
         )
         ssvm.fit(whas500.x, whas500.y)
 
@@ -579,8 +655,8 @@ class TestKernelSurvivalSVM:
 
         assert len(pred_linear) == len(pred_kernel)
 
-        expected_cindex = concordance_index_censored(y['fstat'], y['lenfol'], pred_linear)
-        assert_cindex_almost_equal(y['fstat'], y['lenfol'], pred_kernel, expected_cindex)
+        expected_cindex = concordance_index_censored(y["fstat"], y["lenfol"], pred_linear)
+        assert_cindex_almost_equal(y["fstat"], y["lenfol"], pred_kernel, expected_cindex)
 
     @staticmethod
     @pytest.mark.slow()
@@ -590,16 +666,19 @@ class TestKernelSurvivalSVM:
         x = normalize(whas500.x)
 
         rsvm = FastKernelSurvivalSVM(
-            optimizer="rbtree", kernel="poly",
-            gamma=0.5, degree=2, coef0=0,
-            tol=2.5e-8, max_iter=100, random_state=0xf38
+            optimizer="rbtree",
+            kernel="poly",
+            gamma=0.5,
+            degree=2,
+            coef0=0,
+            tol=2.5e-8,
+            max_iter=100,
+            random_state=0xF38,
         )
 
-        kpca = KernelPCA(
-            kernel="poly", copy_X=True, gamma=0.5, degree=2, coef0=0, random_state=0xf38
-        )
+        kpca = KernelPCA(kernel="poly", copy_X=True, gamma=0.5, degree=2, coef0=0, random_state=0xF38)
         xt = kpca.fit_transform(x)
-        nrsvm = FastSurvivalSVM(optimizer="rbtree", tol=2.5e-8, max_iter=100, random_state=0xf38)
+        nrsvm = FastSurvivalSVM(optimizer="rbtree", tol=2.5e-8, max_iter=100, random_state=0xF38)
 
         TestKernelSurvivalSVM._fit_and_compare(nrsvm, rsvm, x, xt, whas500.y)
 
@@ -628,8 +707,7 @@ class TestKernelSurvivalSVM:
 
         with pytest.raises(
             ValueError,
-            match=r"Precomputed metric requires shape \(n_queries, n_indexed\)\. "
-                  r"Got \(100, 11\) for 100 indexed\.",
+            match=r"Precomputed metric requires shape \(n_queries, n_indexed\)\. Got \(100, 11\) for 100 indexed\.",
         ):
             ssvm.fit(x, y)
 
@@ -654,8 +732,7 @@ class TestKernelSurvivalSVM:
         x_new = np.random.randn(100, 14)
         with pytest.raises(
             ValueError,
-            match=r"Precomputed metric requires shape \(n_queries, n_indexed\)\. "
-                  r"Got \(100, 14\) for 500 indexed\.",
+            match=r"Precomputed metric requires shape \(n_queries, n_indexed\)\. Got \(100, 14\) for 500 indexed\.",
         ):
             ssvm.predict(x_new)
 
@@ -667,26 +744,29 @@ class TestKernelSurvivalSVM:
             ssvm.fit(whas500_uncomparable.x, whas500_uncomparable.y)
 
 
-@pytest.fixture(params=[
-    SurvivalCounter,
-    partial(OrderStatisticTreeSurvivalCounter, tree_class=RBTree),
-    partial(OrderStatisticTreeSurvivalCounter, tree_class=AVLTree)
-])
+@pytest.fixture(
+    params=[
+        SurvivalCounter,
+        partial(OrderStatisticTreeSurvivalCounter, tree_class=RBTree),
+        partial(OrderStatisticTreeSurvivalCounter, tree_class=AVLTree),
+    ]
+)
 def make_survival_counter(request):
     def _make_survival_counter(*args, **kwargs):
         cls = request.param
         if isinstance(cls, partial):
-            kwargs.pop('n_relevance_levels')
+            kwargs.pop("n_relevance_levels")
 
         counter = cls(*args, **kwargs)
         return counter
+
     return _make_survival_counter
 
 
 @pytest.fixture()
 def counter_data_01():
     w = np.array([-0.9, -0.7, -0.1, 0.15, 0.2, 1.6])
-    y = np.array([2,       0,    4,    3,   5,   1])
+    y = np.array([2, 0, 4, 3, 5, 1])
     event = np.array([True, True, False, True, False, True])
     x = np.eye(6)
     v = np.arange(6)
@@ -696,15 +776,14 @@ def counter_data_01():
 @pytest.fixture()
 def counter_data_02():
     w = np.array([-0.9, -0.7, -0.1, 0.15, 0.2, 0.3, 0.8, 1.6, 1.85, 2.3])
-    y = np.array([3,       0,    4,    6,   8,   5,   1,   7,    2,   9])
-    event = np.array([0,   0,    0,    1,   0,   1,   1,   0,    1,   0], dtype=bool)
+    y = np.array([3, 0, 4, 6, 8, 5, 1, 7, 2, 9])
+    event = np.array([0, 0, 0, 1, 0, 1, 1, 0, 1, 0], dtype=bool)
     x = np.eye(10)
     v = np.arange(10)
     return x, y, event, w, v
 
 
 class TestSurvivalCounter:
-
     @staticmethod
     def test_calculate_01(make_survival_counter, counter_data_01):
         x, y, event, w, v = counter_data_01
@@ -763,7 +842,7 @@ def whas500_without_ties():
     # naive survival SVM does resolve ties in survival time differently,
     # therefore use data without ties
     data = loadarff(WHAS500_NOTIES_FILE)
-    x, y = get_x_y(data, ['fstat', 'lenfol'], '1')
+    x, y = get_x_y(data, ["fstat", "lenfol"], "1")
     x = encode_categorical(x)
     return x, y
 
@@ -778,19 +857,22 @@ def whas500_with_ties():
 
 
 class TestNaiveSurvivalSVM:
-
     @staticmethod
     def test_survival_squared_hinge_loss(whas500_without_ties):
         x, y = whas500_without_ties
 
         nrsvm = NaiveSurvivalSVM(
-            loss='squared_hinge', dual=False, tol=8e-7, max_iter=1000, random_state=0,
+            loss="squared_hinge",
+            dual=False,
+            tol=8e-7,
+            max_iter=1000,
+            random_state=0,
         )
         nrsvm.fit(x, y)
 
         assert nrsvm.n_iter_ > 10
 
-        rsvm = FastSurvivalSVM(optimizer='avltree', tol=8e-7, max_iter=1000, random_state=0)
+        rsvm = FastSurvivalSVM(optimizer="avltree", tol=8e-7, max_iter=1000, random_state=0)
         rsvm.fit(x, y)
 
         assert_array_almost_equal(nrsvm.coef_.ravel(), rsvm.coef_, 3)
@@ -800,15 +882,19 @@ class TestNaiveSurvivalSVM:
 
         assert len(pred_nrsvm) == len(pred_rsvm)
 
-        expected_cindex = concordance_index_censored(y['fstat'], y['lenfol'], pred_nrsvm)
-        assert_cindex_almost_equal(y['fstat'], y['lenfol'], pred_rsvm, expected_cindex)
+        expected_cindex = concordance_index_censored(y["fstat"], y["lenfol"], pred_nrsvm)
+        assert_cindex_almost_equal(y["fstat"], y["lenfol"], pred_rsvm, expected_cindex)
 
     @staticmethod
     def test_fit_with_ties(whas500_with_ties):
         x, y = whas500_with_ties
 
         nrsvm = NaiveSurvivalSVM(
-            loss='squared_hinge', dual=False, tol=1e-8, max_iter=1000, random_state=0,
+            loss="squared_hinge",
+            dual=False,
+            tol=1e-8,
+            max_iter=1000,
+            random_state=0,
         )
         nrsvm.fit(x, y)
 
@@ -820,7 +906,11 @@ class TestNaiveSurvivalSVM:
     @staticmethod
     def test_fit_uncomparable(whas500_uncomparable):
         ssvm = NaiveSurvivalSVM(
-            loss='squared_hinge', dual=False, tol=1e-8, max_iter=1000, random_state=0,
+            loss="squared_hinge",
+            dual=False,
+            tol=1e-8,
+            max_iter=1000,
+            random_state=0,
         )
         with pytest.raises(NoComparablePairException):
             ssvm.fit(whas500_uncomparable.x, whas500_uncomparable.y)
