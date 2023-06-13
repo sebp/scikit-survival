@@ -234,8 +234,8 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         if self.low_memory:
             self.n_outputs_ = 1
-            # one "class" for the sum over the CHF, one for the sum over the survival function
-            self.n_classes_ = np.ones(self.n_outputs_, dtype=np.intp) * 2
+            # one "class" only, for the sum over the CHF
+            self.n_classes_ = np.ones(self.n_outputs_, dtype=np.intp)
         else:
             self.n_outputs_ = self.unique_times_.shape[0]
             # one "class" for CHF, one for survival function
@@ -243,7 +243,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         # Build tree
         self.criterion = "logrank"
-        criterion = LogrankCriterion(self.n_outputs_, n_samples, self.unique_times_)
+        criterion = LogrankCriterion(self.n_outputs_, n_samples, self.unique_times_, self.is_event_time_.astype(np.int32))
 
         SPLITTERS = SPARSE_SPLITTERS if issparse(X) else DENSE_SPLITTERS
 
