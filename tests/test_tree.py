@@ -785,10 +785,6 @@ def test_predict_low_memory(make_whas500):
     seed = 42
     whas500 = make_whas500(to_numeric=True)
     X, y = whas500.x, whas500.y
-    # Duplicates values in whas500 leads to assert errors because of
-    # tie resolution during tree fitting.
-    # Using a synthetic dataset resolves this issue.
-    X = np.random.RandomState(seed).binomial(n=5, p=0.1, size=X.shape)
 
     X_train, X_test, y_train, _ = train_test_split(X, y, random_state=seed)
 
@@ -805,10 +801,12 @@ def test_predict_low_memory(make_whas500):
 
     assert_array_almost_equal(y_pred_0, y_pred_1)
 
-    msg = r"predict_cumulative_hazard_function is not implemented in low memory mode."
+    msg = r"predict_cumulative_hazard_function is not implemented in low memory mode." \
+        + " run fit with low_memory=False to disable low memory mode."
     with pytest.raises(NotImplementedError, match=msg):
         tree1.predict_cumulative_hazard_function(X_test)
 
-    msg = r"predict_survival_function is not implemented in low memory mode."
+    msg = r"predict_survival_function is not implemented in low memory mode." \
+        + " run fit with low_memory=False to disable low memory mode."
     with pytest.raises(NotImplementedError, match=msg):
         tree1.predict_survival_function(X_test)

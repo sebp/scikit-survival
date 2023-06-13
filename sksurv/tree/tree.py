@@ -107,7 +107,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         If None then unlimited number of leaf nodes.
 
     low_memory : boolean, default: False
-        If set, ``predict`` computations use heavy memory but ``predict_cumulative_hazard_function``
+        If set, ``predict`` computations use reduced memory but ``predict_cumulative_hazard_function``
         and ``predict_survival_function`` are not implemented.
 
     Attributes
@@ -232,13 +232,13 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         n_samples, self.n_features_in_ = X.shape
         params = self._check_params(n_samples)
 
-        self.n_outputs_ = self.unique_times_.shape[0]
-        # one "class" for CHF, one for survival function
-        self.n_classes_ = np.ones(self.n_outputs_, dtype=np.intp) * 2
-
         if self.low_memory:
             self.n_outputs_ = 1
             # one "class" for the sum over the CHF, one for the sum over the survival function
+            self.n_classes_ = np.ones(self.n_outputs_, dtype=np.intp) * 2
+        else:
+            self.n_outputs_ = self.unique_times_.shape[0]
+            # one "class" for CHF, one for survival function
             self.n_classes_ = np.ones(self.n_outputs_, dtype=np.intp) * 2
 
         # Build tree
@@ -338,6 +338,12 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         self.max_features_ = max_features
 
+    def _check_low_memory(self, function):
+        """Check if `function` is supported in low memory mode and throw if it is not."""
+        if self.low_memory:
+            raise NotImplementedError(f"{function} is not implemented in low memory mode."
+                                      " run fit with low_memory=False to disable low memory mode.")
+
     def _validate_X_predict(self, X, check_input, accept_sparse="csr"):
         """Validate X whenever one tries to predict"""
         if check_input:
@@ -382,9 +388,9 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             X = self._validate_X_predict(X, check_input, accept_sparse="csr")
             pred = self.tree_.predict(X)
             return pred[..., 0]
-
-        chf = self.predict_cumulative_hazard_function(X, check_input, return_array=True)
-        return chf[:, self.is_event_time_].sum(1)
+        else:
+            chf = self.predict_cumulative_hazard_function(X, check_input, return_array=True)
+            return chf[:, self.is_event_time_].sum(1)
 
     def predict_cumulative_hazard_function(self, X, check_input=True, return_array=False):
         """Predict cumulative hazard function.
@@ -443,10 +449,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         >>> plt.ylim(0, 1)
         >>> plt.show()
         """
-
-        if self.low_memory:
-            raise NotImplementedError("predict_cumulative_hazard_function is not implemented in low memory mode.")
-
+        self._check_low_memory("predict_cumulative_hazard_function")
         check_is_fitted(self, "tree_")
         X = self._validate_X_predict(X, check_input, accept_sparse="csr")
 
@@ -514,10 +517,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         >>> plt.ylim(0, 1)
         >>> plt.show()
         """
-
-        if self.low_memory:
-            raise NotImplementedError("predict_survival_function is not implemented in low memory mode.")
-
+        self._check_low_memory("predict_survival_function")
         check_is_fitted(self, "tree_")
         X = self._validate_X_predict(X, check_input, accept_sparse="csr")
 
