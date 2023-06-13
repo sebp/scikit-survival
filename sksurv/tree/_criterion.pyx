@@ -131,7 +131,7 @@ cdef class LogrankCriterion(Criterion):
     cdef:
         # unique time points sorted in ascending order
         const DOUBLE_t[::1] unique_times
-        int[::1] is_event_time
+        const bint[::1] is_event_time
         SIZE_t n_unique_times
         size_t nbytes
         RisksetCounter riskset_total
@@ -140,7 +140,7 @@ cdef class LogrankCriterion(Criterion):
         SIZE_t * samples_time_idx
         SIZE_t n_samples_left
 
-    def __cinit__(self, SIZE_t n_outputs, SIZE_t n_samples, const DOUBLE_t[::1] unique_times, int[::1] is_event_time):
+    def __cinit__(self, SIZE_t n_outputs, SIZE_t n_samples, const DOUBLE_t[::1] unique_times, const bint[::1] is_event_time):
         # Default values
         self.samples = NULL
         self.start = 0
