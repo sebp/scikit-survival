@@ -801,12 +801,16 @@ def test_predict_low_memory(make_whas500):
 
     assert_array_almost_equal(y_pred_0, y_pred_1)
 
-    msg = r"predict_cumulative_hazard_function is not implemented in low memory mode." \
+    msg = (
+        r"predict_cumulative_hazard_function is not implemented in low memory mode."
         + " run fit with low_memory=False to disable low memory mode."
+    )
     with pytest.raises(NotImplementedError, match=msg):
         tree1.predict_cumulative_hazard_function(X_test)
 
-    msg = r"predict_survival_function is not implemented in low memory mode." \
+    msg = (
+        r"predict_survival_function is not implemented in low memory mode."
         + " run fit with low_memory=False to disable low memory mode."
+    )
     with pytest.raises(NotImplementedError, match=msg):
         tree1.predict_survival_function(X_test)
