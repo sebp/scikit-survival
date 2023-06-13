@@ -243,8 +243,9 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         # Build tree
         self.criterion = "logrank"
-        criterion = LogrankCriterion(self.n_outputs_, n_samples, self.unique_times_,
-                                     self.is_event_time_.astype(np.int32))
+        criterion = LogrankCriterion(
+            self.n_outputs_, n_samples, self.unique_times_, self.is_event_time_.astype(np.int32)
+        )
 
         SPLITTERS = SPARSE_SPLITTERS if issparse(X) else DENSE_SPLITTERS
 
@@ -342,8 +343,10 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
     def _check_low_memory(self, function):
         """Check if `function` is supported in low memory mode and throw if it is not."""
         if self.low_memory:
-            raise NotImplementedError(f"{function} is not implemented in low memory mode."
-                                      " run fit with low_memory=False to disable low memory mode.")
+            raise NotImplementedError(
+                f"{function} is not implemented in low memory mode."
+                + " run fit with low_memory=False to disable low memory mode."
+            )
 
     def _validate_X_predict(self, X, check_input, accept_sparse="csr"):
         """Validate X whenever one tries to predict"""
