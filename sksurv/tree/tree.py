@@ -392,9 +392,9 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             X = self._validate_X_predict(X, check_input, accept_sparse="csr")
             pred = self.tree_.predict(X)
             return pred[..., 0]
-        else:
-            chf = self.predict_cumulative_hazard_function(X, check_input, return_array=True)
-            return chf[:, self.is_event_time_].sum(1)
+
+        chf = self.predict_cumulative_hazard_function(X, check_input, return_array=True)
+        return chf[:, self.is_event_time_].sum(1)
 
     def predict_cumulative_hazard_function(self, X, check_input=True, return_array=False):
         """Predict cumulative hazard function.
