@@ -223,15 +223,16 @@ class TestStackingSurvivalAnalysis:
         assert_cindex_almost_equal(y["fstat"], y["lenfol"], p, (0.7848807, 58983, 16166, 0, 14))
 
     @staticmethod
-    def test_predict_proba():
+    @pytest.mark.parametrize("method", ["predict_proba", "predict_log_proba"])
+    def test_predict_proba(method):
         meta = Stacking(
             _PredictDummy(),
             [("coxph", CoxPHSurvivalAnalysis()), ("svm", FastSurvivalSVM(random_state=0))],
             probabilities=False,
         )
 
-        with pytest.raises(AttributeError, match="'_PredictDummy' object has no attribute 'predict_proba'"):
-            meta.predict_proba  # pylint: disable=pointless-statement
+        with pytest.raises(AttributeError, match=f"'_PredictDummy' object has no attribute '{method}'"):
+            getattr(meta, method)()  # pylint: disable=pointless-statement
 
     @staticmethod
     def test_score(whas_data_with_estimator):
