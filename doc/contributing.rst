@@ -134,7 +134,16 @@ of the documentation, run::
 
   xdg-open _build/html/index.html
 
+Building Cython code
+--------------------
+
+Part of the code base is written in `Cython`_. To build this code, run::
+
+    ???
+
+
 .. _conda: https://conda.io/miniconda.html
+.. _Cython: https://cython.org
 .. _Git: https://git-scm.com/
 .. _GitHub: https://github.com/sebp/scikit-survival
 .. _Sphinx: https://www.sphinx-doc.org/
