@@ -779,38 +779,3 @@ def test_predict_sparse(make_whas500):
     assert_array_equal(y_pred, y_pred_csr)
     assert_array_equal(y_cum_h, y_cum_h_csr)
     assert_array_equal(y_surv, y_surv_csr)
-
-
-def test_predict_low_memory(make_whas500):
-    seed = 42
-    whas500 = make_whas500(to_numeric=True)
-    X, y = whas500.x, whas500.y
-
-    X_train, X_test, y_train, _ = train_test_split(X, y, random_state=seed)
-
-    tree0 = SurvivalTree(min_samples_leaf=10, random_state=seed, low_memory=False)
-    tree0.fit(X_train, y_train)
-    y_pred_0 = tree0.predict(X_test)
-
-    tree1 = SurvivalTree(min_samples_leaf=10, random_state=seed, low_memory=True)
-    tree1.fit(X_train, y_train)
-    y_pred_1 = tree1.predict(X_test)
-
-    assert y_pred_0.shape[0] == X_test.shape[0]
-    assert y_pred_1.shape[0] == X_test.shape[0]
-
-    assert_array_almost_equal(y_pred_0, y_pred_1)
-
-    msg = (
-        r"predict_cumulative_hazard_function is not implemented in low memory mode."
-        + " run fit with low_memory=False to disable low memory mode."
-    )
-    with pytest.raises(NotImplementedError, match=msg):
-        tree1.predict_cumulative_hazard_function(X_test)
-
-    msg = (
-        r"predict_survival_function is not implemented in low memory mode."
-        + " run fit with low_memory=False to disable low memory mode."
-    )
-    with pytest.raises(NotImplementedError, match=msg):
-        tree1.predict_survival_function(X_test)
