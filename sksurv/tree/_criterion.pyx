@@ -325,6 +325,7 @@ cdef class LogrankCriterion(Criterion):
         """Compute the node value of samples[start:end] into dest."""
         # Estimate cumulative hazard function
         cdef:
+            const bint[::1] is_event_time = self.is_event_time
             SIZE_t i
             SIZE_t j
             DOUBLE_t ratio
@@ -340,7 +341,7 @@ cdef class LogrankCriterion(Criterion):
                 if n_at_risk != 0:
                     ratio = n_events / n_at_risk
                     dest_j0 += ratio
-                if self.is_event_time[i]:
+                if is_event_time[i]:
                     dest[0] += dest_j0
         else:
             self.riskset_total.at(0, &n_at_risk, &n_events)
