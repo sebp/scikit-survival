@@ -106,6 +106,10 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         Best nodes are defined as relative reduction in impurity.
         If None then unlimited number of leaf nodes.
 
+    low_memory : boolean, default: False
+        If set, ``predict`` computations use reduced memory but ``predict_cumulative_hazard_function``
+        and ``predict_survival_function`` are not implemented.
+
     Attributes
     ----------
     unique_times_ : array of shape = (n_unique_times,)
@@ -162,6 +166,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         ],
         "random_state": ["random_state"],
         "max_leaf_nodes": [Interval(Integral, 2, None, closed="left"), None],
+        "low_memory": ["boolean"],
     }
 
     def __init__(
@@ -175,6 +180,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         max_features=None,
         random_state=None,
         max_leaf_nodes=None,
+        low_memory=False,
     ):
         self.splitter = splitter
         self.max_depth = max_depth
@@ -184,6 +190,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         self.max_features = max_features
         self.random_state = random_state
         self.max_leaf_nodes = max_leaf_nodes
+        self.low_memory = low_memory
 
     def fit(self, X, y, sample_weight=None, check_input=True):
         """Build a survival tree from the training set (X, y).
@@ -225,13 +232,18 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         n_samples, self.n_features_in_ = X.shape
         params = self._check_params(n_samples)
 
-        self.n_outputs_ = self.unique_times_.shape[0]
-        # one "class" for CHF, one for survival function
-        self.n_classes_ = np.ones(self.n_outputs_, dtype=np.intp) * 2
+        if self.low_memory:
+            self.n_outputs_ = 1
+            # one "class" only, for the sum over the CHF
+            self.n_classes_ = np.ones(self.n_outputs_, dtype=np.intp)
+        else:
+            self.n_outputs_ = self.unique_times_.shape[0]
+            # one "class" for CHF, one for survival function
+            self.n_classes_ = np.ones(self.n_outputs_, dtype=np.intp) * 2
 
         # Build tree
         self.criterion = "logrank"
-        criterion = LogrankCriterion(self.n_outputs_, n_samples, self.unique_times_)
+        criterion = LogrankCriterion(self.n_outputs_, n_samples, self.unique_times_, self.is_event_time_)
 
         SPLITTERS = SPARSE_SPLITTERS if issparse(X) else DENSE_SPLITTERS
 
@@ -326,6 +338,14 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         self.max_features_ = max_features
 
+    def _check_low_memory(self, function):
+        """Check if `function` is supported in low memory mode and throw if it is not."""
+        if self.low_memory:
+            raise NotImplementedError(
+                f"{function} is not implemented in low memory mode."
+                + " run fit with low_memory=False to disable low memory mode."
+            )
+
     def _validate_X_predict(self, X, check_input, accept_sparse="csr"):
         """Validate X whenever one tries to predict"""
         if check_input:
@@ -364,6 +384,13 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         risk_scores : ndarray, shape = (n_samples,)
             Predicted risk scores.
         """
+
+        if self.low_memory:
+            check_is_fitted(self, "tree_")
+            X = self._validate_X_predict(X, check_input, accept_sparse="csr")
+            pred = self.tree_.predict(X)
+            return pred[..., 0]
+
         chf = self.predict_cumulative_hazard_function(X, check_input, return_array=True)
         return chf[:, self.is_event_time_].sum(1)
 
@@ -424,6 +451,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         >>> plt.ylim(0, 1)
         >>> plt.show()
         """
+        self._check_low_memory("predict_cumulative_hazard_function")
         check_is_fitted(self, "tree_")
         X = self._validate_X_predict(X, check_input, accept_sparse="csr")
 
@@ -491,6 +519,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         >>> plt.ylim(0, 1)
         >>> plt.show()
         """
+        self._check_low_memory("predict_survival_function")
         check_is_fitted(self, "tree_")
         X = self._validate_X_predict(X, check_input, accept_sparse="csr")
 

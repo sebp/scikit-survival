@@ -131,6 +131,7 @@ cdef class LogrankCriterion(Criterion):
     cdef:
         # unique time points sorted in ascending order
         const DOUBLE_t[::1] unique_times
+        const cnp.npy_bool[::1] is_event_time
         SIZE_t n_unique_times
         size_t nbytes
         RisksetCounter riskset_total
@@ -139,7 +140,7 @@ cdef class LogrankCriterion(Criterion):
         SIZE_t * samples_time_idx
         SIZE_t n_samples_left
 
-    def __cinit__(self, SIZE_t n_outputs, SIZE_t n_samples, const DOUBLE_t[::1] unique_times):
+    def __cinit__(self, SIZE_t n_outputs, SIZE_t n_samples, const DOUBLE_t[::1] unique_times, const cnp.npy_bool[::1] is_event_time):
         # Default values
         self.samples = NULL
         self.start = 0
@@ -149,6 +150,7 @@ cdef class LogrankCriterion(Criterion):
         self.n_outputs = n_outputs
         self.n_samples = n_samples
         self.unique_times = unique_times
+        self.is_event_time = is_event_time
         self.n_unique_times = unique_times.shape[0]
         self.nbytes = self.n_unique_times * sizeof(cnp.npy_int64)
         self.n_node_samples = 0
@@ -168,7 +170,7 @@ cdef class LogrankCriterion(Criterion):
         free(self.samples_time_idx)
 
     def __reduce__(self):
-        return (type(self), (self.n_outputs, self.n_samples, self.unique_times), self.__getstate__())
+        return (type(self), (self.n_outputs, self.n_samples, self.unique_times, self.is_event_time), self.__getstate__())
 
     cdef int init(self, const DOUBLE_t[:, ::1] y, const DOUBLE_t[:] sample_weight,
                   double weighted_n_samples, SIZE_t* samples, SIZE_t start,
@@ -323,24 +325,37 @@ cdef class LogrankCriterion(Criterion):
         """Compute the node value of samples[start:end] into dest."""
         # Estimate cumulative hazard function
         cdef:
+            const cnp.npy_bool[::1] is_event_time = self.is_event_time
             SIZE_t i
             SIZE_t j
             DOUBLE_t ratio
             DOUBLE_t n_events
             DOUBLE_t n_at_risk
+            DOUBLE_t dest_j0
 
-        self.riskset_total.at(0, &n_at_risk, &n_events)
-        ratio = n_events / n_at_risk
-        dest[0] = ratio  # Nelson-Aalen estimator
-        dest[1] = 1.0 - ratio  # Kaplan-Meier estimator
+        # low memory mode
+        if  self.n_outputs == 1:
+            dest[0] = dest_j0 = 0
+            for i in range(0, self.n_unique_times):
+                self.riskset_total.at(i, &n_at_risk, &n_events)
+                if n_at_risk != 0:
+                    ratio = n_events / n_at_risk
+                    dest_j0 += ratio
+                if is_event_time[i]:
+                    dest[0] += dest_j0
+        else:
+            self.riskset_total.at(0, &n_at_risk, &n_events)
+            ratio = n_events / n_at_risk
+            dest[0] = ratio  # Nelson-Aalen estimator
+            dest[1] = 1.0 - ratio  # Kaplan-Meier estimator
 
-        j = 2
-        for i in range(1, self.n_unique_times):
-            self.riskset_total.at(i, &n_at_risk, &n_events)
-            dest[j] = dest[j - 2]
-            dest[j + 1] = dest[j - 1]
-            if n_at_risk != 0:
-                ratio = n_events / n_at_risk
-                dest[j] += ratio
-                dest[j + 1] *= 1.0 - ratio
-            j += 2
+            j = 2
+            for i in range(1, self.n_unique_times):
+                self.riskset_total.at(i, &n_at_risk, &n_events)
+                dest[j] = dest[j - 2]
+                dest[j + 1] = dest[j - 1]
+                if n_at_risk != 0:
+                    ratio = n_events / n_at_risk
+                    dest[j] += ratio
+                    dest[j + 1] *= 1.0 - ratio
+                j += 2
