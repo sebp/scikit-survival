@@ -9,6 +9,7 @@ from sksurv.datasets import load_breast_cancer
 from sksurv.ensemble import ExtraSurvivalTrees, RandomSurvivalForest
 from sksurv.preprocessing import OneHotEncoder
 from sksurv.testing import assert_cindex_almost_equal
+from sksurv.tree import SurvivalTree
 
 FORESTS = [
     RandomSurvivalForest,
@@ -345,3 +346,47 @@ def test_predict_sparse(make_whas500, forest_cls):
     assert_array_equal(y_pred, y_pred_csr)
     assert_array_equal(y_cum_h_csr, y_cum_h)
     assert_array_equal(y_surv, y_surv_csr)
+
+
+@pytest.mark.parametrize(
+    "est_cls,params",
+    [
+        (SurvivalTree, {"min_samples_leaf": 10, "random_state": 42}),
+        (RandomSurvivalForest, {"n_estimators": 10, "min_samples_leaf": 10, "random_state": 42}),
+        (ExtraSurvivalTrees, {"n_estimators": 10, "min_samples_leaf": 10, "random_state": 42}),
+    ],
+)
+def test_predict_low_memory(make_whas500, est_cls, params):
+    whas500 = make_whas500(to_numeric=True)
+    X, y = whas500.x, whas500.y
+
+    X_train, X_test, y_train, _ = train_test_split(X, y, random_state=params["random_state"])
+
+    est_high = est_cls(**params)
+    est_high.set_params(low_memory=False)
+    est_high.fit(X_train, y_train)
+    pred_high = est_high.predict(X_test)
+
+    est_low = est_cls(**params)
+    est_low.set_params(low_memory=True)
+    est_low.fit(X_train, y_train)
+    pred_low = est_low.predict(X_test)
+
+    assert pred_high.shape[0] == X_test.shape[0]
+    assert pred_low.shape[0] == X_test.shape[0]
+
+    assert_array_almost_equal(pred_high, pred_low)
+
+    msg = (
+        "predict_cumulative_hazard_function is not implemented in low memory mode."
+        " run fit with low_memory=False to disable low memory mode."
+    )
+    with pytest.raises(NotImplementedError, match=msg):
+        est_low.predict_cumulative_hazard_function(X_test)
+
+    msg = (
+        "predict_survival_function is not implemented in low memory mode."
+        " run fit with low_memory=False to disable low memory mode."
+    )
+    with pytest.raises(NotImplementedError, match=msg):
+        est_low.predict_survival_function(X_test)
