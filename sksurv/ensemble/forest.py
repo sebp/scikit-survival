@@ -376,6 +376,10 @@ class RandomSurvivalForest(_BaseSurvivalForest):
         - If float, then draw `max_samples * X.shape[0]` samples. Thus,
           `max_samples` should be in the interval `(0.0, 1.0]`.
 
+    low_memory : boolean, default: False
+        If set, ``predict`` computations use reduced memory but ``predict_cumulative_hazard_function``
+        and ``predict_survival_function`` are not implemented.
+
     Attributes
     ----------
     estimators_ : list of SurvivalTree instances
@@ -394,10 +398,6 @@ class RandomSurvivalForest(_BaseSurvivalForest):
     oob_score_ : float
         Concordance index of the training dataset obtained
         using an out-of-bag estimate.
-
-    low_memory : boolean, default: False
-        If set, ``predict`` computations use reduced memory but ``predict_cumulative_hazard_function``
-        and ``predict_survival_function`` are not implemented.
 
     See also
     --------
