@@ -395,6 +395,10 @@ class RandomSurvivalForest(_BaseSurvivalForest):
         Concordance index of the training dataset obtained
         using an out-of-bag estimate.
 
+    low_memory : boolean, default: False
+        If set, ``predict`` computations use reduced memory but ``predict_cumulative_hazard_function``
+        and ``predict_survival_function`` are not implemented.
+
     See also
     --------
     sksurv.tree.SurvivalTree
@@ -455,6 +459,7 @@ class RandomSurvivalForest(_BaseSurvivalForest):
         verbose=0,
         warm_start=False,
         max_samples=None,
+        low_memory=False,
     ):
         super().__init__(
             estimator=SurvivalTree(),
@@ -467,6 +472,7 @@ class RandomSurvivalForest(_BaseSurvivalForest):
                 "max_features",
                 "max_leaf_nodes",
                 "random_state",
+                "low_memory",
             ),
             bootstrap=bootstrap,
             oob_score=oob_score,
@@ -483,6 +489,7 @@ class RandomSurvivalForest(_BaseSurvivalForest):
         self.min_weight_fraction_leaf = min_weight_fraction_leaf
         self.max_features = max_features
         self.max_leaf_nodes = max_leaf_nodes
+        self.low_memory = low_memory
 
     def predict_cumulative_hazard_function(self, X, return_array=False):
         """Predict cumulative hazard function.
@@ -714,6 +721,10 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
         - If float, then draw `max_samples * X.shape[0]` samples. Thus,
           `max_samples` should be in the interval `(0.0, 1.0]`.
 
+    low_memory : boolean, default: False
+        If set, ``predict`` computations use reduced memory but ``predict_cumulative_hazard_function``
+        and ``predict_survival_function`` are not implemented.
+
     Attributes
     ----------
     estimators_ : list of SurvivalTree instances
@@ -762,6 +773,7 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
         verbose=0,
         warm_start=False,
         max_samples=None,
+        low_memory=False,
     ):
         super().__init__(
             estimator=SurvivalTree(splitter="random"),
@@ -774,6 +786,7 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
                 "max_features",
                 "max_leaf_nodes",
                 "random_state",
+                "low_memory",
             ),
             bootstrap=bootstrap,
             oob_score=oob_score,
@@ -790,6 +803,7 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
         self.min_weight_fraction_leaf = min_weight_fraction_leaf
         self.max_features = max_features
         self.max_leaf_nodes = max_leaf_nodes
+        self.low_memory = low_memory
 
     def predict_cumulative_hazard_function(self, X, return_array=False):
         """Predict cumulative hazard function.
