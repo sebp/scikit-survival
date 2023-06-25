@@ -110,12 +110,12 @@ nbval = [
     "seaborn~=0.11.2",
 ]
 
+[tool.setuptools]
+include-package-data = false
+
 [tool.setuptools.packages.find]
 include = ["sksurv*"]
 namespaces = false
-
-[tool.setuptools]
-include-package-data = false
 
 [tool.setuptools.package-data]
 "sksurv.datasets" = ["data/*.arff"]
