@@ -246,7 +246,7 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
     def predict_proba(self, X):
         """Perform prediction.
 
-        Only available of the meta estimator has a predict_proba method.
+        Only available if the meta estimator has a predict_proba method.
 
         Parameters
         ----------
@@ -268,7 +268,7 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
     def predict_log_proba(self, X):
         """Perform prediction.
 
-        Only available of the meta estimator has a predict_log_proba method.
+        Only available if the meta estimator has a predict_log_proba method.
 
         Parameters
         ----------
@@ -285,3 +285,31 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
         """
         Xt = self._predict_estimators(X)
         return self.final_estimator_.predict_log_proba(Xt)
+
+    @available_if(_meta_estimator_has("predict_survival_function"))
+    def predict_survival_function(self, X, return_array=False):
+        """Perform prediction.
+
+        Only available if the meta estimator has a predict_survival_function method.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            Data with samples to predict.
+
+        Returns
+        -------
+        survival : ndarray
+            If `return_array` is set, an array with the probability of
+            survival for each `self.unique_times_`, otherwise an array of
+            length `n_samples` of :class:`sksurv.functions.StepFunction`
+            instances will be returned.
+
+        return_array : boolean, default: False
+            If set, return an array with the probability
+            of survival for each `self.unique_times_`,
+            otherwise an array of :class:`sksurv.functions.StepFunction`.
+
+        """
+        Xt = self._predict_estimators(X)
+        return self.final_estimator_.predict_survival_function(Xt, return_array)
