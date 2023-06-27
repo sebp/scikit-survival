@@ -253,7 +253,7 @@ class TestStackingSurvivalAnalysis:
                 sum_of_predictions += estimator.predict(whas500.x_data_frame)
 
         p = meta.predict_survival_function(whas500.x_data_frame)
-        assert_array_equal(p, sum_of_predictions/len(meta.estimators_))
+        assert_array_equal(p, sum_of_predictions / len(meta.estimators_))
 
     @staticmethod
     def test_score(whas_data_with_estimator):
