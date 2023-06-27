@@ -1,5 +1,5 @@
 import numpy as np
-from numpy.testing import assert_array_almost_equal, assert_array_equal
+from numpy.testing import assert_almost_equal, assert_array_almost_equal, assert_array_equal
 import pandas as pd
 import pytest
 from sklearn.base import BaseEstimator
@@ -9,6 +9,7 @@ from sklearn.metrics import accuracy_score, roc_auc_score
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
+from sksurv.ensemble import RandomSurvivalForest
 from sksurv.linear_model import CoxPHSurvivalAnalysis
 from sksurv.meta import MeanEstimator, Stacking
 from sksurv.svm import FastSurvivalSVM
@@ -239,21 +240,26 @@ class TestStackingSurvivalAnalysis:
         whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
 
         meta = Stacking(
-            MeanEstimator(),
-            [("coxph", CoxPHSurvivalAnalysis()), ("svm", FastSurvivalSVM(random_state=0))],
+            CoxPHSurvivalAnalysis(),
+            [("rsf", RandomSurvivalForest(random_state=0)), ("svm", FastSurvivalSVM(random_state=0))],
             probabilities=False,
         )
         meta.fit(whas500.x_data_frame, whas500.y)
 
-        sum_of_predictions = None
-        for estimator in meta.estimators_:
-            if sum_of_predictions is None:
-                sum_of_predictions = estimator.predict(whas500.x_data_frame)
-            else:
-                sum_of_predictions += estimator.predict(whas500.x_data_frame)
+        surv = meta.predict_survival_function(whas500.x_data_frame, return_array=True)
 
-        p = meta.predict_survival_function(whas500.x_data_frame)
-        assert_array_equal(p, sum_of_predictions / len(meta.estimators_))
+        assert surv.shape == (whas500.x_data_frame.shape[0], meta.estimators_[0].unique_times_.shape[0])
+
+        assert np.isfinite(surv).all()
+        assert np.all(surv >= 0.0)
+        assert np.all(surv <= 1.0)
+
+        vals, counts = np.unique(surv[:, 0], return_counts=True)
+        assert_almost_equal(vals[-1], 1.0, decimal=4)
+        assert np.max(counts) == counts[-1]
+
+        d = np.apply_along_axis(np.diff, 1, surv)
+        assert (d <= 0).all()
 
     @staticmethod
     def test_score(whas_data_with_estimator):

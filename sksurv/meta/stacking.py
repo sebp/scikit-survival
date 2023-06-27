@@ -287,7 +287,7 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
         return self.final_estimator_.predict_log_proba(Xt)
 
     @available_if(_meta_estimator_has("predict_survival_function"))
-    def predict_survival_function(self, X):
+    def predict_survival_function(self, X, return_array=False):
         """Perform prediction.
 
         Only available if the meta estimator has a predict_survival_function method.
@@ -299,11 +299,17 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
 
         Returns
         -------
-        prediction : ndarray, shape = (n_samples, n_dim)
-            Prediction of meta estimator that combines
-            predictions of base estimators. `n_dim` depends
-            on the return value of meta estimator's `predict`
-            method.
+        survival : ndarray
+            If `return_array` is set, an array with the probability of
+            survival for each `self.unique_times_`, otherwise an array of
+            length `n_samples` of :class:`sksurv.functions.StepFunction`
+            instances will be returned.
+
+        return_array : boolean, default: False
+            If set, return an array with the probability
+            of survival for each `self.unique_times_`,
+            otherwise an array of :class:`sksurv.functions.StepFunction`.
+
         """
         Xt = self._predict_estimators(X)
-        return self.final_estimator_.predict_survival_function(Xt)
+        return self.final_estimator_.predict_survival_function(Xt, return_array)
