@@ -63,6 +63,9 @@ class MeanEstimator(BaseEstimator):
     def predict(self, X):  # pylint: disable=no-self-use
         return X.mean(axis=X.ndim - 1)
 
+    def predict_survival_function(self, X):
+        return X.mean(axis=X.ndim - 1)
+
 
 class MeanRankEstimator(BaseEstimator):
     def fit(self, X, y=None, **kwargs):  # pragma: no cover; # pylint: disable=unused-argument

@@ -223,8 +223,8 @@ class TestStackingSurvivalAnalysis:
         assert_cindex_almost_equal(y["fstat"], y["lenfol"], p, (0.7848807, 58983, 16166, 0, 14))
 
     @staticmethod
-    @pytest.mark.parametrize("method", ["predict_proba", "predict_log_proba"])
-    def test_predict_proba(method):
+    @pytest.mark.parametrize("method", ["predict_proba", "predict_log_proba", "predict_survival_function"])
+    def test_predict_variants(method):
         meta = Stacking(
             _PredictDummy(),
             [("coxph", CoxPHSurvivalAnalysis()), ("svm", FastSurvivalSVM(random_state=0))],
@@ -233,6 +233,27 @@ class TestStackingSurvivalAnalysis:
 
         with pytest.raises(AttributeError, match=f"'_PredictDummy' object has no attribute '{method}'"):
             getattr(meta, method)()  # pylint: disable=pointless-statement
+
+    @staticmethod
+    def test_predict_survival_function(make_whas500):
+        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
+
+        meta = Stacking(
+            MeanEstimator(),
+            [("coxph", CoxPHSurvivalAnalysis()), ("svm", FastSurvivalSVM(random_state=0))],
+            probabilities=False,
+        )
+        meta.fit(whas500.x_data_frame, whas500.y)
+
+        sum_of_predictions = None
+        for estimator in meta.estimators_:
+            if sum_of_predictions is None:
+                sum_of_predictions = estimator.predict(whas500.x_data_frame)
+            else:
+                sum_of_predictions += estimator.predict(whas500.x_data_frame)
+
+        p = meta.predict_survival_function(whas500.x_data_frame)
+        assert_array_equal(p, sum_of_predictions/len(meta.estimators_))
 
     @staticmethod
     def test_score(whas_data_with_estimator):
