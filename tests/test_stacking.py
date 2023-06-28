@@ -224,9 +224,10 @@ class TestStackingSurvivalAnalysis:
         assert_cindex_almost_equal(y["fstat"], y["lenfol"], p, (0.7848807, 58983, 16166, 0, 14))
 
     @staticmethod
-    @pytest.mark.parametrize("method",
-                             ["predict_proba", "predict_log_proba",
-                              "predict_cumulative_hazard_function", "predict_survival_function"])
+    @pytest.mark.parametrize(
+        "method",
+        ["predict_proba", "predict_log_proba", "predict_cumulative_hazard_function", "predict_survival_function"],
+    )
     def test_predict_variants(method):
         meta = Stacking(
             _PredictDummy(),
