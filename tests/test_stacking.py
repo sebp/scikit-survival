@@ -256,7 +256,7 @@ class TestStackingSurvivalAnalysis:
         assert np.isfinite(cum_hazard).all()
         assert np.all(cum_hazard >= 0.0)
 
-        vals, counts = np.unique(cum_hazard[:, 0], return_counts=True)
+        _, counts = np.unique(cum_hazard[:, 0], return_counts=True)
         assert np.max(counts) == counts[-1]
 
         d = np.apply_along_axis(np.diff, 1, cum_hazard)
