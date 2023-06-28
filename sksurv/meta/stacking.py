@@ -286,6 +286,32 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
         Xt = self._predict_estimators(X)
         return self.final_estimator_.predict_log_proba(Xt)
 
+    @available_if(_meta_estimator_has("predict_cumulative_hazard_function"))
+    def predict_cumulative_hazard_function(self, X, return_array=False):
+        """Perform prediction.
+
+        Only available if the meta estimator has a predict_cumulative_hazard_function method.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            Data with samples to predict.
+
+        return_array : boolean, default: False
+            If set, return an array with the cumulative hazard rate
+            for each `self.unique_times_`, otherwise an array of
+            :class:`sksurv.functions.StepFunction`.
+
+        Returns
+        -------
+        cum_hazard : ndarray
+            If `return_array` is set, an array with the cumulative hazard rate
+            for each `self.unique_times_`, otherwise an array of length `n_samples`
+            of :class:`sksurv.functions.StepFunction` instances will be returned.
+        """
+        Xt = self._predict_estimators(X)
+        return self.final_estimator_.predict_cumulative_hazard_function(Xt, return_array)
+
     @available_if(_meta_estimator_has("predict_survival_function"))
     def predict_survival_function(self, X, return_array=False):
         """Perform prediction.

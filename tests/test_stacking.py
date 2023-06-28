@@ -224,7 +224,10 @@ class TestStackingSurvivalAnalysis:
         assert_cindex_almost_equal(y["fstat"], y["lenfol"], p, (0.7848807, 58983, 16166, 0, 14))
 
     @staticmethod
-    @pytest.mark.parametrize("method", ["predict_proba", "predict_log_proba", "predict_survival_function"])
+    @pytest.mark.parametrize(
+        "method",
+        ["predict_proba", "predict_log_proba", "predict_cumulative_hazard_function", "predict_survival_function"],
+    )
     def test_predict_variants(method):
         meta = Stacking(
             _PredictDummy(),
@@ -234,6 +237,30 @@ class TestStackingSurvivalAnalysis:
 
         with pytest.raises(AttributeError, match=f"'_PredictDummy' object has no attribute '{method}'"):
             getattr(meta, method)()  # pylint: disable=pointless-statement
+
+    @staticmethod
+    def test_predict_cumulative_hazard_function(make_whas500):
+        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
+
+        meta = Stacking(
+            CoxPHSurvivalAnalysis(),
+            [("rsf", RandomSurvivalForest(random_state=0)), ("svm", FastSurvivalSVM(random_state=0))],
+            probabilities=False,
+        )
+        meta.fit(whas500.x_data_frame, whas500.y)
+
+        cum_hazard = meta.predict_cumulative_hazard_function(whas500.x_data_frame, return_array=True)
+
+        assert cum_hazard.shape == (whas500.x_data_frame.shape[0], meta.estimators_[0].unique_times_.shape[0])
+
+        assert np.isfinite(cum_hazard).all()
+        assert np.all(cum_hazard >= 0.0)
+
+        _, counts = np.unique(cum_hazard[:, 0], return_counts=True)
+        assert np.max(counts) == counts[-1]
+
+        d = np.apply_along_axis(np.diff, 1, cum_hazard)
+        assert (d >= 0).all()
 
     @staticmethod
     def test_predict_survival_function(make_whas500):
