@@ -258,7 +258,7 @@ class TestStackingSurvivalAnalysis:
 
         whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
         meta.fit(whas500.x_data_frame, whas500.y)
-        assert 395 == len(meta.unique_times_)  # pylint: disable=pointless-statement
+        assert 395 == len(meta.unique_times_)
 
     @staticmethod
     def test_predict_cumulative_hazard_function(make_whas500):
