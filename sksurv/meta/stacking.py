@@ -16,6 +16,7 @@ from sklearn.utils._param_validation import HasMethods
 from sklearn.utils.metaestimators import _BaseComposition, available_if
 
 from ..base import SurvivalAnalysisMixin
+from ..util import property_available_if
 
 
 def _meta_estimator_has(attr):
@@ -285,6 +286,10 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
         """
         Xt = self._predict_estimators(X)
         return self.final_estimator_.predict_log_proba(Xt)
+
+    @property_available_if(_meta_estimator_has("unique_times_"))
+    def unique_times_(self):
+        return self.meta_estimator.unique_times_
 
     @available_if(_meta_estimator_has("predict_cumulative_hazard_function"))
     def predict_cumulative_hazard_function(self, X, return_array=False):

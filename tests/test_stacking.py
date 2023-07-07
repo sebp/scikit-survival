@@ -239,6 +239,28 @@ class TestStackingSurvivalAnalysis:
             getattr(meta, method)()  # pylint: disable=pointless-statement
 
     @staticmethod
+    def test_unique_times(make_whas500):
+        meta = Stacking(
+            _PredictDummy(),
+            [("coxph", CoxPHSurvivalAnalysis()), ("svm", FastSurvivalSVM(random_state=0))],
+            probabilities=False,
+        )
+        with pytest.raises(AttributeError, match="'_PredictDummy' object has no attribute 'unique_times_'"):
+            meta.unique_times_  # pylint: disable=pointless-statement
+
+        meta = Stacking(
+            CoxPHSurvivalAnalysis(),
+            [("rsf", RandomSurvivalForest(random_state=0)), ("svm", FastSurvivalSVM(random_state=0))],
+            probabilities=False,
+        )
+        with pytest.raises(AttributeError, match="'BreslowEstimator' object has no attribute 'unique_times_'"):
+            meta.unique_times_  # pylint: disable=pointless-statement
+
+        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
+        meta.fit(whas500.x_data_frame, whas500.y)
+        assert 395 == len(meta.unique_times_)
+
+    @staticmethod
     def test_predict_cumulative_hazard_function(make_whas500):
         whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
 
