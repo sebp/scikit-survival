@@ -70,9 +70,6 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
     feature_names_in_ : ndarray of shape (`n_features_in_`,)
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
-
-    unique_times_ : array of shape = (n_unique_times,)
-        Unique time points.
     """
 
     _parameter_constraints = {
@@ -292,6 +289,12 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
 
     @property_available_if(_meta_estimator_has("unique_times_"))
     def unique_times_(self):
+        """
+        Returns
+        -------
+        unique_times_ : array of shape = (n_unique_times,)
+            Unique time points.
+        """
         return self.meta_estimator.unique_times_
 
     @available_if(_meta_estimator_has("predict_cumulative_hazard_function"))
