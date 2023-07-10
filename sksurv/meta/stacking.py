@@ -70,6 +70,9 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
     feature_names_in_ : ndarray of shape (`n_features_in_`,)
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
+
+    unique_times_ : array of shape = (n_unique_times,)
+        Unique time points.
     """
 
     _parameter_constraints = {
