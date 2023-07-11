@@ -213,6 +213,7 @@ def linkcode_resolve(domain, info):
     Adapted from scipy.
     """
     import sksurv
+    from sksurv.util import _PropertyAvailableIfDescriptor
 
     if domain != "py":
         return None
@@ -230,6 +231,9 @@ def linkcode_resolve(domain, info):
             obj = getattr(obj, part)
         except AttributeError:
             return None
+
+    if isinstance(obj, _PropertyAvailableIfDescriptor):
+        obj = obj.fget  # link to wrapped method
 
     try:
         fn = inspect.getsourcefile(obj)

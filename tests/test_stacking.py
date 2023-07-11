@@ -9,10 +9,11 @@ from sklearn.metrics import accuracy_score, roc_auc_score
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
+from sksurv.ensemble import RandomSurvivalForest
 from sksurv.linear_model import CoxPHSurvivalAnalysis
 from sksurv.meta import MeanEstimator, Stacking
 from sksurv.svm import FastSurvivalSVM
-from sksurv.testing import assert_cindex_almost_equal
+from sksurv.testing import assert_chf_properties, assert_cindex_almost_equal, assert_survival_function_properties
 
 
 class _NoFitEstimator(BaseEstimator):
@@ -223,8 +224,11 @@ class TestStackingSurvivalAnalysis:
         assert_cindex_almost_equal(y["fstat"], y["lenfol"], p, (0.7848807, 58983, 16166, 0, 14))
 
     @staticmethod
-    @pytest.mark.parametrize("method", ["predict_proba", "predict_log_proba"])
-    def test_predict_proba(method):
+    @pytest.mark.parametrize(
+        "method",
+        ["predict_proba", "predict_log_proba", "predict_cumulative_hazard_function", "predict_survival_function"],
+    )
+    def test_predict_variants(method):
         meta = Stacking(
             _PredictDummy(),
             [("coxph", CoxPHSurvivalAnalysis()), ("svm", FastSurvivalSVM(random_state=0))],
@@ -233,6 +237,62 @@ class TestStackingSurvivalAnalysis:
 
         with pytest.raises(AttributeError, match=f"'_PredictDummy' object has no attribute '{method}'"):
             getattr(meta, method)()  # pylint: disable=pointless-statement
+
+    @staticmethod
+    def test_unique_times(make_whas500):
+        meta = Stacking(
+            _PredictDummy(),
+            [("coxph", CoxPHSurvivalAnalysis()), ("svm", FastSurvivalSVM(random_state=0))],
+            probabilities=False,
+        )
+        with pytest.raises(AttributeError, match="'_PredictDummy' object has no attribute 'unique_times_'"):
+            meta.unique_times_  # pylint: disable=pointless-statement
+
+        meta = Stacking(
+            CoxPHSurvivalAnalysis(),
+            [("rsf", RandomSurvivalForest(random_state=0)), ("svm", FastSurvivalSVM(random_state=0))],
+            probabilities=False,
+        )
+        with pytest.raises(AttributeError, match="'BreslowEstimator' object has no attribute 'unique_times_'"):
+            meta.unique_times_  # pylint: disable=pointless-statement
+
+        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
+        meta.fit(whas500.x_data_frame, whas500.y)
+        assert 395 == len(meta.unique_times_)
+
+    @staticmethod
+    def test_predict_cumulative_hazard_function(make_whas500):
+        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
+
+        meta = Stacking(
+            CoxPHSurvivalAnalysis(),
+            [("rsf", RandomSurvivalForest(random_state=0)), ("svm", FastSurvivalSVM(random_state=0))],
+            probabilities=False,
+        )
+        meta.fit(whas500.x_data_frame, whas500.y)
+
+        cum_hazard = meta.predict_cumulative_hazard_function(whas500.x_data_frame, return_array=True)
+
+        assert cum_hazard.shape == (whas500.x_data_frame.shape[0], meta.estimators_[0].unique_times_.shape[0])
+
+        assert_chf_properties(cum_hazard)
+
+    @staticmethod
+    def test_predict_survival_function(make_whas500):
+        whas500 = make_whas500(with_mean=False, with_std=False, to_numeric=True)
+
+        meta = Stacking(
+            CoxPHSurvivalAnalysis(),
+            [("rsf", RandomSurvivalForest(random_state=0)), ("svm", FastSurvivalSVM(random_state=0))],
+            probabilities=False,
+        )
+        meta.fit(whas500.x_data_frame, whas500.y)
+
+        surv = meta.predict_survival_function(whas500.x_data_frame, return_array=True)
+
+        assert surv.shape == (whas500.x_data_frame.shape[0], meta.estimators_[0].unique_times_.shape[0])
+
+        assert_survival_function_properties(surv)
 
     @staticmethod
     def test_score(whas_data_with_estimator):
