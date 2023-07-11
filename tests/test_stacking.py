@@ -1,5 +1,5 @@
 import numpy as np
-from numpy.testing import assert_almost_equal, assert_array_almost_equal, assert_array_equal
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 import pandas as pd
 import pytest
 from sklearn.base import BaseEstimator
@@ -13,7 +13,7 @@ from sksurv.ensemble import RandomSurvivalForest
 from sksurv.linear_model import CoxPHSurvivalAnalysis
 from sksurv.meta import MeanEstimator, Stacking
 from sksurv.svm import FastSurvivalSVM
-from sksurv.testing import assert_cindex_almost_equal
+from sksurv.testing import assert_chf_properties, assert_cindex_almost_equal, assert_survival_function_properties
 
 
 class _NoFitEstimator(BaseEstimator):
@@ -275,14 +275,7 @@ class TestStackingSurvivalAnalysis:
 
         assert cum_hazard.shape == (whas500.x_data_frame.shape[0], meta.estimators_[0].unique_times_.shape[0])
 
-        assert np.isfinite(cum_hazard).all()
-        assert np.all(cum_hazard >= 0.0)
-
-        _, counts = np.unique(cum_hazard[:, 0], return_counts=True)
-        assert np.max(counts) == counts[-1]
-
-        d = np.apply_along_axis(np.diff, 1, cum_hazard)
-        assert (d >= 0).all()
+        assert_chf_properties(cum_hazard)
 
     @staticmethod
     def test_predict_survival_function(make_whas500):
@@ -299,16 +292,7 @@ class TestStackingSurvivalAnalysis:
 
         assert surv.shape == (whas500.x_data_frame.shape[0], meta.estimators_[0].unique_times_.shape[0])
 
-        assert np.isfinite(surv).all()
-        assert np.all(surv >= 0.0)
-        assert np.all(surv <= 1.0)
-
-        vals, counts = np.unique(surv[:, 0], return_counts=True)
-        assert_almost_equal(vals[-1], 1.0, decimal=4)
-        assert np.max(counts) == counts[-1]
-
-        d = np.apply_along_axis(np.diff, 1, surv)
-        assert (d <= 0).all()
+        assert_survival_function_properties(surv)
 
     @staticmethod
     def test_score(whas_data_with_estimator):

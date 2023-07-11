@@ -8,7 +8,7 @@ from sklearn.pipeline import make_pipeline
 from sksurv.datasets import load_breast_cancer
 from sksurv.ensemble import ExtraSurvivalTrees, RandomSurvivalForest
 from sksurv.preprocessing import OneHotEncoder
-from sksurv.testing import assert_cindex_almost_equal
+from sksurv.testing import assert_chf_properties, assert_cindex_almost_equal, assert_survival_function_properties
 from sksurv.tree import SurvivalTree
 
 FORESTS = [
@@ -72,15 +72,7 @@ def test_fit_predict_chf(make_whas500, forest_cls):
     chf = forest.predict_cumulative_hazard_function(whas500.x, return_array=True)
     assert chf.shape == (500, forest.unique_times_.shape[0])
 
-    assert np.isfinite(chf).all()
-    assert np.all(chf >= 0.0)
-
-    vals, counts = np.unique(chf[:, 0], return_counts=True)
-    assert vals[0] == 0.0
-    assert np.max(counts) == counts[0]
-
-    d = np.apply_along_axis(np.diff, 1, chf)
-    assert (d >= 0).all()
+    assert_chf_properties(chf)
 
 
 @pytest.mark.parametrize("forest_cls", FORESTS)
@@ -95,16 +87,7 @@ def test_fit_predict_surv(make_whas500, forest_cls):
     surv = forest.predict_survival_function(whas500.x, return_array=True)
     assert surv.shape == (500, forest.unique_times_.shape[0])
 
-    assert np.isfinite(surv).all()
-    assert np.all(surv >= 0.0)
-    assert np.all(surv <= 1.0)
-
-    vals, counts = np.unique(surv[:, 0], return_counts=True)
-    assert vals[-1] == 1.0
-    assert np.max(counts) == counts[-1]
-
-    d = np.apply_along_axis(np.diff, 1, surv)
-    assert (d <= 0).all()
+    assert_survival_function_properties(surv)
 
 
 @pytest.mark.parametrize(

@@ -15,6 +15,7 @@ import inspect
 from pathlib import Path
 import pkgutil
 
+import numpy as np
 from numpy.testing import assert_almost_equal, assert_array_equal
 import pytest
 
@@ -30,6 +31,45 @@ def assert_cindex_almost_equal(event_indicator, event_time, estimate, expected):
     cc = (concordant + 0.5 * tied_risk) / (concordant + discordant + tied_risk)
     assert_almost_equal(result[0], cc)
     assert_almost_equal(result[0], expected[0])
+
+
+def assert_survival_function_properties(surv_fns):
+    if not np.isfinite(surv_fns).all():
+        raise AssertionError("survival function contains values that are not finite")
+    if np.any(surv_fns < 0.0):
+        raise AssertionError("survival function contains negative values")
+    if np.any(surv_fns > 1.0):
+        raise AssertionError("survival function contains values larger 1")
+
+    d = np.apply_along_axis(np.diff, 1, surv_fns)
+    if np.any(d > 0):
+        raise AssertionError("survival functions are not monotonically decreasing")
+
+    # survival function at first time point
+    num_closer_to_zero = np.sum(1.0 - surv_fns[:, 0] >= surv_fns[:, 0])
+    if num_closer_to_zero / surv_fns.shape[0] > 0.5:
+        raise AssertionError(f"most ({num_closer_to_zero}) probabilities at first time point are closer to 0 than 1")
+
+    # survival function at last time point
+    num_closer_to_one = np.sum(1.0 - surv_fns[:, -1] < surv_fns[:, -1])
+    if num_closer_to_one / surv_fns.shape[0] > 0.5:
+        raise AssertionError(f"most ({num_closer_to_one}) probabilities at last time point are closer to 1 than 0")
+
+
+def assert_chf_properties(chf):
+    if not np.isfinite(chf).all():
+        raise AssertionError("chf contains values that are not finite")
+    if np.any(chf < 0.0):
+        raise AssertionError("chf contains negative values")
+
+    d = np.apply_along_axis(np.diff, 1, chf)
+    if np.any(d < 0):
+        raise AssertionError("chf are not monotonically increasing")
+
+    # chf at first time point
+    num_closer_to_one = np.sum(1.0 - chf[:, 0] < chf[:, 0])
+    if num_closer_to_one / chf.shape[0] > 0.5:
+        raise AssertionError(f"most ({num_closer_to_one}) hazard rates at first time point are closer to 1 than 0")
 
 
 def _is_survival_mixin(x):
