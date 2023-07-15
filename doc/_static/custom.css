@@ -108,8 +108,11 @@ a.tile-link:focus {
     width: 1.8rem;
 }
 
-.github-facts {
-    display: inline-block;
+.github-icon i {
+    font-size: calc(var(--pst-font-size-icon) - .1rem);
+}
+
+.navbar-icon-links ul.github-facts {
     margin: 0;
     padding: 0;
     font-size: .95rem;
@@ -118,18 +121,17 @@ a.tile-link:focus {
     opacity: .75;
     overflow: hidden;
     text-overflow: ellipsis;
-    vertical-align: middle;
 }
 
-.github-fact {
-    float: left;
+.navbar-icon-links .github-fact {
+    display: inline-block;
 }
 
-.github-fact::before {
+.navbar-icon-links .github-fact::before {
     margin: 0.2rem;
     content: "\00B7"
 }
 
-.github-fact:first-child::before {
+.navbar-icon-links .github-fact:first-child::before {
     display: none
 }
