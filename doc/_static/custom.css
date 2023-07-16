@@ -3,6 +3,10 @@ table {
     width: auto; /* Override fit-content which breaks Styler user guide ipynb */
 }
 
+.nboutput .output_area img {
+    border: 5px solid var(--pst-color-background);
+}
+
 .navbar-brand {
     padding-top: .3125rem;
     padding-bottom: .3125rem;
