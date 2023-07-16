@@ -56,6 +56,7 @@ extensions = [
     "sphinxcontrib.spelling",
     "nbsphinx",
     "sphinx_design",
+    "sphinx_copybutton",
 ]
 
 spelling_word_list_filename = "spelling_wordlist.txt"

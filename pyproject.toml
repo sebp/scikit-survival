@@ -100,6 +100,7 @@ docs = [
     "pydata-sphinx-theme ~=0.13.3",
     "sphinxcontrib-spelling",
     "sphinx-design ~=0.4.1",
+    "sphinx-copybutton ~=0.5.2",
 ]
 
 nbval = [
