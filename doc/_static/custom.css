@@ -1,3 +1,8 @@
+/* from https://github.com/pandas-dev/pandas/pull/49811 */
+table {
+    width: auto; /* Override fit-content which breaks Styler user guide ipynb */
+}
+
 .navbar-brand {
     padding-top: .3125rem;
     padding-bottom: .3125rem;
