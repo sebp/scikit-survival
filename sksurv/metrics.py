@@ -112,27 +112,25 @@ def _estimate_concordance_index(event_indicator, event_time, estimate, weights, 
 
     tied_time = None
 
-    concordant = 0
-    discordant = 0
-    tied_risk = 0
-    numerator = 0.0
-    denominator = 0.0
+    concordant = discordant = tied_risk = 0
+    numerator = denominator = 0.0
     for ind, mask, tied_time in _iter_comparable(event_indicator, event_time, order):
-        est_i = estimate[order[ind]]
-        event_i = event_indicator[order[ind]]
-        w_i = weights[order[ind]]
+        ind = order[ind]
+        est_i = estimate[ind]
+        event_i = event_indicator[ind]
+        w_i = weights[ind]
 
         est = estimate[order[mask]]
 
-        assert event_i, f"got censored sample at index {order[ind]}, but expected uncensored"
+        assert event_i, f"got censored sample at index {ind}, but expected uncensored"
 
-        ties = np.absolute(est - est_i) <= tied_tol
-        n_ties = ties.sum()
+        untied = np.abs(est - est_i) > tied_tol
+        n_ties = len(untied) - untied.sum()
         # an event should have a higher score
         con = est < est_i
-        n_con = con[~ties].sum()
+        n_con = con[untied].sum()
 
-        numerator += w_i * n_con + 0.5 * w_i * n_ties
+        numerator += w_i * (n_con + 0.5 * n_ties)
         denominator += w_i * mask.sum()
 
         tied_risk += n_ties
@@ -320,9 +318,8 @@ def concordance_index_ipcw(survival_train, survival_test, estimate, tau=None, ti
     if tau is None:
         ipcw = ipcw_test
     else:
-        ipcw = np.empty(estimate.shape[0], dtype=ipcw_test.dtype)
+        ipcw = np.zeros(estimate.shape[0], dtype=ipcw_test.dtype)
         ipcw[mask] = ipcw_test
-        ipcw[~mask] = 0
 
     w = np.square(ipcw)
 
@@ -448,8 +445,13 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
 
     n_samples = estimate.shape[0]
     n_times = times.shape[0]
+
+    expand_shape = (n_samples, n_times)
+    def expand_to_samples_times(array):
+        return np.broadcast_to(array[:, np.newaxis], expand_shape)
+
     if estimate.ndim == 1:
-        estimate = np.broadcast_to(estimate[:, np.newaxis], (n_samples, n_times))
+        estimate = expand_to_samples_times(estimate)
 
     # fit and transform IPCW
     cens = CensoringDistributionEstimator()
@@ -457,10 +459,10 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
     ipcw = cens.predict_ipcw(survival_test)
 
     # expand arrays to (n_samples, n_times) shape
-    test_time = np.broadcast_to(test_time[:, np.newaxis], (n_samples, n_times))
-    test_event = np.broadcast_to(test_event[:, np.newaxis], (n_samples, n_times))
-    times_2d = np.broadcast_to(times, (n_samples, n_times))
-    ipcw = np.broadcast_to(ipcw[:, np.newaxis], (n_samples, n_times))
+    test_time = expand_to_samples_times(test_time)
+    test_event = expand_to_samples_times(test_event)
+    times_2d = np.broadcast_to(times, expand_shape)
+    ipcw = expand_to_samples_times(ipcw)
 
     # sort each time point (columns) by risk score (descending)
     o = np.argsort(-estimate, axis=0)
@@ -474,7 +476,7 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
     n_controls = is_control.sum(axis=0)
 
     # prepend row of infinity values
-    estimate_diff = np.concatenate((np.broadcast_to(np.infty, (1, n_times)), estimate))
+    estimate_diff = np.concatenate([np.full((1, n_times), np.infty), estimate])
     is_tied = np.absolute(np.diff(estimate_diff, axis=0)) <= tied_tol
 
     cumsum_tp = np.cumsum(is_case * ipcw, axis=0)
