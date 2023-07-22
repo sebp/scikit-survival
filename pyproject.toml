@@ -96,9 +96,11 @@ docs = [
     "nbsphinx>=0.9.2",
     "docutils",
     "setuptools-scm",
-    "sphinx ~=4.4.0",
-    "pydata-sphinx-theme ~=0.8.1",
+    "sphinx ~=6.2.1",
+    "pydata-sphinx-theme ~=0.13.3",
     "sphinxcontrib-spelling",
+    "sphinx-design ~=0.4.1",
+    "sphinx-copybutton ~=0.5.2",
 ]
 
 nbval = [

@@ -55,6 +55,8 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinxcontrib.spelling",
     "nbsphinx",
+    "sphinx_design",
+    "sphinx_copybutton",
 ]
 
 spelling_word_list_filename = "spelling_wordlist.txt"
@@ -169,7 +171,10 @@ html_theme = "pydata_sphinx_theme"
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    "github_url": "https://github.com/sebp/scikit-survival",
+    "header_links_before_dropdown": 6,
+    "secondary_sidebar_items": ["page-toc"],
+    "navbar_end": ["theme-switcher.html", "navbar-github-links.html"],
+    "navbar_persistent": ["search-field.html"],
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -177,7 +182,7 @@ html_theme_options = {
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = "scikit-survival {0}".format(version)
+html_title = f"scikit-survival {version}"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 # html_short_title = None
@@ -200,7 +205,7 @@ html_js_files = ["buttons.js"]
 html_static_path = ["_static"]
 
 extlinks = {
-    "issue": ("https://github.com/sebp/scikit-survival/issues/%s", "#"),
+    "issue": ("https://github.com/sebp/scikit-survival/issues/%s", "#%s"),
 }
 
 intersphinx_mapping = {"sklearn": ("https://scikit-learn.org/1.2", None)}

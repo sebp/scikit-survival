@@ -1,73 +1,44 @@
+/* from https://github.com/pandas-dev/pandas/pull/49811 */
+table {
+    width: auto; /* Override fit-content which breaks Styler user guide ipynb */
+}
+
+.nboutput .output_area img {
+    border: 5px solid var(--pst-color-background);
+}
+
 .navbar-brand {
     padding-top: .3125rem;
     padding-bottom: .3125rem;
     height: 45px;
 }
 
-.tile {
-    position: relative;
-    display: block;
-    padding: 1rem 1.2rem;
-    border-radius: 6px;
-    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2)
-}
-
-@media screen and (max-width:39.99875em) {
-    .tile {
-        margin-bottom: 1rem
-    }
-}
-
-@media screen and (min-width:40em) and (max-width:63.99875em) {
-    .tile {
-        margin-bottom: 2rem
-    }
-}
-
-.tile .tile-title {
-    position: relative;
-    font-size: 22px;
+.overview-grid .sd-card-title {
+    color: var(--pst-color-link);
+    font-size: calc(var(--pst-font-size-h4) - .1rem);
     line-height: 1.4;
-    margin-top: 0;
-    margin-bottom: .5rem;
 }
 
-.tile .tile-title .tile-icon {
+.overview-grid .sd-card-title.sd-font-weight-bold {
+    font-weight: var(--pst-font-weight-heading) !important;
+}
+
+.overview-grid .sd-card-title .fas {
     position: absolute;
-    right: 0;
+    right: 1.2rem;
     line-height: 1.4;
     transition: all .2s
 }
 
-.tile h3.tile-title  {
-    color: rgba(var(--pst-color-link),1);
+.overview-grid .sd-card-hover:hover .sd-card-title {
+    color: var(--pst-color-link-hover);
 }
 
-.tile h3.tile-title:hover {
-    color:rgba(var(--pst-color-link-hover),1);
+.overview-grid .sd-card-hover:hover {
+    border-color: var(--sd-color-card-border);
 }
 
-.tile h3.tile-title:before {
-    height: 0;
-    margin: 0;
-}
-
-.tile .tile-desc {
-    margin-top: 1rem;
-    color: #646976
-}
-
-@media screen and (min-width:40em) {
-    .tile .tile-desc {
-        padding-right: 3.5rem
-    }
-}
-
-.tile .tile-desc p:last-child {
-    margin-bottom: 0
-}
-
-.tile:after {
+.overview-grid .sd-card-hover:after {
     content: " ";
     position: absolute;
     right: 0;
@@ -80,24 +51,8 @@
     transition: all .2s
 }
 
-.tile:hover:after {
-    opacity: 1
-}
-
-.tile:hover .tile-icon {
-    transform: scale(1.4)
-}
-
-a.tile-link:active,
-a.tile-link:link,
-a.tile-link:hover,
-a.tile-link:focus {
-    text-decoration: none;
-}
-
-.tile .tile-desc pre {
-    font-size: 80%;
-    white-space: pre-line;
+.overview-grid .sd-card-hover:hover:after {
+    opacity: 1;
 }
 
 .github-icon, .github-repository {
@@ -108,8 +63,11 @@ a.tile-link:focus {
     width: 1.8rem;
 }
 
-.github-facts {
-    display: inline-block;
+.github-icon i {
+    font-size: calc(var(--pst-font-size-icon) - .1rem);
+}
+
+.navbar-icon-links ul.github-facts {
     margin: 0;
     padding: 0;
     font-size: .95rem;
@@ -118,18 +76,17 @@ a.tile-link:focus {
     opacity: .75;
     overflow: hidden;
     text-overflow: ellipsis;
-    vertical-align: middle;
 }
 
-.github-fact {
-    float: left;
+.navbar-icon-links .github-fact {
+    display: inline-block;
 }
 
-.github-fact::before {
+.navbar-icon-links .github-fact::before {
     margin: 0.2rem;
     content: "\00B7"
 }
 
-.github-fact:first-child::before {
+.navbar-icon-links .github-fact:first-child::before {
     display: none
 }
