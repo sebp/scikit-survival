@@ -139,7 +139,7 @@ Building Cython code
 
 Part of the code base is written in `Cython`_. To build this code, run::
 
-    ???
+    pip install -e .[dev]
 
 
 .. _conda: https://conda.io/miniconda.html
