@@ -208,7 +208,7 @@ extlinks = {
     "issue": ("https://github.com/sebp/scikit-survival/issues/%s", "#%s"),
 }
 
-intersphinx_mapping = {"sklearn": ("https://scikit-learn.org/1.2", None)}
+intersphinx_mapping = {"sklearn": ("https://scikit-learn.org/1.3", None)}
 
 
 def linkcode_resolve(domain, info):
