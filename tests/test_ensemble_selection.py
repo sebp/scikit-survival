@@ -151,7 +151,7 @@ class TestEnsembleSelectionSurvivalAnalysis:
 class EnsembleSelectionFailureCases(FixtureParameterFactory):
     _msg_min_correlation = (
         "The 'min_correlation' parameter of EnsembleSelection must be "
-        r"a float in the range \[-1, 1\]\. "
+        r"a float in the range \[-1\.0, 1\.0\]\. "
         "Got {value} instead\\."
     )
     _msg_correlation = (

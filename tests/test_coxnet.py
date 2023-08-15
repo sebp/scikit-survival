@@ -1459,7 +1459,7 @@ class TestCoxnetSurvivalAnalysis:
     def test_invalid_tol(self, tol):
         msg = (
             "The 'tol' parameter of CoxnetSurvivalAnalysis must be a float "
-            r"in the range \[0, inf\)\. "
+            r"in the range \[0\.0, inf\)\. "
             f"Got {tol} instead\\."
         )
 
@@ -1521,7 +1521,7 @@ class TestCoxnetSurvivalAnalysis:
     def test_invalid_alpha_min_ratio_string(self):
         msg = (
             "The 'alpha_min_ratio' parameter of CoxnetSurvivalAnalysis must be a float "
-            r"in the range \(0, inf\) or a str among {'auto'}\. "
+            r"in the range \(0\.0, inf\) or a str among {'auto'}\. "
             r"Got 'max' instead\."
         )
 
@@ -1532,7 +1532,7 @@ class TestCoxnetSurvivalAnalysis:
     def test_invalid_alpha_min_ratio_float(self, value):
         msg = (
             "The 'alpha_min_ratio' parameter of CoxnetSurvivalAnalysis must be a float "
-            r"in the range \(0, inf\) or a str among {'auto'}\. "
+            r"in the range \(0\.0, inf\) or a str among {'auto'}\. "
             f"Got {value} instead\\."
         )
 
