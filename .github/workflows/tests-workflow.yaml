@@ -12,7 +12,7 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - py38_pandas10_numpy121_sklearn13
+          - py38_pandas11_numpy121_sklearn13
           - py39_pandas13_numpy122_sklearn13
           - py310_pandas14_numpy122_sklearn13
           - py311_pandas15_numpy124_sklearn13
