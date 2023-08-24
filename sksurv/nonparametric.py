@@ -189,16 +189,29 @@ def _ci_logmlog(prob_survival, sigma_t, z):
     return ci
 
 
+def _ci_greenwood(prob_survival, sigma_t, z):
+    """Compute the pointwise Greenwood confidence intervals
+    See https://www.math.wustl.edu/~sawyer/handouts/greenwood.pdf.
+    """
+    var_survival_prob = prob_survival**2 * sigma_t**2
+    ci = prob_survival + np.array([[-1], [1]]) * z * np.sqrt(var_survival_prob)
+    return ci
+
+
 def _km_ci_estimator(prob_survival, ratio_var, conf_level, conf_type):
-    if conf_type not in {"log-log"}:
-        raise ValueError(f"conf_type must be None or a str among {{'log-log'}}, but was {conf_type!r}")
+    if conf_type not in {"log-log", "greenwood"}:
+        raise ValueError(f"conf_type must be None or a str among {{'log-log', 'greenwood'}}, but was {conf_type!r}")
 
     if not isinstance(conf_level, numbers.Real) or not np.isfinite(conf_level) or conf_level <= 0 or conf_level >= 1.0:
         raise ValueError(f"conf_level must be a float in the range (0.0, 1.0), but was {conf_level!r}")
 
     z = stats.norm.isf((1.0 - conf_level) / 2.0)
-    sigma = np.sqrt(np.cumsum(ratio_var))
-    ci = _ci_logmlog(prob_survival, sigma, z)
+    sigma_t = np.sqrt(np.cumsum(ratio_var))
+
+    if conf_type == "log-log":
+        ci = _ci_logmlog(prob_survival, sigma_t, z)
+    elif conf_type == "greenwood":
+        ci = _ci_greenwood(prob_survival, sigma_t, z)
     return ci
 
 
@@ -241,11 +254,13 @@ def kaplan_meier_estimator(
     conf_level : float, optional, default: 0.95
         The level for a two-sided confidence interval on the survival curves.
 
-    conf_type : None or {'log-log'}, optional, default: 'log-log'.
+    conf_type : None or {'log-log', 'greenwood'}, optional, default: 'log-log'.
         The type of confidence intervals to estimate.
         If `None`, no confidence intervals are estimated.
         If "log-log", estimate confidence intervals using
         the log hazard or :math:`log(-log(S(t)))` as described in [2]_.
+        If "greenwood", estimate confidence intervals using
+        the Greenwood variance formula.
 
     Returns
     -------
@@ -421,11 +436,13 @@ class SurvivalFunctionEstimator(BaseEstimator):
     conf_level : float, optional, default: 0.95
         The level for a two-sided confidence interval on the survival curves.
 
-    conf_type : None or {'log-log'}, optional, default: 'log-log'.
+    conf_type : None or {'log-log', 'greenwood'}, optional, default: 'log-log'.
         The type of confidence intervals to estimate.
         If `None`, no confidence intervals are estimated.
         If "log-log", estimate confidence intervals using
         the log hazard or :math:`log(-log(S(t)))`.
+        If "greenwood", estimate confidence intervals using
+        the Greenwood variance formula.
 
     See also
     --------
@@ -435,7 +452,7 @@ class SurvivalFunctionEstimator(BaseEstimator):
 
     _parameter_constraints = {
         "conf_level": [Interval(numbers.Real, 0.0, 1.0, closed="neither")],
-        "conf_type": [None, StrOptions({"log-log"})],
+        "conf_type": [None, StrOptions({"log-log", "greenwood"})],
     }
 
     def __init__(self, conf_level=0.95, conf_type=None):
