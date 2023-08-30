@@ -19,9 +19,9 @@ requires = [
     "numpy; python_version>'3.11'",
 
     # scikit-learn requirements
-    "scikit-learn>=1.2.0; python_version<='3.9'",
-    "scikit-learn>=1.2.0; python_version=='3.10'",
-    "scikit-learn>=1.2.0; python_version=='3.11'",
+    "scikit-learn~=1.2.0; python_version<='3.9'",
+    "scikit-learn~=1.2.0; python_version=='3.10'",
+    "scikit-learn~=1.2.0; python_version=='3.11'",
     "scikit-learn; python_version>'3.11'",
 ]
 build-backend = "setuptools.build_meta"
