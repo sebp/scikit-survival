@@ -79,9 +79,8 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         - If int, then consider `max_features` features at each split.
         - If float, then `max_features` is a fraction and
-          `int(max_features * n_features)` features are considered at each
-          split.
-        - If "auto", then `max_features=sqrt(n_features)`.
+          `max(1, int(max_features * n_features_in_))` features are considered at
+          each split.
         - If "sqrt", then `max_features=sqrt(n_features)`.
         - If "log2", then `max_features=log2(n_features)`.
         - If None, then `max_features=n_features`.
@@ -161,7 +160,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         "max_features": [
             Interval(Integral, 1, None, closed="left"),
             Interval(Real, 0.0, 1.0, closed="right"),
-            StrOptions({"auto", "sqrt", "log2"}, deprecated={"auto"}),
+            StrOptions({"sqrt", "log2"}),
             None,
         ],
         "random_state": ["random_state"],
@@ -318,7 +317,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
     def _check_max_features(self):
         if isinstance(self.max_features, str):
-            if self.max_features in ("auto", "sqrt"):
+            if self.max_features == "sqrt":
                 max_features = max(1, int(np.sqrt(self.n_features_in_)))
             elif self.max_features == "log2":
                 max_features = max(1, int(np.log2(self.n_features_in_)))
