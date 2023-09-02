@@ -483,7 +483,7 @@ class TestComponentwiseGradientBoosting:
         model = ComponentwiseGradientBoostingSurvivalAnalysis(n_estimators=100)
         model.fit(whas500_data.x, whas500_data.y)
 
-        assert model.loss_.__class__.__name__ == "CoxPH"
+        assert model.loss == "coxph"
 
         p = model.predict(whas500_data.x)
 
@@ -612,7 +612,7 @@ class TestComponentwiseGradientBoosting:
         model = ComponentwiseGradientBoostingSurvivalAnalysis(loss="ipcwls", n_estimators=100, random_state=0)
         model.fit(whas500_data.x, whas500_data.y)
 
-        assert model.loss_.__class__.__name__ == "IPCWLeastSquaresError"
+        assert model.loss == "ipcwls"
 
         time_predicted = model.predict(whas500_data.x)
         time_true = whas500_data.y["lenfol"]
@@ -640,7 +640,7 @@ class TestComponentwiseGradientBoosting:
         model = ComponentwiseGradientBoostingSurvivalAnalysis(loss="squared", n_estimators=100, random_state=0)
         model.fit(whas500_data.x, whas500_data.y)
 
-        assert model.loss_.__class__.__name__ == "CensoredSquaredLoss"
+        assert model.loss == "squared"
 
         time_predicted = model.predict(whas500_data.x)
         time_true = whas500_data.y["lenfol"]

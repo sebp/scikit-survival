@@ -136,9 +136,6 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         The aggregated coefficients. The first element `coef\_[0]` corresponds
         to the intercept. If loss is `coxph`, the intercept will always be zero.
 
-    loss_ : LossFunction
-        The concrete ``LossFunction`` object.
-
     estimators_ : list of base learners
         The collection of fitted sub-estimators.
 
@@ -197,10 +194,6 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         self.dropout_rate = dropout_rate
         self.random_state = random_state
         self.verbose = verbose
-
-    @property
-    def loss_(self):
-        return self._loss
 
     @property
     def _predict_risk_score(self):
