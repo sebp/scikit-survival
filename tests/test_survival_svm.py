@@ -532,7 +532,13 @@ class TestKernelSurvivalSVM:
     def test_fit_and_predict_linear_regression(kernel, make_whas500):
         whas500 = make_whas500(to_numeric=True)
         ssvm = FastKernelSurvivalSVM(
-            optimizer="rbtree", rank_ratio=0.0, kernel=kernel, max_iter=50, tol=1e-8, fit_intercept=True, random_state=0
+            optimizer="rbtree",
+            rank_ratio=0.0,
+            kernel=kernel,
+            max_iter=50,
+            tol=1e-8,
+            fit_intercept=True,
+            random_state=0xF1,
         )
         if kernel == "precomputed":
             x = np.dot(whas500.x, whas500.x.T)
