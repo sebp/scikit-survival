@@ -66,7 +66,7 @@ cdef class RisksetCounter:
     cdef void set_data(self, const DOUBLE_t[:, ::1] data) nogil:
         self.data = data
 
-    cdef void update(self, const SIZE_t* samples, SIZE_t start, SIZE_t end) nogil:
+    cdef void update(self, const SIZE_t[:] samples, SIZE_t start, SIZE_t end) nogil:
         cdef:
             SIZE_t i
             SIZE_t idx
@@ -101,7 +101,7 @@ cdef class RisksetCounter:
             events[0] = <DOUBLE_t> self.n_events[index]
 
 
-cdef int argbinsearch(const DOUBLE_t[:] arr, DOUBLE_t key_val, SIZE_t * ret) nogil except -1:
+cdef int argbinsearch(const DOUBLE_t[:] arr, DOUBLE_t key_val, SIZE_t * ret) except -1 nogil:
     cdef:
         SIZE_t arr_len = arr.shape[0]
         SIZE_t min_idx = 0
@@ -142,7 +142,6 @@ cdef class LogrankCriterion(Criterion):
 
     def __cinit__(self, SIZE_t n_outputs, SIZE_t n_samples, const DOUBLE_t[::1] unique_times, const cnp.npy_bool[::1] is_event_time):
         # Default values
-        self.samples = NULL
         self.start = 0
         self.pos = 0
         self.end = 0
@@ -173,14 +172,14 @@ cdef class LogrankCriterion(Criterion):
         return (type(self), (self.n_outputs, self.n_samples, self.unique_times, self.is_event_time), self.__getstate__())
 
     cdef int init(self, const DOUBLE_t[:, ::1] y, const DOUBLE_t[:] sample_weight,
-                  double weighted_n_samples, SIZE_t* samples, SIZE_t start,
-                  SIZE_t end) nogil except -1:
+                  double weighted_n_samples, const SIZE_t[:] sample_indices, SIZE_t start,
+                  SIZE_t end) except -1 nogil:
         """Initialize the criterion at node samples[start:end] and
            children samples[start:start] and samples[start:end]."""
         # Initialize fields
         self.y = y
         self.sample_weight = sample_weight
-        self.samples = samples
+        self.sample_indices = sample_indices
         self.start = start
         self.end = end
         self.n_node_samples = end - start
@@ -195,10 +194,10 @@ cdef class LogrankCriterion(Criterion):
             const DOUBLE_t[::1] unique_times = self.unique_times
 
         self.riskset_total.set_data(y)
-        self.riskset_total.update(samples, start, end)
+        self.riskset_total.update(sample_indices, start, end)
 
         for i in range(start, end):
-            idx = samples[i]
+            idx = sample_indices[i]
             time = y[idx, 0]
             argbinsearch(unique_times, time, &self.samples_time_idx[idx])
 
@@ -211,25 +210,25 @@ cdef class LogrankCriterion(Criterion):
         self.reset()
         return 0
 
-    cdef int reset(self) nogil except -1:
+    cdef int reset(self) except -1 nogil:
         """Reset the criterion at pos=start."""
         self.weighted_n_left = 0.0
         self.weighted_n_right = self.weighted_n_node_samples
         self.pos = self.start
         return 0
 
-    cdef int reverse_reset(self) nogil except -1:
+    cdef int reverse_reset(self) except -1 nogil:
         """Reset the criterion at pos=end."""
         self.weighted_n_right = 0.0
         self.weighted_n_left = self.weighted_n_node_samples
         self.pos = self.end
         return 0
 
-    cdef int update(self, SIZE_t new_pos) nogil except -1:
+    cdef int update(self, SIZE_t new_pos) except -1 nogil:
         """Updated statistics by moving samples[pos:new_pos] to the left."""
         cdef:
             const DOUBLE_t[:] sample_weight = self.sample_weight
-            const SIZE_t* samples = self.samples
+            const SIZE_t[:] samples = self.sample_indices
             const DOUBLE_t[:, ::1] y = self.y
 
             SIZE_t pos = self.start  # always start from the beginning
@@ -267,11 +266,11 @@ cdef class LogrankCriterion(Criterion):
 
     cdef double impurity_improvement(self, double impurity_parent,
                                      double impurity_left,
-                                     double impurity_right) nogil:
+                                     double impurity_right) noexcept nogil:
         """Compute the improvement in impurity"""
         return self.proxy_impurity_improvement()
 
-    cdef double proxy_impurity_improvement(self) nogil:
+    cdef double proxy_impurity_improvement(self) noexcept nogil:
         """Compute a proxy of the impurity reduction"""
 
         cdef:
@@ -308,20 +307,20 @@ cdef class LogrankCriterion(Criterion):
 
         return v
 
-    cdef double node_impurity(self) nogil:
+    cdef double node_impurity(self) noexcept nogil:
         """Evaluate the impurity of the current node, i.e. the impurity of
            samples[start:end]."""
         return INFINITY
 
     cdef void children_impurity(self, double* impurity_left,
-                                double* impurity_right) nogil:
+                                double* impurity_right) noexcept nogil:
         """Evaluate the impurity in children nodes, i.e. the impurity of the
            left child (samples[start:pos]) and the impurity the right child
            (samples[pos:end])."""
         impurity_left[0] = INFINITY
         impurity_right[0] = INFINITY
 
-    cdef void node_value(self, double* dest) nogil:
+    cdef void node_value(self, double* dest) noexcept nogil:
         """Compute the node value of samples[start:end] into dest."""
         # Estimate cumulative hazard function
         cdef:

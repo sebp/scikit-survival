@@ -101,9 +101,6 @@ class TestGradientBoosting:
             min_samples_split=10,
         )
 
-        with pytest.warns(FutureWarning):
-            assert model.loss_.__class__.__name__ == "CoxPH"
-
         assert model.max_features_ == 14
         assert not hasattr(model, "oob_improvement_")
 
@@ -343,9 +340,6 @@ class TestGradientBoosting:
             max_depth=3,
         )
 
-        with pytest.warns(FutureWarning):
-            assert model.loss_.__class__.__name__ == "IPCWLeastSquaresError"
-
         X, y = self.data
         time_predicted = model.predict(X)
         time_true = y["lenfol"]
@@ -373,9 +367,6 @@ class TestGradientBoosting:
             n_estimators=100,
             max_depth=3,
         )
-
-        with pytest.warns(FutureWarning):
-            assert model.loss_.__class__.__name__ == "CensoredSquaredLoss"
 
         X, y = self.data
         time_predicted = model.predict(X)
@@ -492,7 +483,7 @@ class TestComponentwiseGradientBoosting:
         model = ComponentwiseGradientBoostingSurvivalAnalysis(n_estimators=100)
         model.fit(whas500_data.x, whas500_data.y)
 
-        assert model.loss_.__class__.__name__ == "CoxPH"
+        assert model.loss == "coxph"
 
         p = model.predict(whas500_data.x)
 
@@ -621,7 +612,7 @@ class TestComponentwiseGradientBoosting:
         model = ComponentwiseGradientBoostingSurvivalAnalysis(loss="ipcwls", n_estimators=100, random_state=0)
         model.fit(whas500_data.x, whas500_data.y)
 
-        assert model.loss_.__class__.__name__ == "IPCWLeastSquaresError"
+        assert model.loss == "ipcwls"
 
         time_predicted = model.predict(whas500_data.x)
         time_true = whas500_data.y["lenfol"]
@@ -649,7 +640,7 @@ class TestComponentwiseGradientBoosting:
         model = ComponentwiseGradientBoostingSurvivalAnalysis(loss="squared", n_estimators=100, random_state=0)
         model.fit(whas500_data.x, whas500_data.y)
 
-        assert model.loss_.__class__.__name__ == "CensoredSquaredLoss"
+        assert model.loss == "squared"
 
         time_predicted = model.predict(whas500_data.x)
         time_true = whas500_data.y["lenfol"]

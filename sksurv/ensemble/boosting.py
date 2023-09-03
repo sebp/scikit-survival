@@ -136,9 +136,6 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         The aggregated coefficients. The first element `coef\_[0]` corresponds
         to the intercept. If loss is `coxph`, the intercept will always be zero.
 
-    loss_ : LossFunction
-        The concrete ``LossFunction`` object.
-
     estimators_ : list of base learners
         The collection of fitted sub-estimators.
 
@@ -197,10 +194,6 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         self.dropout_rate = dropout_rate
         self.random_state = random_state
         self.verbose = verbose
-
-    @property
-    def loss_(self):
-        return self._loss
 
     @property
     def _predict_risk_score(self):
@@ -637,7 +630,6 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         - If int, values must be in the range `[1, inf)`.
         - If float, values must be in the range `(0.0, 1.0]` and the features
           considered at each split will be `max(1, int(max_features * n_features_in_))`.
-        - If 'auto', then `max_features=sqrt(n_features)`.
         - If 'sqrt', then `max_features=sqrt(n_features)`.
         - If 'log2', then `max_features=log2(n_features)`.
         - If None, then `max_features=n_features`.
@@ -820,9 +812,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
     def _check_max_features(self):
         if isinstance(self.max_features, str):
-            if self.max_features == "auto":
-                max_features = self.n_features_in_
-            elif self.max_features == "sqrt":
+            if self.max_features == "sqrt":
                 max_features = max(1, int(np.sqrt(self.n_features_in_)))
             elif self.max_features == "log2":
                 max_features = max(1, int(np.log2(self.n_features_in_)))

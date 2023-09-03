@@ -907,7 +907,7 @@ class TestCoxPH:
 
         msg = (
             "The 'alpha' parameter of CoxPHSurvivalAnalysis must be a float "
-            r"in the range \[0, inf\) or an instance of 'numpy\.ndarray'\. "
+            r"in the range \[0\.0, inf\) or an instance of 'numpy\.ndarray'\. "
             f"Got {alpha} instead\\."
         )
 

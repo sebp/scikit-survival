@@ -362,7 +362,7 @@ def test_breast_cancer_1(breast_cancer):
     X, y = breast_cancer
 
     tree = SurvivalTree(
-        max_features="auto",
+        max_features="sqrt",
         max_depth=5,
         max_leaf_nodes=10,
         min_samples_split=0.06,
