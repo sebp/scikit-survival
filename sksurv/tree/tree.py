@@ -8,8 +8,14 @@ from sklearn.tree import _tree
 from sklearn.tree._classes import DENSE_SPLITTERS, SPARSE_SPLITTERS
 from sklearn.tree._splitter import Splitter
 from sklearn.tree._tree import BestFirstTreeBuilder, DepthFirstTreeBuilder, Tree
+from sklearn.tree._utils import _any_isnan_axis0
 from sklearn.utils._param_validation import Interval, StrOptions
-from sklearn.utils.validation import check_is_fitted, check_random_state
+from sklearn.utils.validation import (
+    _assert_all_finite_element_wise,
+    assert_all_finite,
+    check_is_fitted,
+    check_random_state,
+)
 
 from ..base import SurvivalAnalysisMixin
 from ..functions import StepFunction
@@ -34,6 +40,9 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
     The quality of a split is measured by the
     log-rank splitting rule.
+
+    If ``splitter='best'``, fit and predict methods support
+    missing values. See :ref:`tree_missing_value_support` for details.
 
     See [1]_, [2]_ and [3]_ for further description.
 
@@ -191,8 +200,57 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         self.max_leaf_nodes = max_leaf_nodes
         self.low_memory = low_memory
 
+    def _more_tags(self):
+        allow_nan = self.splitter == "best"
+        return {"allow_nan": allow_nan}
+
+    def _support_missing_values(self, X):
+        return not issparse(X) and self._get_tags()["allow_nan"]
+
+    def _compute_missing_values_in_feature_mask(self, X):
+        """Return boolean mask denoting if there are missing values for each feature.
+
+        This method also ensures that X is finite.
+
+        Parameter
+        ---------
+        X : array-like of shape (n_samples, n_features), dtype=DOUBLE
+            Input data.
+
+        Returns
+        -------
+        missing_values_in_feature_mask : ndarray of shape (n_features,), or None
+            Missing value mask. If missing values are not supported or there
+            are no missing values, return None.
+        """
+        common_kwargs = dict(estimator_name=self.__class__.__name__, input_name="X")
+
+        if not self._support_missing_values(X):
+            assert_all_finite(X, **common_kwargs)
+            return None
+
+        with np.errstate(over="ignore"):
+            overall_sum = np.sum(X)
+
+        if not np.isfinite(overall_sum):
+            # Raise a ValueError in case of the presence of an infinite element.
+            _assert_all_finite_element_wise(X, xp=np, allow_nan=True, **common_kwargs)
+
+        # If the sum is not nan, then there are no missing values
+        if not np.isnan(overall_sum):
+            return None
+
+        missing_values_in_feature_mask = _any_isnan_axis0(X)
+        return missing_values_in_feature_mask
+
     def fit(self, X, y, sample_weight=None, check_input=True):
         """Build a survival tree from the training set (X, y).
+
+        If ``splitter='best'``, `X` is allowed to contain missing
+        values. In addition to evaluating each potential threshold on
+        the non-missing data, the splitter will evaluate the split
+        with all the missing values going to the left node or the
+        right node. See :ref:`tree_missing_value_support` for details.
 
         Parameters
         ----------
@@ -215,10 +273,11 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         random_state = check_random_state(self.random_state)
 
         if check_input:
-            X = self._validate_data(X, ensure_min_samples=2, accept_sparse="csc")
+            X = self._validate_data(X, ensure_min_samples=2, accept_sparse="csc", force_all_finite=False)
             event, time = check_array_survival(X, y)
             time = time.astype(np.float64)
             self.unique_times_, self.is_event_time_ = get_unique_times(time, event)
+            missing_values_in_feature_mask = self._compute_missing_values_in_feature_mask(X)
             if issparse(X):
                 X.sort_indices()
 
@@ -227,6 +286,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             y_numeric[:, 1] = event.astype(np.float64)
         else:
             y_numeric, self.unique_times_, self.is_event_time_ = y
+            missing_values_in_feature_mask = None
 
         n_samples, self.n_features_in_ = X.shape
         params = self._check_params(n_samples)
@@ -275,7 +335,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
                 0.0,  # min_impurity_decrease
             )
 
-        builder.build(self.tree_, X, y_numeric, sample_weight)
+        builder.build(self.tree_, X, y_numeric, sample_weight, missing_values_in_feature_mask)
 
         return self
 
@@ -348,7 +408,17 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
     def _validate_X_predict(self, X, check_input, accept_sparse="csr"):
         """Validate X whenever one tries to predict"""
         if check_input:
-            X = self._validate_data(X, dtype=DTYPE, accept_sparse=accept_sparse, reset=False)
+            if self._support_missing_values(X):
+                force_all_finite = "allow-nan"
+            else:
+                force_all_finite = True
+            X = self._validate_data(
+                X,
+                dtype=DTYPE,
+                accept_sparse=accept_sparse,
+                reset=False,
+                force_all_finite=force_all_finite,
+            )
         else:
             # The number of features is checked regardless of `check_input`
             self._check_n_features(X, reset=False)
@@ -373,6 +443,9 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         ----------
         X : array-like or sparse matrix, shape = (n_samples, n_features)
             Data matrix.
+            If ``splitter='best'``, `X` is allowed to contain missing
+            values and decisions are made as described in
+            :ref:`tree_missing_value_support`.
 
         check_input : boolean, default: True
             Allow to bypass several input checking.
@@ -406,6 +479,9 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         ----------
         X : array-like or sparse matrix, shape = (n_samples, n_features)
             Data matrix.
+            If ``splitter='best'``, `X` is allowed to contain missing
+            values and decisions are made as described in
+            :ref:`tree_missing_value_support`.
 
         check_input : boolean, default: True
             Allow to bypass several input checking.
@@ -473,6 +549,9 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         ----------
         X : array-like or sparse matrix, shape = (n_samples, n_features)
             Data matrix.
+            If ``splitter='best'``, `X` is allowed to contain missing
+            values and decisions are made as described in
+            :ref:`tree_missing_value_support`.
 
         check_input : boolean, default: True
             Allow to bypass several input checking.
@@ -537,6 +616,9 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             The input samples. Internally, it will be converted to
             ``dtype=np.float32`` and if a sparse matrix is provided
             to a sparse ``csr_matrix``.
+            If ``splitter='best'``, `X` is allowed to contain missing
+            values and decisions are made as described in
+            :ref:`tree_missing_value_support`.
 
         check_input : bool, default: True
             Allow to bypass several input checking.
@@ -563,6 +645,9 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             The input samples. Internally, it will be converted to
             ``dtype=np.float32`` and if a sparse matrix is provided
             to a sparse ``csr_matrix``.
+            If ``splitter='best'``, `X` is allowed to contain missing
+            values and decisions are made as described in
+            :ref:`tree_missing_value_support`.
 
         check_input : bool, default=True
             Allow to bypass several input checking.

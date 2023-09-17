@@ -14,6 +14,7 @@ from sksurv.compare import compare_survival
 from sksurv.datasets import load_breast_cancer, load_veterans_lung_cancer
 from sksurv.nonparametric import kaplan_meier_estimator, nelson_aalen_estimator
 from sksurv.tree import SurvivalTree
+from sksurv.util import Surv
 
 
 @pytest.fixture()
@@ -779,3 +780,53 @@ def test_predict_sparse(make_whas500):
     assert_array_equal(y_pred, y_pred_csr)
     assert_array_equal(y_cum_h, y_cum_h_csr)
     assert_array_equal(y_surv, y_surv_csr)
+
+
+def test_missing_values_best_splitter_to_max_samples(veterans):
+    X, y = veterans
+    X = X.loc[:, "Karnofsky_score"].values[:, np.newaxis]
+    X = X.astype(np.float32)
+
+    tree = SurvivalTree(max_depth=1)
+    tree.fit(X, y)
+
+    y_pred_chf = tree.predict_cumulative_hazard_function([[np.nan]], return_array=True)
+    y_pred_surv = tree.predict_survival_function([[np.nan]], return_array=True)
+    y_pred = np.column_stack((y_pred_chf[0], y_pred_surv[0]))
+
+    # missing values go to node with the most samples
+    assert np.argmax(tree.tree_.n_node_samples[1:]) == 1
+    y_expected = tree.tree_.value[2]
+    assert_array_almost_equal(y_pred, y_expected)
+
+
+def test_missing_values_best_splitter_to_right():
+    X = np.array([[np.nan] * 8 + list(range(7))], dtype=np.float32).T
+    y = Surv.from_arrays(time=np.concatenate((np.arange(8) + 10, np.arange(6, 13))), event=np.ones(15, dtype=bool))
+
+    tree = SurvivalTree(max_depth=2)
+    tree.fit(X, y)
+
+    y_pred_chf = tree.predict_cumulative_hazard_function([[np.nan]], return_array=True)
+    y_pred_surv = tree.predict_survival_function([[np.nan]], return_array=True)
+    y_pred = np.column_stack((y_pred_chf[0], y_pred_surv[0]))
+
+    # missing values go to the right
+    y_expected = tree.tree_.value[4]
+    assert_array_almost_equal(y_pred, y_expected)
+
+
+@pytest.mark.parametrize("is_sparse", [False, True])
+def test_missing_value_random_splitter_errors(is_sparse):
+    X = np.array([[3, 5, 7, 11, np.nan, 13, 17, np.nan, 19]], dtype=np.float32).T
+    y = Surv.from_arrays(
+        event=np.array([True, True, True, False, True, False, False, False, True]),
+        time=np.array([90, 80, 70, 60, 50, 40, 30, 20, 10]),
+    )
+
+    if is_sparse:
+        X = sparse.csr_matrix(X)
+
+    tree = SurvivalTree(splitter="random")
+    with pytest.raises(ValueError, match="Input X contains NaN"):
+        tree.fit(X, y)
