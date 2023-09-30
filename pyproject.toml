@@ -141,6 +141,8 @@ filterwarnings = [
     "ignore:Jupyter is migrating its paths to use standard platformdirs:DeprecationWarning",
     # added with pandas 2.1
     "ignore:is_categorical_dtype is deprecated and will be removed in a future version:FutureWarning",
+    # added with pandas 2.1
+    "ignore:DataFrame.applymap has been deprecated:FutureWarning",
 ]
 
 [tool.coverage.run]
