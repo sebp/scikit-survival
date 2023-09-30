@@ -139,6 +139,8 @@ filterwarnings = [
     "ignore:Setuptools is replacing distutils",
     "ignore:distutils Version classes are deprecated.*:DeprecationWarning",
     "ignore:Jupyter is migrating its paths to use standard platformdirs:DeprecationWarning",
+    # added with pandas 2.1
+    "ignore:is_categorical_dtype is deprecated and will be removed in a future version:FutureWarning",
 ]
 
 [tool.coverage.run]
