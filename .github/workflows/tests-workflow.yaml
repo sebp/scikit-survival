@@ -13,9 +13,9 @@ jobs:
       matrix:
         config:
           - py38_pandas11_numpy121_sklearn13
-          - py39_pandas13_numpy122_sklearn13
-          - py310_pandas14_numpy122_sklearn13
-          - py311_pandas15_numpy124_sklearn13
+          - py39_pandas14_numpy122_sklearn13
+          - py310_pandas15_numpy124_sklearn13
+          - py311_pandas20_numpy124_sklearn13
         runner:
           - ubuntu-latest
           - macos-latest
@@ -101,7 +101,7 @@ jobs:
       - name: Set dependencies
         id: dependencies
         env:
-          DEPS_CONFIG: py310_pandas14_numpy122_sklearn13
+          DEPS_CONFIG: py310_pandas15_numpy124_sklearn13
         run: |
           source ci/deps/${DEPS_CONFIG}.sh
           echo "CI_PYTHON_VERSION=${CI_PYTHON_VERSION}" >> $GITHUB_ENV
