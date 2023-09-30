@@ -1,5 +1,4 @@
-import importlib
-from importlib.metadata import PackageNotFoundError, distribution
+from importlib.metadata import PackageNotFoundError, version
 import platform
 import sys
 
@@ -11,18 +10,10 @@ from .util import property_available_if
 
 def _get_version(name):
     try:
-        module = importlib.import_module(name)
+        pkg_version = version(name)
     except ImportError:
-        return None
-
-    if name == "osqp":
-        version = module.OSQP().version()
-    else:
-        version = getattr(module, "__version__", None)
-
-    if version is None:  # pragma: no cover
-        raise ImportError(f"Can't determine version for {module.__name__}")
-    return version
+        pkg_version = None
+    return pkg_version
 
 
 def show_versions():
@@ -33,8 +24,8 @@ def show_versions():
     }
 
     deps = [
-        "sksurv",
-        "sklearn",
+        "scikit-survival",
+        "scikit-learn",
         "numpy",
         "scipy",
         "pandas",
@@ -57,14 +48,14 @@ def show_versions():
 
     print("SYSTEM")
     print("------")
-    for name, version in sys_info.items():
-        print(fmt.format(name, version))
+    for name, version_string in sys_info.items():
+        print(fmt.format(name, version_string))
 
     print("\nDEPENDENCIES")
     print("------------")
     for dep in deps:
-        version = _get_version(dep)
-        print(fmt.format(dep, version))
+        version_string = _get_version(dep)
+        print(fmt.format(dep, version_string))
 
 
 @available_if(_final_estimator_has("predict_cumulative_hazard_function"))
@@ -139,7 +130,7 @@ def patch_pipeline():
 
 
 try:
-    __version__ = distribution("scikit-survival").version
+    __version__ = version("scikit-survival")
 except PackageNotFoundError:  # pragma: no cover
     # package is not installed
     __version__ = "unknown"
