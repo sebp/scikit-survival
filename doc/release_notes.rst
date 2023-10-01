@@ -1,6 +1,52 @@
 Release Notes
 =============
 
+scikit-survival 0.22.0 (2023-10-01)
+-----------------------------------
+
+This release adds support for scikit-learn 1.3,
+which includes :ref:`missing value support <tree_missing_value_support>` for
+:class:`sksurv.tree.SurvivalTree`.
+Support for previous versions of scikit-learn has been dropped.
+
+Moreover, a ``low_memory`` option has been added to :class:`sksurv.ensemble.RandomSurvivalForest`,
+:class:`sksurv.ensemble.ExtraSurvivalTrees`, and :class:`sksurv.tree.SurvivalTree`
+which reduces the memory footprint of calling ``predict``, but disables the use
+of ``predict_cumulative_hazard_function`` and ``predict_survival_function``.
+
+Bug fixes
+^^^^^^^^^
+- Fix issue where an estimator could be fit to data containing
+  negative event times (:issue:`410`).
+
+Enhancements
+^^^^^^^^^^^^
+- Expand test_stacking.py coverage w.r.t. ``predict_log_proba`` (:issue:`380`).
+- Add ``low_memory`` option to :class:`sksurv.ensemble.RandomSurvivalForest`,
+  :class:`sksurv.ensemble.ExtraSurvivalTrees`, and
+  :class:`sksurv.tree.SurvivalTree`. If set, ``predict`` computations use
+  less memory, but ``predict_cumulative_hazard_function``
+  and ``predict_survival_function`` are not implemented (:issue:`369`).
+- Allow calling :meth:`sksurv.meta.Stacking.predict_cumulative_hazard_function`
+  and :meth:`sksurv.meta.Stacking.predict_survival_function`
+  if the meta estimator supports it (:issue:`388`).
+- Add support for missing values in :class:`sksurv.tree.SurvivalTree` based
+  on missing value support in scikit-learn 1.3 (:issue:`405`).
+- Update bundled Eigen to 3.4.0.
+
+Documentation
+^^^^^^^^^^^^^
+- Add :attr:`sksurv.meta.Stacking.unique_times_` to API docs.
+- Upgrade to Sphinx 6.2.1 and pydata_sphinx_theme 0.13.3 (:issue:`390`).
+
+Backwards incompatible changes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- The ``loss_`` attribute of :class:`sksurv.ensemble.ComponentwiseGradientBoostingSurvivalAnalysis`
+  and :class:`sksurv.ensemble.GradientBoostingSurvivalAnalysis` has been removed (:issue:`402`).
+- Support for ``max_features='auto'`` in :class:`sksurv.ensemble.GradientBoostingSurvivalAnalysis`
+  and :class:`sksurv.tree.SurvivalTree` has been removed (:issue:`402`).
+
+
 scikit-survival 0.21.0 (2023-06-11)
 -----------------------------------
 
