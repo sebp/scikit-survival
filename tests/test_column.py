@@ -223,7 +223,7 @@ class EncodeCategoricalCases(CategoricalCases):
     def data_drop_all_missing(self):
         b, eb = self.binary_with_missing
 
-        all_missing = np.repeat([None], len(b))
+        all_missing = pd.Series([np.nan] * len(b), dtype=object)
 
         input_df = pd.DataFrame({"a_binary": b, "bogus": all_missing})
 
@@ -234,7 +234,7 @@ class EncodeCategoricalCases(CategoricalCases):
     def data_retain_all_missing(self):
         input_df, _, expected_df = self.data_drop_all_missing()
         kwargs = {"allow_drop": False}
-        expected_df.loc[:, "bogus"] = None
+        expected_df.loc[:, "bogus"] = pd.Series([np.nan] * expected_df.shape[0], index=expected_df.index, dtype=object)
 
         return input_df, kwargs, expected_df
 
