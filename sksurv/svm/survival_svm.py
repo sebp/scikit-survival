@@ -747,7 +747,7 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
         self
         """
         X = self._validate_for_fit(X)
-        event, time = check_array_survival(X, y)
+        event, time = check_array_survival(X, y, allow_time_zero=False)
 
         self._validate_params()
 
@@ -757,9 +757,6 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
         if self.rank_ratio < 1.0:
             if self.optimizer in {"simple", "PRSVM"}:
                 raise ValueError(f"optimizer {self.optimizer!r} does not implement regression objective")
-
-            if (time <= 0).any():
-                raise ValueError("observed time contains values smaller or equal to zero")
 
             # log-transform time
             time = np.log(time)

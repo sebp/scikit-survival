@@ -4,6 +4,7 @@ import pytest
 
 from sksurv.linear_model import CoxnetSurvivalAnalysis
 from sksurv.testing import all_survival_estimators
+from sksurv.util import Surv
 
 
 def all_survival_function_estimators():
@@ -30,3 +31,13 @@ def test_survival_functions(estimator, make_whas500):
     arr = np.row_stack([fn(times) for fn in fns_cls])
 
     assert_array_almost_equal(arr, fns_arr)
+
+
+@pytest.mark.parametrize("estimator", all_survival_function_estimators())
+@pytest.mark.parametrize("y_time", [-1e-8, -1, np.finfo(float).min])
+def test_fit_negative_survial_time_raises(estimator, y_time):
+    X = np.random.randn(7, 3)
+    y = Surv.from_arrays(event=np.ones(7, dtype=bool), time=[1, 9, 3, y_time, 1, 8, 1e10])
+
+    with pytest.raises(ValueError, match="observed time contains values smaller zero"):
+        estimator.fit(X, y)

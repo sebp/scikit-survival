@@ -96,7 +96,7 @@ class Surv:
         )
 
 
-def check_y_survival(y_or_event, *args, allow_all_censored=False):
+def check_y_survival(y_or_event, *args, allow_all_censored=False, allow_time_zero=True):
     """Check that array correctly represents an outcome for survival analysis.
 
     Parameters
@@ -113,6 +113,9 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False):
 
     allow_all_censored : bool, optional, default: False
         Whether to allow all events to be censored.
+
+    allow_time_zero : bool, optional, default: True
+        Whether to allow event times to be zero.
 
     Returns
     -------
@@ -156,12 +159,21 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False):
         if not np.issubdtype(yt.dtype, np.number):
             raise ValueError(f"time must be numeric, but found {yt.dtype} for argument {i + 2}")
 
+        if allow_time_zero:
+            cond = yt < 0
+            msg = "observed time contains values smaller zero"
+        else:
+            cond = yt <= 0
+            msg = "observed time contains values smaller or equal to zero"
+        if np.any(cond):
+            raise ValueError(msg)
+
         return_val.append(yt)
 
     return tuple(return_val)
 
 
-def check_array_survival(X, y):
+def check_array_survival(X, y, **kwargs):
     """Check that all arrays have consistent first dimensions.
 
     Parameters
@@ -175,7 +187,7 @@ def check_array_survival(X, y):
         second field.
 
     kwargs : dict
-        Additional arguments passed to :func:`sklearn.utils.check_array`.
+        Additional arguments passed to :func:`check_y_survival`.
 
     Returns
     -------
@@ -185,7 +197,7 @@ def check_array_survival(X, y):
     time : array, shape=[n_samples,], dtype=float
         Time of event or censoring.
     """
-    event, time = check_y_survival(y)
+    event, time = check_y_survival(y, **kwargs)
     check_consistent_length(X, event, time)
     return event, time
 

@@ -1075,7 +1075,7 @@ def test_brier_coxph():
 
 
 def test_brier_score_int_dtype():
-    times = np.arange(30, dtype=int)
+    times = np.arange(1, 31, dtype=int)
     rnd = np.random.RandomState(1)
     times = rnd.choice(times, 20)
 
