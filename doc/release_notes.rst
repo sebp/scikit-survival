@@ -1,6 +1,14 @@
 Release Notes
 =============
 
+scikit-survival 0.22.1 (2023-10-08)
+-----------------------------------
+
+Bug fixes
+^^^^^^^^^
+- Fix error in :meth:`sksurv.tree.SurvivalTree.fit` if ``X`` has missing values and dtype other than float32 (:issue:`412`).
+
+
 scikit-survival 0.22.0 (2023-10-01)
 -----------------------------------
 
