@@ -1,3 +1,4 @@
+from itertools import product
 from queue import LifoQueue
 
 import numpy as np
@@ -65,6 +66,16 @@ def toy_data():
 
     y = np.fromiter(zip(event, time), dtype=[("status", bool), ("time", float)])
     return X, y
+
+
+def supported_float_dtypes():
+    names = (
+        "float16",
+        "float32",
+        "float64",
+        "float128",
+    )
+    return [i for i in names if hasattr(np, i)]
 
 
 def assert_curve_almost_equal(x, y):
@@ -547,6 +558,21 @@ def test_fit_int_time(breast_cancer):
     assert_array_equal(tree_f.tree_.feature, tree_i.tree_.feature)
     assert_array_equal(tree_f.tree_.n_node_samples, tree_i.tree_.n_node_samples)
     assert_array_almost_equal(tree_f.tree_.threshold, tree_i.tree_.threshold)
+
+
+@pytest.mark.parametrize("dtype,missing", product(supported_float_dtypes(), [False, True]))
+def test_fit_dtype(toy_data, dtype, missing):
+    X, y = toy_data
+    if missing:
+        X[:23, 0] = np.nan
+    X = X.astype(dtype)
+
+    tree = SurvivalTree()
+    tree.fit(X, y)
+    assert hasattr(tree, "tree_")
+
+    pred = tree.predict(X)
+    assert pred.shape[0] == X.shape[0]
 
 
 @pytest.mark.parametrize("func", ["predict_survival_function", "predict_cumulative_hazard_function"])
