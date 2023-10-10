@@ -7,9 +7,12 @@ repos:
     -   id: trailing-whitespace
         exclude: '^\.gitignore$'
     -   id: check-added-large-files
+    -   id: check-case-conflict
     -   id: check-merge-conflict
+    -   id: check-symlinks
     -   id: check-toml
     -   id: check-yaml
+    -   id: debug-statements
 -   repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.27.0
     hooks:
