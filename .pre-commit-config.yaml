@@ -15,6 +15,7 @@ repos:
     hooks:
     -   id: check-dependabot
     -   id: check-github-workflows
+    -   id: check-readthedocs
 -   repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.5.4
     hooks:
