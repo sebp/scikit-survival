@@ -21,8 +21,8 @@ platform:
 
 install:
   - ps: $env:CONDA_INSTALL_LOCN="$env:USERPROFILE\Miniconda3"
-  - ps: Invoke-WebRequest -Uri https://repo.anaconda.com/miniconda/Miniconda3-py39_22.11.1-1-Windows-x86_64.exe -OutFile Miniconda3.exe
-  - ps: ( Get-FileHash -Algorithm SHA256 Miniconda3.exe ).Hash -eq '4b92942fbd70e84a221306a801b3e4c06dd46e894f949a3eb19b4b150ec19171'
+  - ps: Invoke-WebRequest -Uri https://repo.anaconda.com/miniconda/Miniconda3-py311_23.5.2-0-Windows-x86_64.exe -OutFile Miniconda3.exe
+  - ps: ( Get-FileHash -Algorithm SHA256 Miniconda3.exe ).Hash -eq '00e8370542836862d4c790aa8966f1d7344a8addd4b766004febcb23f40e2914'
   - ps: Start-Process Miniconda3.exe -Wait -ArgumentList @('/S', '/InstallationType=JustMe', '/RegisterPython=1', '/D="$env:CONDA_INSTALL_LOCN"')
   - ps: $env:Path += ";$env:CONDA_INSTALL_LOCN\Scripts;$env:CONDA_INSTALL_LOCN\Library\bin"
   - ps: conda init powershell
