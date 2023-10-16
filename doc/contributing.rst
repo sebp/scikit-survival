@@ -137,10 +137,9 @@ of the documentation, run::
 Building Cython code
 --------------------
 
-Part of the code base is written in `Cython`_. To build this code, run::
+Part of the code base is written in `Cython`_. To rebuild this code after making changes, please re-run the install command from the 'Setting up a Development Environment' section.
 
-    pip install -e .[dev]
-
+If you are new to Cython you may find the project's documentation on `debugging <https://cython.readthedocs.io/en/latest/src/userguide/debugging.html>`_ and `profiling <https://cython.readthedocs.io/en/latest/src/tutorial/profiling_tutorial.html>`_ helpful.
 
 .. _conda: https://conda.io/miniconda.html
 .. _Cython: https://cython.org
