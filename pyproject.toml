@@ -182,7 +182,7 @@ extend-exclude = [
     "sksurv/linear_model/src/eigen",
 ]
 # Group violations by containing file.
-format = "grouped"
+output-format = "grouped"
 ignore = ["C408"]
 ignore-init-module-imports = true
 line-length = 120
