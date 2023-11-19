@@ -101,7 +101,7 @@ jobs:
       - name: Set dependencies
         id: dependencies
         env:
-          DEPS_CONFIG: py310_pandas15_numpy124_sklearn13
+          DEPS_CONFIG: py311_pandas20_numpy124_sklearn13
         run: |
           source ci/deps/${DEPS_CONFIG}.sh
           echo "CI_PYTHON_VERSION=${CI_PYTHON_VERSION}" >> $GITHUB_ENV
