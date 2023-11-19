@@ -20,7 +20,7 @@ cnp.import_array()
 @cython.wraparound(False)
 @cython.cdivision(True)
 @cython.boundscheck(False)
-cdef void _get_min_and_max(cnp.npy_double[:] x, cnp.npy_double * min_out, cnp.npy_double * max_out) nogil:
+cdef void _get_min_and_max(cnp.npy_double[:] x, cnp.npy_double * min_out, cnp.npy_double * max_out) noexcept nogil:
     cdef cnp.npy_double amin = x[0]
     cdef cnp.npy_double amax = x[0]
     cdef int i
