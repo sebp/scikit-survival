@@ -59,14 +59,14 @@ cdef class RisksetCounter:
         free(self.n_events)
         free(self.n_at_risk)
 
-    cdef void reset(self) nogil:
+    cdef void reset(self) noexcept nogil:
         memset(self.n_events, 0, self.nbytes)
         memset(self.n_at_risk, 0, self.nbytes)
 
-    cdef void set_data(self, const DOUBLE_t[:, ::1] data) nogil:
+    cdef void set_data(self, const DOUBLE_t[:, ::1] data) noexcept nogil:
         self.data = data
 
-    cdef void update(self, const SIZE_t[:] samples, SIZE_t start, SIZE_t end) nogil:
+    cdef void update(self, const SIZE_t[:] samples, SIZE_t start, SIZE_t end) noexcept nogil:
         cdef:
             SIZE_t i
             SIZE_t idx
@@ -94,7 +94,7 @@ cdef class RisksetCounter:
                 if event != 0.0:
                     self.n_events[ti] += 1
 
-    cdef inline void at(self, SIZE_t index, DOUBLE_t * at_risk, DOUBLE_t * events) nogil:
+    cdef inline void at(self, SIZE_t index, DOUBLE_t * at_risk, DOUBLE_t * events) noexcept nogil:
         if at_risk != NULL:
             at_risk[0] = <DOUBLE_t> self.n_at_risk[index]
         if events != NULL:

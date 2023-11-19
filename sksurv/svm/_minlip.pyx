@@ -84,7 +84,7 @@ def create_difference_matrix(cnp.npy_uint8[:] event,
 cdef inline void set_entries(cnp.npy_intp[:] columns,
                              cnp.npy_int8[:] values,
                              cnp.npy_intp k,
-                             cnp.npy_intp i, cnp.npy_intp j) nogil:
+                             cnp.npy_intp i, cnp.npy_intp j) noexcept nogil:
     """Create sparse matrix with sorted indices"""
     if i < j:
         columns[k] = i
@@ -104,7 +104,7 @@ cdef inline void set_entries(cnp.npy_intp[:] columns,
 cdef cnp.npy_intp create_difference_matrix_direct_neighbor(cnp.npy_uint8[:] event,
                                               cnp.npy_intp[:] o,
                                               cnp.npy_int8[:] values,
-                                              cnp.npy_intp[:] columns) nogil:
+                                              cnp.npy_intp[:] columns) noexcept nogil:
     """Only compare against direct nearest neighbor according to time"""
     cdef cnp.npy_intp n_samples = event.shape[0]
     cdef cnp.npy_intp i
@@ -129,7 +129,7 @@ cdef cnp.npy_intp create_difference_matrix_direct_neighbor(cnp.npy_uint8[:] even
 cdef cnp.npy_intp create_difference_matrix_nearest_neighbor(cnp.npy_uint8[:] event,
                                                cnp.npy_intp[:] o,
                                                cnp.npy_int8[:] values,
-                                               cnp.npy_intp[:] columns) nogil:
+                                               cnp.npy_intp[:] columns) noexcept nogil:
     """Only considers comparable pairs (i, j) where j is uncensored sample
     with highest survival time smaller than y_i"""
     cdef cnp.npy_intp n_samples = event.shape[0]
@@ -154,7 +154,7 @@ cdef cnp.npy_intp create_difference_matrix_nearest_neighbor(cnp.npy_uint8[:] eve
 cdef cnp.npy_intp create_difference_matrix_full(cnp.npy_uint8[:] event,
                                    cnp.npy_intp[:] o,
                                    cnp.npy_int8[:] values,
-                                   cnp.npy_intp[:] columns) nogil:
+                                   cnp.npy_intp[:] columns) noexcept nogil:
     """Considers all possible comparable pairs"""
     cdef cnp.npy_intp n_samples = event.shape[0]
     cdef cnp.npy_intp i, j
