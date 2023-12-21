@@ -15,7 +15,7 @@ import re
 
 import numpy as np
 import pandas as pd
-from pandas.api.types import is_categorical_dtype, is_object_dtype
+from pandas.api.types import CategoricalDtype, is_object_dtype
 
 _ILLEGAL_CHARACTER_PAT = re.compile(r"[^-_=\w\d\(\)<>\.]")
 
@@ -70,7 +70,7 @@ def _write_header(data, fp, relation_name, index):
         name = attribute_names[column]
         fp.write(f"@attribute {name}\t")
 
-        if is_categorical_dtype(series) or is_object_dtype(series):
+        if isinstance(series.dtype, CategoricalDtype) or is_object_dtype(series):
             _write_attribute_categorical(series, fp)
         elif np.issubdtype(series.dtype, np.floating):
             fp.write("real")
@@ -114,7 +114,7 @@ _check_str_array = np.frompyfunc(_check_str_value, 1, 1)
 
 def _write_attribute_categorical(series, fp):
     """Write categories of a categorical/nominal attribute"""
-    if is_categorical_dtype(series.dtype):
+    if isinstance(series.dtype, CategoricalDtype):
         categories = series.cat.categories
         string_values = _check_str_array(categories)
     else:

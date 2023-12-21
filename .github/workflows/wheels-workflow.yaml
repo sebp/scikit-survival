@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-22.04, windows-2019, macos-11]
-        python: [38, 39, 310, 311]
+        python: [38, 39, 310, 311, 312]
 
     steps:
       - uses: actions/checkout@v4

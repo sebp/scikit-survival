@@ -12,7 +12,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import pandas as pd
-from pandas.api.types import is_categorical_dtype
+from pandas.api.types import CategoricalDtype
 from sklearn.utils import check_array, check_consistent_length
 
 __all__ = ["check_array_survival", "check_y_survival", "safe_concat", "Surv"]
@@ -251,7 +251,7 @@ def safe_concat(objs, *args, **kwargs):
     categories = {}
     for df in objs:
         if isinstance(df, pd.Series):
-            if is_categorical_dtype(df.dtype):
+            if isinstance(df.dtype, CategoricalDtype):
                 categories[df.name] = {"categories": df.cat.categories, "ordered": df.cat.ordered}
         else:
             dfc = df.select_dtypes(include=["category"])

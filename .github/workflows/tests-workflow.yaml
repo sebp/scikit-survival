@@ -12,10 +12,10 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - py38_pandas11_numpy121_sklearn13
           - py39_pandas14_numpy122_sklearn13
           - py310_pandas15_numpy124_sklearn13
           - py311_pandas20_numpy124_sklearn13
+          - py312_pandas21_numpy126_sklearn13
         runner:
           - ubuntu-latest
           - macos-latest
