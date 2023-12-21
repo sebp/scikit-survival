@@ -14,7 +14,7 @@ import logging
 
 import numpy as np
 import pandas as pd
-from pandas.api.types import is_categorical_dtype
+from pandas.api.types import CategoricalDtype, is_object_dtype
 
 __all__ = ["categorical_to_numeric", "encode_categorical", "standardize"]
 
@@ -125,12 +125,12 @@ def encode_categorical(table, columns=None, **kwargs):
         Numeric columns in the input table remain unchanged.
     """
     if isinstance(table, pd.Series):
-        if not is_categorical_dtype(table.dtype) and not table.dtype.char == "O":
+        if not isinstance(table.dtype, CategoricalDtype) and not is_object_dtype(table.dtype):
             raise TypeError(f"series must be of categorical dtype, but was {table.dtype}")
         return _encode_categorical_series(table, **kwargs)
 
     def _is_categorical_or_object(series):
-        return is_categorical_dtype(series.dtype) or series.dtype.char == "O"
+        return isinstance(series.dtype, CategoricalDtype) or is_object_dtype(series.dtype)
 
     if columns is None:
         # for columns containing categories
@@ -191,9 +191,9 @@ def categorical_to_numeric(table):
     """
 
     def transform(column):
-        if is_categorical_dtype(column.dtype):
+        if isinstance(column.dtype, CategoricalDtype):
             return column.cat.codes
-        if column.dtype.char == "O":
+        if is_object_dtype(column.dtype):
             try:
                 nc = column.astype(np.int64)
             except ValueError:

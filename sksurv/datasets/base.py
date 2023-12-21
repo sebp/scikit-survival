@@ -3,7 +3,7 @@ import warnings
 
 import numpy as np
 import pandas as pd
-from pandas.api.types import is_categorical_dtype
+from pandas.api.types import CategoricalDtype
 
 from ..column import categorical_to_numeric, standardize
 from ..io import loadarff
@@ -102,7 +102,7 @@ def get_x_y(data_frame, attr_labels, pos_label=None, survival=True):
 def _loadarff_with_index(filename):
     dataset = loadarff(filename)
     if "index" in dataset.columns:
-        if is_categorical_dtype(dataset["index"].dtype):
+        if isinstance(dataset["index"].dtype, CategoricalDtype):
             # concatenating categorical index may raise TypeError
             # see https://github.com/pandas-dev/pandas/issues/14586
             dataset["index"] = dataset["index"].astype(object)

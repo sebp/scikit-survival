@@ -142,8 +142,6 @@ filterwarnings = [
     "ignore:distutils Version classes are deprecated.*:DeprecationWarning",
     "ignore:Jupyter is migrating its paths to use standard platformdirs:DeprecationWarning",
     # added with pandas 2.1
-    "ignore:is_categorical_dtype is deprecated and will be removed in a future version:FutureWarning",
-    # added with pandas 2.1
     "ignore:DataFrame.applymap has been deprecated:FutureWarning",
     # deprecated since Python 3.12
     "ignore:datetime\\.datetime\\.utcfromtimestamp\\(\\) is deprecated and scheduled for removal in a future version.*:DeprecationWarning",
