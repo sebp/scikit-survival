@@ -1,3 +1,5 @@
+.. _contributing:
+
 Contributing Guidelines
 =======================
 
@@ -13,7 +15,10 @@ scikit-survival is developed on `GitHub`_ using the `Git`_ version control syste
 The preferred way to contribute to scikit-survival is to fork
 the main repository on GitHub, then submit a *pull request* (PR).
 
-Creating a fork
+
+.. _forking:
+
+Creating a Fork
 ---------------
 
 These are the steps you need to take to create a copy of the scikit-survival repository
@@ -32,6 +37,8 @@ on your computer.
     git clone --recurse-submodules git@github.com:YourLogin/scikit-survival.git
     cd scikit-survival
 
+
+.. _setup-dev-environment:
 
 Setting up a Development Environment
 ------------------------------------
@@ -57,6 +64,9 @@ These are the steps you need to take.
 4. Compile the C/C++ extensions and install scikit-survival in development mode::
 
     pip install -e .[dev]
+
+
+.. _making-changes-to-code:
 
 Making Changes to the Code
 --------------------------
@@ -97,6 +107,9 @@ For a pull request to be accepted, your changes must meet the below requirements
    is compatible and include the license information in the contributed files,
    or obtain a permission from the original author to relicense the contributed code.
 
+
+.. _submit-pull-request:
+
 Submitting a Pull Request
 -------------------------
 
@@ -120,6 +133,8 @@ Submitting a Pull Request
 4. `Create a pull request <https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request>`_.
 
 
+.. _building-documentation:
+
 Building the Documentation
 --------------------------
 
@@ -134,12 +149,17 @@ of the documentation, run::
 
   xdg-open _build/html/index.html
 
-Building Cython code
+
+.. _building-cython-code:
+
+Building Cython Code
 --------------------
 
-Part of the code base is written in `Cython`_. To rebuild this code after making changes, please re-run the install command from the 'Setting up a Development Environment' section.
+Part of the code base is written in `Cython`_. To rebuild this code after making changes,
+please re-run the install command from the :ref:`setup-dev-environment` section.
 
-If you are new to Cython you may find the project's documentation on `debugging <https://cython.readthedocs.io/en/latest/src/userguide/debugging.html>`_ and `profiling <https://cython.readthedocs.io/en/latest/src/tutorial/profiling_tutorial.html>`_ helpful.
+If you are new to Cython you may find the project's documentation on
+:ref:`debugging <cython:debugging>` and :ref:`profiling <cython:profiling>` helpful.
 
 .. _conda: https://conda.io/miniconda.html
 .. _Cython: https://cython.org
