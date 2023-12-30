@@ -1,6 +1,28 @@
 Release Notes
 =============
 
+scikit-survival 0.22.2 (2023-12-30)
+-----------------------------------
+
+This release adds support for Python 3.12.
+
+Bug fixes
+^^^^^^^^^
+- Fix invalid escape sequence in :ref:`Introduction </user_guide/00-introduction.ipynb>` of user guide.
+
+Enhancements
+^^^^^^^^^^^^
+- Mark Cython functions as noexcept (:issue:`418`).
+- Add support for Python 3.12 (:issue:`422`).
+- Do not use deprecated ``is_categorical_dtype()`` of Pandas API.
+
+Documentation
+^^^^^^^^^^^^^
+- Add section :ref:`building-cython-code` to contributing guidelines (:issue:`379`).
+- Improve the description of the ``estimate`` parameter in :func:`sksurv.metrics.brier_score`
+  and :func:`sksurv.metrics.integrated_brier_score` (:issue:`424`).
+
+
 scikit-survival 0.22.1 (2023-10-08)
 -----------------------------------
 
