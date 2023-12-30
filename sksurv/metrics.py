@@ -545,9 +545,12 @@ def brier_score(survival_train, survival_test, estimate, times):
         second field.
 
     estimate : array-like, shape = (n_samples, n_times)
-        Estimated risk of experiencing an event for test data at `times`.
-        The i-th column must contain the estimated probability of
-        remaining event-free up to the i-th time point.
+        Estimated probability of remaining event-free at time points
+        specified by `times`. The value of ``estimate[i]`` must correspond to
+        the estimated probability of remaining event-free up to the time point
+        ``times[i]``. Typically, estimated probabilities are obtained via the
+        survival function returned by an estimator's
+        ``predict_survival_function`` method.
 
     times : array-like, shape = (n_times,)
         The time points for which to estimate the Brier score.
@@ -664,9 +667,12 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
         second field.
 
     estimate : array-like, shape = (n_samples, n_times)
-        Estimated risk of experiencing an event for test data at `times`.
-        The i-th column must contain the estimated probability of
-        remaining event-free up to the i-th time point.
+        Estimated probability of remaining event-free at time points
+        specified by `times`. The value of ``estimate[i]`` must correspond to
+        the estimated probability of remaining event-free up to the time point
+        ``times[i]``. Typically, estimated probabilities are obtained via the
+        survival function returned by an estimator's
+        ``predict_survival_function`` method.
 
     times : array-like, shape = (n_times,)
         The time points for which to estimate the Brier score.
