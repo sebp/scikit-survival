@@ -7,14 +7,24 @@ repos:
     -   id: trailing-whitespace
         exclude: '^\.gitignore$'
     -   id: check-added-large-files
+    -   id: check-ast
     -   id: check-case-conflict
+    -   id: check-docstring-first
     -   id: check-merge-conflict
     -   id: check-symlinks
     -   id: check-toml
     -   id: check-yaml
     -   id: debug-statements
+    -   id: destroyed-symlinks
     -   id: name-tests-test
         args: ["--pytest-test-first"]
+-   repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+    -   id: python-check-blanket-noqa
+    -   id: python-no-eval
+    -   id: rst-directive-colons
+    -   id: rst-inline-touching-normal
 -   repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.27.0
     hooks:
