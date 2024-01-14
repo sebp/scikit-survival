@@ -1,4 +1,3 @@
-import sys
 import warnings
 
 import numpy as np
@@ -22,10 +21,8 @@ __all__ = [
 
 
 def _get_data_path(name):
-    if sys.version_info >= (3, 9):
-        from importlib.resources import files
-    else:
-        from importlib_resources import files
+    from importlib.resources import files
+
     return files(__package__) / "data" / name
 
 

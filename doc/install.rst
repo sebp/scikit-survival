@@ -84,7 +84,7 @@ Dependencies
 
 The current minimum dependencies to run scikit-survival are:
 
-- Python 3.8 or later
+- Python 3.9 or later
 - ecos
 - joblib
 - numexpr

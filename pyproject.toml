@@ -8,11 +8,9 @@ requires = [
 
     # arm64 on Darwin supports Python 3.8 and above requires numpy>=1.21.0
     # (first version with arm64 wheels available)
-    "numpy==1.21.0; python_version=='3.8' and platform_machine=='arm64' and platform_system=='Darwin'",
     "numpy==1.21.0; python_version=='3.9' and platform_machine=='arm64' and platform_system=='Darwin'",
 
     # default numpy requirements
-    "numpy==1.17.3; python_version=='3.8' and platform_machine != 'arm64'",
     "numpy==1.19.3; python_version=='3.9' and platform_machine != 'arm64'",
     "numpy==1.21.6; python_version=='3.10'",
     "numpy==1.23.2; python_version=='3.11'",
@@ -33,7 +31,7 @@ authors = [
     {name = "Sebastian Pölsterl", email = "sebp@k-d-w.org"}
 ]
 license = {file = "COPYING"}
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
@@ -46,7 +44,6 @@ classifiers = [
     "Programming Language :: Cython",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -125,7 +122,7 @@ namespaces = false
 [tool.black]
 line-length = 120
 extend-exclude = "sksurv/linear_model/src/eigen"
-target-version = ["py38"]
+target-version = ["py39"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"

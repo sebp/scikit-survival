@@ -133,7 +133,7 @@ def test_loadarff_dataframe():
 def test_writearff(data_frame, relation_name, expectation, temp_file):
     writearff(data_frame, temp_file, relation_name=relation_name, index=False)
 
-    with open(temp_file.name, "r") as fp:
+    with open(temp_file.name) as fp:
         read_date = fp.readlines()
 
     assert expectation == read_date

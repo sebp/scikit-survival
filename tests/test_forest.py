@@ -161,7 +161,7 @@ def test_fit_warm_start(make_whas500, forest_cls):
     forest.fit(whas500.x, whas500.y)
 
     assert len(forest.estimators_) == 11
-    assert all((e.max_depth == 2 for e in forest.estimators_))
+    assert all(e.max_depth == 2 for e in forest.estimators_)
 
     forest.set_params(warm_start=True)
     with pytest.warns(UserWarning, match="Warm-start fitting without increasing n_estimators does not fit new trees."):
@@ -177,7 +177,7 @@ def test_fit_warm_start(make_whas500, forest_cls):
     forest.fit(whas500.x, whas500.y)
 
     assert len(forest.estimators_) == 23
-    assert all((e.max_depth == 2 for e in forest.estimators_))
+    assert all(e.max_depth == 2 for e in forest.estimators_)
 
 
 @pytest.mark.parametrize("forest_cls", FORESTS)
