@@ -7,6 +7,7 @@ import pytest
 
 from sksurv.nonparametric import (
     CensoringDistributionEstimator,
+    MaxStatCutpointEstimator,
     SurvivalFunctionEstimator,
     kaplan_meier_estimator,
     nelson_aalen_estimator,
@@ -6231,3 +6232,182 @@ class TestNelsonAalen:
         )
 
         assert_array_almost_equal(y, true_y)
+
+
+class MaxStatCases(FixtureParameterFactory):
+    def data_simple_1(self):
+        X = np.arange(5)
+        y = Surv.from_arrays(event=[1, 1, 1, 1, 0], time=[3, 2, 1, 6, 7.2])
+
+        expected = np.array([-0.293940160569987, -0.849234789286624, -1.73539283028136, -1.74103018183762])
+        return X, y, expected
+
+    def data_simple_2(self):
+        X = np.arange(7)
+        y = Surv.from_arrays(event=[1, 1, 1, 1, 0, 1, 0], time=[3, 2, 1, 5, 5, 6, 7.2])
+
+        expected = np.array(
+            [
+                -0.670970617929866,
+                -1.25139260427407,
+                -1.97149213626872,
+                -2.20410978318828,
+                -1.60965419662672,
+                -1.72302648973252,
+            ]
+        )
+        return X, y, expected
+
+    def data_simple_3(self):
+        X = np.arange(7)
+        y = Surv.from_arrays(event=[1, 1, 1, 1, 1, 1, 0], time=[3, 2, 1, 5, 5, 6, 7.2])
+
+        expected = np.array(
+            [
+                -0.649612821471534,
+                -1.21155928249016,
+                -1.90873718599155,
+                -1.89981785334673,
+                -2.07137554748317,
+                -1.99929382918909,
+            ]
+        )
+        return X, y, expected
+
+    def data_simple_4(self):
+        X = np.arange(7)
+        y = Surv.from_arrays(event=[1, 1, 0, 1, 1, 1, 0], time=[3, 2, 5, 5, 5, 6, 7.2])
+
+        expected = np.array(
+            [
+                -0.992127249600952,
+                -1.72249655501033,
+                -0.851524299687802,
+                -1.1466548808296,
+                -1.57939684120948,
+                -1.73793325102512,
+            ]
+        )
+        return X, y, expected
+
+    def data_simple_5(self):
+        X = np.arange(7)
+        y = Surv.from_arrays(event=[1, 1, 0, 1, 1, 1, 0], time=[3, 2, 1, 1, 5, 6, 7.2])
+
+        expected = np.array(
+            [
+                -0.569810094947253,
+                -1.15376451307546,
+                -0.911863843758283,
+                -1.7601092798125,
+                -2.0081181010575,
+                -1.99600144370412,
+            ]
+        )
+        return X, y, expected
+
+    def data_simple_6(self):
+        X = np.arange(7)
+        y = Surv.from_arrays(event=[1, 1, 0, 1, 1, 1, 0], time=[3, 2, 1, 1, 5, 6, 7.2])
+
+        expected = np.array(
+            [
+                -0.569810094947253,
+                -1.15376451307546,
+                -0.911863843758283,
+                -1.7601092798125,
+                -2.0081181010575,
+                -1.99600144370412,
+            ]
+        )
+        return X, y, expected
+
+    def data_simple_7(self):
+        X = np.arange(8)
+        y = Surv.from_arrays(event=[1, 1, 0, 1, 1, 1, 0, 0], time=[3, 2, 1, 4, 5, 6, 7, 7])
+
+        expected = np.array(
+            [
+                -0.988016177516947,
+                -1.69136683842127,
+                -1.51280449023955,
+                -1.92898500262744,
+                -2.22731368793731,
+                -2.38873039641651,
+                -1.56379112234579,
+            ]
+        )
+        return X, y, expected
+
+    def data_simple_8(self):
+        X = np.arange(8)
+        y = Surv.from_arrays(event=[1, 1, 0, 1, 1, 1, 0, 1], time=[3, 2, 1, 4, 5, 6, 7, 7])
+
+        expected = np.array(
+            [
+                -0.93028311158255,
+                -1.59253465791262,
+                -1.4244063006468,
+                -1.81626800377926,
+                -2.09716435341382,
+                -2.24914894763659,
+                -0.798760326841569,
+            ]
+        )
+        return X, y, expected
+
+    def data_simple_9(self):
+        X = np.arange(8)
+        y = Surv.from_arrays(event=[1, 1, 0, 1, 1, 1, 1, 1], time=[3, 2, 1, 4, 5, 6, 7, 7])
+
+        expected = np.array(
+            [
+                -0.988016177516947,
+                -1.69136683842127,
+                -1.51280449023955,
+                -1.92898500262744,
+                -2.22731368793731,
+                -2.38873039641651,
+                -1.56379112234579,
+            ]
+        )
+        return X, y, expected
+
+    def data_simple_10(self):
+        X = np.arange(9)
+        y = Surv.from_arrays(event=[1, 1, 0, 1, 1, 0, 0, 1, 1], time=[3, 3, 1, 1, 6, 6, 7, 7, 7])
+
+        expected = np.array(
+            [
+                -0.930210957630102,
+                -1.40634677755228,
+                -1.12604484344696,
+                -1.93525350694573,
+                -2.3284970195571,
+                -1.84083852667852,
+                -0.614351487035996,
+                -0.406355313069992,
+            ]
+        )
+        return X, y, expected
+
+
+class TestMaxStat:
+    @staticmethod
+    @pytest.mark.parametrize("X,y,expected", MaxStatCases().get_cases())
+    def test_logrank_score(X, y, expected):
+        est = MaxStatCutpointEstimator(n_resample=100)
+        est.fit(X[:, np.newaxis], y)
+
+        assert_array_almost_equal(est.statistics_, expected)
+
+    @staticmethod
+    def test_whas500(make_whas500):
+        whas500 = make_whas500(with_mean=False, with_std=False)
+        X = whas500.x_data_frame.loc[:, ["sysbp"]]
+
+        est = MaxStatCutpointEstimator(random_state=24)
+        est.fit(X, whas500.y)
+
+        assert est.best_cutpoint_ == 137
+        assert est.p_value_ == pytest.approx(0.0113, 1e-5)
