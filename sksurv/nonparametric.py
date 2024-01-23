@@ -700,20 +700,38 @@ class MaxStatCutpointEstimator(BaseEstimator):
 
     Attributes
     ----------
-    cutpoints_ : ndarray, shape = (n_cutpoints,)
-        Unique list of cutpoints that have been evaluated.
-
-    statistics_ : ndarray, shape = (n_cutpoints,)
-        Standardized linear rank statistics for each cutpoint.
+    best_feature_ : int
+        Index of best feature, i.e. the one that has the cutpoint with the lowest p-value.
 
     best_cutpoint_ : float
-        Best cutpoint.
+        Globally best cutpoint.
 
-    best_test_statistic_ : float
-        Test statistic of best cutpoint.
+    best_cutpoint_statistic_ : float
+        Test statistic of globally best cutpoint.
 
-    p_value_ : float
-        Two-sided p-value of best cutpoint.
+    best_cutpoint_pvalue_ : float
+        Two-sided p-value of globally best cutpoint.
+        Resampling is used to determine the null distribution.
+
+    cutpoints_ : ndarray, shape = (n_features_in_,)
+        ``cutpoints_[i]`` is an array of candidate cutpoints for feature ``i``.
+
+    cutpoint_statistics_: ndarray, shape = (n_features_in_,)
+        ``cutpoint_statistics_[i]`` is an array of test statistics for each candidate cutpoint of feature ``i``.
+
+    selected_test_statistic_ : ndarray, shape = (n_features_in_,)
+        ``selected_test_statistic_[i]`` is an array of standardized linear rank statistics,
+        one for each candidate cutpoint of feature ``i``.
+
+    selected_cutpoint_ : shape = (n_features_in_,)
+        ``selected_cutpoint_[i]`` is the selected cutpoint for feature ``i``.
+
+    selected_test_statistic_ : shape = (n_features_in_,)
+        ``selected_test_statistic_[i]`` is the maximially selected rank statistic
+        of the selected cutpoint of feature ``i``.
+
+    pvalues_ : shape = (n_features_in_,)
+        ``pvalues[i]`` is the p-value corresponding to test statistic ``selected_test_statistic_[i]``.
         Resampling is used to determine the null distribution.
 
     References
@@ -778,9 +796,9 @@ class MaxStatCutpointEstimator(BaseEstimator):
             for i in range(n_features)
         )
 
-        self.p_value_ = np.empty(n_features, dtype=float)
-        self.cutpoint_statistics_ = np.empty(n_features, dtype=object)
         self.cutpoints_ = np.empty(n_features, dtype=object)
+        self.cutpoint_statistics_ = np.empty(n_features, dtype=object)
+        self.pvalues_ = np.empty(n_features, dtype=float)
         self.selected_cutpoint_ = np.empty(n_features, dtype=float)
         self.selected_test_statistic_ = np.empty(n_features, dtype=float)
         for i, (cutpoints, std_linear_stats, permuted_stats) in enumerate(results):
@@ -794,9 +812,9 @@ class MaxStatCutpointEstimator(BaseEstimator):
             # row-wise max over cutpoints
             std_statistics = np.max(np.abs(permuted_stats), axis=1)
             # percentage of permuted statistics exceeding test statistic
-            self.p_value_[i] = np.mean(std_statistics >= selected_test_statistic)
+            self.pvalues_[i] = np.mean(std_statistics >= selected_test_statistic)
 
-        self.best_feature_ = np.argmin(self.p_value_)
+        self.best_feature_ = np.argmin(self.pvalues_)
 
         return self
 
@@ -806,9 +824,9 @@ class MaxStatCutpointEstimator(BaseEstimator):
         return self.selected_cutpoint_[self.best_feature_]
 
     @property
-    def best_pvalue_(self):
+    def best_cutpoint_pvalue_(self):
         check_is_fitted(self, "best_feature_")
-        return self.p_value_[self.best_feature_]
+        return self.pvalues_[self.best_feature_]
 
     @property
     def best_cutpoint_statistic_(self):
