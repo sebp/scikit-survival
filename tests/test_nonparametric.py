@@ -6658,3 +6658,38 @@ class TestMaxStat:
         assert_array_almost_equal(est.cutpoint_statistics_[1], expected[1])
         assert est.best_cutpoint_statistic_ == pytest.approx(5.1314)
         assert est.best_cutpoint_pvalue_ <= 1 / est.n_resample
+
+    @staticmethod
+    @pytest.mark.parametrize("min_prob", [-1e-12, -1, 1.0, 2.0])
+    def test_wrong_min_prob(min_prob):
+        est = MaxStatCutpointEstimator(min_prob=min_prob)
+        msg = r"The 'min_prob' parameter of MaxStatCutpointEstimator must be a float in the range \[0\.0, 1\.0\)\."
+        with pytest.raises(ValueError, match=msg):
+            est.fit(np.arange(9).reshape((3, 3)), Surv.from_arrays(event=[0, 1, 1], time=[1, 2, 3]))
+
+    @staticmethod
+    @pytest.mark.parametrize("max_prob", [-1e-12, 0.0, -1.0, 1 + 1e-12, 2.0])
+    def test_wrong_max_prob(max_prob):
+        est = MaxStatCutpointEstimator(max_prob=max_prob)
+        msg = (
+            "The 'max_prob' parameter of MaxStatCutpointEstimator must be a float "
+            r"in the range \(0\.0, 1\.0\] or None\."
+        )
+        with pytest.raises(ValueError, match=msg):
+            est.fit(np.arange(9).reshape((3, 3)), Surv.from_arrays(event=[0, 1, 1], time=[1, 2, 3]))
+
+    @staticmethod
+    @pytest.mark.parametrize("min_prob,max_prob", [(0.5, 0.5), (0.51, None), (0.999, None), (0.6, 0.4)])
+    def test_wrong_min_max_prob(min_prob, max_prob):
+        est = MaxStatCutpointEstimator(min_prob=min_prob, max_prob=max_prob)
+        msg = r"max_prob \(.+\) must be larger than min_prob \(.+\)"
+        with pytest.raises(ValueError, match=msg):
+            est.fit(np.arange(9).reshape((3, 3)), Surv.from_arrays(event=[0, 1, 1], time=[1, 2, 3]))
+
+    @staticmethod
+    @pytest.mark.parametrize("n_resample", [-1e-12, 0.0, 1, -1, np.nan])
+    def test_wrong_n_resample(n_resample):
+        est = MaxStatCutpointEstimator(n_resample=n_resample)
+        msg = r"The 'n_resample' parameter of MaxStatCutpointEstimator must be an int in the range \[100, inf\)\."
+        with pytest.raises(ValueError, match=msg):
+            est.fit(np.arange(9).reshape((3, 3)), Surv.from_arrays(event=[0, 1, 1], time=[1, 2, 3]))

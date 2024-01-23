@@ -747,8 +747,8 @@ class MaxStatCutpointEstimator(BaseEstimator):
     """
 
     _parameter_constraints = {
-        "min_prob": [Interval(numbers.Real, 0.0, 0.5, closed="neither")],
-        "max_prob": [Interval(numbers.Real, 0.5, 1.0, closed="neither"), None],
+        "min_prob": [Interval(numbers.Real, 0.0, 1.0, closed="left")],
+        "max_prob": [Interval(numbers.Real, 0.0, 1.0, closed="right"), None],
         "n_resample": [Interval(numbers.Integral, 100, None, closed="left")],
         "n_jobs": [numbers.Integral, None],
         "random_state": ["random_state"],
