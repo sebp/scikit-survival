@@ -671,7 +671,8 @@ class MaxStatCutpointEstimator(BaseEstimator):
         Test statistic of best cutpoint.
 
     p_value_ : float
-        P-value of best cutpoint.
+        Two-sided p-value of best cutpoint.
+        Resampling is used to determine the null distribution.
 
     References
     ----------
@@ -692,7 +693,7 @@ class MaxStatCutpointEstimator(BaseEstimator):
         "random_state": ["random_state"],
     }
 
-    def __init__(self, min_prob=0.01, max_prob=None, n_resample=10000, random_state=None):
+    def __init__(self, min_prob=0.1, max_prob=None, n_resample=10000, random_state=None):
         self.min_prob = min_prob
         self.max_prob = max_prob
         self.n_resample = n_resample
@@ -707,10 +708,17 @@ class MaxStatCutpointEstimator(BaseEstimator):
 
         cp_min, cp_max = np.quantile(feature_vector, [self.min_prob, max_prob], method="inverted_cdf")
 
-        cutpoints = np.unique(feature_vector)[:-1]
-        cutpoints = cutpoints[(cutpoints >= cp_min) & (cutpoints <= cp_max)]
+        cutpoints, counts = np.unique(feature_vector, return_counts=True)
+        cutpoints = cutpoints[:-1]
+        counts = counts[:-1]
+        idx_cp_min, idx_cp_max = np.searchsorted(cutpoints, [cp_min, cp_max], side="left")
+        # check if next higher cutpoint mathches contraint too
+        percentage_cp_max = np.sum(counts[: (idx_cp_max + 1)]) / feature_vector.shape[0]
+        if percentage_cp_max <= max_prob:
+            idx_cp_max += 1
+        cutpoints_selected = cutpoints[idx_cp_min:idx_cp_max]
 
-        return cutpoints
+        return cutpoints_selected
 
     def _maxstat_test(self, times, events, feature_vector, cutpoints):
         n = times.shape[0]
