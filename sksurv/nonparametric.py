@@ -12,6 +12,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numbers
 
+from joblib import Parallel, delayed
 import numpy as np
 from scipy import stats
 from sklearn.base import BaseEstimator
@@ -633,6 +634,41 @@ def _logrank_scores(times, events):
     return scores
 
 
+def _maxstat_test(times, events, feature_vector, cutpoints, n_resample, random_state):
+    n = times.shape[0]
+    scores = _logrank_scores(times, events)
+    scores_mean = np.mean(scores)
+    scores_var = np.var(scores, ddof=1)
+
+    lin_stats = np.empty(cutpoints.shape[0], dtype=float)
+    mu = np.empty(cutpoints.shape[0], dtype=float)
+    var = np.empty(cutpoints.shape[0], dtype=float)
+    for i, cutpoint in enumerate(cutpoints):
+        s_selected = scores[feature_vector <= cutpoint]
+        n_split = s_selected.shape[0]
+
+        mu[i] = n_split * scores_mean
+        var[i] = n_split * (n - n_split) / n * scores_var
+        lin_stats[i] = np.sum(s_selected)
+
+    std_lin_stats = (lin_stats - mu) / np.sqrt(var)
+
+    # estimate null distribution
+    permuted_stats = np.empty((n_resample, cutpoints.shape[0]), dtype=float)
+    rnd = check_random_state(random_state)
+    for j in range(n_resample):
+        rnd.shuffle(scores)
+        for i, cutpoint in enumerate(cutpoints):
+            s_selected = scores[feature_vector <= cutpoint]
+            permuted_stats[j, i] = np.sum(s_selected)
+
+    # standardize permuted scores
+    permuted_stats -= mu[np.newaxis]
+    permuted_stats /= np.sqrt(var[np.newaxis])
+
+    return cutpoints, std_lin_stats, permuted_stats
+
+
 class MaxStatCutpointEstimator(BaseEstimator):
     """Estimation of cutpoints with maximally selected rank statistics
 
@@ -651,6 +687,12 @@ class MaxStatCutpointEstimator(BaseEstimator):
 
     n_resample : float, optional, default: 10000
         Number of Monte Carlo replicates used to estimate the null distribution.
+
+    n_jobs : int or None, optional, default: None
+        The number of jobs to run in parallel. :meth:`fit`, :meth:`predict`,
+        :meth:`decision_path` and :meth:`apply` are all parallelized over the
+        trees. ``None`` means 1 unless in a :obj:`joblib.parallel_backend`
+        context. ``-1`` means using all processors.
 
     random_state : int, RandomState instance, default: None
         Random numnber seed used to shuffle the data for
@@ -690,16 +732,18 @@ class MaxStatCutpointEstimator(BaseEstimator):
         "min_prob": [Interval(numbers.Real, 0.0, 0.5, closed="neither")],
         "max_prob": [Interval(numbers.Real, 0.5, 1.0, closed="neither"), None],
         "n_resample": [Interval(numbers.Integral, 100, None, closed="left")],
+        "n_jobs": [numbers.Integral, None],
         "random_state": ["random_state"],
     }
 
-    def __init__(self, min_prob=0.1, max_prob=None, n_resample=10000, random_state=None):
+    def __init__(self, min_prob=0.1, max_prob=None, n_resample=10000, n_jobs=None, random_state=None):
         self.min_prob = min_prob
         self.max_prob = max_prob
         self.n_resample = n_resample
+        self.n_jobs = n_jobs
         self.random_state = random_state
 
-    def _get_cutpoint(self, feature_vector):
+    def _get_cutpoints(self, feature_vector):
         max_prob = self.max_prob
         if max_prob is None:
             max_prob = 1.0 - self.min_prob
@@ -720,63 +764,57 @@ class MaxStatCutpointEstimator(BaseEstimator):
 
         return cutpoints_selected
 
-    def _maxstat_test(self, times, events, feature_vector, cutpoints):
-        n = times.shape[0]
-        scores = _logrank_scores(times, events)
-        scores_mean = np.mean(scores)
-        scores_var = np.var(scores, ddof=1)
-
-        lin_stats = np.empty(cutpoints.shape[0], dtype=float)
-        mu = np.empty(cutpoints.shape[0], dtype=float)
-        var = np.empty(cutpoints.shape[0], dtype=float)
-        for i, cutpoint in enumerate(cutpoints):
-            s_selected = scores[feature_vector <= cutpoint]
-            n_split = s_selected.shape[0]
-
-            mu[i] = n_split * scores_mean
-            var[i] = n_split * (n - n_split) / n * scores_var
-            lin_stats[i] = np.sum(s_selected)
-
-        std_lin_stats = (lin_stats - mu) / np.sqrt(var)
-
-        # estimate null distribution
-        permuted_stats = np.empty((self.n_resample, cutpoints.shape[0]), dtype=float)
-        rnd = check_random_state(self.random_state)
-        for j in range(self.n_resample):
-            rnd.shuffle(scores)
-            for i, cutpoint in enumerate(cutpoints):
-                s_selected = scores[feature_vector <= cutpoint]
-                permuted_stats[j, i] = np.sum(s_selected)
-
-        # standardize permuted scores
-        permuted_stats -= mu[np.newaxis]
-        permuted_stats /= np.sqrt(var[np.newaxis])
-
-        return std_lin_stats, permuted_stats
-
     def fit(self, X, y):
         self._validate_params()
 
         X = self._validate_data(X, ensure_min_samples=2)
         event, time = check_array_survival(X, y)
 
-        fv = X[:, 0]
-        cutpoints = self._get_cutpoint(fv)
-        std_linear_stats, permuted_stats = self._maxstat_test(time, event, fv, cutpoints)
+        n_features = X.shape[1]
+        results = Parallel(n_jobs=self.n_jobs)(
+            delayed(_maxstat_test)(
+                time, event, X[:, i], self._get_cutpoints(X[:, i]), self.n_resample, self.random_state
+            )
+            for i in range(n_features)
+        )
 
-        abs_stats = np.abs(std_linear_stats)
-        idx_max = np.argmax(abs_stats)
-        self.statistics_ = std_linear_stats
-        self.cutpoints_ = cutpoints
-        self.best_cutpoint_ = cutpoints[idx_max]
-        self.best_test_statistic_ = abs_stats[idx_max]
+        self.p_value_ = np.empty(n_features, dtype=float)
+        self.cutpoint_statistics_ = np.empty(n_features, dtype=object)
+        self.cutpoints_ = np.empty(n_features, dtype=object)
+        self.selected_cutpoint_ = np.empty(n_features, dtype=float)
+        self.selected_test_statistic_ = np.empty(n_features, dtype=float)
+        for i, (cutpoints, std_linear_stats, permuted_stats) in enumerate(results):
+            abs_stats = np.abs(std_linear_stats)
+            idx_max = np.argmax(abs_stats)
+            self.cutpoint_statistics_[i] = std_linear_stats
+            self.cutpoints_[i] = cutpoints
+            self.selected_cutpoint_[i] = cutpoints[idx_max]
+            selected_test_statistic = abs_stats[idx_max]
 
-        # row-wise max over cutpoints
-        std_statistics = np.max(np.abs(permuted_stats), axis=1)
-        # percentage of permuted statistics exceeding test statistic
-        self.p_value_ = np.mean(std_statistics >= self.best_test_statistic_)
+            # row-wise max over cutpoints
+            std_statistics = np.max(np.abs(permuted_stats), axis=1)
+            # percentage of permuted statistics exceeding test statistic
+            self.p_value_[i] = np.mean(std_statistics >= selected_test_statistic)
+
+        self.best_feature_ = np.argmin(self.p_value_)
 
         return self
+
+    @property
+    def best_cutpoint_(self):
+        check_is_fitted(self, "best_feature_")
+        return self.selected_cutpoint_[self.best_feature_]
+
+    @property
+    def best_pvalue(self):
+        check_is_fitted(self, "best_feature_")
+        return self.p_value_[self.best_feature_]
+
+    @property
+    def best_cutpoint_statistic(self):
+        check_is_fitted(self, "best_feature_")
+        abs_stats = np.abs(self.cutpoint_statistics_[self.best_feature_])
+        return np.max(abs_stats)
 
     def predict(self, X):
         X = self._validate_data(X, reset=False)
