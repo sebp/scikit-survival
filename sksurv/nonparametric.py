@@ -806,12 +806,12 @@ class MaxStatCutpointEstimator(BaseEstimator):
         return self.selected_cutpoint_[self.best_feature_]
 
     @property
-    def best_pvalue(self):
+    def best_pvalue_(self):
         check_is_fitted(self, "best_feature_")
         return self.p_value_[self.best_feature_]
 
     @property
-    def best_cutpoint_statistic(self):
+    def best_cutpoint_statistic_(self):
         check_is_fitted(self, "best_feature_")
         abs_stats = np.abs(self.cutpoint_statistics_[self.best_feature_])
         return np.max(abs_stats)

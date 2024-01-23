@@ -6557,5 +6557,5 @@ class TestMaxStat:
         assert est.cutpoint_statistics_.shape == (2,)
         assert_array_almost_equal(est.cutpoint_statistics_[0], expected[0])
         assert_array_almost_equal(est.cutpoint_statistics_[1], expected[1])
-        assert est.best_cutpoint_statistic == pytest.approx(5.1314)
-        assert est.best_pvalue <= 1 / est.n_resample
+        assert est.best_cutpoint_statistic_ == pytest.approx(5.1314)
+        assert est.best_pvalue_ <= 1 / est.n_resample
