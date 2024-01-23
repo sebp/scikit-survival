@@ -774,10 +774,11 @@ class MaxStatCutpointEstimator(BaseEstimator):
         cutpoints = cutpoints[:-1]
         counts = counts[:-1]
         idx_cp_min, idx_cp_max = np.searchsorted(cutpoints, [cp_min, cp_max], side="left")
-        # check if next higher cutpoint mathches contraint too
-        percentage_cp_max = np.sum(counts[: (idx_cp_max + 1)]) / feature_vector.shape[0]
-        if percentage_cp_max <= max_prob:
-            idx_cp_max += 1
+        if idx_cp_max < cutpoints.shape[0]:
+            # check if next higher cutpoint matches constraint too
+            percentage_cp_max = np.sum(counts[: (idx_cp_max + 1)]) / feature_vector.shape[0]
+            if percentage_cp_max <= max_prob:
+                idx_cp_max += 1
         cutpoints_selected = cutpoints[idx_cp_min:idx_cp_max]
 
         return cutpoints_selected
