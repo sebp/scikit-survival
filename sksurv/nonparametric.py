@@ -670,9 +670,58 @@ def _maxstat_test(times, events, feature_vector, cutpoints, n_resample, random_s
 
 
 class MaxStatCutpointEstimator(BaseEstimator):
-    """Estimation of cutpoints with maximally selected rank statistics
+    """Estimation of cutpoints with maximally selected rank statistics.
 
-    See [1]_, [2]_, and [3]_ for details.
+    Searches for a feature and a binary partition that maximizes the difference
+    in survival distribution between the two groups such that one obtains a "high-risk"
+    and "low-risk" group. To assess the difference, log-rank scores are computed.
+
+    The log-rank score for observation :math:`i` is defined as
+
+    .. math::
+
+        a_i = \\delta_i - \\sum_{j=1}^{\\gamma_i} \\frac{\\delta_j}{N - \\gamma_j + 1}
+
+    where :math:`\\delta_i \\in \\{0; 1\\}` is a binary event indicator of observation :math:`i`,
+    and :math:`\\gamma_i` is the number of observations that experienced an event or got censored
+    before or at time :math:`t_i`.
+
+    A linear rank statistic for a fixed cutpoint :math:`\\xi_k^{(j)}` for feature :math:`j` is defined as
+
+    .. math::
+
+        T_k^{(j)} = \\sum_{\\{i \\,|\\, X_j \\leq \\xi_k^{(j)} \\}}^n a_i
+
+    Standardizing the statistic :math:`T_k^{(j)}` leads to
+
+    .. math::
+
+        S_k^{(j)} = \\frac{T_k^{(j)} - E(T_k^{(j)} \\,|\\, X_j)}{\\sqrt{ \\mathrm{Var}(T_k^{(j)} \\,|\\, X_j) }}
+
+    By taking the maximum of the absolute value of the standardized statistics :math:`S_k^{(j)}`,
+    we obtain a cutpoint estimator that maximizes the separation of the observations:
+
+    .. math::
+
+        \\xi_\\text{max}^{(j)} = \\arg\\max_{\\xi_k} (S_k^{(j)})
+
+    with maximally selected rank statistic
+
+    .. math::
+
+        S_\\text{max}^{(j)} = \\max_{\\xi_k} (S_k^{(j)})
+
+    To compare different features measured at different scales in an unbiased way, we switch to
+    the p-value scale. The distribution of :math:`S_\\text{max}^{(j)}` and thus the p-value
+    :math:`P^{(j)}` can be estimated using conditional Monte Carlo methods.
+
+    Finally, a single feature and its optimial cutpoint is selected by taking the minimum p-value:
+
+    .. math::
+
+        \\arg\\min_j (P^{(j)})
+
+    See [1]_, [2]_, and [3]_ for further details.
 
     Parameters
     ----------
@@ -686,7 +735,7 @@ class MaxStatCutpointEstimator(BaseEstimator):
         If None, use ``1 - min_prob``.
 
     n_resample : float, optional, default: 10000
-        Number of Monte Carlo replicates used to estimate the null distribution.
+        Number of Monte Carlo replicates used to estimate the null distribution and thus the p-value.
 
     n_jobs : int or None, optional, default: None
         The number of jobs to run in parallel. :meth:`fit`, :meth:`predict`,
@@ -713,24 +762,21 @@ class MaxStatCutpointEstimator(BaseEstimator):
         Two-sided p-value of globally best cutpoint.
         Resampling is used to determine the null distribution.
 
-    cutpoints_ : ndarray, shape = (n_features_in_,)
+    cutpoints_ : ndarray, shape = (n_features_in\\_,)
         ``cutpoints_[i]`` is an array of candidate cutpoints for feature ``i``.
 
-    cutpoint_statistics_: ndarray, shape = (n_features_in_,)
-        ``cutpoint_statistics_[i]`` is an array of test statistics for each candidate cutpoint of feature ``i``.
-
-    selected_test_statistic_ : ndarray, shape = (n_features_in_,)
+    cutpoint_statistics_: ndarray, shape = (n_features_in\\_,)
         ``selected_test_statistic_[i]`` is an array of standardized linear rank statistics,
         one for each candidate cutpoint of feature ``i``.
 
-    selected_cutpoint_ : shape = (n_features_in_,)
+    selected_cutpoint_ : shape = (n_features_in\\_,)
         ``selected_cutpoint_[i]`` is the selected cutpoint for feature ``i``.
 
-    selected_test_statistic_ : shape = (n_features_in_,)
+    selected_test_statistic_ : shape = (n_features_in\\_,)
         ``selected_test_statistic_[i]`` is the maximially selected rank statistic
         of the selected cutpoint of feature ``i``.
 
-    pvalues_ : shape = (n_features_in_,)
+    pvalues_ : shape = (n_features_in\\_,)
         ``pvalues[i]`` is the p-value corresponding to test statistic ``selected_test_statistic_[i]``.
         Resampling is used to determine the null distribution.
 
