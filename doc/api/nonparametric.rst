@@ -10,3 +10,4 @@ Non-parametric Estimators
     ipc_weights
     kaplan_meier_estimator
     nelson_aalen_estimator
+    MaxStatCutpointEstimator
