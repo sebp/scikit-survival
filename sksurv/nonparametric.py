@@ -677,14 +677,14 @@ class MaxStatCutpointEstimator(BaseEstimator):
     and "low-risk" group. Cutpoints are evaluated in terms of log-rank scores, and
     features are selected based on maximally selected rank statistics.
 
-    The log-rank score for observation :math:`i` is defined as
+    The log-rank score for sample :math:`i` is defined as
 
     .. math::
 
         a_i = \\delta_i - \\sum_{j=1}^{\\gamma_i} \\frac{\\delta_j}{N - \\gamma_j + 1}
 
-    where :math:`\\delta_i \\in \\{0; 1\\}` is a binary event indicator of observation :math:`i`,
-    and :math:`\\gamma_i` is the number of observations that experienced an event or got censored
+    where :math:`\\delta_i \\in \\{0; 1\\}` is a binary event indicator of sample :math:`i`,
+    and :math:`\\gamma_i` is the number of samples that experienced an event or got censored
     before or at time :math:`t_i`.
 
     A linear rank statistic for a fixed cutpoint :math:`\\xi_k^{(j)}` for feature :math:`j` is defined as
@@ -700,7 +700,7 @@ class MaxStatCutpointEstimator(BaseEstimator):
         S_k^{(j)} = \\frac{T_k^{(j)} - E(T_k^{(j)} \\,|\\, X_j)}{\\sqrt{ \\mathrm{Var}(T_k^{(j)} \\,|\\, X_j) }}
 
     By taking the maximum of the absolute value of the standardized statistics :math:`S_k^{(j)}`,
-    we obtain a cutpoint estimator that maximizes the separation of the observations:
+    we obtain a cutpoint estimator that maximizes the separation of the samples:
 
     .. math::
 
@@ -837,6 +837,22 @@ class MaxStatCutpointEstimator(BaseEstimator):
         return cutpoints_selected
 
     def fit(self, X, y):
+        """Select feature and optimal cutpoint.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            Data matrix.
+
+        y : structured array, shape = (n_samples,)
+            A structured array containing the binary event indicator
+            as first field, and time of event or time of censoring as
+            second field.
+
+        Returns
+        -------
+        self
+        """
         self._validate_params()
 
         X = self._validate_data(X, ensure_min_samples=2)
@@ -889,6 +905,20 @@ class MaxStatCutpointEstimator(BaseEstimator):
         return np.max(abs_stats)
 
     def predict(self, X):
+        """Predict assignment.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            Data matrix.
+
+        Returns
+        -------
+        groups : ndarray, shape = (n_samples,)
+            Boolean array indicating whether sample is smaller or equal than optimal cutpoint.
+        """
+        check_is_fitted(self, "best_feature_")
+
         X = self._validate_data(X, reset=False)
 
-        return None
+        return X[:, self.best_feature_] <= self.best_cutpoint_
