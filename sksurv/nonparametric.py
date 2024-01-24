@@ -673,8 +673,9 @@ class MaxStatCutpointEstimator(BaseEstimator):
     """Estimation of cutpoints with maximally selected rank statistics.
 
     Searches for a feature and a binary partition that maximizes the difference
-    in survival distribution between the two groups such that one obtains a "high-risk"
-    and "low-risk" group. To assess the difference, log-rank scores are computed.
+    in survival distributions between the two groups such that one obtains a "high-risk"
+    and "low-risk" group. Cutpoints are evaluated in terms of log-rank scores, and
+    features are selected based on maximally selected rank statistics.
 
     The log-rank score for observation :math:`i` is defined as
 
@@ -727,11 +728,11 @@ class MaxStatCutpointEstimator(BaseEstimator):
     ----------
     min_prob : float, optional, default: 0.1
         Consider only cutpoints greater or equal than the ``minprob * 100%``
-        quantile are considered. Must be between 0.0 and 0.5.
+        quantile are considered. Must be between 0.0 and 1.0.
 
     max_prob : float, optional
         Consider only cutpoints less or equal than the ``maxprob * 100%``
-        quantile are considered. Must be between 0.5 and 1.0, or None.
+        quantile are considered. Must be between 0.0 and 1.0, or None.
         If None, use ``1 - min_prob``.
 
     n_resample : float, optional, default: 10000
@@ -762,6 +763,9 @@ class MaxStatCutpointEstimator(BaseEstimator):
         Two-sided p-value of globally best cutpoint.
         Resampling is used to determine the null distribution.
 
+        Note that a value of 0 implies that the p-value is smaller than ``1 / n_resample``, not
+        that the p-value equals zero. More precise p-values can be obtained by increasing ``n_resample``.
+
     cutpoints_ : ndarray, shape = (n_features_in\\_,)
         ``cutpoints_[i]`` is an array of candidate cutpoints for feature ``i``.
 
@@ -769,16 +773,19 @@ class MaxStatCutpointEstimator(BaseEstimator):
         ``selected_test_statistic_[i]`` is an array of standardized linear rank statistics,
         one for each candidate cutpoint of feature ``i``.
 
-    selected_cutpoint_ : shape = (n_features_in\\_,)
+    selected_cutpoint_ : ndarray, shape = (n_features_in\\_,)
         ``selected_cutpoint_[i]`` is the selected cutpoint for feature ``i``.
 
-    selected_test_statistic_ : shape = (n_features_in\\_,)
+    selected_test_statistic_ : ndarray, shape = (n_features_in\\_,)
         ``selected_test_statistic_[i]`` is the maximially selected rank statistic
         of the selected cutpoint of feature ``i``.
 
-    pvalues_ : shape = (n_features_in\\_,)
+    pvalues_ : ndarray, shape = (n_features_in\\_,)
         ``pvalues[i]`` is the p-value corresponding to test statistic ``selected_test_statistic_[i]``.
         Resampling is used to determine the null distribution.
+
+        Note that a value of 0 implies that the p-value is smaller than ``1 / n_resample``, not
+        that the p-value equals zero. More precise p-values can be obtained by increasing ``n_resample``.
 
     References
     ----------
