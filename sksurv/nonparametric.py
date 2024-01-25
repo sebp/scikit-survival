@@ -241,7 +241,7 @@ def kaplan_meier_estimator(
     conf_level : float, optional, default: 0.95
         The level for a two-sided confidence interval on the survival curves.
 
-    conf_type : None or {'log-log'}, optional, default: 'log-log'.
+    conf_type : None or {'log-log'}, optional, default: None.
         The type of confidence intervals to estimate.
         If `None`, no confidence intervals are estimated.
         If "log-log", estimate confidence intervals using
