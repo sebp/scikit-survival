@@ -1064,8 +1064,7 @@ def test_brier_coxph():
 
     Xt = OneHotEncoder().fit_transform(X)
 
-    est = CoxPHSurvivalAnalysis(ties="efron").fit(Xt, y)
-    survs = est.predict_survival_function(Xt)
+    survs = CoxPHSurvivalAnalysis(ties="efron").fit(Xt, y).predict_survival_function(Xt)
 
     preds = [fn(1825) for fn in survs]
 

@@ -11,13 +11,13 @@ def tree(request):
 class TestBinaryTree:
     @staticmethod
     def test_insert(tree):
-        for k in [12, 34, 45, 16, 35, 57]:
+        for k in (12, 34, 45, 16, 35, 57):
             tree.insert(k, k)
         assert 6 == len(tree)
 
     @staticmethod
     def test_count_smaller(tree):
-        for k in [12, 34, 45, 16, 35, 57]:
+        for k in (12, 34, 45, 16, 35, 57):
             tree.insert(k, k)
 
         c, _ = tree.count_smaller(12)
@@ -40,7 +40,7 @@ class TestBinaryTree:
 
     @staticmethod
     def test_count_larger(tree):
-        for k in [12, 34, 45, 16, 35, 57]:
+        for k in (12, 34, 45, 16, 35, 57):
             tree.insert(k, k)
 
         c, _ = tree.count_larger(12)

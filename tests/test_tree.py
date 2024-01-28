@@ -730,8 +730,7 @@ def test_max_leaf_nodes_too_small(fake_data, val):
 
 def test_apply(veterans):
     X, y = veterans
-    X = X.loc[:, "Karnofsky_score"].values[:, np.newaxis]
-    X = X.astype(np.float32)
+    X = X.loc[:, "Karnofsky_score"].values[:, np.newaxis].astype(np.float32)
 
     tree = SurvivalTree(max_depth=2, max_features=1)
     tree.fit(X, y)
@@ -753,8 +752,7 @@ def test_apply(veterans):
 
 def test_apply_sparse(veterans):
     X, y = veterans
-    X = X.loc[:, "Karnofsky_score"].values[:, np.newaxis]
-    X = X.astype(np.float32)
+    X = X.loc[:, "Karnofsky_score"].values[:, np.newaxis].astype(np.float32)
     X_sparse = sparse.csr_matrix(X)
     tree = SurvivalTree(max_depth=2, max_features=1)
     tree.fit(X_sparse, y)
@@ -810,8 +808,7 @@ def test_predict_sparse(make_whas500):
 
 def test_missing_values_best_splitter_to_max_samples(veterans):
     X, y = veterans
-    X = X.loc[:, "Karnofsky_score"].values[:, np.newaxis]
-    X = X.astype(np.float32)
+    X = X.loc[:, "Karnofsky_score"].values[:, np.newaxis].astype(np.float32)
 
     tree = SurvivalTree(max_depth=1)
     tree.fit(X, y)

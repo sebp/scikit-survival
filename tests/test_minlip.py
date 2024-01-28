@@ -25,8 +25,7 @@ def create_toy_data():
         ]
     )
 
-    rnd = np.random.RandomState(0)
-    t = rnd.exponential(scale=8, size=x.shape[0])
+    t = np.random.RandomState(0).exponential(scale=8, size=x.shape[0])
     t.sort()
     y = Surv.from_arrays(
         [True, True, False, True, False, False],
@@ -250,8 +249,7 @@ def minlip_model_factory():
     def create_and_fit_model(solver, x, y, **kwargs):
         params = {"solver": solver, "alpha": 1, "pairs": "next"}
         params.update(kwargs)
-        m = MinlipSurvivalAnalysis(**params)
-        return m.fit(x, y)
+        return MinlipSurvivalAnalysis(**params).fit(x, y)
 
     return create_and_fit_model
 
@@ -291,9 +289,7 @@ class TestToyMinlipSurvivalAnalysis:
     @pytest.mark.parametrize("solver", ["osqp", "ecos"])
     def test_predict_1(minlip_model_factory, toy_data, solver):
         x, y = toy_data
-        m = minlip_model_factory(solver, x, y)
-
-        p = m.predict(x)
+        p = minlip_model_factory(solver, x, y).predict(x)
         assert_cindex_almost_equal(y["status"], y["time"], p, (1.0, 11, 0, 0, 0))
 
     @staticmethod
@@ -304,9 +300,8 @@ class TestToyMinlipSurvivalAnalysis:
         y = y.copy()
         y["time"] = np.arange(1, 7)
 
-        m = minlip_model_factory(solver, x, y, pairs="next")
+        p = minlip_model_factory(solver, x, y, pairs="next").predict(x_test)
 
-        p = m.predict(x_test)
         expected = np.array([1.368221203557392, -0.476483331099142, -1.009079072163642])
         assert_array_almost_equal(expected, p, decimal=5)
 
@@ -316,8 +311,7 @@ def svm_model_factory():
     def create_and_fit_model(solver, x, y, **kwargs):
         params = {"solver": solver, "alpha": 2}
         params.update(kwargs)
-        m = HingeLossSurvivalSVM(**params)
-        return m.fit(x, y)
+        return HingeLossSurvivalSVM(**params).fit(x, y)
 
     return create_and_fit_model
 

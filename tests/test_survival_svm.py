@@ -497,8 +497,7 @@ class TestFastSurvivalSVM:
     @pytest.mark.slow()
     def test_fit_timeit(make_whas500, optimizer_any):
         whas500 = make_whas500(to_numeric=True)
-        rnd = np.random.RandomState(0)
-        idx = rnd.choice(np.arange(whas500.x.shape[0]), replace=False, size=100)
+        idx = np.random.RandomState(0).choice(np.arange(whas500.x.shape[0]), replace=False, size=100)
 
         ssvm = FastSurvivalSVM(optimizer=optimizer_any, timeit=3, random_state=0)
         ssvm.fit(whas500.x[idx, :], whas500.y[idx])
@@ -682,8 +681,7 @@ class TestKernelSurvivalSVM:
             random_state=0xF38,
         )
 
-        kpca = KernelPCA(kernel="poly", copy_X=True, gamma=0.5, degree=2, coef0=0, random_state=0xF38)
-        xt = kpca.fit_transform(x)
+        xt = KernelPCA(kernel="poly", copy_X=True, gamma=0.5, degree=2, coef0=0, random_state=0xF38).fit_transform(x)
         nrsvm = FastSurvivalSVM(optimizer="rbtree", tol=2.5e-8, max_iter=100, random_state=0xF38)
 
         TestKernelSurvivalSVM._fit_and_compare(nrsvm, rsvm, x, xt, whas500.y)
@@ -696,8 +694,7 @@ class TestKernelSurvivalSVM:
 
         trans = ClinicalKernelTransform().fit(whas500.x_data_frame)
 
-        kpca = KernelPCA(kernel=trans.pairwise_kernel, copy_X=True)
-        xt = kpca.fit_transform(whas500.x)
+        xt = KernelPCA(kernel=trans.pairwise_kernel, copy_X=True).fit_transform(whas500.x)
 
         nrsvm = FastSurvivalSVM(optimizer="rbtree", tol=1e-8, max_iter=500, random_state=0)
 

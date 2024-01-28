@@ -1,7 +1,7 @@
 from contextlib import ExitStack
 from contextlib import nullcontext as does_not_raise
 from io import StringIO
-import os
+from pathlib import Path
 import tempfile
 
 import numpy as np
@@ -51,13 +51,12 @@ def temp_file_pair():
 
     yield tmp_train, tmp_test
 
-    os.unlink(tmp_train.name)
-    os.unlink(tmp_test.name)
+    Path(tmp_train.name).unlink()
+    Path(tmp_test.name).unlink()
 
 
 def _make_features(n_samples, n_features, seed):
-    rnd = np.random.RandomState(seed)
-    return rnd.randn(n_samples, n_features)
+    return np.random.RandomState(seed).randn(n_samples, n_features)
 
 
 def _make_survival_data(n_samples, n_features, seed):

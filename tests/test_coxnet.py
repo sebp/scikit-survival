@@ -1402,7 +1402,7 @@ class TestCoxnetSurvivalAnalysis:
             - expected_offset[np.newaxis]
         )
         pred = np.column_stack(
-            [coxnet.predict(x.iloc[[122, 10, 22, 200], :], alpha=a) for a in [0.75, 0.25, 0.2, 0.15, 0.1, 0.075]]
+            [coxnet.predict(x.iloc[[122, 10, 22, 200], :], alpha=a) for a in (0.75, 0.25, 0.2, 0.15, 0.1, 0.075)]
         )
         assert_array_almost_equal(pred, expected_pred)
 

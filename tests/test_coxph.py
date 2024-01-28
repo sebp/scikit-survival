@@ -50,8 +50,7 @@ def assert_gradient_correctness(cph):
         cph.update(x)
         return cph.gradient
 
-    rnd = np.random.RandomState(9)
-    coef = rnd.randn(cph.x.shape[1])
+    coef = np.random.RandomState(9).randn(cph.x.shape[1])
 
     err = check_grad(cph.nlog_likelihood, grad, coef)
 
@@ -800,8 +799,7 @@ class TestCoxPH:
             name="grade",
         )
 
-        enc = OneHotEncoder()
-        X = enc.fit_transform(X)
+        X = OneHotEncoder().fit_transform(X)
 
         cols_unpen = ["age", "size", "grade=poorly differentiated", "grade=well differentiated", "er=positive"]
         X = pd.concat((X.loc[:, cols_unpen], X.drop(cols_unpen, axis=1)), axis=1)

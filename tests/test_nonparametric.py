@@ -5785,9 +5785,8 @@ class TestKaplanMeier:
             np.array([1, 2, 3, 3, 3, 4, 5, 5, 6, 7]),
         )
 
-        cens = CensoringDistributionEstimator().fit(y)
+        probs = CensoringDistributionEstimator().fit(y).predict_proba(np.arange(1, 8))
 
-        probs = cens.predict_proba(np.arange(1, 8))
         expected = np.array([1.0, 0.8888889, 0.6349206, 0.6349206, 0.4232804, 0.4232804, 0.0000000])
 
         assert_array_almost_equal(expected, probs)
