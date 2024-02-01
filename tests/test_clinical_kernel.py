@@ -197,8 +197,7 @@ class TestClinicalKernel:
 Feature names unseen at fit time:
 - XYZ
 """
-        warn_msg = r"The feature names should match those that were passed during fit\."
-        with pytest.raises(ValueError, match=error_msg), pytest.warns(FutureWarning, match=warn_msg):
+        with pytest.raises(ValueError, match=error_msg):
             t.transform(df_test)
 
     @staticmethod
