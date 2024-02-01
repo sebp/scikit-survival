@@ -142,6 +142,8 @@ filterwarnings = [
     "ignore:datetime\\.datetime\\.utcfromtimestamp\\(\\) is deprecated and scheduled for removal in a future version.*:DeprecationWarning",
     "ignore:ast\\.Num is deprecated and will be removed in Python 3\\.14.*:DeprecationWarning",
     "ignore:Attribute n is deprecated and will be removed in Python 3\\.14.*:DeprecationWarning",
+    # deprecated since Python 2.2.0
+    "ignore:\\nPyarrow will become a required dependency of pandas in the next major release of pandas.*:DeprecationWarning",
 ]
 
 [tool.coverage.run]
