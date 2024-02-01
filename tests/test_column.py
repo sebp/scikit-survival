@@ -42,7 +42,7 @@ class StandardizeCase(FixtureParameterFactory):
             }
         )
 
-        data.loc[:, "q3"] = data.loc[:, "q3"].astype("category")
+        data["q3"] = data.loc[:, "q3"].astype("category")
         return data
 
     def data_numeric(self):
