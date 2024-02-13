@@ -74,10 +74,13 @@ jobs:
             echo "do=false" >> $GITHUB_OUTPUT
           fi
       - name: Submit Coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           file: coverage.xml
           fail_ci_if_error: true
+          disable_file_fixes: true
         if: steps.coverage.outputs.do == 'true'
       - name: Submit Coverage to Codacy
         uses: codacy/codacy-coverage-reporter-action@master
