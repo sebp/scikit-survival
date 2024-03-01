@@ -10,4 +10,5 @@ updates:
       interval: "weekly"
     allow:
       - dependency-name: "scikit-learn"
+    versioning-strategy: increase-if-necessary
 
