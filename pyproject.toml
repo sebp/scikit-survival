@@ -144,6 +144,8 @@ filterwarnings = [
     "ignore:Attribute n is deprecated and will be removed in Python 3\\.14.*:DeprecationWarning",
     # deprecated since Python 2.2.0
     "ignore:\\nPyarrow will become a required dependency of pandas in the next major release of pandas.*:DeprecationWarning",
+    # deprecated since NumPy 1.25
+    "ignore:np\\.find_common_type is deprecated.  Please use `np\\.result_type` or `np\\.promote_types`:DeprecationWarning"
 ]
 
 [tool.coverage.run]
