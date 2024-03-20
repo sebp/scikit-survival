@@ -6,7 +6,7 @@ import numpy as np
 from scipy import linalg, sparse
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
-from sklearn.metrics.pairwise import pairwise_kernels
+from sklearn.metrics.pairwise import PAIRWISE_KERNEL_FUNCTIONS, pairwise_kernels
 from sklearn.utils._param_validation import Interval, StrOptions
 
 from ..base import SurvivalAnalysisMixin
@@ -207,7 +207,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     solver : {'ecos', 'osqp'}, optional, default: 'ecos'
         Which quadratic program solver to use.
 
-    kernel : {'linear', 'poly', 'rbf', 'sigmoid', 'cosine', 'precomputed'} or callable, default: 'linear'.
+    kernel : str or callable, default: 'linear'.
         Kernel mapping used internally. This parameter is directly passed to
         :func:`sklearn.metrics.pairwise.pairwise_kernels`.
         If `kernel` is a string, it must be one of the metrics
@@ -290,7 +290,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         "solver": [StrOptions({"ecos", "osqp"})],
         "alpha": [Interval(numbers.Real, 0, None, closed="neither")],
         "kernel": [
-            StrOptions({"linear", "poly", "rbf", "sigmoid", "precomputed"}),
+            StrOptions(set(PAIRWISE_KERNEL_FUNCTIONS.keys()) | {"precomputed"}),
             callable,
         ],
         "degree": [Interval(numbers.Integral, 0, None, closed="left")],
