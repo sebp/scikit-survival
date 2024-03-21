@@ -1,9 +1,8 @@
 [build-system]
 requires = [
-    "setuptools>=61.0.0",
+    "setuptools>=64",
+    "setuptools-scm>=8",
     "packaging",
-    "wheel",
-    "setuptools-scm[toml]>=6.4",
     # same as scikit-learn
     "Cython>=3.0.8",
     "numpy>=1.25",
@@ -72,7 +71,7 @@ dev = [
     "pre-commit",
     "pytest",
     "ruff",
-    "setuptools-scm >=6.4",
+    "setuptools-scm >=8",
     "tomli",
     "tox",
 ]
