@@ -18,7 +18,7 @@ jobs:
           - py312
         runner:
           - ubuntu-latest
-          - macos-latest
+          - macos-14
     runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout
@@ -26,8 +26,6 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
-      - name: Adding conda to PATH
-        run: echo "${CONDA}/bin" >> $GITHUB_PATH
       - name: Set dependencies
         id: dependencies
         run: |
@@ -37,23 +35,23 @@ jobs:
           echo "CI_NUMPY_VERSION=${CI_NUMPY_VERSION}" >> $GITHUB_ENV
           echo "CI_SKLEARN_VERSION=${CI_SKLEARN_VERSION}" >> $GITHUB_ENV
           echo "CI_NO_SLOW=${CI_NO_SLOW}" >> $GITHUB_ENV
-          echo "CONDA_PKGS_DIR=${HOME}/conda_pkgs_dir" >> $GITHUB_ENV
+          echo "CONDA_PKGS_DIRS=${{ runner.temp }}/conda_pkgs_dir" >> $GITHUB_ENV
           echo "py_version=$(cut -d'.' -f 1-2 <<< ${CI_PYTHON_VERSION})" >> $GITHUB_OUTPUT
           echo "requirements=ci/deps/${{ matrix.config }}.sh" >> $GITHUB_OUTPUT
       - name: Cache downloaded packages
         uses: actions/cache@v4
         with:
-          path: ${{ env.CONDA_PKGS_DIR }}
-          key: ${{ runner.os }}-conda-${{ steps.dependencies.outputs.py_version }}-${{ hashFiles(steps.dependencies.outputs.requirements, 'pyproject.toml', 'ci/deps/requirements.yaml.tmpl') }}
+          path: ${{ env.CONDA_PKGS_DIRS }}
+          key: ${{ runner.os }}-${{ runner.arch }}-conda-${{ steps.dependencies.outputs.py_version }}-${{ hashFiles(steps.dependencies.outputs.requirements, 'pyproject.toml', 'ci/deps/requirements.yaml.tmpl') }}
           restore-keys: |
-            ${{ runner.os }}-conda-${{ steps.dependencies.outputs.py_version }}-
+            ${{ runner.os }}-${{ runner.arch }}-conda-${{ steps.dependencies.outputs.py_version }}-
       - name: Create Conda Environment
         run: |
-          sudo chown -R $USER $CONDA
-          ci/setup_env.sh ${{ runner.os }}
+          source ci/setup_conda.sh "${{ runner.os }}" "${{ runner.arch }}" "${{ env.CONDA_PKGS_DIRS }}"
+          ci/setup_env.sh "${{ runner.os }}"
       - name: Configure Xcode
         run: |
-          sudo xcode-select -s "/Applications/Xcode_13.2.1.app"
+          sudo xcode-select -s "/Applications/Xcode_15.0.1.app"
         if: runner.os == 'macOS'
       - name: Build package
         run: |
@@ -99,8 +97,6 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
-      - name: Adding conda to PATH
-        run: echo "${CONDA}/bin" >> $GITHUB_PATH
       - name: Set dependencies
         id: dependencies
         env:
@@ -112,17 +108,17 @@ jobs:
           echo "CI_NUMPY_VERSION=${CI_NUMPY_VERSION}" >> $GITHUB_ENV
           echo "CI_SKLEARN_VERSION=${CI_SKLEARN_VERSION}" >> $GITHUB_ENV
           echo "CI_NO_SLOW=${CI_NO_SLOW}" >> $GITHUB_ENV
-          echo "CONDA_PKGS_DIR=${HOME}/conda_pkgs_dir" >> $GITHUB_ENV
+          echo "CONDA_PKGS_DIRS=${{ runner.temp }}/conda_pkgs_dir" >> $GITHUB_ENV
           echo "requirements=ci/deps/${DEPS_CONFIG}.sh" >> $GITHUB_OUTPUT
       - name: Cache downloaded packages
         uses: actions/cache@v4
         with:
-          path: ${{ env.CONDA_PKGS_DIR }}
-          key: ${{ runner.os }}-conda-3.10-${{ hashFiles(steps.dependencies.outputs.requirements, 'pyproject.toml', 'ci/deps/requirements.yaml.tmpl') }}
+          path: ${{ env.CONDA_PKGS_DIRS }}
+          key: ${{ runner.os }}-${{ runner.arch }}-conda-3.11-${{ hashFiles(steps.dependencies.outputs.requirements, 'pyproject.toml', 'ci/deps/requirements.yaml.tmpl') }}
       - name: Create Conda Environment
         run: |
-          sudo chown -R $USER $CONDA
-          ci/setup_env.sh ${{ runner.os }}
+          source ci/setup_conda.sh "${{ runner.os }}" "${{ runner.arch }}" "${{ env.CONDA_PKGS_DIRS }}"
+          ci/setup_env.sh "${{ runner.os }}"
       - name: Configure matplotlib
         run: |
           mkdir -p ${XDG_CONFIG_HOME}/matplotlib
