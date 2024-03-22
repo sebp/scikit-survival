@@ -36,11 +36,11 @@ Requirements
 - ecos
 - joblib
 - numexpr
-- numpy 1.17.3 or later
+- numpy
 - osqp
 - pandas 1.0.5 or later
-- scikit-learn 1.3
-- scipy 1.3.2 or later
+- scikit-learn 1.4
+- scipy
 - C/C++ compiler
 
 ============

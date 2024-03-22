@@ -202,6 +202,39 @@ class TestGradientBoosting:
         assert not hasattr(model, "oob_improvement_")
         assert model.max_features_ == 8
 
+    def test_fit_warm_start(self):
+        X, y = self.data
+
+        model_1 = GradientBoostingSurvivalAnalysis(
+            n_estimators=100,
+            max_depth=2,
+            random_state=0,
+        )
+        model_1.fit(X, y)
+        assert model_1.n_estimators_ == 100
+        pred_1 = model_1.predict(X)
+
+        model_2 = GradientBoostingSurvivalAnalysis(
+            n_estimators=40,
+            max_depth=2,
+            random_state=0,
+        )
+        model_2.fit(X, y)
+        assert model_2.n_estimators_ == 40
+        model_2.set_params(warm_start=True, n_estimators=100)
+
+        model_2.fit(X, y)
+        assert model_2.n_estimators_ == 100
+
+        pred_2 = model_2.predict(X)
+
+        assert_array_almost_equal(pred_1, pred_2)
+
+        model_2.set_params(n_estimators=99)
+        msg = r"n_estimators=99 must be larger or equal to estimators_.shape\[0\]=100 when warm_start==True"
+        with pytest.raises(ValueError, match=msg):
+            model_2.fit(X, y)
+
     @pytest.mark.parametrize(
         "parameter,value",
         [
@@ -300,6 +333,21 @@ class TestGradientBoosting:
         model.fit(X, y)
 
         assert model.n_estimators_ == 36
+
+    def test_early_stopping_with_dropout(self):
+        X, y = self.data
+
+        model = GradientBoostingSurvivalAnalysis(
+            n_estimators=1000,
+            max_depth=2,
+            n_iter_no_change=3,
+            dropout_rate=0.25,
+            validation_fraction=0.2,
+            random_state=0,
+        )
+        model.fit(X, y)
+
+        assert model.n_estimators_ == 21
 
     @staticmethod
     def test_negative_ccp_alpha(make_whas500):
@@ -442,8 +490,6 @@ class TestSparseGradientBoosting:
         assert model.train_score_.shape == (100,)
 
         sparse_predict = model.predict(data.x_sparse)
-
-        model.fit(data.x_sparse, data.y)
         dense_predict = model.predict(data.x_dense.values)
 
         assert_array_almost_equal(sparse_predict, dense_predict)
@@ -734,11 +780,10 @@ def test_param_sample_weight(sample_gb_class):
     est_cls, x, y = sample_gb_class
     model = est_cls()
 
-    with pytest.raises(ValueError, match=r"Found input variables with inconsistent numbers of samples: \[5, 3\]"):
+    with pytest.raises(ValueError, match=r"sample_weight.shape == \(3,\), expected \(5,\)!"):
         model.fit(x, y, [2, 3, 4])
 
-    model.set_params(dropout_rate=1.2)
-    with pytest.raises(ValueError, match=r"Found input variables with inconsistent numbers of samples: \[5, 8\]"):
+    with pytest.raises(ValueError, match=r"sample_weight.shape == \(8,\), expected \(5,\)!"):
         model.fit(x, y, [2, 4, 5, 6, 7, 1, 2, 7])
 
 

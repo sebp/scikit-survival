@@ -270,6 +270,10 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         -------
         self
         """
+        self._fit(X, y, sample_weight, check_input)
+        return self
+
+    def _fit(self, X, y, sample_weight=None, check_input=True, missing_values_in_feature_mask=None):
         random_state = check_random_state(self.random_state)
 
         if check_input:
@@ -286,7 +290,6 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             y_numeric[:, 1] = event.astype(np.float64)
         else:
             y_numeric, self.unique_times_, self.is_event_time_ = y
-            missing_values_in_feature_mask = None
 
         n_samples, self.n_features_in_ = X.shape
         params = self._check_params(n_samples)
@@ -309,7 +312,12 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         splitter = self.splitter
         if not isinstance(self.splitter, Splitter):
             splitter = SPLITTERS[self.splitter](
-                criterion, self.max_features_, params["min_samples_leaf"], params["min_weight_leaf"], random_state
+                criterion,
+                self.max_features_,
+                params["min_samples_leaf"],
+                params["min_weight_leaf"],
+                random_state,
+                None,  # monotonic_cst
             )
 
         self.tree_ = Tree(self.n_features_in_, self.n_classes_, self.n_outputs_)
