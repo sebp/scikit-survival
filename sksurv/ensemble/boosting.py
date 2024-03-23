@@ -113,6 +113,11 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         and an increase in bias.
         Values must be in the range `(0.0, 1.0]`.
 
+    warm_start : bool, default: False
+        When set to ``True``, reuse the solution of the previous call to fit
+        and add more estimators to the ensemble, otherwise, just erase the
+        previous solution.
+
     dropout_rate : float, optional, default: 0.0
         If larger than zero, the residuals at each iteration are only computed
         from a random subset of base learners. The value corresponds to the
@@ -139,16 +144,25 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
     estimators_ : list of base learners
         The collection of fitted sub-estimators.
 
-    train_score_ : array, shape = (n_estimators,)
-        The i-th score ``train_score_[i]`` is the deviance (= loss) of the
+    train_score_ : ndarray, shape = (n_estimators,)
+        The i-th score ``train_score_[i]`` is the loss of the
         model at iteration ``i`` on the in-bag sample.
-        If ``subsample == 1`` this is the deviance on the training data.
+        If ``subsample == 1`` this is the loss on the training data.
 
-    oob_improvement_ : array, shape = (n_estimators,)
-        The improvement in loss (= deviance) on the out-of-bag samples
+    oob_improvement_ : ndarray, shape = (n_estimators,)
+        The improvement in loss on the out-of-bag samples
         relative to the previous iteration.
         ``oob_improvement_[0]`` is the improvement in
         loss of the first stage over the ``init`` estimator.
+        Only available if ``subsample < 1.0``.
+
+    oob_scores_ : ndarray of shape (n_estimators,)
+        The full history of the loss values on the out-of-bag
+        samples. Only available if ``subsample < 1.0``.
+
+    oob_score_ : float
+        The last value of the loss on the out-of-bag samples. It is
+        the same as ``oob_scores_[-1]``. Only available if ``subsample < 1.0``.
 
     n_features_in_ : int
         Number of features seen during ``fit``.
@@ -171,6 +185,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         "learning_rate": [Interval(numbers.Real, 0.0, None, closed="left")],
         "n_estimators": [Interval(numbers.Integral, 1, None, closed="left")],
         "subsample": [Interval(numbers.Real, 0.0, 1.0, closed="right")],
+        "warm_start": ["boolean"],
         "dropout_rate": [Interval(numbers.Real, 0.0, 1.0, closed="left")],
         "random_state": ["random_state"],
         "verbose": ["verbose"],
@@ -183,6 +198,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         learning_rate=0.1,
         n_estimators=100,
         subsample=1.0,
+        warm_start=False,
         dropout_rate=0,
         random_state=None,
         verbose=0,
@@ -191,6 +207,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         self.n_estimators = n_estimators
         self.learning_rate = learning_rate
         self.subsample = subsample
+        self.warm_start = warm_start
         self.dropout_rate = dropout_rate
         self.random_state = random_state
         self.verbose = verbose
@@ -199,12 +216,83 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
     def _predict_risk_score(self):
         return isinstance(self._loss, CoxPH)
 
-    def _fit(self, X, event, time, sample_weight, random_state):  # noqa: C901
+    def _is_fitted(self):
+        return len(getattr(self, "estimators_", [])) > 0
+
+    def _init_state(self):
+        self.estimators_ = np.empty(self.n_estimators, dtype=object)
+
+        self.train_score_ = np.zeros(self.n_estimators, dtype=np.float64)
+        # do oob?
+        if self.subsample < 1.0:
+            self.oob_improvement_ = np.zeros(self.n_estimators, dtype=np.float64)
+            self.oob_scores_ = np.zeros(self.n_estimators, dtype=np.float64)
+            self.oob_score_ = np.nan
+
+        if self.dropout_rate > 0:
+            self._scale = np.ones(int(self.n_estimators), dtype=float)
+
+    def _resize_state(self):
+        """Add additional ``n_estimators`` entries to all attributes."""
+        # self.n_estimators is the number of additional est to fit
+        total_n_estimators = self.n_estimators
+
+        self.estimators_ = np.resize(self.estimators_, total_n_estimators)
+        self.train_score_ = np.resize(self.train_score_, total_n_estimators)
+        if self.subsample < 1 or hasattr(self, "oob_improvement_"):
+            # if do oob resize arrays or create new if not available
+            if hasattr(self, "oob_improvement_"):
+                self.oob_improvement_ = np.resize(self.oob_improvement_, total_n_estimators)
+                self.oob_scores_ = np.resize(self.oob_scores_, total_n_estimators)
+                self.oob_score_ = np.nan
+            else:
+                self.oob_improvement_ = np.zeros(total_n_estimators, dtype=np.float64)
+                self.oob_scores_ = np.zeros((total_n_estimators,), dtype=np.float64)
+                self.oob_score_ = np.nan
+
+        if self.dropout_rate > 0:
+            if not hasattr(self, "_scale"):
+                raise ValueError(
+                    "fitting with warm_start=True and dropout_rate > 0 is only "
+                    "supported if the previous fit used dropout_rate > 0 too"
+                )
+
+            self._scale = np.resize(self._scale, total_n_estimators)
+            self._scale[self.n_estimators_ :] = 1
+
+    def _clear_state(self):
+        """Clear the state of the gradient boosting model."""
+        if hasattr(self, "estimators_"):
+            self.estimators_ = np.empty(0, dtype=object)
+        if hasattr(self, "train_score_"):
+            del self.train_score_
+        if hasattr(self, "oob_improvement_"):
+            del self.oob_improvement_
+        if hasattr(self, "oob_scores_"):
+            del self.oob_scores_
+        if hasattr(self, "oob_score_"):
+            del self.oob_score_
+        if hasattr(self, "_rng"):
+            del self._rng
+        if hasattr(self, "_scale"):
+            del self._scale
+
+    def _update_with_dropout(self, i, X, raw_predictions, scale, random_state):
+        drop_model, n_dropped = _sample_binomial_plus_one(self.dropout_rate, i + 1, random_state)
+
+        scale[i] = 1.0 / (n_dropped + 1.0)
+
+        raw_predictions[:] = 0
+        for m in range(i + 1):
+            if drop_model[m] == 1:
+                scale[m] *= n_dropped / (n_dropped + 1.0)
+            else:
+                raw_predictions += self.learning_rate * scale[m] * self.estimators_[m].predict(X)
+
+    def _fit(self, X, event, time, y_pred, sample_weight, random_state, begin_at_stage=0):  # noqa: C901
         n_samples = X.shape[0]
         # account for intercept
-        Xi = np.column_stack((np.ones(n_samples), X))
         y = np.fromiter(zip(event, time), dtype=[("event", bool), ("time", np.float64)])
-        y_pred = np.zeros(n_samples)
 
         do_oob = self.subsample < 1.0
         if do_oob:
@@ -212,59 +300,65 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         do_dropout = self.dropout_rate > 0
         if do_dropout:
-            scale = np.ones(int(self.n_estimators), dtype=float)
+            scale = self._scale
 
         if self.verbose:
             verbose_reporter = VerboseReporter(verbose=self.verbose)
             verbose_reporter.init(self, 0)
 
-        for num_iter in range(int(self.n_estimators)):
+        # perform boosting iterations
+        i = begin_at_stage
+        for i in range(begin_at_stage, int(self.n_estimators)):
+            # subsampling
             if do_oob:
                 sample_mask = _random_sample_mask(n_samples, n_inbag, random_state)
                 subsample_weight = sample_weight * sample_mask.astype(np.float64)
 
                 # OOB score before adding this stage
-                old_oob_score = self._loss(y[~sample_mask], y_pred[~sample_mask], sample_weight[~sample_mask])
+                y_oob_masked = y[~sample_mask]
+                sample_weight_oob_masked = sample_weight[~sample_mask]
+                if i == 0:  # store the initial loss to compute the OOB score
+                    initial_loss = self._loss(
+                        y_true=y_oob_masked,
+                        raw_prediction=y_pred[~sample_mask],
+                        sample_weight=sample_weight_oob_masked,
+                    )
             else:
                 subsample_weight = sample_weight
 
             residuals = self._loss.gradient(y, y_pred, sample_weight=sample_weight)
 
-            best_learner = _fit_stage_componentwise(Xi, residuals, subsample_weight)
-            self.estimators_.append(best_learner)
+            best_learner = _fit_stage_componentwise(X, residuals, subsample_weight)
+            self.estimators_[i] = best_learner
 
-            if do_dropout:
-                drop_model, n_dropped = _sample_binomial_plus_one(self.dropout_rate, num_iter + 1, random_state)
-
-                scale[num_iter] = 1.0 / (n_dropped + 1.0)
-
-                y_pred[:] = 0
-                for m in range(num_iter + 1):
-                    if drop_model[m] == 1:
-                        scale[m] *= n_dropped / (n_dropped + 1.0)
-                    else:
-                        y_pred += self.learning_rate * scale[m] * self.estimators_[m].predict(Xi)
+            if do_dropout and 0 < i < len(scale) - 1:
+                self._update_with_dropout(i, X, y_pred, scale, random_state)
             else:
-                y_pred += self.learning_rate * best_learner.predict(Xi)
+                y_pred += self.learning_rate * best_learner.predict(X)
 
-            # track deviance (= loss)
+            # track loss
             if do_oob:
-                self.train_score_[num_iter] = self._loss(
+                self.train_score_[i] = self._loss(
                     y_true=y[sample_mask],
                     raw_prediction=y_pred[sample_mask],
                     sample_weight=sample_weight[sample_mask],
                 )
-                self.oob_improvement_[num_iter] = old_oob_score - self._loss(
-                    y_true=y[~sample_mask],
+                self.oob_scores_[i] = self._loss(
+                    y_true=y_oob_masked,
                     raw_prediction=y_pred[~sample_mask],
-                    sample_weight=sample_weight[~sample_mask],
+                    sample_weight=sample_weight_oob_masked,
                 )
+                previous_loss = initial_loss if i == 0 else self.oob_scores_[i - 1]
+                self.oob_improvement_[i] = previous_loss - self.oob_scores_[i]
+                self.oob_score_ = self.oob_scores_[-1]
             else:
                 # no need to fancy index w/ no subsampling
-                self.train_score_[num_iter] = self._loss(y, y_pred, sample_weight)
+                self.train_score_[i] = self._loss(y_true=y, raw_prediction=y_pred, sample_weight=sample_weight)
 
             if self.verbose > 0:
-                verbose_reporter.update(num_iter, self)
+                verbose_reporter.update(i, self)
+
+        return i + 1
 
     def fit(self, X, y, sample_weight=None):
         """Fit estimator.
@@ -286,43 +380,71 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         -------
         self
         """
+        self._validate_params()
+
+        if not self.warm_start:
+            self._clear_state()
+
         X = self._validate_data(X, ensure_min_samples=2)
         event, time = check_array_survival(X, y)
 
         sample_weight = _check_sample_weight(sample_weight, X)
 
-        random_state = check_random_state(self.random_state)
+        n_samples = X.shape[0]
+        Xi = np.column_stack((np.ones(n_samples), X))
 
-        self._validate_params()
-
-        self.estimators_ = []
         self._loss = LOSS_FUNCTIONS[self.loss]()
         if isinstance(self._loss, (CensoredSquaredLoss, IPCWLeastSquaresError)):
             time = np.log(time)
 
-        self.train_score_ = np.zeros((self.n_estimators,), dtype=np.float64)
-        # do oob?
-        if self.subsample < 1.0:
-            self.oob_improvement_ = np.zeros(self.n_estimators, dtype=np.float64)
+        if not self._is_fitted():
+            self._init_state()
 
-        self._fit(X, event, time, sample_weight, random_state)
+            y_pred = np.zeros(n_samples, dtype=np.float64)
 
+            begin_at_stage = 0
+
+            self._rng = check_random_state(self.random_state)
+        else:
+            # add more estimators to fitted model
+            # invariant: warm_start = True
+            if self.n_estimators < self.estimators_.shape[0]:
+                raise ValueError(
+                    "n_estimators=%d must be larger or equal to "
+                    "estimators_.shape[0]=%d when "
+                    "warm_start==True" % (self.n_estimators, self.estimators_.shape[0])
+                )
+            begin_at_stage = self.estimators_.shape[0]
+            y_pred = self._raw_predict(Xi)
+            self._resize_state()
+
+            # apply dropout to last stage of previous fit
+            if hasattr(self, "_scale") and self.dropout_rate > 0:
+                # pylint: disable-next=access-member-before-definition
+                self._update_with_dropout(self.n_estimators_ - 1, Xi, y_pred, self._scale, self._rng)
+
+        self.n_estimators_ = self._fit(Xi, event, time, y_pred, sample_weight, self._rng, begin_at_stage)
+
+        self._set_baseline_model(X, event, time)
+        return self
+
+    def _set_baseline_model(self, X, event, time):
         if isinstance(self._loss, CoxPH):
             risk_scores = self._predict(X)
             self._baseline_model = BreslowEstimator().fit(risk_scores, event, time)
         else:
             self._baseline_model = None
 
-        return self
+    def _raw_predict(self, X):
+        pred = np.zeros(X.shape[0], dtype=float)
+        for estimator in self.estimators_:
+            pred += self.learning_rate * estimator.predict(X)
+        return pred
 
     def _predict(self, X):
-        n_samples = X.shape[0]
-        Xi = np.column_stack((np.ones(n_samples), X))
-        pred = np.zeros(n_samples, dtype=float)
-
-        for estimator in self.estimators_:
-            pred += self.learning_rate * estimator.predict(Xi)
-
+        # account for intercept
+        Xi = np.column_stack((np.ones(X.shape[0]), X))
+        pred = self._raw_predict(Xi)
         return self._loss._scale_raw_prediction(pred)
 
     def predict(self, X):
@@ -722,7 +844,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
     oob_score_ : float
         The last value of the loss on the out-of-bag samples. It is
-        the same as `oob_scores_[-1]`. Only available if ``subsample < 1.0``.
+        the same as ``oob_scores_[-1]``. Only available if ``subsample < 1.0``.
 
     n_features_in_ : int
         Number of features seen during ``fit``.
