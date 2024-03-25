@@ -193,7 +193,7 @@ class TestGradientBoosting:
     @pytest.mark.slow()
     def test_fit_dropout(self):
         model = self.assert_fit_and_predict(
-            expected_cindex=(0.9094333, 68343, 6806, 0, 14),
+            expected_cindex=(0.9051950, 68024, 7124, 1, 14),
             n_estimators=100,
             max_features=8,
             learning_rate=1.0,
@@ -567,17 +567,17 @@ class TestComponentwiseGradientBoosting:
         p = model.predict(whas500_data.x)
 
         assert_cindex_almost_equal(
-            whas500_data.y["fstat"], whas500_data.y["lenfol"], p, (0.7772425, 58409, 16740, 0, 14)
+            whas500_data.y["fstat"], whas500_data.y["lenfol"], p, (0.7777482, 58447, 16702, 0, 14)
         )
 
         expected_coef = pd.Series(np.zeros(15, dtype=float), index=whas500_data.names)
-        expected_coef["age"] = 0.275537
-        expected_coef["hr"] = 0.040048
-        expected_coef["diasbp"] = -0.029998
-        expected_coef["bmi"] = -0.138909
-        expected_coef["sho"] = 3.318941
-        expected_coef["chf"] = 2.851386
-        expected_coef["mitype"] = -0.075817
+        expected_coef["age"] = 0.248771
+        expected_coef["hr"] = 0.04392
+        expected_coef["diasbp"] = -0.022432
+        expected_coef["bmi"] = -0.138095
+        expected_coef["sho"] = 2.863096
+        expected_coef["chf"] = 3.552457
+        expected_coef["mitype"] = -0.074266
 
         assert_array_almost_equal(expected_coef.values, model.coef_)
 
@@ -803,10 +803,10 @@ def test_fit_warm_start_with_wrong_dropout(make_whas500, model_cls):
     with pytest.raises(ValueError, match=msg):
         model.fit(whas500_data.x, whas500_data.y)
 
-    model.set_params(warm_start=False, n_estimators=25)
+    model.set_params(warm_start=False, n_estimators=2)
     model.fit(whas500_data.x, whas500_data.y)
-    assert model.n_estimators_ == 25
-    assert hasattr(model, "_scale")
+    assert model.n_estimators_ == 2
+    assert_array_almost_equal(model._scale, np.array([0.5, 0.5]))
 
 
 @pytest.fixture(params=[GradientBoostingSurvivalAnalysis, ComponentwiseGradientBoostingSurvivalAnalysis])

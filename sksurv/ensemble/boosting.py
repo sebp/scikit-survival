@@ -278,15 +278,19 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
             del self._scale
 
     def _update_with_dropout(self, i, X, raw_predictions, scale, random_state):
+        # select base learners to be dropped for next iteration
         drop_model, n_dropped = _sample_binomial_plus_one(self.dropout_rate, i + 1, random_state)
 
-        scale[i] = 1.0 / (n_dropped + 1.0)
+        # adjust scaling factor of tree that is going to be trained in next iteration
+        scale[i + 1] = 1.0 / (n_dropped + 1.0)
 
         raw_predictions[:] = 0
         for m in range(i + 1):
             if drop_model[m] == 1:
+                # adjust scaling factor of dropped trees
                 scale[m] *= n_dropped / (n_dropped + 1.0)
             else:
+                # pseudoresponse of next iteration (without contribution of dropped trees)
                 raw_predictions += self.learning_rate * scale[m] * self.estimators_[m].predict(X)
 
     def _fit(self, X, event, time, y_pred, sample_weight, random_state, begin_at_stage=0):  # noqa: C901
@@ -331,7 +335,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
             best_learner = _fit_stage_componentwise(X, residuals, subsample_weight)
             self.estimators_[i] = best_learner
 
-            if do_dropout and 0 < i < len(scale) - 1:
+            if do_dropout and i < len(scale) - 1:
                 self._update_with_dropout(i, X, y_pred, scale, random_state)
             else:
                 y_pred += self.learning_rate * best_learner.predict(X)
@@ -995,7 +999,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         assert sample_mask.dtype == bool
 
         # whether to use dropout in next iteration
-        do_dropout = self.dropout_rate > 0.0 and 0 < i < len(scale) - 1
+        do_dropout = self.dropout_rate > 0.0 and i < len(scale) - 1
 
         # Need to pass a copy of raw_predictions to negative_gradient()
         # because raw_predictions is partially updated at the end of the loop
