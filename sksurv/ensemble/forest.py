@@ -14,11 +14,12 @@ from sklearn.ensemble._forest import (
     _parallel_build_trees,
 )
 from sklearn.tree._tree import DTYPE
+from sklearn.utils._tags import _safe_tags
 from sklearn.utils.validation import check_is_fitted, check_random_state
 
 from ..base import SurvivalAnalysisMixin
 from ..metrics import concordance_index_censored
-from ..tree import SurvivalTree
+from ..tree import ExtraSurvivalTree, SurvivalTree
 from ..tree._criterion import get_unique_times
 from ..tree.tree import _array_to_step_function
 from ..util import check_array_survival
@@ -28,7 +29,21 @@ __all__ = ["RandomSurvivalForest", "ExtraSurvivalTrees"]
 MAX_INT = np.iinfo(np.int32).max
 
 
-class _BaseSurvivalForest(BaseForest, SurvivalAnalysisMixin, metaclass=ABCMeta):
+def _more_tags_patch(self):
+    # BaseForest._more_tags calls
+    # type(self.estimator)(criterion=self.criterions),
+    # which is incompatible with LogrankCriterion
+    if isinstance(self, _BaseSurvivalForest):
+        estimator = type(self.estimator)()
+    else:
+        estimator = type(self.estimator)(criterion=self.criterion)
+    return {"allow_nan": _safe_tags(estimator, key="allow_nan")}
+
+
+BaseForest._more_tags = _more_tags_patch
+
+
+class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
     """
     Base class for forest-based estimators for survival analysis.
 
@@ -89,8 +104,16 @@ class _BaseSurvivalForest(BaseForest, SurvivalAnalysisMixin, metaclass=ABCMeta):
         """
         self._validate_params()
 
-        X = self._validate_data(X, dtype=DTYPE, accept_sparse="csc", ensure_min_samples=2)
+        X = self._validate_data(X, dtype=DTYPE, accept_sparse="csc", ensure_min_samples=2, force_all_finite=False)
         event, time = check_array_survival(X, y)
+
+        # _compute_missing_values_in_feature_mask checks if X has missing values and
+        # will raise an error if the underlying tree base estimator can't handle missing
+        # values.
+        estimator = type(self.estimator)()
+        missing_values_in_feature_mask = estimator._compute_missing_values_in_feature_mask(
+            X, estimator_name=self.__class__.__name__
+        )
 
         self.n_features_in_ = X.shape[1]
         time = time.astype(np.float64)
@@ -156,6 +179,7 @@ class _BaseSurvivalForest(BaseForest, SurvivalAnalysisMixin, metaclass=ABCMeta):
                     len(trees),
                     verbose=self.verbose,
                     n_samples_bootstrap=n_samples_bootstrap,
+                    missing_values_in_feature_mask=missing_values_in_feature_mask,
                 )
                 for i, t in enumerate(trees)
             )
@@ -268,7 +292,7 @@ class _BaseSurvivalForest(BaseForest, SurvivalAnalysisMixin, metaclass=ABCMeta):
         return _array_to_step_function(self.unique_times_, arr)
 
 
-class RandomSurvivalForest(_BaseSurvivalForest):
+class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
     """A random survival forest.
 
     A random survival forest is a meta estimator that fits a number of
@@ -776,7 +800,7 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
         low_memory=False,
     ):
         super().__init__(
-            estimator=SurvivalTree(splitter="random"),
+            estimator=ExtraSurvivalTree(),
             n_estimators=n_estimators,
             estimator_params=(
                 "max_depth",
