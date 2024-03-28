@@ -12,7 +12,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-from datetime import datetime
+from datetime import datetime, UTC
 from importlib.metadata import version as get_version
 import inspect
 import os
@@ -85,7 +85,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "scikit-survival"
-current_year = datetime.utcnow().year
+current_year = datetime.now(UTC).year
 copyright = f"2015-{current_year}, Sebastian Pölsterl and contributors"
 
 # The version info for the project you're documenting, acts as replacement for
@@ -209,7 +209,7 @@ extlinks = {
 }
 
 intersphinx_mapping = {
-    "sklearn": ("https://scikit-learn.org/1.3", None),
+    "sklearn": ("https://scikit-learn.org/1.4", None),
     "cython": ("https://cython.readthedocs.io/en/latest/", None),
 }
 

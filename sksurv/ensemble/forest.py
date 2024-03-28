@@ -14,11 +14,12 @@ from sklearn.ensemble._forest import (
     _parallel_build_trees,
 )
 from sklearn.tree._tree import DTYPE
+from sklearn.utils._tags import _safe_tags
 from sklearn.utils.validation import check_is_fitted, check_random_state
 
 from ..base import SurvivalAnalysisMixin
 from ..metrics import concordance_index_censored
-from ..tree import SurvivalTree
+from ..tree import ExtraSurvivalTree, SurvivalTree
 from ..tree._criterion import get_unique_times
 from ..tree.tree import _array_to_step_function
 from ..util import check_array_survival
@@ -70,6 +71,10 @@ class _BaseSurvivalForest(BaseForest, SurvivalAnalysisMixin, metaclass=ABCMeta):
         """Not implemented"""
         raise NotImplementedError()
 
+    def _more_tags(self):
+        estimator = type(self.estimator)()
+        return {"allow_nan": _safe_tags(estimator, key="allow_nan")}
+
     def fit(self, X, y, sample_weight=None):
         """Build a forest of survival trees from the training set (X, y).
 
@@ -89,8 +94,16 @@ class _BaseSurvivalForest(BaseForest, SurvivalAnalysisMixin, metaclass=ABCMeta):
         """
         self._validate_params()
 
-        X = self._validate_data(X, dtype=DTYPE, accept_sparse="csc", ensure_min_samples=2)
+        X = self._validate_data(X, dtype=DTYPE, accept_sparse="csc", ensure_min_samples=2, force_all_finite=False)
         event, time = check_array_survival(X, y)
+
+        # _compute_missing_values_in_feature_mask checks if X has missing values and
+        # will raise an error if the underlying tree base estimator can't handle missing
+        # values.
+        estimator = type(self.estimator)()
+        missing_values_in_feature_mask = estimator._compute_missing_values_in_feature_mask(
+            X, estimator_name=self.__class__.__name__
+        )
 
         self.n_features_in_ = X.shape[1]
         time = time.astype(np.float64)
@@ -156,6 +169,7 @@ class _BaseSurvivalForest(BaseForest, SurvivalAnalysisMixin, metaclass=ABCMeta):
                     len(trees),
                     verbose=self.verbose,
                     n_samples_bootstrap=n_samples_bootstrap,
+                    missing_values_in_feature_mask=missing_values_in_feature_mask,
                 )
                 for i, t in enumerate(trees)
             )
@@ -776,7 +790,7 @@ class ExtraSurvivalTrees(_BaseSurvivalForest):
         low_memory=False,
     ):
         super().__init__(
-            estimator=SurvivalTree(splitter="random"),
+            estimator=ExtraSurvivalTree(),
             n_estimators=n_estimators,
             estimator_params=(
                 "max_depth",

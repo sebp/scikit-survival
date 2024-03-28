@@ -36,11 +36,11 @@ Requirements
 - ecos
 - joblib
 - numexpr
-- numpy 1.17.3 or later
+- numpy
 - osqp
 - pandas 1.0.5 or later
-- scikit-learn 1.3
-- scipy 1.3.2 or later
+- scikit-learn 1.4
+- scipy
 - C/C++ compiler
 
 ============
@@ -123,7 +123,7 @@ Please cite the following paper if you are using **scikit-survival**.
   :alt: codecov
 
 .. |Codacy| image:: https://api.codacy.com/project/badge/Grade/17242004cdf6422c9a1052bf1ec63104
-   :target: https://www.codacy.com/gh/sebp/scikit-survival/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sebp/scikit-survival&amp;utm_campaign=Badge_Grade
+   :target: https://app.codacy.com/gh/sebp/scikit-survival/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade
    :alt: Codacy Badge
 
 .. |Docs| image:: https://readthedocs.org/projects/scikit-survival/badge/?version=latest

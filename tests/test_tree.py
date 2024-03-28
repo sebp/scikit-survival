@@ -14,7 +14,7 @@ from sklearn.tree._tree import TREE_UNDEFINED
 from sksurv.compare import compare_survival
 from sksurv.datasets import load_breast_cancer, load_veterans_lung_cancer
 from sksurv.nonparametric import kaplan_meier_estimator, nelson_aalen_estimator
-from sksurv.tree import SurvivalTree
+from sksurv.tree import ExtraSurvivalTree, SurvivalTree
 from sksurv.util import Surv
 
 
@@ -850,6 +850,6 @@ def test_missing_value_random_splitter_errors(is_sparse):
     if is_sparse:
         X = sparse.csr_matrix(X)
 
-    tree = SurvivalTree(splitter="random")
+    tree = ExtraSurvivalTree()
     with pytest.raises(ValueError, match="Input X contains NaN"):
         tree.fit(X, y)

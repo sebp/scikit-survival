@@ -1,24 +1,14 @@
 [build-system]
 requires = [
-    "setuptools>=61.0.0",
+    "setuptools>=64",
+    "setuptools-scm>=8",
     "packaging",
-    "wheel",
-    "setuptools-scm[toml]>=6.4",
-    "Cython>=0.29.16",
-
-    # arm64 on Darwin supports Python 3.8 and above requires numpy>=1.21.0
-    # (first version with arm64 wheels available)
-    "numpy==1.21.0; python_version=='3.9' and platform_machine=='arm64' and platform_system=='Darwin'",
-
-    # default numpy requirements
-    "numpy==1.19.3; python_version=='3.9' and platform_machine != 'arm64'",
-    "numpy==1.21.6; python_version=='3.10'",
-    "numpy==1.23.2; python_version=='3.11'",
-    "numpy==1.26.1; python_version=='3.12'",
-    "numpy; python_version>'3.12'",
+    # same as scikit-learn
+    "Cython>=3.0.8",
+    "numpy>=1.25",
 
     # scikit-learn requirements
-    "scikit-learn~=1.3.0; python_version<='3.12'",
+    "scikit-learn~=1.4.0; python_version<='3.12'",
     "scikit-learn; python_version>'3.12'",
 ]
 build-backend = "setuptools.build_meta"
@@ -53,14 +43,13 @@ classifiers = [
 ]
 dependencies = [
     "ecos",
-    "importlib-resources >=1.3; python_version<'3.9'",
     "joblib",
     "numexpr",
     "numpy",
     "osqp !=0.6.0,!=0.6.1",
     "pandas >=1.0.5",
     "scipy >=1.3.2",
-    "scikit-learn >=1.3.0,<1.4",
+    "scikit-learn >=1.4.0,<1.5",
 ]
 dynamic = ["version"]
 
@@ -76,12 +65,12 @@ dev = [
     "black[jupyter]",
     "build",
     "coverage",
-    "cython >=0.29",
+    "Cython >=3.0.8",
     "packaging",
     "pre-commit",
     "pytest",
     "ruff",
-    "setuptools-scm >=6.4",
+    "setuptools-scm >=8",
     "tomli",
     "tox",
 ]
@@ -144,6 +133,8 @@ filterwarnings = [
     "ignore:Attribute n is deprecated and will be removed in Python 3\\.14.*:DeprecationWarning",
     # deprecated since Python 2.2.0
     "ignore:\\nPyarrow will become a required dependency of pandas in the next major release of pandas.*:DeprecationWarning",
+    # deprecated since NumPy 1.25
+    "ignore:np\\.find_common_type is deprecated.  Please use `np\\.result_type` or `np\\.promote_types`:DeprecationWarning"
 ]
 
 [tool.coverage.run]

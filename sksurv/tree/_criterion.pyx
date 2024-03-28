@@ -13,16 +13,16 @@ cimport numpy as cnp
 cnp.import_array()
 
 from sklearn.tree._criterion cimport Criterion
-from sklearn.tree._tree cimport DOUBLE_t, SIZE_t
+from sklearn.utils._typedefs cimport float64_t, intp_t
 
 
-cpdef get_unique_times(cnp.ndarray[DOUBLE_t, ndim=1] time, cnp.ndarray[cnp.npy_bool, ndim=1] event):
+cpdef get_unique_times(cnp.ndarray[float64_t, ndim=1] time, cnp.ndarray[cnp.npy_bool, ndim=1] event):
     cdef:
-        SIZE_t[:] order = cnp.PyArray_ArgSort(time, 0, cnp.NPY_MERGESORT)
-        DOUBLE_t value
-        DOUBLE_t last_value = NAN
-        SIZE_t i
-        SIZE_t idx
+        intp_t[:] order = cnp.PyArray_ArgSort(time, 0, cnp.NPY_MERGESORT)
+        float64_t value
+        float64_t last_value = NAN
+        intp_t i
+        intp_t idx
         list unique_values = []
         list has_event = []
 
@@ -41,14 +41,14 @@ cpdef get_unique_times(cnp.ndarray[DOUBLE_t, ndim=1] time, cnp.ndarray[cnp.npy_b
 
 cdef class RisksetCounter:
     cdef:
-        const DOUBLE_t[:] unique_times
+        const float64_t[:] unique_times
         cnp.npy_int64 * n_events
         cnp.npy_int64 * n_at_risk
-        const DOUBLE_t[:, ::1] data
-        size_t nbytes
+        const float64_t[:, ::1] data
+        intp_t nbytes
 
-    def __cinit__(self, const DOUBLE_t[:] unique_times):
-        cdef SIZE_t n_unique_times = unique_times.shape[0]
+    def __cinit__(self, const float64_t[:] unique_times):
+        cdef intp_t n_unique_times = unique_times.shape[0]
         self.nbytes = n_unique_times * sizeof(cnp.npy_int64)
         self.n_events = <cnp.npy_int64 *> malloc(self.nbytes)
         self.n_at_risk = <cnp.npy_int64 *> malloc(self.nbytes)
@@ -63,19 +63,19 @@ cdef class RisksetCounter:
         memset(self.n_events, 0, self.nbytes)
         memset(self.n_at_risk, 0, self.nbytes)
 
-    cdef void set_data(self, const DOUBLE_t[:, ::1] data) noexcept nogil:
+    cdef void set_data(self, const float64_t[:, ::1] data) noexcept nogil:
         self.data = data
 
-    cdef void update(self, const SIZE_t[:] samples, SIZE_t start, SIZE_t end) noexcept nogil:
+    cdef void update(self, const intp_t[:] samples, intp_t start, intp_t end) noexcept nogil:
         cdef:
-            SIZE_t i
-            SIZE_t idx
-            SIZE_t ti
-            DOUBLE_t time
-            DOUBLE_t event
-            const DOUBLE_t[:] unique_times = self.unique_times
-            SIZE_t n_times = unique_times.shape[0]
-            const DOUBLE_t[:, ::1] y = self.data
+            intp_t i
+            intp_t idx
+            intp_t ti
+            float64_t time
+            float64_t event
+            const float64_t[:] unique_times = self.unique_times
+            intp_t n_times = unique_times.shape[0]
+            const float64_t[:, ::1] y = self.data
 
         self.reset()
 
@@ -94,20 +94,20 @@ cdef class RisksetCounter:
                 if event != 0.0:
                     self.n_events[ti] += 1
 
-    cdef inline void at(self, SIZE_t index, DOUBLE_t * at_risk, DOUBLE_t * events) noexcept nogil:
+    cdef inline void at(self, intp_t index, float64_t * at_risk, float64_t * events) noexcept nogil:
         if at_risk != NULL:
-            at_risk[0] = <DOUBLE_t> self.n_at_risk[index]
+            at_risk[0] = <float64_t> self.n_at_risk[index]
         if events != NULL:
-            events[0] = <DOUBLE_t> self.n_events[index]
+            events[0] = <float64_t> self.n_events[index]
 
 
-cdef int argbinsearch(const DOUBLE_t[:] arr, DOUBLE_t key_val, SIZE_t * ret) except -1 nogil:
+cdef int argbinsearch(const float64_t[:] arr, float64_t key_val, intp_t * ret) except -1 nogil:
     cdef:
-        SIZE_t arr_len = arr.shape[0]
-        SIZE_t min_idx = 0
-        SIZE_t max_idx = arr_len
-        SIZE_t mid_idx
-        DOUBLE_t mid_val
+        intp_t arr_len = arr.shape[0]
+        intp_t min_idx = 0
+        intp_t max_idx = arr_len
+        intp_t mid_idx
+        float64_t mid_val
 
     while min_idx < max_idx:
         mid_idx = min_idx + ((max_idx - min_idx) >> 1)
@@ -130,17 +130,17 @@ cdef class LogrankCriterion(Criterion):
 
     cdef:
         # unique time points sorted in ascending order
-        const DOUBLE_t[::1] unique_times
+        const float64_t[::1] unique_times
         const cnp.npy_bool[::1] is_event_time
-        SIZE_t n_unique_times
-        size_t nbytes
+        intp_t n_unique_times
+        intp_t nbytes
         RisksetCounter riskset_total
         cnp.npy_int64 * delta_n_at_risk_left
         cnp.npy_int64 * n_events_left
-        SIZE_t * samples_time_idx
-        SIZE_t n_samples_left
+        intp_t * samples_time_idx
+        intp_t n_samples_left
 
-    def __cinit__(self, SIZE_t n_outputs, SIZE_t n_samples, const DOUBLE_t[::1] unique_times, const cnp.npy_bool[::1] is_event_time):
+    def __cinit__(self, intp_t n_outputs, intp_t n_samples, const float64_t[::1] unique_times, const cnp.npy_bool[::1] is_event_time):
         # Default values
         self.start = 0
         self.pos = 0
@@ -160,7 +160,7 @@ cdef class LogrankCriterion(Criterion):
         self.riskset_total = RisksetCounter(unique_times)
         self.delta_n_at_risk_left = <cnp.npy_int64 *> malloc(self.nbytes)
         self.n_events_left = <cnp.npy_int64 *> malloc(self.nbytes)
-        self.samples_time_idx = <SIZE_t *> malloc(n_samples * sizeof(SIZE_t))
+        self.samples_time_idx = <intp_t *> malloc(n_samples * sizeof(intp_t))
 
     def __dealloc__(self):
         """Destructor."""
@@ -171,9 +171,15 @@ cdef class LogrankCriterion(Criterion):
     def __reduce__(self):
         return (type(self), (self.n_outputs, self.n_samples, self.unique_times, self.is_event_time), self.__getstate__())
 
-    cdef int init(self, const DOUBLE_t[:, ::1] y, const DOUBLE_t[:] sample_weight,
-                  double weighted_n_samples, const SIZE_t[:] sample_indices, SIZE_t start,
-                  SIZE_t end) except -1 nogil:
+    cdef int init(
+        self,
+        const float64_t[:, ::1] y,
+        const float64_t[:] sample_weight,
+        float64_t weighted_n_samples,
+        const intp_t[:] sample_indices,
+        intp_t start,
+        intp_t end
+    ) except -1 nogil:
         """Initialize the criterion at node samples[start:end] and
            children samples[start:start] and samples[start:end]."""
         # Initialize fields
@@ -187,11 +193,11 @@ cdef class LogrankCriterion(Criterion):
         self.weighted_n_node_samples = 0.
 
         cdef:
-            SIZE_t i
-            SIZE_t idx
-            DOUBLE_t time
-            DOUBLE_t w = 1.0
-            const DOUBLE_t[::1] unique_times = self.unique_times
+            intp_t i
+            intp_t idx
+            float64_t time
+            float64_t w = 1.0
+            const float64_t[::1] unique_times = self.unique_times
 
         self.riskset_total.set_data(y)
         self.riskset_total.update(sample_indices, start, end)
@@ -224,19 +230,19 @@ cdef class LogrankCriterion(Criterion):
         self.pos = self.end
         return 0
 
-    cdef int update(self, SIZE_t new_pos) except -1 nogil:
+    cdef int update(self, intp_t new_pos) except -1 nogil:
         """Updated statistics by moving samples[pos:new_pos] to the left."""
         cdef:
-            const DOUBLE_t[:] sample_weight = self.sample_weight
-            const SIZE_t[:] samples = self.sample_indices
-            const DOUBLE_t[:, ::1] y = self.y
+            const float64_t[:] sample_weight = self.sample_weight
+            const intp_t[:] samples = self.sample_indices
+            const float64_t[:, ::1] y = self.y
 
-            SIZE_t pos = self.start  # always start from the beginning
-            SIZE_t i
-            SIZE_t idx
-            DOUBLE_t event
-            SIZE_t time_idx
-            DOUBLE_t w = 1.0
+            intp_t pos = self.start  # always start from the beginning
+            intp_t i
+            intp_t idx
+            float64_t event
+            intp_t time_idx
+            float64_t w = 1.0
 
         self.n_samples_left = new_pos - pos
         memset(self.delta_n_at_risk_left, 0, self.nbytes)
@@ -264,28 +270,30 @@ cdef class LogrankCriterion(Criterion):
         self.pos = new_pos
         return 0
 
-    cdef double impurity_improvement(self, double impurity_parent,
-                                     double impurity_left,
-                                     double impurity_right) noexcept nogil:
+    cdef float64_t impurity_improvement(
+        self, float64_t impurity_parent,
+        float64_t impurity_left,
+        float64_t impurity_right
+    ) noexcept nogil:
         """Compute the improvement in impurity"""
         return self.proxy_impurity_improvement()
 
-    cdef double proxy_impurity_improvement(self) noexcept nogil:
+    cdef float64_t proxy_impurity_improvement(self) noexcept nogil:
         """Compute a proxy of the impurity reduction"""
 
         cdef:
-            SIZE_t i
-            DOUBLE_t at_risk = <DOUBLE_t> self.n_samples_left
-            DOUBLE_t events
-            DOUBLE_t total_at_risk
-            DOUBLE_t total_events
-            DOUBLE_t ratio
-            DOUBLE_t v
-            DOUBLE_t denom = 0.0
-            DOUBLE_t numer = 0.0
+            intp_t i
+            float64_t at_risk = <float64_t> self.n_samples_left
+            float64_t events
+            float64_t total_at_risk
+            float64_t total_events
+            float64_t ratio
+            float64_t v
+            float64_t denom = 0.0
+            float64_t numer = 0.0
 
         for i in range(self.n_unique_times):
-            events = <DOUBLE_t> self.n_events_left[i]
+            events = <float64_t> self.n_events_left[i]
             self.riskset_total.at(i, &total_at_risk, &total_events)
 
             if total_at_risk == 0:
@@ -297,7 +305,7 @@ cdef class LogrankCriterion(Criterion):
                 denom += ratio * (1.0 - ratio) * v
 
             # Update number of samples at risk for next bigger timepoint
-            at_risk -= <DOUBLE_t> self.delta_n_at_risk_left[i]
+            at_risk -= <float64_t> self.delta_n_at_risk_left[i]
 
         if denom != 0.0:
             # absolute value is the measure of node separation
@@ -307,30 +315,33 @@ cdef class LogrankCriterion(Criterion):
 
         return v
 
-    cdef double node_impurity(self) noexcept nogil:
+    cdef float64_t node_impurity(self) noexcept nogil:
         """Evaluate the impurity of the current node, i.e. the impurity of
            samples[start:end]."""
         return INFINITY
 
-    cdef void children_impurity(self, double* impurity_left,
-                                double* impurity_right) noexcept nogil:
+    cdef void children_impurity(
+        self,
+        float64_t* impurity_left,
+        float64_t* impurity_right
+    ) noexcept nogil:
         """Evaluate the impurity in children nodes, i.e. the impurity of the
            left child (samples[start:pos]) and the impurity the right child
            (samples[pos:end])."""
         impurity_left[0] = INFINITY
         impurity_right[0] = INFINITY
 
-    cdef void node_value(self, double* dest) noexcept nogil:
+    cdef void node_value(self, float64_t* dest) noexcept nogil:
         """Compute the node value of samples[start:end] into dest."""
         # Estimate cumulative hazard function
         cdef:
             const cnp.npy_bool[::1] is_event_time = self.is_event_time
-            SIZE_t i
-            SIZE_t j
-            DOUBLE_t ratio
-            DOUBLE_t n_events
-            DOUBLE_t n_at_risk
-            DOUBLE_t dest_j0
+            intp_t i
+            intp_t j
+            float64_t ratio
+            float64_t n_events
+            float64_t n_at_risk
+            float64_t dest_j0
 
         # low memory mode
         if  self.n_outputs == 1:

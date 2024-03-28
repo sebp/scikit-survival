@@ -235,7 +235,7 @@ class TestStackingSurvivalAnalysis:
             probabilities=False,
         )
 
-        with pytest.raises(AttributeError, match=f"'_PredictDummy' object has no attribute '{method}'"):
+        with pytest.raises(AttributeError, match=f"This 'Stacking' has no attribute '{method}'"):
             getattr(meta, method)()  # pylint: disable=pointless-statement
 
     @staticmethod

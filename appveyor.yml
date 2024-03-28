@@ -21,12 +21,13 @@ platform:
 
 install:
   - ps: $env:CONDA_INSTALL_LOCN="$env:USERPROFILE\Miniconda3"
-  - ps: Invoke-WebRequest -Uri https://repo.anaconda.com/miniconda/Miniconda3-py311_23.5.2-0-Windows-x86_64.exe -OutFile Miniconda3.exe
-  - ps: ( Get-FileHash -Algorithm SHA256 Miniconda3.exe ).Hash -eq '00e8370542836862d4c790aa8966f1d7344a8addd4b766004febcb23f40e2914'
+  - ps: Invoke-WebRequest -Uri https://repo.anaconda.com/miniconda/Miniconda3-py312_24.1.2-0-Windows-x86_64.exe -OutFile Miniconda3.exe
+  - ps: ( Get-FileHash -Algorithm SHA256 Miniconda3.exe ).Hash -eq 'ff53a36b7024f8398cbfd043020f1f662cd4c5c2095c0007ddb4348aa5459375'
   - ps: Start-Process Miniconda3.exe -Wait -ArgumentList @('/S', '/InstallationType=JustMe', '/RegisterPython=1', '/D="$env:CONDA_INSTALL_LOCN"')
   - ps: $env:Path += ";$env:CONDA_INSTALL_LOCN\Scripts;$env:CONDA_INSTALL_LOCN\Library\bin"
   - ps: conda init powershell
-  - ps: conda config --set always_yes yes --set changeps1 no
+  - ps: conda config --set always_yes yes
+  - ps: conda config --set changeps1 no
   - ps: conda config --set auto_update_conda false
   - ps: conda config --set notify_outdated_conda false
 #  - ps: conda update --yes --quiet conda

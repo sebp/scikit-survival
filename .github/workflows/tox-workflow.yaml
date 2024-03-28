@@ -10,11 +10,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-      - name: Install packages
+      - name: Install third-party tools
         run: |
-          sudo apt-get install cmake libenchant-2-dev tox
+          sudo apt-get install cmake libenchant-2-dev
           eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
           brew install pandoc
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Tox
+        run: python -m pip install tox
       - name: Run Tox
         run: |
           eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"

@@ -1203,5 +1203,5 @@ def test_scorer_no_predict_function(make_whas500, pred_func):
     scorer = as_concordance_index_ipcw_scorer(FastSurvivalSVM())
     scorer.fit(whas500_data.x, whas500_data.y)
 
-    with pytest.raises(AttributeError, match=f"'FastSurvivalSVM' object has no attribute {pred_func!r}"):
+    with pytest.raises(AttributeError, match=f"This 'as_concordance_index_ipcw_scorer' has no attribute {pred_func!r}"):
         getattr(scorer, pred_func)

@@ -39,6 +39,39 @@ def test_fit_predict(make_whas500, forest_cls, expected_c):
     assert_cindex_almost_equal(whas500.y["fstat"], whas500.y["lenfol"], pred, expected_c)
 
 
+def test_fit_missing_values(make_whas500):
+    whas500 = make_whas500(to_numeric=True)
+
+    rng = np.random.RandomState(42)
+    mask = rng.binomial(n=1, p=0.15, size=whas500.x.shape)
+    mask = mask.astype(bool)
+    X = whas500.x.copy()
+    X[mask] = np.nan
+
+    X_train, y_train = X[:400], whas500.y[:400]
+    X_test, y_test = X[400:], whas500.y[400:]
+
+    forest = RandomSurvivalForest(random_state=42)
+    forest.fit(X_train, y_train)
+
+    cindex = forest.score(X_test, y_test)
+    assert cindex == pytest.approx(0.7408487204405572)
+
+
+def test_fit_missing_values_not_supported(make_whas500):
+    whas500 = make_whas500(to_numeric=True)
+
+    rng = np.random.RandomState(42)
+    mask = rng.binomial(n=1, p=0.15, size=whas500.x.shape)
+    mask = mask.astype(bool)
+    X = whas500.x.copy()
+    X[mask] = np.nan
+
+    forest = ExtraSurvivalTrees(random_state=42)
+    with pytest.raises(ValueError, match="Input X contains NaN"):
+        forest.fit(X, whas500.y)
+
+
 @pytest.mark.parametrize("forest_cls", FORESTS)
 def test_fit_int_time(make_whas500, forest_cls):
     whas500 = make_whas500(to_numeric=True)
