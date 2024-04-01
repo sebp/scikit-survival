@@ -98,3 +98,6 @@ class SurvivalAnalysisMixin:
 
         result = concordance_index_censored(y[name_event], y[name_time], risk_score)
         return result[0]
+
+    def _more_tags(self):
+        return {"requires_y": True}
