@@ -2,6 +2,7 @@ import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 import pytest
 from scipy import sparse
+from sklearn.ensemble import ExtraTreesClassifier, RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 
@@ -37,6 +38,57 @@ def test_fit_predict(make_whas500, forest_cls, expected_c):
     assert np.all(pred >= 0)
 
     assert_cindex_almost_equal(whas500.y["fstat"], whas500.y["lenfol"], pred, expected_c)
+
+
+def test_fit_missing_values(make_whas500):
+    whas500 = make_whas500(to_numeric=True)
+
+    rng = np.random.RandomState(42)
+    mask = rng.binomial(n=1, p=0.15, size=whas500.x.shape)
+    mask = mask.astype(bool)
+    X = whas500.x.copy()
+    X[mask] = np.nan
+
+    X_train, y_train = X[:400], whas500.y[:400]
+    X_test, y_test = X[400:], whas500.y[400:]
+
+    forest = RandomSurvivalForest(random_state=42)
+    forest.fit(X_train, y_train)
+
+    tags = forest._get_tags()
+    assert tags["allow_nan"]
+
+    cindex = forest.score(X_test, y_test)
+    assert cindex == pytest.approx(0.7408487204405572)
+
+
+def test_fit_missing_values_not_supported(make_whas500):
+    whas500 = make_whas500(to_numeric=True)
+
+    rng = np.random.RandomState(42)
+    mask = rng.binomial(n=1, p=0.15, size=whas500.x.shape)
+    mask = mask.astype(bool)
+    X = whas500.x.copy()
+    X[mask] = np.nan
+
+    forest = ExtraSurvivalTrees(random_state=42)
+    with pytest.raises(ValueError, match="Input X contains NaN"):
+        forest.fit(X, whas500.y)
+
+    tags = forest._get_tags()
+    assert not tags["allow_nan"]
+
+
+@pytest.mark.parametrize("forst_cls,allows_nan", [(ExtraTreesClassifier, False), (RandomForestClassifier, True)])
+def test_sklearn_random_forest_tags(forst_cls, allows_nan):
+    est = forst_cls()
+
+    # https://scikit-learn.org/stable/developers/develop.html#estimator-tags
+    tags = est._get_tags()
+    assert tags["multioutput"]
+    assert tags["requires_fit"]
+    assert tags["requires_y"]
+    assert tags["allow_nan"] is allows_nan
 
 
 @pytest.mark.parametrize("forest_cls", FORESTS)

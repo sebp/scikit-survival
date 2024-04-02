@@ -13,33 +13,19 @@
 from abc import ABCMeta
 
 import numpy as np
-from sklearn.dummy import DummyRegressor
-from sklearn.ensemble._gb_losses import RegressionLossFunction
+from sklearn._loss.link import IdentityLink
+from sklearn._loss.loss import BaseLoss
 from sklearn.utils.extmath import squared_norm
 
 from ..nonparametric import ipc_weights
 from ._coxph_loss import coxph_loss, coxph_negative_gradient
 
 
-class DummySurvivalEstimator(DummyRegressor):
-    def __init__(self, strategy="mean", constant=None, quantile=None):
-        super().__init__(
-            strategy=strategy,
-            constant=constant,
-            quantile=quantile,
-        )
-
-    def fit(self, X, y, sample_weight=None):
-        _, time = y
-        return super().fit(X, time, sample_weight=sample_weight)
-
-
-class SurvivalLossFunction(RegressionLossFunction, metaclass=ABCMeta):  # noqa: B024
+class SurvivalLossFunction(BaseLoss, metaclass=ABCMeta):  # noqa: B024
     """Base class for survival loss functions."""
 
-    # pylint: disable=abstract-method,no-self-use
-    def init_estimator(self):
-        return DummySurvivalEstimator(strategy="constant", constant=0.0)
+    def __init__(self, sample_weight=None):
+        super().__init__(closs=None, link=IdentityLink())
 
 
 class CoxPH(SurvivalLossFunction):
@@ -47,12 +33,12 @@ class CoxPH(SurvivalLossFunction):
 
     # pylint: disable=no-self-use
 
-    def __call__(self, y, raw_predictions, sample_weight=None):  # pylint: disable=unused-argument
+    def __call__(self, y_true, raw_prediction, sample_weight=None):  # pylint: disable=unused-argument
         """Compute the partial likelihood of prediction ``y_pred`` and ``y``."""
         # TODO add support for sample weights
-        return coxph_loss(y["event"].astype(np.uint8), y["time"], raw_predictions.ravel())
+        return coxph_loss(y_true["event"].astype(np.uint8), y_true["time"], raw_prediction.ravel())
 
-    def negative_gradient(self, y, raw_predictions, sample_weight=None, **kwargs):  # pylint: disable=unused-argument
+    def gradient(self, y_true, raw_prediction, sample_weight=None, **kwargs):  # pylint: disable=unused-argument
         """Negative gradient of partial likelihood
 
         Parameters
@@ -62,7 +48,7 @@ class CoxPH(SurvivalLossFunction):
         y_pred : np.ndarray, shape=(n,):
             The predictions.
         """
-        ret = coxph_negative_gradient(y["event"].astype(np.uint8), y["time"], raw_predictions.ravel())
+        ret = coxph_negative_gradient(y_true["event"].astype(np.uint8), y_true["time"], raw_prediction.ravel())
         if sample_weight is not None:
             ret *= sample_weight
         return ret
@@ -93,13 +79,13 @@ class CensoredSquaredLoss(SurvivalLossFunction):
     """
 
     # pylint: disable=no-self-use
-    def __call__(self, y, raw_predictions, sample_weight=None):
+    def __call__(self, y_true, raw_prediction, sample_weight=None):
         """Compute the partial likelihood of prediction ``y_pred`` and ``y``."""
-        pred_time = y["time"] - raw_predictions.ravel()
-        mask = (pred_time > 0) | y["event"]
+        pred_time = y_true["time"] - raw_prediction.ravel()
+        mask = (pred_time > 0) | y_true["event"]
         return 0.5 * squared_norm(pred_time.compress(mask, axis=0))
 
-    def negative_gradient(self, y, raw_predictions, **kwargs):  # pylint: disable=unused-argument
+    def gradient(self, y_true, raw_prediction, **kwargs):  # pylint: disable=unused-argument
         """Negative gradient of partial likelihood
 
         Parameters
@@ -109,9 +95,9 @@ class CensoredSquaredLoss(SurvivalLossFunction):
         y_pred : np.ndarray, shape=(n,):
             The predictions.
         """
-        pred_time = y["time"] - raw_predictions.ravel()
-        mask = (pred_time > 0) | y["event"]
-        ret = np.zeros(y["event"].shape[0])
+        pred_time = y_true["time"] - raw_prediction.ravel()
+        mask = (pred_time > 0) | y_true["event"]
+        ret = np.zeros(y_true["event"].shape[0])
         ret[mask] = pred_time.compress(mask, axis=0)
         return ret
 
@@ -138,12 +124,12 @@ class IPCWLeastSquaresError(SurvivalLossFunction):
 
     # pylint: disable=no-self-use
 
-    def __call__(self, y, raw_predictions, sample_weight=None):
-        sample_weight = ipc_weights(y["event"], y["time"])
-        return 1.0 / sample_weight.sum() * np.sum(sample_weight * ((y["time"] - raw_predictions.ravel()) ** 2.0))
+    def __call__(self, y_true, raw_prediction, sample_weight=None):
+        sample_weight = ipc_weights(y_true["event"], y_true["time"])
+        return 1.0 / sample_weight.sum() * np.sum(sample_weight * ((y_true["time"] - raw_prediction.ravel()) ** 2.0))
 
-    def negative_gradient(self, y, raw_predictions, **kwargs):  # pylint: disable=unused-argument
-        return y["time"] - raw_predictions.ravel()
+    def gradient(self, y_true, raw_prediction, **kwargs):  # pylint: disable=unused-argument
+        return y_true["time"] - raw_prediction.ravel()
 
     def update_terminal_regions(self, tree, X, y, residual, y_pred, sample_weight, sample_mask, learning_rate=0.1, k=0):
         y_pred[:, k] += learning_rate * tree.predict(X).ravel()

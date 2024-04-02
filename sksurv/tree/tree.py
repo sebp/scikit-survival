@@ -22,7 +22,7 @@ from ..functions import StepFunction
 from ..util import check_array_survival
 from ._criterion import LogrankCriterion, get_unique_times
 
-__all__ = ["SurvivalTree"]
+__all__ = ["ExtraSurvivalTree", "SurvivalTree"]
 
 DTYPE = _tree.DTYPE
 
@@ -177,6 +177,8 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         "low_memory": ["boolean"],
     }
 
+    criterion = "logrank"
+
     def __init__(
         self,
         *,
@@ -207,7 +209,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
     def _support_missing_values(self, X):
         return not issparse(X) and self._get_tags()["allow_nan"]
 
-    def _compute_missing_values_in_feature_mask(self, X):
+    def _compute_missing_values_in_feature_mask(self, X, estimator_name=None):
         """Return boolean mask denoting if there are missing values for each feature.
 
         This method also ensures that X is finite.
@@ -217,13 +219,17 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         X : array-like of shape (n_samples, n_features), dtype=DOUBLE
             Input data.
 
+        estimator_name : str or None, default=None
+            Name to use when raising an error. Defaults to the class name.
+
         Returns
         -------
         missing_values_in_feature_mask : ndarray of shape (n_features,), or None
             Missing value mask. If missing values are not supported or there
             are no missing values, return None.
         """
-        common_kwargs = dict(estimator_name=self.__class__.__name__, input_name="X")
+        estimator_name = estimator_name or self.__class__.__name__
+        common_kwargs = dict(estimator_name=estimator_name, input_name="X")
 
         if not self._support_missing_values(X):
             assert_all_finite(X, **common_kwargs)
@@ -270,6 +276,10 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         -------
         self
         """
+        self._fit(X, y, sample_weight, check_input)
+        return self
+
+    def _fit(self, X, y, sample_weight=None, check_input=True, missing_values_in_feature_mask=None):
         random_state = check_random_state(self.random_state)
 
         if check_input:
@@ -286,7 +296,6 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             y_numeric[:, 1] = event.astype(np.float64)
         else:
             y_numeric, self.unique_times_, self.is_event_time_ = y
-            missing_values_in_feature_mask = None
 
         n_samples, self.n_features_in_ = X.shape
         params = self._check_params(n_samples)
@@ -301,7 +310,6 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             self.n_classes_ = np.ones(self.n_outputs_, dtype=np.intp) * 2
 
         # Build tree
-        self.criterion = "logrank"
         criterion = LogrankCriterion(self.n_outputs_, n_samples, self.unique_times_, self.is_event_time_)
 
         SPLITTERS = SPARSE_SPLITTERS if issparse(X) else DENSE_SPLITTERS
@@ -309,7 +317,12 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         splitter = self.splitter
         if not isinstance(self.splitter, Splitter):
             splitter = SPLITTERS[self.splitter](
-                criterion, self.max_features_, params["min_samples_leaf"], params["min_weight_leaf"], random_state
+                criterion,
+                self.max_features_,
+                params["min_samples_leaf"],
+                params["min_weight_leaf"],
+                random_state,
+                None,  # monotonic_cst
             )
 
         self.tree_ = Tree(self.n_features_in_, self.n_classes_, self.n_outputs_)
@@ -661,3 +674,30 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         """
         X = self._validate_X_predict(X, check_input)
         return self.tree_.decision_path(X)
+
+
+class ExtraSurvivalTree(SurvivalTree):
+    def __init__(
+        self,
+        *,
+        splitter="random",
+        max_depth=None,
+        min_samples_split=6,
+        min_samples_leaf=3,
+        min_weight_fraction_leaf=0.0,
+        max_features=None,
+        random_state=None,
+        max_leaf_nodes=None,
+        low_memory=False,
+    ):
+        super().__init__(
+            splitter=splitter,
+            max_depth=max_depth,
+            min_samples_split=min_samples_split,
+            min_samples_leaf=min_samples_leaf,
+            min_weight_fraction_leaf=min_weight_fraction_leaf,
+            max_features=max_features,
+            random_state=random_state,
+            max_leaf_nodes=max_leaf_nodes,
+            low_memory=low_memory,
+        )

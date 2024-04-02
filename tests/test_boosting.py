@@ -1,4 +1,5 @@
 from contextlib import nullcontext as does_not_raise
+import itertools
 from os.path import dirname, join
 
 import numpy as np
@@ -192,7 +193,7 @@ class TestGradientBoosting:
     @pytest.mark.slow()
     def test_fit_dropout(self):
         model = self.assert_fit_and_predict(
-            expected_cindex=(0.9094333, 68343, 6806, 0, 14),
+            expected_cindex=(0.9051950, 68024, 7124, 1, 14),
             n_estimators=100,
             max_features=8,
             learning_rate=1.0,
@@ -300,6 +301,21 @@ class TestGradientBoosting:
         model.fit(X, y)
 
         assert model.n_estimators_ == 36
+
+    def test_early_stopping_with_dropout(self):
+        X, y = self.data
+
+        model = GradientBoostingSurvivalAnalysis(
+            n_estimators=1000,
+            max_depth=2,
+            n_iter_no_change=3,
+            dropout_rate=0.25,
+            validation_fraction=0.2,
+            random_state=0,
+        )
+        model.fit(X, y)
+
+        assert model.n_estimators_ == 21
 
     @staticmethod
     def test_negative_ccp_alpha(make_whas500):
@@ -442,8 +458,6 @@ class TestSparseGradientBoosting:
         assert model.train_score_.shape == (100,)
 
         sparse_predict = model.predict(data.x_sparse)
-
-        model.fit(data.x_sparse, data.y)
         dense_predict = model.predict(data.x_dense.values)
 
         assert_array_almost_equal(sparse_predict, dense_predict)
@@ -553,17 +567,17 @@ class TestComponentwiseGradientBoosting:
         p = model.predict(whas500_data.x)
 
         assert_cindex_almost_equal(
-            whas500_data.y["fstat"], whas500_data.y["lenfol"], p, (0.7772425, 58409, 16740, 0, 14)
+            whas500_data.y["fstat"], whas500_data.y["lenfol"], p, (0.7777482, 58447, 16702, 0, 14)
         )
 
         expected_coef = pd.Series(np.zeros(15, dtype=float), index=whas500_data.names)
-        expected_coef["age"] = 0.275537
-        expected_coef["hr"] = 0.040048
-        expected_coef["diasbp"] = -0.029998
-        expected_coef["bmi"] = -0.138909
-        expected_coef["sho"] = 3.318941
-        expected_coef["chf"] = 2.851386
-        expected_coef["mitype"] = -0.075817
+        expected_coef["age"] = 0.248771
+        expected_coef["hr"] = 0.04392
+        expected_coef["diasbp"] = -0.022432
+        expected_coef["bmi"] = -0.138095
+        expected_coef["sho"] = 2.863096
+        expected_coef["chf"] = 3.552457
+        expected_coef["mitype"] = -0.074266
 
         assert_array_almost_equal(expected_coef.values, model.coef_)
 
@@ -662,6 +676,139 @@ class TestComponentwiseGradientBoosting:
             model.predict_cumulative_hazard_function(whas500_data.x)
 
 
+@pytest.mark.parametrize(
+    "model_cls,loss,dropout_rate",
+    list(
+        itertools.product(
+            [ComponentwiseGradientBoostingSurvivalAnalysis, GradientBoostingSurvivalAnalysis],
+            ["coxph", "ipcwls", "squared"],
+            [0.0, 0.05],
+        )
+    ),
+)
+def test_fit_warm_start(make_whas500, model_cls, loss, dropout_rate):
+    whas500_data = make_whas500(with_std=False, to_numeric=True)
+
+    model_1 = model_cls(loss=loss, n_estimators=100, learning_rate=0.1, dropout_rate=dropout_rate, random_state=0)
+    model_1.fit(whas500_data.x, whas500_data.y)
+    assert model_1.n_estimators_ == 100
+    pred_1 = model_1.predict(whas500_data.x)
+
+    model_2 = model_cls(loss=loss, n_estimators=40, learning_rate=0.1, dropout_rate=dropout_rate, random_state=0)
+    model_2.fit(whas500_data.x, whas500_data.y)
+    assert model_2.n_estimators_ == 40
+    pred_2_40 = model_2.predict(whas500_data.x)
+
+    model_2.set_params(warm_start=True, n_estimators=100)
+    model_2.fit(whas500_data.x, whas500_data.y)
+    assert model_2.n_estimators_ == 100
+    pred_2 = model_2.predict(whas500_data.x)
+
+    assert_array_almost_equal(pred_1, pred_2)
+
+    # fit from start
+    model_2.set_params(warm_start=False, n_estimators=40)
+    model_2.fit(whas500_data.x, whas500_data.y)
+    assert model_2.n_estimators_ == 40
+    assert not hasattr(model_2, "oob_improvement_")
+
+    pred_3 = model_2.predict(whas500_data.x)
+
+    assert_array_almost_equal(pred_2_40, pred_3)
+
+    model_2.set_params(warm_start=True, n_estimators=39)
+    msg = r"n_estimators=39 must be larger or equal to estimators_.shape\[0\]=40 when warm_start==True"
+    with pytest.raises(ValueError, match=msg):
+        model_2.fit(whas500_data.x, whas500_data.y)
+
+
+@pytest.mark.parametrize(
+    "model_cls,subsample",
+    list(
+        itertools.product(
+            [ComponentwiseGradientBoostingSurvivalAnalysis, GradientBoostingSurvivalAnalysis],
+            [1.0, 0.666],
+        )
+    ),
+)
+def test_fit_warm_start_with_subsample(make_whas500, model_cls, subsample):
+    whas500_data = make_whas500(with_std=False, to_numeric=True)
+
+    def assert_subsample_enabled(estimator):
+        assert hasattr(estimator, "oob_scores_")
+        assert hasattr(estimator, "oob_score_")
+        assert hasattr(estimator, "oob_improvement_")
+
+    def assert_subsample_disabled(estimator):
+        assert not hasattr(estimator, "oob_scores_")
+        assert not hasattr(estimator, "oob_score_")
+        assert not hasattr(estimator, "oob_improvement_")
+
+    if subsample < 1:
+        assert_model_fit_orig = assert_subsample_enabled
+        subsample_alt = 1.0
+        assert_model_fit_warm = assert_subsample_enabled  # warm start keeps attributes
+        assert_model_fit_alt = assert_subsample_disabled
+    else:
+        assert_model_fit_orig = assert_subsample_disabled
+        subsample_alt = 0.5
+        assert_model_fit_warm = assert_subsample_enabled  # adds new attributes
+        assert_model_fit_alt = assert_subsample_enabled
+
+    model_1 = model_cls(
+        n_estimators=11,
+        learning_rate=0.1,
+        subsample=subsample,
+        random_state=0,
+    )
+    model_1.fit(whas500_data.x, whas500_data.y)
+    assert model_1.n_estimators_ == 11
+    assert_model_fit_orig(model_1)
+
+    model_1.set_params(warm_start=True, n_estimators=23)
+    model_1.fit(whas500_data.x, whas500_data.y)
+    assert model_1.n_estimators_ == 23
+    assert_model_fit_orig(model_1)
+
+    model_1.set_params(warm_start=True, n_estimators=50, subsample=subsample_alt)
+    model_1.fit(whas500_data.x, whas500_data.y)
+    assert model_1.n_estimators_ == 50
+    assert_model_fit_warm(model_1)
+
+    model_1.set_params(warm_start=False, n_estimators=25, subsample=subsample_alt)
+    model_1.fit(whas500_data.x, whas500_data.y)
+    assert model_1.n_estimators_ == 25
+    assert_model_fit_alt(model_1)
+
+
+@pytest.mark.parametrize("model_cls", [ComponentwiseGradientBoostingSurvivalAnalysis, GradientBoostingSurvivalAnalysis])
+def test_fit_warm_start_with_wrong_dropout(make_whas500, model_cls):
+    whas500_data = make_whas500(with_std=False, to_numeric=True)
+
+    model = model_cls(
+        n_estimators=11,
+        learning_rate=0.1,
+        dropout_rate=0,
+        random_state=0,
+    )
+    model.fit(whas500_data.x, whas500_data.y)
+    assert model.n_estimators_ == 11
+    assert not hasattr(model, "_scale")
+
+    model.set_params(warm_start=True, n_estimators=50, dropout_rate=0.5)
+    msg = (
+        "fitting with warm_start=True and dropout_rate > 0 is only "
+        "supported if the previous fit used dropout_rate > 0 too"
+    )
+    with pytest.raises(ValueError, match=msg):
+        model.fit(whas500_data.x, whas500_data.y)
+
+    model.set_params(warm_start=False, n_estimators=2)
+    model.fit(whas500_data.x, whas500_data.y)
+    assert model.n_estimators_ == 2
+    assert_array_almost_equal(model._scale, np.array([0.5, 0.5]))
+
+
 @pytest.fixture(params=[GradientBoostingSurvivalAnalysis, ComponentwiseGradientBoostingSurvivalAnalysis])
 def sample_gb_class(request):
     x = np.arange(100).reshape(5, 20)
@@ -734,11 +881,10 @@ def test_param_sample_weight(sample_gb_class):
     est_cls, x, y = sample_gb_class
     model = est_cls()
 
-    with pytest.raises(ValueError, match=r"Found input variables with inconsistent numbers of samples: \[5, 3\]"):
+    with pytest.raises(ValueError, match=r"sample_weight.shape == \(3,\), expected \(5,\)!"):
         model.fit(x, y, [2, 3, 4])
 
-    model.set_params(dropout_rate=1.2)
-    with pytest.raises(ValueError, match=r"Found input variables with inconsistent numbers of samples: \[5, 8\]"):
+    with pytest.raises(ValueError, match=r"sample_weight.shape == \(8,\), expected \(5,\)!"):
         model.fit(x, y, [2, 4, 5, 6, 7, 1, 2, 7])
 
 
