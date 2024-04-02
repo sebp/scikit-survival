@@ -19,7 +19,7 @@ import numpy as np
 from scipy.optimize import minimize
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
-from sklearn.metrics.pairwise import pairwise_kernels
+from sklearn.metrics.pairwise import PAIRWISE_KERNEL_FUNCTIONS, pairwise_kernels
 from sklearn.utils import check_array, check_consistent_length, check_random_state, check_X_y
 from sklearn.utils._param_validation import Interval, StrOptions
 from sklearn.utils.extmath import safe_sparse_dot, squared_norm
@@ -998,7 +998,7 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         Whether to calculate an intercept for the regression model. If set to ``False``, no intercept
         will be calculated. Has no effect if ``rank_ratio = 1``, i.e., only ranking is performed.
 
-    kernel : {'linear', 'poly', 'rbf', 'sigmoid', 'cosine', 'precomputed'} or callable, default: 'linear'.
+    kernel : str or callable, default: 'linear'.
         Kernel mapping used internally. This parameter is directly passed to
         :func:`sklearn.metrics.pairwise.pairwise_kernels`.
         If `kernel` is a string, it must be one of the metrics
@@ -1088,7 +1088,7 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     _parameter_constraints = {
         **FastSurvivalSVM._parameter_constraints,
         "kernel": [
-            StrOptions({"linear", "poly", "rbf", "sigmoid", "precomputed"}),
+            StrOptions(set(PAIRWISE_KERNEL_FUNCTIONS.keys()) | {"precomputed"}),
             callable,
         ],
         "gamma": [Interval(Real, 0.0, None, closed="left"), None],
