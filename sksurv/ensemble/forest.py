@@ -365,7 +365,7 @@ class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
 
     bootstrap : boolean, optional, default: True
         Whether bootstrap samples are used when building trees. If False, the
-        whole datset is used to build each tree.
+        whole dataset is used to build each tree.
 
     oob_score : bool, default: False
         Whether to use out-of-bag samples to estimate
