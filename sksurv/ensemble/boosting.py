@@ -682,13 +682,12 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         and an increase in bias.
         Values must be in the range `(0.0, 1.0]`.
 
-    criterion : string, optional, default: 'friedman_mse'
-        The function to measure the quality of a split. Supported criteria
-        are "friedman_mse" for the mean squared error with improvement
-        score by Friedman, "mse" for mean squared error, and "mae" for
-        the mean absolute error. The default value of "friedman_mse" is
-        generally the best as it can provide a better approximation in
-        some cases.
+    criterion : {'friedman_mse', 'squared_error'}, default: 'friedman_mse'
+        The function to measure the quality of a split. Supported criteria are
+        'friedman_mse' for the mean squared error with improvement score by
+        Friedman, 'squared_error' for mean squared error. The default value of
+        'friedman_mse' is generally the best as it can provide a better
+        approximation in some cases.
 
     min_samples_split : int or float, optional, default: 2
         The minimum number of samples required to split an internal node:
