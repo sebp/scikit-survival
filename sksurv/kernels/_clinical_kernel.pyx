@@ -14,8 +14,6 @@ cimport cython
 cimport numpy as cnp
 from libc cimport math
 
-cnp.import_array()
-
 
 @cython.wraparound(False)
 @cython.cdivision(True)

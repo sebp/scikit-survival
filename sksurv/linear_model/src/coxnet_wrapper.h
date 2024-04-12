@@ -40,20 +40,21 @@ Eigen::Map<MatrixType> create_map(PyArrayObject *object) {
                                     "to be able to be transferred to a Eigen Map.");
     }
 
+    const npy_intp *dimensions = PyArray_DIMS(object);
     npy_intp n_rows = (!PyArray_IS_F_CONTIGUOUS(object)
-                       ? ((object->nd == 1)
+                       ? ((PyArray_NDIM(object) == 1)
                           ? 1  // ROW: If 1D row-major numpy array, set to 1 (row vector)
-                          : object->dimensions[1])
-                       : object->dimensions[0]);
+                          : dimensions[1])
+                       : dimensions[0]);
 
     // COLUMN: If array is in row-major order: transpose (see README)
     npy_intp n_cols = (!PyArray_IS_F_CONTIGUOUS(object)
-                      ? object->dimensions[0]
-                      : ((object->nd == 1)
+                      ? dimensions[0]
+                      : ((PyArray_NDIM(object) == 1)
                          ? 1  // COLUMN: If 1D col-major numpy array, set to length (column vector)
-                         : object->dimensions[1]));
+                         : dimensions[1]));
 
-    MapType v((PointerType) object->data, n_rows, n_cols);
+    MapType v((PointerType) PyArray_DATA(object), n_rows, n_cols);
     return v;
 }
 

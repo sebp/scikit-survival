@@ -115,15 +115,17 @@ def cythonize_extensions(extensions):
     # http://docs.cython.org/en/latest/src/userguide/source_files_and_compilation.html#cythonize-arguments
     directives = {"language_level": "3"}
     cy_cov = os.environ.get("CYTHON_COVERAGE", False)
+    macros = [("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")]
     if cy_cov:
         directives["linetrace"] = True
-        macros = [("CYTHON_TRACE", "1"), ("CYTHON_TRACE_NOGIL", "1")]
+        macros.append(("CYTHON_TRACE", "1"))
+        macros.append(("CYTHON_TRACE_NOGIL", "1"))
 
-        for ext in extensions:
-            if ext.define_macros is None:
-                ext.define_macros = macros
-            else:
-                ext.define_macros += macros
+    for ext in extensions:
+        if ext.define_macros is None:
+            ext.define_macros = macros
+        else:
+            ext.define_macros += macros
 
     return cythonize(extensions, compiler_directives=directives)
 

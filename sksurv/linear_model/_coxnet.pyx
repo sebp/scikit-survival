@@ -13,8 +13,6 @@
 cimport numpy as cnp
 from libcpp cimport bool
 
-cnp.import_array()
-
 
 cdef extern from "coxnet_wrapper.h":
     cdef object fit_coxnet[T, S, U] (cnp.ndarray, cnp.ndarray, cnp.ndarray, cnp.ndarray,
