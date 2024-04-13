@@ -22,7 +22,7 @@ EXAMPLE_COEF_FILE = join(dirname(__file__), "data", "cox-example-coef-{}.csv")
 SIMPLE_COEF_FILE = join(dirname(__file__), "data", "cox-simple-coef.csv")
 
 
-@pytest.fixture(params=[0, -1, -1e-6, -np.infty])
+@pytest.fixture(params=[0, -1, -1e-6, -np.inf])
 def invalid_positive_int(request):
     return request.param
 
@@ -35,7 +35,7 @@ def negative_float_array(request):
     return penalty
 
 
-@pytest.fixture(params=[-np.infty, np.infty])
+@pytest.fixture(params=[-np.inf, np.inf])
 def infinite_float_array(request):
     penalty = np.zeros(30)
     penalty[11] = request.param
@@ -1444,7 +1444,7 @@ class TestCoxnetSurvivalAnalysis:
         ):
             self._fit(alpha_min_ratio=0.0001, l1_ratio=0.9, max_iter=100)
 
-    @pytest.mark.parametrize("val", [0, -1, -1e-6, 1 + 1e-6, 1512, np.nan, np.infty])
+    @pytest.mark.parametrize("val", [0, -1, -1e-6, 1 + 1e-6, 1512, np.nan, np.inf])
     def test_invalid_l1_ratio(self, val):
         msg = (
             "The 'l1_ratio' parameter of CoxnetSurvivalAnalysis must be a float "
@@ -1455,7 +1455,7 @@ class TestCoxnetSurvivalAnalysis:
         with pytest.raises(ValueError, match=msg):
             self._fit(alpha_min_ratio=0.0001, l1_ratio=val)
 
-    @pytest.mark.parametrize("tol", [-1, -1e-6, -np.infty])
+    @pytest.mark.parametrize("tol", [-1, -1e-6, -np.inf])
     def test_invalid_tol(self, tol):
         msg = (
             "The 'tol' parameter of CoxnetSurvivalAnalysis must be a float "
@@ -1528,7 +1528,7 @@ class TestCoxnetSurvivalAnalysis:
         with pytest.raises(ValueError, match=msg):
             self._fit(alpha_min_ratio="max")
 
-    @pytest.mark.parametrize("value", [0.0, -1e-12, -1, -np.infty, np.nan])
+    @pytest.mark.parametrize("value", [0.0, -1e-12, -1, -np.inf, np.nan])
     def test_invalid_alpha_min_ratio_float(self, value):
         msg = (
             "The 'alpha_min_ratio' parameter of CoxnetSurvivalAnalysis must be a float "

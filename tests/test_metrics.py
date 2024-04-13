@@ -839,14 +839,14 @@ class UnoCAucFailureCases(BaseUnoCAucCases):
 
     def data_times_infinite_1(self):
         y_train, y_test, _ = self.uno_auc_data_20
-        times = (0.2, np.infty)
+        times = (0.2, np.inf)
         match = r"Input times contains infinity or a value too large for dtype\('float64'\)."
 
         return y_train, y_test, times, match
 
     def data_times_infinite_2(self):
         y_train, y_test, _ = self.uno_auc_data_20
-        times = (0.2, -np.infty)
+        times = (0.2, -np.inf)
         match = r"Input times contains infinity or a value too large for dtype\('float64'\)."
 
         return y_train, y_test, times, match
@@ -1163,7 +1163,7 @@ def test_scorers(scorers_data):
     est_std = CoxPHSurvivalAnalysis().fit(X_train, y_train)
     if issubclass(wrapper_cls, as_integrated_brier_score_scorer):
         times = score_args["times"]
-        pred = np.row_stack([fn(times) for fn in est_std.predict_survival_function(X_test)])
+        pred = np.vstack([fn(times) for fn in est_std.predict_survival_function(X_test)])
         sign = -1
     else:
         pred = est_std.predict(X_test)

@@ -10,6 +10,8 @@ import numpy as np
 
 cimport numpy as cnp
 
+cnp.import_array()
+
 from sklearn.tree._criterion cimport Criterion
 from sklearn.utils._typedefs cimport float64_t, intp_t
 

@@ -19,6 +19,8 @@ cimport numpy as cnp
 
 from scipy.sparse import csr_matrix
 
+cnp.import_array()
+
 
 @cython.wraparound(False)
 @cython.cdivision(True)

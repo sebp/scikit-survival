@@ -466,7 +466,7 @@ class SurvivalFunctionEstimator(BaseEstimator):
             unique_time, prob, conf_int = values
             self.conf_int_ = np.column_stack((np.ones((2, 1)), conf_int))
 
-        self.unique_time_ = np.r_[-np.infty, unique_time]
+        self.unique_time_ = np.r_[-np.inf, unique_time]
         self.prob_ = np.r_[1.0, prob]
 
         return self
@@ -554,7 +554,7 @@ class CensoringDistributionEstimator(SurvivalFunctionEstimator):
             self.prob_ = np.ones(self.unique_time_.shape[0])
         else:
             unique_time, prob = kaplan_meier_estimator(event, time, reverse=True)
-            self.unique_time_ = np.r_[-np.infty, unique_time]
+            self.unique_time_ = np.r_[-np.inf, unique_time]
             self.prob_ = np.r_[1.0, prob]
 
         return self

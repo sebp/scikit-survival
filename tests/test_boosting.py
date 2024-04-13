@@ -244,7 +244,7 @@ class TestGradientBoosting:
         surv_fn = getattr(model, fn)(test_x)
 
         times = np.unique(train_y["lenfol"][train_y["fstat"]])
-        actual = np.row_stack([fn_gb(times) for fn_gb in surv_fn])
+        actual = np.vstack([fn_gb(times) for fn_gb in surv_fn])
 
         expected = np.loadtxt(expected_file, delimiter=",")
 
@@ -597,7 +597,7 @@ class TestComponentwiseGradientBoosting:
         surv_fn = getattr(model, fn)(test_x)
 
         times = np.unique(train_y["lenfol"][train_y["fstat"]])
-        actual = np.row_stack([fn_gb(times) for fn_gb in surv_fn])
+        actual = np.vstack([fn_gb(times) for fn_gb in surv_fn])
 
         expected = np.loadtxt(expected_file, delimiter=",")
 

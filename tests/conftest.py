@@ -88,7 +88,7 @@ def rossi():
     return DataSet(x=x, y=y)
 
 
-@pytest.fixture(params=[np.infty, -np.infty, np.nan])
+@pytest.fixture(params=[np.inf, -np.inf, np.nan])
 def non_finite_value(request):
     """Inf/-Inf/NaN value."""
     return request.param

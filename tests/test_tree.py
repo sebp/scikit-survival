@@ -111,8 +111,8 @@ class LogrankTreeBuilder:
             left = idx[left]
 
             if lvl == self.max_depth - 1:
-                splits.put([TREE_UNDEFINED, TREE_UNDEFINED, -np.infty, lvl + 1, right])
-                splits.put([TREE_UNDEFINED, TREE_UNDEFINED, -np.infty, lvl + 1, left])
+                splits.put([TREE_UNDEFINED, TREE_UNDEFINED, -np.inf, lvl + 1, right])
+                splits.put([TREE_UNDEFINED, TREE_UNDEFINED, -np.inf, lvl + 1, left])
                 continue
 
             X_right = X[right, :]
@@ -131,7 +131,7 @@ class LogrankTreeBuilder:
         min_leaf = self.min_leaf
         best_val = TREE_UNDEFINED
         best_feat = TREE_UNDEFINED
-        best_stat = -np.infty
+        best_stat = -np.inf
 
         if y[y.dtype.names[0]].sum() == 0:
             return best_val, best_feat, best_stat
@@ -646,7 +646,7 @@ def test_max_depth(fake_data, val):
         tree.fit(X, y)
 
 
-@pytest.mark.parametrize("val", [0, 0.0, -1, -1e-6, -1512, 10.0, 0.51, 1.0, np.nan, np.infty])
+@pytest.mark.parametrize("val", [0, 0.0, -1, -1e-6, -1512, 10.0, 0.51, 1.0, np.nan, np.inf])
 def test_min_samples_leaf(fake_data, val):
     X, y = fake_data
     tree = SurvivalTree(min_samples_leaf=val)
@@ -659,7 +659,7 @@ def test_min_samples_leaf(fake_data, val):
         tree.fit(X, y)
 
 
-@pytest.mark.parametrize("val", [0, 0.0, 1, 1.0, -1, -1e-6, -1512, 10.0, 1.000001, np.nan, -np.infty, np.infty])
+@pytest.mark.parametrize("val", [0, 0.0, 1, 1.0, -1, -1e-6, -1512, 10.0, 1.000001, np.nan, -np.inf, np.inf])
 def test_min_samples_split(fake_data, val):
     X, y = fake_data
     tree = SurvivalTree(min_samples_split=val)
@@ -672,7 +672,7 @@ def test_min_samples_split(fake_data, val):
         tree.fit(X, y)
 
 
-@pytest.mark.parametrize("val", [1, -1, -1e-6, -1512, 0.500001, np.nan, -np.infty, np.infty])
+@pytest.mark.parametrize("val", [1, -1, -1e-6, -1512, 0.500001, np.nan, -np.inf, np.inf])
 def test_min_weight_fraction_leaf(fake_data, val):
     X, y = fake_data
     tree = SurvivalTree(min_weight_fraction_leaf=val)
@@ -708,7 +708,7 @@ def test_max_features_too_large(fake_data, val):
         tree.fit(X, y)
 
 
-@pytest.mark.parametrize("val", [12.0, 13.1, 1.11, np.nan, np.infty])
+@pytest.mark.parametrize("val", [12.0, 13.1, 1.11, np.nan, np.inf])
 def test_max_leaf_nodes_no_int(fake_data, val):
     X, y = fake_data
     tree = SurvivalTree(max_leaf_nodes=val)

@@ -217,7 +217,7 @@ def test_get_xy(args, kwargs, x_expected, y_expected, error_expected):
 def assert_structured_array_dtype(arr, event, time, num_events):
     assert arr.dtype.names == (event, time)
     assert np.issubdtype(arr.dtype.fields[event][0], np.bool_)
-    assert np.issubdtype(arr.dtype.fields[time][0], np.float_)
+    assert np.issubdtype(arr.dtype.fields[time][0], np.float64)
     assert arr[event].sum() == num_events
 
 
