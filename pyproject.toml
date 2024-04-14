@@ -5,7 +5,8 @@ requires = [
     "packaging",
     # same as scikit-learn
     "Cython>=3.0.8",
-    "numpy>=1.25",
+    # building against numpy 2.x is compatible with numpy 1.x
+    "numpy>=2.0.0rc1",
 
     # scikit-learn requirements
     "scikit-learn~=1.4.0; python_version<='3.12'",
