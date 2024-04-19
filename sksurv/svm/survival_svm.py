@@ -881,8 +881,8 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     coef_ : ndarray, shape = (n_features,)
         Coefficients of the features in the decision function.
 
-    optimizer_result_ : :class:`scipy.optimize.optimize.OptimizeResult`
-        Stats returned by the optimizer. See :class:`scipy.optimize.optimize.OptimizeResult`.
+    optimizer_result_ : :class:`scipy.optimize.OptimizeResult`
+        Stats returned by the optimizer. See :class:`scipy.optimize.OptimizeResult`.
 
     n_features_in_ : int
         Number of features seen during ``fit``.
@@ -1059,8 +1059,8 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     fit_X_ : ndarray
         Training data.
 
-    optimizer_result_ : :class:`scipy.optimize.optimize.OptimizeResult`
-        Stats returned by the optimizer. See :class:`scipy.optimize.optimize.OptimizeResult`.
+    optimizer_result_ : :class:`scipy.optimize.OptimizeResult`
+        Stats returned by the optimizer. See :class:`scipy.optimize.OptimizeResult`.
 
     n_features_in_ : int
         Number of features seen during ``fit``.
