@@ -23,7 +23,7 @@ table {
     font-weight: var(--pst-font-weight-heading) !important;
 }
 
-.overview-grid .sd-card-title .fas {
+.overview-grid .sd-card-title svg[data-prefix="fas"] {
     position: absolute;
     right: 1.2rem;
     line-height: 1.4;
