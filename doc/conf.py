@@ -179,6 +179,13 @@ html_theme_options = {
     "navigation_with_keys": False,
 }
 
+html_sidebars = {
+    "cite": [],
+    "contributing": [],
+    "install": [],
+    "release_notes": [],
+}
+
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = []
 
