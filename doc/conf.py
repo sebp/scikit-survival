@@ -183,7 +183,6 @@ html_sidebars = {
     "cite": [],
     "contributing": [],
     "install": [],
-    "release_notes": [],
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
