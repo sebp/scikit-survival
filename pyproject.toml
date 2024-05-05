@@ -178,9 +178,12 @@ extend-exclude = [
 ]
 # Group violations by containing file.
 output-format = "grouped"
+line-length = 120
+target-version = "py39"
+
+[tool.ruff.lint]
 ignore = ["C408"]
 ignore-init-module-imports = true
-line-length = 120
 select = [
     "C4",
     "C9",
@@ -190,15 +193,14 @@ select = [
     "PT",
     "W",
 ]
-target-version = "py39"
 
-[tool.ruff.flake8-pytest-style]
+[tool.ruff.lint.flake8-pytest-style]
 parametrize-names-type = "csv"
 
-[tool.ruff.mccabe]
+[tool.ruff.lint.mccabe]
 max-complexity = 10
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 force-sort-within-sections = true
 known-first-party = ["sksurv"]
 
