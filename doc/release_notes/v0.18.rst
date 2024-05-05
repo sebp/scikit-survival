@@ -1,0 +1,41 @@
+.. _release_notes_0_18:
+
+What's new in 0.18
+==================
+
+scikit-survival 0.18.0 (2022-08-15)
+-----------------------------------
+
+This release adds support for scikit-learn 1.1, which
+includes more informative error messages.
+Support for Python 3.7 has been dropped, and
+the minimum supported versions of dependencies are updated to
+
+   +--------------+-----------------+
+   | Package      | Minimum Version |
+   +==============+=================+
+   | numpy        | 1.17.3          |
+   +--------------+-----------------+
+   | Pandas       | 1.0.5           |
+   +--------------+-----------------+
+   | scikit-learn | 1.1.0           |
+   +--------------+-----------------+
+   | scipy        | 1.3.2           |
+   +--------------+-----------------+
+
+Enhancements
+^^^^^^^^^^^^
+- Add ``n_iter_`` attribute to all estimators in :ref:`sksurv.svm <mod-svm>` (:issue:`277`).
+- Add ``return_array`` argument to all models providing
+  ``predict_survival_function`` and ``predict_cumulative_hazard_function``
+  (:issue:`268`).
+
+Deprecations
+^^^^^^^^^^^^
+- The ``loss_`` attribute of :class:`sksurv.ensemble.ComponentwiseGradientBoostingSurvivalAnalysis`
+  and :class:`sksurv.ensemble.GradientBoostingSurvivalAnalysis`
+  has been deprecated.
+- The default for the ``max_features`` argument has been changed
+  from ``'auto'`` to ``'sqrt'`` for :class:`sksurv.ensemble.RandomSurvivalForest`
+  and :class:`sksurv.ensemble.ExtraSurvivalTrees`. ``'auto'`` and ``'sqrt'``
+  have the same effect.

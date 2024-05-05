@@ -1,0 +1,68 @@
+.. _release_notes_0_15:
+
+What's new in 0.15
+==================
+
+scikit-survival 0.15.0 (2021-03-20)
+-----------------------------------
+
+This release adds support for scikit-learn 0.24 and Python 3.9.
+scikit-survival now requires at least pandas 0.25 and scikit-learn 0.24.
+Moreover, if :class:`sksurv.ensemble.GradientBoostingSurvivalAnalysis`.
+or :class:`sksurv.ensemble.ComponentwiseGradientBoostingSurvivalAnalysis`
+are fit with ``loss='coxph'``,   `predict_cumulative_hazard_function` and
+`predict_survival_function` are now available.
+:func:`sksurv.metrics.cumulative_dynamic_auc` now supports evaluating
+time-dependent predictions, for instance for a :class:`sksurv.ensemble.RandomSurvivalForest`
+as illustrated in the
+:ref:`User Guide </user_guide/evaluating-survival-models.ipynb#Using-Time-dependent-Risk-Scores>`.
+
+Bug fixes
+^^^^^^^^^
+- Allow passing pandas data frames to all ``fit`` and ``predict`` methods (#148).
+- Allow sparse matrices to be passed to
+  :meth:`sksurv.ensemble.GradientBoostingSurvivalAnalysis.predict`.
+- Fix example in user guide using GridSearchCV to determine alphas for CoxnetSurvivalAnalysis (#186).
+
+Enhancements
+^^^^^^^^^^^^
+- Add score method to :class:`sksurv.meta.Stacking`,
+  :class:`sksurv.meta.EnsembleSelection`, and
+  :class:`sksurv.meta.EnsembleSelectionRegressor` (#151).
+- Add support for `predict_cumulative_hazard_function` and
+  `predict_survival_function` to :class:`sksurv.ensemble.GradientBoostingSurvivalAnalysis`.
+  and :class:`sksurv.ensemble.ComponentwiseGradientBoostingSurvivalAnalysis`
+  if model was fit with ``loss='coxph'``.
+- Add support for time-dependent predictions to :func:`sksurv.metrics.cumulative_dynamic_auc`
+  See the :ref:`User Guide </user_guide/evaluating-survival-models.ipynb#Using-Time-dependent-Risk-Scores>`
+  for an example (#134).
+
+Backwards incompatible changes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- The score method of :class:`sksurv.linear_model.IPCRidge`,
+  :class:`sksurv.svm.FastSurvivalSVM`, and :class:`sksurv.svm.FastKernelSurvivalSVM`
+  (if ``rank_ratio`` is smaller than 1) now converts predictions on log(time) scale
+  to risk scores prior to computing the concordance index.
+- Support for cvxpy and cvxopt solver in :class:`sksurv.svm.MinlipSurvivalAnalysis`
+  and :class:`sksurv.svm.HingeLossSurvivalSVM` has been dropped. The default solver
+  is now ECOS, which was used by cvxpy (the previous default) internally. Therefore,
+  results should be identical.
+- Dropped the ``presort`` argument from :class:`sksurv.tree.SurvivalTree`
+  and :class:`sksurv.ensemble.GradientBoostingSurvivalAnalysis`.
+- The ``X_idx_sorted`` argument in :meth:`sksurv.tree.SurvivalTree.fit`
+  has been deprecated in scikit-learn 0.24 and has no effect now.
+- `predict_cumulative_hazard_function` and
+  `predict_survival_function` of :class:`sksurv.ensemble.RandomSurvivalForest`
+  and :class:`sksurv.tree.SurvivalTree` now return an array of
+  :class:`sksurv.functions.StepFunction` objects by default.
+  Use ``return_array=True`` to get the old behavior.
+- Support for Python 3.6 has been dropped.
+- Increase minimum supported versions of dependencies. We now require:
+
+   +--------------+-----------------+
+   | Package      | Minimum Version |
+   +==============+=================+
+   | Pandas       | 0.25.0          |
+   +--------------+-----------------+
+   | scikit-learn | 0.24.0          |
+   +--------------+-----------------+

@@ -175,6 +175,14 @@ html_theme_options = {
     "secondary_sidebar_items": ["page-toc"],
     "navbar_end": ["theme-switcher.html", "navbar-github-links.html"],
     "navbar_persistent": ["search-field.html"],
+    "navbar_align": "left",
+    "navigation_with_keys": False,
+}
+
+html_sidebars = {
+    "cite": [],
+    "contributing": [],
+    "install": [],
 }
 
 # Add any paths that contain custom themes here, relative to this directory.

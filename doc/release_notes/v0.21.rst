@@ -1,0 +1,77 @@
+.. _release_notes_0_21:
+
+What's new in 0.21
+==================
+
+scikit-survival 0.21.0 (2023-06-11)
+-----------------------------------
+
+This is a major release bringing new features and performance improvements.
+
+- :func:`sksurv.nonparametric.kaplan_meier_estimator` can estimate
+  pointwise confidence intervals by specifying the `conf_type` parameter.
+- :class:`sksurv.ensemble.GradientBoostingSurvivalAnalysis` supports
+  early-stopping via the `monitor` parameter of
+  :meth:`sksurv.ensemble.GradientBoostingSurvivalAnalysis.fit`.
+- :func:`sksurv.metrics.concordance_index_censored` has a significantly
+  reduced memory footprint. Memory usage now scales linear, instead of quadratic,
+  in the number of samples.
+- Fitting of :class:`sksurv.tree.SurvivalTree`,
+  :class:`sksurv.ensemble.RandomSurvivalForest`, or :class:`sksurv.ensemble.ExtraSurvivalTrees`
+  is about 3x faster.
+- Finally, the release adds support for Python 3.11 and pandas 2.0.
+
+Bug fixes
+^^^^^^^^^
+- Fix bug where `times` passed to :func:`sksurv.metrics.brier_score`
+  was downcast, resulting in a loss of precision that may lead
+  to duplicate time points (:issue:`349`).
+- Fix inconsistent behavior of evaluating functions returned by
+  `predict_cumulative_hazard_function` or `predict_survival_function`
+  (:issue:`375`).
+
+Enhancements
+^^^^^^^^^^^^
+- :func:`sksurv.nonparametric.kaplan_meier_estimator`
+  and :class:`sksurv.nonparametric.CensoringDistributionEstimator`
+  support returning confidence intervals by specifying the `conf_type`
+  parameter (:issue:`348`).
+- Configure package via pyproject.toml (:issue:`347`).
+- Add support for Python 3.11 (:issue:`350`).
+- Add support for early-stopping to
+  :class:`sksurv.ensemble.GradientBoostingSurvivalAnalysis`
+  (:issue:`354`).
+- Do not use deprecated `pkg_resources` API (:issue:`353`).
+- Significantly reduce memory usage of :func:`sksurv.metrics.concordance_index_censored`
+  (:issue:`362`).
+- Set `criterion` attribute in :class:`sksurv.tree.SurvivalTree`
+  such that :func:`sklearn.tree.plot_tree` can be used (:issue:`366`).
+- Significantly improve speed to fit a :class:`sksurv.tree.SurvivalTree`,
+  :class:`sksurv.ensemble.RandomSurvivalForest`, or :class:`sksurv.ensemble.ExtraSurvivalTrees`
+  (:issue:`371`).
+- Expose ``_predict_risk_score`` attribute in :class:`sklearn.pipeline.Pipeline`
+  if the final estimator of the pipeline has such property (:issue:`374`).
+- Add support for pandas 2.0 (:issue:`373`).
+
+Documentation
+^^^^^^^^^^^^^
+- Fix wrong number of selected features in the guide
+  :ref:`Introduction to Survival Analysis </user_guide/00-introduction.ipynb>`
+  (:issue:`345`).
+- Fix broken links with nbsphinx 0.9.2 (:issue:`367`).
+
+Backwards incompatible changes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- The attribute ``event_times_`` of estimators has been replaced by ``unique_times_``
+  to clarify that these are all the unique times points, not just the once where
+  an event occurred (:issue:`371`).
+- Functions returned by `predict_cumulative_hazard_function` and `predict_survival_function`
+  of :class:`sksurv.tree.SurvivalTree`, :class:`sksurv.ensemble.RandomSurvivalForest`,
+  and :class:`sksurv.ensemble.ExtraSurvivalTrees` are over all unique time points
+  passed as training data, instead of all unique time points where events occurred
+  (:issue:`371`).
+- Evaluating a function returned by `predict_cumulative_hazard_function`
+  or `predict_survival_function` will no longer raise an exception if the
+  specified time point is smaller than the smallest time point observed
+  during training. Instead, the value at ``StepFunction.x[0]`` will be returned
+  (:issue:`375`).
