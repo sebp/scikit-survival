@@ -1,6 +1,7 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+*$py.class
 
 # C extensions
 *.so
@@ -8,11 +9,12 @@ __pycache__/
 # Cython generated files
 _*.c
 _*.cpp
+
+# Cython debug symbols
 cython_debug/
 
 # Distribution / packaging
 .Python
-env/
 build/
 develop-eggs/
 dist/
@@ -24,6 +26,8 @@ lib64/
 parts/
 sdist/
 var/
+wheels/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
@@ -48,20 +52,60 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *.cover
+*.py,cover
+.hypothesis/
 .pytest_cache/
-.ruff_cache/
-
-# Translations
-*.mo
-*.pot
+cover/
 
 # Django stuff:
 *.log
 
 # PyBuilder
+.pybuilder/
 target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# PyCharm
 .idea/
-.ipynb_checkpoints/
+
+# ruff
+.ruff_cache/
+
+# LSP config files
+pyrightconfig.json
 
 # VisualStudioCode
 .vscode/
