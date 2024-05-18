@@ -1,5 +1,6 @@
 from contextlib import nullcontext as does_not_raise
 import itertools
+import math
 from os.path import dirname, join
 
 import numpy as np
@@ -832,7 +833,7 @@ def test_param_n_estimators(sample_gb_class, n_estimators):
         model.fit(x, y)
 
 
-@pytest.mark.parametrize("learning_rate", [-np.finfo(float).eps, -1])
+@pytest.mark.parametrize("learning_rate", [-math.ulp(1.0), -1])
 def test_param_learning_rate(sample_gb_class, learning_rate):
     est_cls, x, y = sample_gb_class
     model = est_cls(learning_rate=learning_rate)
