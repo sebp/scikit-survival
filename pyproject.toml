@@ -128,12 +128,12 @@ filterwarnings = [
     "ignore:Jupyter is migrating its paths to use standard platformdirs:DeprecationWarning",
     # added with pandas 2.1
     "ignore:DataFrame.applymap has been deprecated:FutureWarning",
+    # deprecated since Pandas 2.2.0
+    "ignore:\\nPyarrow will become a required dependency of pandas in the next major release of pandas.*:DeprecationWarning",
     # deprecated since Python 3.12
     "ignore:datetime\\.datetime\\.utcfromtimestamp\\(\\) is deprecated and scheduled for removal in a future version.*:DeprecationWarning",
     "ignore:ast\\.Num is deprecated and will be removed in Python 3\\.14.*:DeprecationWarning",
     "ignore:Attribute n is deprecated and will be removed in Python 3\\.14.*:DeprecationWarning",
-    # deprecated since Python 2.2.0
-    "ignore:\\nPyarrow will become a required dependency of pandas in the next major release of pandas.*:DeprecationWarning",
     # deprecated since NumPy 1.25
     "ignore:np\\.find_common_type is deprecated.  Please use `np\\.result_type` or `np\\.promote_types`:DeprecationWarning",
     # deprecated since NumPy 2.0
