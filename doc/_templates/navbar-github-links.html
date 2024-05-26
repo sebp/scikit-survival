@@ -1,8 +1,12 @@
-<ul class="navbar-icon-links navbar-nav"
+<div class="navbar-icon-links navbar-nav"
     aria-label="{{ theme_icon_links_label }}">
-  <li class="nav-item">
-    <a class="nav-link github-button" href="https://github.com/sebp/scikit-survival" rel="noopener" target="_blank" title="{{ project }}">
-        <span class="github-icon"><i class="fa-brands fa-github"></i></span>
-    </a>
-  </li>
-</ul>
+  <a class="nav-link github-repository" href="https://github.com/sebp/scikit-survival" rel="noopener" target="_blank" title="Go to repository">
+    <div class="github-icon">
+      <span><i class="fa-brands fa-github fa-lg"></i></span>
+    </div>
+    <div class="github-repository-name">
+      {{ project }}
+      <ul class="github-facts"></ul>
+    </div>
+  </a>
+</div>

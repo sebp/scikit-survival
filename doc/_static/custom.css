@@ -55,38 +55,68 @@ table {
     opacity: 1;
 }
 
-.github-icon, .github-repository {
-    display: inline-block;
-}
-
 .github-icon {
-    width: 1.8rem;
+    display: inline-block;
+    vertical-align: middle;
 }
 
-.github-icon i {
-    font-size: calc(var(--pst-font-size-icon) - .1rem);
+.github-icon span {
+    padding: .5rem;
+}
+
+.github-repository-name {
+    display: inline-block;
+    max-width: calc(100% - 1.2rem);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
 }
 
 .navbar-icon-links ul.github-facts {
-    margin: 0;
+    display: flex;
+    gap: .4rem;
+    margin: .1rem 0 0;
     padding: 0;
     font-size: .95rem;
-    font-weight: 700;
+    font-weight: 400;
     list-style: none;
     opacity: .75;
     overflow: hidden;
     text-overflow: ellipsis;
+    width: 100%;
 }
 
-.navbar-icon-links .github-fact {
+li.github-fact {
     display: inline-block;
+    vertical-align: middle;
 }
 
-.navbar-icon-links .github-fact::before {
-    margin: 0.2rem;
-    content: "\00B7"
+.github-fact-stars::before {
+    font: var(--fa-font-solid);
+    content: '\f005';
+    margin-right: .15rem;
 }
 
-.navbar-icon-links .github-fact:first-child::before {
-    display: none
+.github-fact-forks::before {
+    font: var(--fa-font-solid);
+    content: '\e13b';
+    margin-right: .15rem;
+}
+
+a:hover.github-repository {
+    text-decoration: none;
+    color: var(--pst-color-link-hover);
+}
+
+a.github-repository {
+    color: var(--pst-color-text-muted);
+}
+
+a:visited.github-repository {
+    color: var(--pst-color-text-muted);
+}
+
+a:visited:hover.github-repository  {
+    text-decoration: none;
+    color: var(--pst-color-link-hover);
 }
