@@ -174,7 +174,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         nominal_columns = []
         numeric_ranges = []
 
-        fit_data = np.empty_like(X)
+        fit_data = np.empty(X.shape, dtype=np.float64)
 
         for i, dt in enumerate(X.dtypes):
             col = X.iloc[:, i]
