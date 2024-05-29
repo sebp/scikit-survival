@@ -50,7 +50,7 @@ dependencies = [
     "osqp !=0.6.0,!=0.6.1",
     "pandas >=1.0.5",
     "scipy >=1.3.2",
-    "scikit-learn >=1.4.0,<1.5",
+    "scikit-learn >=1.4.0,<1.6",
 ]
 dynamic = ["version"]
 
