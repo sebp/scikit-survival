@@ -310,7 +310,10 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         """
         check_is_fitted(self, "X_fit_")
         if X.shape[0] != Y.shape[0]:
-            raise ValueError("X and Y have different number of features")
+            raise ValueError(
+                f"Incompatible dimension for X and Y matrices: X.shape[0] == {X.shape[0]} "
+                f"while Y.shape[0] == {Y.shape[0]}"
+            )
 
         val = pairwise_continuous_ordinal_kernel(
             X[self._numeric_columns], Y[self._numeric_columns], self._numeric_ranges
