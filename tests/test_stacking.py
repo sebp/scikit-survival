@@ -42,13 +42,13 @@ def dummy_data():
 
 @pytest.fixture()
 def iris_data_with_estimator():
-    def _make_estimator(**params):
+    def _make_estimator():
         data = load_iris()
         x = data["data"]
         y = data["target"]
 
         meta = Stacking(
-            LogisticRegression(**params),
+            LogisticRegression(solver="lbfgs", multi_class="multinomial"),
             [
                 ("tree", DecisionTreeClassifier(max_depth=1, random_state=0)),
                 ("svm", SVC(probability=True, gamma="auto", random_state=0)),
@@ -104,7 +104,7 @@ class TestStackingClassifier:
 
     @staticmethod
     def test_fit(iris_data_with_estimator):
-        x, y, meta = iris_data_with_estimator(solver="liblinear", multi_class="ovr")
+        x, y, meta = iris_data_with_estimator()
         assert 2 == len(meta)
         meta.fit(x, y)
 
@@ -115,7 +115,7 @@ class TestStackingClassifier:
 
     @staticmethod
     def test_fit_sample_weights(iris_data_with_estimator):
-        x, y, meta = iris_data_with_estimator(solver="liblinear", multi_class="ovr")
+        x, y, meta = iris_data_with_estimator()
 
         sample_weight = np.random.RandomState(0).uniform(size=x.shape[0])
         meta.fit(x, y, tree__sample_weight=sample_weight, svm__sample_weight=sample_weight)
@@ -147,7 +147,7 @@ class TestStackingClassifier:
 
     @staticmethod
     def test_predict(iris_data_with_estimator):
-        x, y, meta = iris_data_with_estimator(multi_class="multinomial", solver="lbfgs")
+        x, y, meta = iris_data_with_estimator()
         assert 2 == len(meta)
         meta.fit(x, y)
         p = meta.predict(x)
@@ -158,7 +158,7 @@ class TestStackingClassifier:
     @staticmethod
     @pytest.mark.parametrize("method", ["predict_proba", "predict_log_proba"])
     def test_predict_proba(iris_data_with_estimator, method):
-        x, y, meta = iris_data_with_estimator(multi_class="multinomial", solver="lbfgs")
+        x, y, meta = iris_data_with_estimator()
         meta.fit(x, y)
         p = getattr(meta, method)(x)
 

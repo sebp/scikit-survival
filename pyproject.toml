@@ -138,6 +138,8 @@ filterwarnings = [
     "ignore:np\\.find_common_type is deprecated.  Please use `np\\.result_type` or `np\\.promote_types`:DeprecationWarning",
     # deprecated since NumPy 2.0
     "ignore:`trapz` is deprecated\\. Use `trapezoid` instead.*:DeprecationWarning",
+    # deprecated since scikit-learn 1.5
+    "ignore:'multi_class' was deprecated in version 1\\.5 and will be removed in 1\\.7.*:FutureWarning",
 ]
 
 [tool.coverage.run]
