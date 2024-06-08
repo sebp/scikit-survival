@@ -228,7 +228,10 @@ Feature names unseen at fit time:
         t = ClinicalKernelTransform()
         t.fit(data)
 
-        with pytest.raises(ValueError, match="X and Y have different number of features"):
+        with pytest.raises(
+            ValueError,
+            match=r"Incompatible dimension for X and Y matrices: X\.shape\[0\] == 4 while Y\.shape\[0\] == 2",
+        ):
             t.pairwise_kernel(data.iloc[0, :], data.iloc[1, :2])
 
     @staticmethod
@@ -269,9 +272,9 @@ Feature names unseen at fit time:
 
         with pytest.raises(
             ValueError,
-            match=r"Incompatible dimension for X and Y matrices: X.shape\[1\] == 4 while Y.shape\[1\] == 17",
+            match=r"Incompatible dimension for X and Y matrices: X\.shape\[[0-1]\] == 4 while Y\.shape\[[0-1]\] == 17",
         ):
-            pairwise_kernels(t.X_fit_, np.zeros((2, 17), dtype=float), metric=t.pairwise_kernel, n_jobs=1)
+            pairwise_kernels(t.X_fit_, np.zeros((5, 17), dtype=float), metric=t.pairwise_kernel, n_jobs=1)
 
     @staticmethod
     def test_prepare(make_data):
