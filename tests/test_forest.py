@@ -21,8 +21,8 @@ FORESTS = [
 @pytest.mark.parametrize(
     "forest_cls, expected_c",
     [
-        (RandomSurvivalForest, (0.9026201280123488, 67831, 7318, 0, 14)),
-        (ExtraSurvivalTrees, (0.8389200122423452, 63044, 12105, 0, 14)),
+        (RandomSurvivalForest, (0.9009168452008676, 67703, 7446, 0, 14)),
+        (ExtraSurvivalTrees, (0.8400644053813091, 63130, 12019, 0, 14)),
     ],
 )
 def test_fit_predict(make_whas500, forest_cls, expected_c):
@@ -59,7 +59,7 @@ def test_fit_missing_values(make_whas500):
     assert tags["allow_nan"]
 
     cindex = forest.score(X_test, y_test)
-    assert cindex == pytest.approx(0.7408487204405572)
+    assert cindex == pytest.approx(0.7444120505344995)
 
 
 def test_fit_missing_values_not_supported(make_whas500):
@@ -143,7 +143,7 @@ def test_fit_predict_surv(make_whas500, forest_cls):
 
 
 @pytest.mark.parametrize(
-    "forest_cls, expected_oob_score", [(RandomSurvivalForest, 0.753010685), (ExtraSurvivalTrees, 0.752092510)]
+    "forest_cls, expected_oob_score", [(RandomSurvivalForest, 0.758732651), (ExtraSurvivalTrees, 0.751427165)]
 )
 def test_oob_score(make_whas500, forest_cls, expected_oob_score):
     whas500 = make_whas500(to_numeric=True)
