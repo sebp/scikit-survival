@@ -1,0 +1,55 @@
+.. _release_notes_0_23:
+
+What's new in 0.23
+==================
+
+scikit-survival 0.23.0 (2024-06-30)
+-----------------------------------
+
+This release adds support for scikit-learn 1.4 and 1.5, which
+includes :ref:`missing value support <tree_missing_value_support>`
+for :class:`sksurv.ensemble.RandomSurvivalForest`.
+
+Moreover, this release fixes critical bugs. When fitting :class:`sksurv.tree.SurvivalTree`,
+the `sample_weight` is now correctly considered when computing the log-rank statistic
+for each split. This change also affects :class:`sksurv.ensemble.RandomSurvivalForest` and
+:class:`sksurv.ensemble.ExtraSurvivalTrees` which pass `sample_weight` to the individual
+trees in the ensemble.
+
+This release fixes a bug in :class:`sksurv.ensemble.ComponentwiseGradientBoostingSurvivalAnalysis`
+and :class:`sksurv.ensemble.GradientBoostingSurvivalAnalysis` when dropout is used.
+Previously, dropout was only applied starting with the third iteration, now dropout is applied
+in the second iteration too.
+
+Finally, this release adds compatibility with numpy 2.0 and drops support for Python 3.8.
+
+Bug fixes
+^^^^^^^^^
+- Fix issue with `dropout` in :class:`sksurv.ensemble.ComponentwiseGradientBoostingSurvivalAnalysis`
+  and :class:`sksurv.ensemble.GradientBoostingSurvivalAnalysis`, where it was only applied starting with the third iteration.
+- Fix LogrankCriterion in :class:`sksurv.tree.SurvivalTree` to handle `sample_weight` correctly (:issue:`464`).
+
+Enhancements
+^^^^^^^^^^^^
+- Fix deprecations with pandas 2.2.
+- Drop importlib-resources dependency.
+- Add support for scikit-learn 1.4 (:issue:`441`).
+- Add `warm_start` support to :class:`sksurv.ensemble.ComponentwiseGradientBoostingSurvivalAnalysis`.
+- Add missing values support to :class:`sksurv.ensemble.RandomSurvivalForest`.
+- Add `require_y` tag to :class:`sksurv.base.SurvivalAnalysisMixin`.
+- Upgrade to ruff 0.4.3 (:issue:`456`).
+- Add support for scikit-learn 1.5 (:issue:`461`).
+
+Documentation
+^^^^^^^^^^^^^
+- Fix :func:`sksurv.nonparametric.kaplan_meier_estimator` documentation to give correct default value for `conf_type` (:issue:`430`).
+- Fix allowed values for `kernel` in :class:`sksurv.svm.FastSurvivalSVM` and :class:`sksurv.svm.MinlipSurvivalAnalysis` (:issue:`444`).
+- Fix typo in API doc of :class:`sksurv.ensemble.RandomSurvivalForest` and :class:`sksurv.ensemble.ExtraSurvivalTrees` (:issue:`446`).
+- Fix API doc for the `criterion` parameter of :class:`sksurv.ensemble.GradientBoostingSurvivalAnalysis` (:issue:`449`).
+- Update links to scipy, pandas and numpy documentation.
+- Fix letter of hyper-parameter used in the formula for :class:`sksurv.linear_model.IPCRidge` (:issue:`454`).
+- Upgrade Sphinx to 7.3 and pydata-sphinx-theme to 0.15 (:issue:`455`).
+
+Backwards incompatible changes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- Drop support for Python 3.8 (:issue:`427`).
