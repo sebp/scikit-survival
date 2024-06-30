@@ -1,6 +1,6 @@
 channels:
+  - conda-forge
   - defaults
-  - sebp
 dependencies:
   - python=3.11
   - pip
