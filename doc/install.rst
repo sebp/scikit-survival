@@ -14,7 +14,7 @@ Pre-built binary packages for Linux, MacOS, and Windows are available
 for `Anaconda <https://www.anaconda.com/distribution/>`_.
 If you have Anaconda installed, run::
 
-  conda install -c sebp scikit-survival
+  conda install -c conda-forge scikit-survival
 
 
 .. _install-from-source:
