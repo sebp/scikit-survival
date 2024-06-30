@@ -70,7 +70,7 @@ dev = [
     "packaging",
     "pre-commit",
     "pytest",
-    "ruff",
+    "ruff ~= 0.4.3",
     "setuptools-scm >=8",
     "tomli",
     "tox",
@@ -207,3 +207,31 @@ force-sort-within-sections = true
 known-first-party = ["sksurv"]
 
 [tool.setuptools_scm]
+
+[tool.pixi.project]
+name = "scikit-survival"
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
+
+[tool.pixi.environments]
+default = { solve-group = "default" }
+dev = { features = ["dev", "nbval"], solve-group = "default" }
+docs = { features = ["docs"], solve-group = "default" }
+
+[tool.pixi.pypi-dependencies]
+# A local path, which installs your project in editable mode.
+"scikit-survival" = { path = ".", editable = true }
+
+[tool.pixi.feature.dev.tasks]
+lint = "ruff check sksurv/ tests/ setup.py"
+test = "pytest"
+test-nb = { cmd = "pytest --nbval doc/user_guide/*.ipynb --nbval-sanitize-with ci/nb_sanitize.cfg", env = { MATPLOTLIBRC = "doc/user_guide/matplotlibrc" } }
+
+[tool.pixi.feature.docs.tasks]
+build-docs = "sphinx-build -j 1 -d doc/_build/doctrees -E -W -b html doc/ doc/_build/html"
+linkcheck = "sphinx-build -j 1 -E -W -b linkcheck doc/ doc/_build/linkcheck"
+spellcheck = "sphinx-build -j auto -E -W -d doc/_build/doctrees -b spelling doc/ doc/_build/spelling"
+
+[tool.pixi.feature.docs.dependencies]
+pandoc = "*"
+
