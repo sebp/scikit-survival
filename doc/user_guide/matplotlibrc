@@ -1,0 +1,6 @@
+figure.figsize: 6.0, 4.0
+figure.facecolor: white
+figure.edgecolor: white
+figure.dpi: 72
+font.size: 10
+
