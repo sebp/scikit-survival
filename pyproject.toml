@@ -218,6 +218,9 @@ default = { solve-group = "default" }
 dev = { features = ["dev", "nbval"], solve-group = "default" }
 docs = { features = ["docs"], solve-group = "default" }
 
+[tool.pixi.dependencies]
+"scikit-learn" = "1.5.*"
+
 [tool.pixi.pypi-dependencies]
 # A local path, which installs your project in editable mode.
 "scikit-survival" = { path = ".", editable = true }
