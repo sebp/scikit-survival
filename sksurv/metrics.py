@@ -96,12 +96,14 @@ def _iter_comparable(event_indicator, event_time, order):
         # check for tied event times
         event_at_same_time = event_indicator[order[i:end]]
         censored_at_same_time = ~event_at_same_time
+
+        mask = np.zeros(n_samples, dtype=bool)
+        mask[end:] = True
+        # an event is comparable to censored samples at same time point
+        mask[i:end] = censored_at_same_time
+
         for j in range(i, end):
             if event_indicator[order[j]]:
-                mask = np.zeros(n_samples, dtype=bool)
-                mask[end:] = True
-                # an event is comparable to censored samples at same time point
-                mask[i:end] = censored_at_same_time
                 tied_time += censored_at_same_time.sum()
                 yield (j, mask, tied_time)
         i = end
