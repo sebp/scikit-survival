@@ -219,6 +219,7 @@ dev = { features = ["dev", "nbval"], solve-group = "default" }
 docs = { features = ["docs"], solve-group = "default" }
 
 [tool.pixi.dependencies]
+# conda dependencies
 "scikit-learn" = "1.5.*"
 
 [tool.pixi.pypi-dependencies]
@@ -237,4 +238,3 @@ spellcheck = "sphinx-build -j auto -E -W -d doc/_build/doctrees -b spelling doc/
 
 [tool.pixi.feature.docs.dependencies]
 pandoc = "*"
-

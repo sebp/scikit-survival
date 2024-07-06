@@ -25,14 +25,14 @@ jobs:
           RUFF_OUTPUT_FORMAT: github
         run: |
           eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-          pixi run ${{ matrix.tox_env }}
+          pixi run ${{ matrix.environment }}
       - name: Archive documentation
         uses: actions/upload-artifact@v4
         with:
           name: documentation
           path: doc/_build/html
-        if: ${{ matrix.tox_env == 'build-docs' }}
+        if: ${{ matrix.environment == 'build-docs' }}
     strategy:
       fail-fast: false
       matrix:
-        tox_env: [lint, build-docs]
+        environment: [lint, build-docs, test-nb]
