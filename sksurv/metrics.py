@@ -144,7 +144,7 @@ def _estimate_concordance_index(event_indicator, event_time, estimate, weights, 
     if tied_time is None:
         raise NoComparablePairException("Data has no comparable pairs, cannot estimate concordance index.")
 
-    cindex = numerator / denominator
+    cindex = float(numerator / denominator)
     return cindex, concordant, discordant, tied_risk, tied_time
 
 
