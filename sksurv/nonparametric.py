@@ -26,6 +26,7 @@ __all__ = [
     "nelson_aalen_estimator",
     "ipc_weights",
     "SurvivalFunctionEstimator",
+    "km_cumulative_incidence_competing_risks",
 ]
 
 
@@ -36,6 +37,9 @@ def _compute_counts(event, time, order=None):
     ----------
     event : array
         Boolean event indicator.
+        Integer in the case of multiple risks.
+        Zero means right-censored event.
+        Positive values for each of the possible risk events.
 
     time : array
         Survival time or time of censoring.
@@ -51,6 +55,7 @@ def _compute_counts(event, time, order=None):
 
     n_events : array
         Number of events at each time point.
+        2D array (unique time points, n risks + 1) in the case of competing risks.
 
     n_at_risk : array
         Number of samples that have not been censored or have not had an event at each time point.
@@ -59,23 +64,27 @@ def _compute_counts(event, time, order=None):
         Number of censored samples at each time point.
     """
     n_samples = event.shape[0]
+    n_risks = event.max() if (np.issubdtype(event.dtype, np.integer) and event.max() > 1) else 0
 
     if order is None:
         order = np.argsort(time, kind="mergesort")
 
     uniq_times = np.empty(n_samples, dtype=time.dtype)
-    uniq_events = np.empty(n_samples, dtype=int)
+    uniq_events = np.empty((n_samples, n_risks + 1), dtype=int)
     uniq_counts = np.empty(n_samples, dtype=int)
 
     i = 0
     prev_val = time[order[0]]
     j = 0
     while True:
-        count_event = 0
+        count_event = np.zeros(n_risks + 1, dtype=int)
         count = 0
         while i < n_samples and prev_val == time[order[i]]:
-            if event[order[i]]:
-                count_event += 1
+            event_type = event[order[i]]
+            if event_type:
+                count_event[0] += 1
+                if n_risks:
+                    count_event[event_type] += 1
 
             count += 1
             i += 1
@@ -91,9 +100,13 @@ def _compute_counts(event, time, order=None):
         prev_val = time[order[i]]
 
     times = np.resize(uniq_times, j)
-    n_events = np.resize(uniq_events, j)
     total_count = np.resize(uniq_counts, j)
-    n_censored = total_count - n_events
+    if n_risks:
+        n_events = np.resize(uniq_events, (j, n_risks + 1))
+        n_censored = total_count - n_events[:, 0]
+    else:
+        n_events = np.resize(uniq_events, j)
+        n_censored = total_count - n_events
 
     # offset cumulative sum by one
     total_count = np.r_[0, total_count]
@@ -586,3 +599,117 @@ class CensoringDistributionEstimator(SurvivalFunctionEstimator):
         weights[event] = 1.0 / Ghat
 
         return weights
+
+
+def km_cumulative_incidence_competing_risks(
+        event,
+        time_exit,
+        time_enter=None,
+        time_min=None,
+        reverse=None,
+        conf_level=None,
+        conf_type=None
+):
+    """Kaplan-Meier estimator of Cumulative Incidence function in the case of competing risks.
+
+    See [1]_ for further description.
+
+    Parameters
+    ----------
+    event : array-like, shape = (n_samples)
+        Contains event indicators.
+
+    time_exit : array-like, shape = (n_samples,)
+        Contains event/censoring times.
+
+    time_enter : array-like, shape = (n_samples,), optional
+        Contains time when each individual entered the study for
+        left truncated survival data.
+        Not implemented
+
+    time_min : float, optional
+        Compute estimator conditional on survival at least up to
+        the specified time.
+
+    reverse : bool, optional, default: False
+        Whether to estimate the censoring distribution.
+        Not implemented for competing risks.
+        Can be obtained using regular Kaplan-Meier.
+
+    conf_level : float, optional, default: 0.95
+        The level for a two-sided confidence interval on the survival curves.
+
+    conf_type : None or {'log-log'}, optional, default: None.
+        The type of confidence intervals to estimate.
+        If `None`, no confidence intervals are estimated.
+        Not implemented.
+
+    Returns
+    -------
+    time : array, shape = (n_times,)
+        Unique times.
+
+    cum_incidence : array, shape = (n_risks + 1, n_times)
+        Cumulative incidence at each unique time point.
+        The first dimension indicates total risk (i=0)
+        or the incidence for each competing risk (i=1,n_risks)
+
+    Examples
+    --------
+    Creating a Kaplan-Meier curve:
+
+    >>> x, y = km_cumulative_incidence_competing_risks(event, time)
+    >>> for i=range(1, n_risks + 1):
+    >>>    plt.step(x, y[i], where="post", label=i)
+    >>> plt.ylim(0, 1)
+    >>> plt.legend()
+    >>> plt.show()
+
+    See also
+    --------
+    sksurv.nonparametric.SurvivalFunctionEstimator
+        Estimator API of the Kaplan-Meier estimator.
+
+    References
+    ----------
+    .. [1] Kalbfleisch, J.D. and Prentice, R.L. (2002)
+           The Statistical Analysis of Failure Time Data. 2nd Edition, John Wiley and Sons, New York.
+    """
+    event, time_exit = check_y_survival(event, time_exit, allow_all_censored=True, competing_risks=True)
+    check_consistent_length(event, time_exit)
+
+    if time_enter is not None:
+        raise NotImplementedError("Left censored data is not implemented.")
+
+    if conf_level is not None or conf_type is not None:
+        raise NotImplementedError("Confidence error estimation is not implemented")
+
+    if reverse is not None:
+        raise NotImplementedError("Not implemented for competing risks. Use kaplan_meier_estimator instead.")
+
+    n_risks = event.max()
+    uniq_times, n_events_cr, n_at_risk, _n_censored = _compute_counts(event, time_exit)
+
+    # account for 0/0 = nan
+    n_t = uniq_times.shape[0]
+    ratio = np.divide(
+        n_events_cr,
+        n_at_risk[..., np.newaxis],
+        out=np.zeros((n_t, n_risks + 1), dtype=float),
+        where=n_events_cr != 0
+    )
+
+    if time_min is not None:
+        mask = uniq_times >= time_min
+        uniq_times = np.compress(mask, uniq_times)
+        ratio = np.compress(mask, ratio, axis=0)
+
+    kpe_cum_inc = np.empty((n_risks + 1, n_t), dtype=float)
+    kpe = np.cumprod(1.0 - ratio[:, 0])
+    kpe_prime = np.ones(shape=kpe.shape, dtype=kpe.dtype)
+    kpe_prime[1:] = kpe[:-1]
+    for i in range(1, n_risks + 1):
+        kpe_cum_inc[i] = np.cumsum(ratio[:, i] * kpe_prime)
+    kpe_cum_inc[0] = 1.0 - kpe
+
+    return uniq_times, kpe_cum_inc

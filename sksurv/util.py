@@ -96,7 +96,7 @@ class Surv:
         )
 
 
-def check_y_survival(y_or_event, *args, allow_all_censored=False, allow_time_zero=True):
+def check_y_survival(y_or_event, *args, allow_all_censored=False, allow_time_zero=True, competing_risks=False):
     """Check that array correctly represents an outcome for survival analysis.
 
     Parameters
@@ -106,6 +106,7 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False, allow_time_zer
         as first field, and time of event or time of censoring as
         second field. Otherwise, it is assumed that a boolean array
         representing the event indicator is passed.
+        If competing_risks is True it should be a non-negative valued integer array.
 
     *args : list of array-likes
         Any number of array-like objects representing time information.
@@ -116,6 +117,9 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False, allow_time_zer
 
     allow_time_zero : bool, optional, default: True
         Whether to allow event times to be zero.
+
+    competing_risks : bool, optional, default: False
+        Whether there are multiple risks. (See y_or_event)
 
     Returns
     -------
@@ -143,8 +147,7 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False, allow_time_zer
         time_args = args
 
     event = check_array(y_event, ensure_2d=False)
-    if not np.issubdtype(event.dtype, np.bool_):
-        raise ValueError(f"elements of event indicator must be boolean, but found {event.dtype}")
+    check_event_dtype(event, competing_risks)
 
     if not (allow_all_censored or np.any(event)):
         raise ValueError("all samples are censored")
@@ -171,6 +174,28 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False, allow_time_zer
         return_val.append(yt)
 
     return tuple(return_val)
+
+
+def check_event_dtype(event, competing_risks=False):
+    """Check that the event array has the correct dtypes:
+        Boolean for the general case and Intger in the case of competing risks.
+
+    Parameters
+    ----------
+    event : numpy array
+            Array containing the censoring events.
+    competing_risks : boolean
+            Boolean that indicates the case of competing risks.
+    """
+    if competing_risks:
+        if not np.issubdtype(event.dtype, np.integer):
+            raise ValueError(f"Elements of event indicator must be integer, but found {event.dtype}")
+        if np.any(event < 0):
+            raise ValueError("Elements of event indicator must be non-negative")
+        return
+
+    if not np.issubdtype(event.dtype, np.bool_):
+        raise ValueError(f"elements of event indicator must be boolean, but found {event.dtype}")
 
 
 def check_array_survival(X, y, **kwargs):
@@ -234,7 +259,7 @@ def safe_concat(objs, *args, **kwargs):
         If True, do not use the index values along the concatenation axis. The
         resulting axis will be labeled 0, ..., n - 1. This is useful if you are
         concatenating objects where the concatenation axis does not have
-        meaningful indexing information. Note the the index values on the other
+        meaningful indexing information. Note that the index values on the other
         axes are still respected in the join.
     copy : boolean, default True
         If False, do not copy data unnecessarily

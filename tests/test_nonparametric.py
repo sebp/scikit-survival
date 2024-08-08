@@ -9,6 +9,7 @@ from sksurv.nonparametric import (
     CensoringDistributionEstimator,
     SurvivalFunctionEstimator,
     kaplan_meier_estimator,
+    km_cumulative_incidence_competing_risks,
     nelson_aalen_estimator,
 )
 from sksurv.testing import FixtureParameterFactory
@@ -17,6 +18,7 @@ from sksurv.util import Surv
 CHANNING_FILE = join(dirname(__file__), "data", "channing.csv")
 AIDS_CHILDREN_FILE = join(dirname(__file__), "data", "Lagakos_AIDS_children.csv")
 AIDS_ADULTS_FILE = join(dirname(__file__), "data", "Lagakos_AIDS_adults.csv")
+BMT_FILE = join(dirname(__file__), "data", "bmt.csv")
 
 
 class SimpleDataKMCases(FixtureParameterFactory):
@@ -6231,3 +6233,122 @@ class TestNelsonAalen:
         )
 
         assert_array_almost_equal(y, true_y)
+
+
+class SimpleDataBMTCases(FixtureParameterFactory):
+    bmt_df = pd.read_csv(BMT_FILE, sep=";", skiprows=4)
+
+    def data_full(self):
+        event = self.bmt_df["status"].values
+        time = self.bmt_df["ftime"].values
+
+        true_x = np.array([0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 12, 13, 14, 22, 26, 32, 35, 67, 68, 70, 72])
+        true_y = np.array([[0.02857143, 0.02857143],
+                           [0.05714286, 0.05714286],
+                           [0.05714286, 0.08571429],
+                           [0.14581281, 0.11527094],
+                           [0.20492611, 0.14482759],
+                           [0.20492611, 0.1757917],
+                           [0.20492611, 0.23771992],
+                           [0.23771164, 0.27050544],
+                           [0.23771164, 0.30563279],
+                           [0.23771164, 0.34076015],
+                           [0.27283899, 0.34076015],
+                           [0.27283899, 0.3758875],
+                           [0.27283899, 0.41101485],
+                           [0.27283899, 0.4461422],
+                           [0.27283899, 0.48126955],
+                           [0.27283899, 0.48126955],
+                           [0.27283899, 0.48126955],
+                           [0.27283899, 0.48126955],
+                           [0.27283899, 0.48126955],
+                           [0.27283899, 0.48126955],
+                           [0.27283899, 0.48126955]]).T
+
+        return event, time, true_x, true_y
+
+    def data_ALL(self):
+        dis = 0
+
+        event = self.bmt_df[self.bmt_df["dis"] == dis]["status"].values
+        time = self.bmt_df[self.bmt_df["dis"] == dis]["ftime"].values
+
+        true_x = np.array([0, 1, 3, 4, 5, 7, 8, 9, 12, 13, 14, 22, 26, 35, 72])
+        true_y = np.array([[0.05882353, 0.05882353],
+                           [0.11764706, 0.11764706],
+                           [0.11764706, 0.17647059],
+                           [0.11764706, 0.23529412],
+                           [0.11764706, 0.29411765],
+                           [0.11764706, 0.35294118],
+                           [0.11764706, 0.41176471],
+                           [0.11764706, 0.47058824],
+                           [0.17647059, 0.47058824],
+                           [0.17647059, 0.52941176],
+                           [0.17647059, 0.58823529],
+                           [0.17647059, 0.64705882],
+                           [0.17647059, 0.70588235],
+                           [0.17647059, 0.70588235],
+                           [0.17647059, 0.70588235]]).T
+
+        return event, time, true_x, true_y
+
+    def data_AML(self):
+        dis = 1
+
+        event = self.bmt_df[self.bmt_df["dis"] == dis]["status"].values
+        time = self.bmt_df[self.bmt_df["dis"] == dis]["ftime"].values
+
+        true_x = np.array([2, 3, 4, 7, 8, 10, 32, 35, 67, 68, 70])
+        true_y = np.array([[0.        , 0.05555556], # noqa : E203
+                           [0.17708333, 0.05555556],
+                           [0.29513889, 0.05555556],
+                           [0.29513889, 0.12048611],
+                           [0.36818576, 0.12048611],
+                           [0.36818576, 0.20570747],
+                           [0.36818576, 0.20570747],
+                           [0.36818576, 0.20570747],
+                           [0.36818576, 0.20570747],
+                           [0.36818576, 0.20570747],
+                           [0.36818576, 0.20570747]]).T
+
+        return event, time, true_x, true_y
+
+
+class TestKaplanMeierCompetingRisks:
+    @staticmethod
+    @pytest.mark.parametrize("event, time, true_x, true_y", SimpleDataBMTCases().get_cases())
+    def test_wrong_dtype(event, time, true_x, true_y):
+        event = event.astype(bool)
+        with pytest.raises(ValueError, match=f"Elements of event indicator must be integer, but found {event.dtype}"):
+            _x, _y = km_cumulative_incidence_competing_risks(event, time)
+
+    @staticmethod
+    @pytest.mark.parametrize("event, time, true_x, true_y", SimpleDataBMTCases().get_cases())
+    def test_non_negative(event, time, true_x, true_y):
+        event = event.copy()
+        event[0] = -1
+        with pytest.raises(ValueError, match="Elements of event indicator must be non-negative"):
+            _x, _y = km_cumulative_incidence_competing_risks(event, time)
+
+    @staticmethod
+    @pytest.mark.parametrize("event, time, true_x, true_y", SimpleDataBMTCases().get_cases())
+    def test_full(event, time, true_x, true_y):
+        x, y = km_cumulative_incidence_competing_risks(event, time)
+
+        assert_array_equal(x, true_x)
+        _x_km, true_km = kaplan_meier_estimator(event > 0, time)
+        assert_array_almost_equal(y[0], 1. - true_km)
+        assert_array_almost_equal(y[1:], true_y)
+        assert_array_almost_equal(y[0], y[1:].sum(axis=0))
+
+    @staticmethod
+    @pytest.mark.parametrize("event, time, true_x, true_y", SimpleDataBMTCases().get_cases())
+    def test_truncated(event, time, true_x, true_y):
+        time_min = -1
+        x, y = km_cumulative_incidence_competing_risks(event, time, time_min=time_min)
+
+        assert_array_equal(x, true_x)
+        _x_km, true_km = kaplan_meier_estimator(event > 0, time, time_min=time_min)
+        assert_array_almost_equal(y[0], 1. - true_km)
+        assert_array_almost_equal(y[1:], true_y)
+        assert_array_almost_equal(y[0], y[1:].sum(axis=0))
