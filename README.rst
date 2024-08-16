@@ -38,7 +38,7 @@ Requirements
 - numexpr
 - numpy
 - osqp
-- pandas 1.0.5 or later
+- pandas 1.4.0 or later
 - scikit-learn 1.4 or 1.5
 - scipy
 - C/C++ compiler

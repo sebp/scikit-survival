@@ -64,17 +64,7 @@ def standardize(table, with_std=True):
         Table with numeric columns normalized.
         Categorical columns in the input table remain unchanged.
     """
-    if isinstance(table, pd.DataFrame):
-        cat_columns = table.select_dtypes(include=["category"]).columns
-    else:
-        cat_columns = []
-
     new_frame = _apply_along_column(table, standardize_column, with_std=with_std)
-
-    # work around for apply converting category dtype to object
-    # https://github.com/pydata/pandas/issues/9573
-    for col in cat_columns:
-        new_frame[col] = table[col].copy()
 
     return new_frame
 
