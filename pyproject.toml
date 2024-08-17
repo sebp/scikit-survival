@@ -93,7 +93,7 @@ docs = [
 nbval = [
     "ipykernel",
     "ipython!=8.7.0",
-    "matplotlib~=3.6.2",
+    "matplotlib~=3.8.0",
     "nbformat",
     "nbval>=0.10.0",
     "seaborn~=0.11.2",
