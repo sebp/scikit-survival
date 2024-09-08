@@ -63,17 +63,16 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 dev = [
-    "black[jupyter]",
     "build",
     "coverage",
     "Cython >=3.0.10",
     "packaging",
-    "pre-commit",
     "pytest",
-    "ruff ~= 0.4.3",
     "setuptools-scm >=8",
     "tomli",
-    "tox",
+]
+lint = [
+    "pre-commit",
 ]
 
 # This file purposely does not contain libraries that depend on C modules.
@@ -217,6 +216,7 @@ platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
 default = { solve-group = "default" }
 dev = { features = ["dev", "nbval"], solve-group = "default" }
 docs = { features = ["docs"], solve-group = "default" }
+lint = { features = ["lint"], solve-group = "default" }
 
 [tool.pixi.dependencies]
 # conda dependencies
@@ -227,7 +227,6 @@ docs = { features = ["docs"], solve-group = "default" }
 "scikit-survival" = { path = ".", editable = true }
 
 [tool.pixi.feature.dev.tasks]
-lint = "ruff check sksurv/ tests/ setup.py"
 test = "pytest"
 test-nb = { cmd = "pytest --nbval doc/user_guide/*.ipynb --nbval-sanitize-with ci/nb_sanitize.cfg", env = { MATPLOTLIBRC = "doc/user_guide/matplotlibrc" } }
 
@@ -238,3 +237,7 @@ spellcheck = "sphinx-build -j auto -E -W -d doc/_build/doctrees -b spelling doc/
 
 [tool.pixi.feature.docs.dependencies]
 pandoc = "*"
+
+[tool.pixi.feature.lint.tasks]
+lint = "pre-commit run --all-files"
+lint-install = "pre-commit install"
