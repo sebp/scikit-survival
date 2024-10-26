@@ -44,7 +44,7 @@ def _sample_binomial_plus_one(p, size, random_state):
     return drop_model, n_dropped
 
 
-class ComponentwiseLeastSquares(BaseEstimator):
+class _ComponentwiseLeastSquares(BaseEstimator):
     def __init__(self, component):
         self.component = component
 
@@ -70,7 +70,7 @@ def _fit_stage_componentwise(X, residuals, sample_weight, **fit_params):  # pyli
     base_learners = []
     error = np.empty(n_features)
     for component in range(n_features):
-        learner = ComponentwiseLeastSquares(component).fit(X, residuals, sample_weight)
+        learner = _ComponentwiseLeastSquares(component).fit(X, residuals, sample_weight)
         l_pred = learner.predict(X)
         error[component] = squared_norm(residuals - l_pred)
         base_learners.append(learner)

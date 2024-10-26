@@ -18,9 +18,9 @@ import pkgutil
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_array_equal
 import pytest
+from sklearn.base import BaseEstimator, TransformerMixin
 
 import sksurv
-from sksurv.base import SurvivalAnalysisMixin
 from sksurv.metrics import concordance_index_censored
 
 
@@ -72,8 +72,15 @@ def assert_chf_properties(chf):
         raise AssertionError(f"most ({num_closer_to_one}) hazard rates at first time point are closer to 1 than 0")
 
 
-def _is_survival_mixin(x):
-    return inspect.isclass(x) and x is not SurvivalAnalysisMixin and issubclass(x, SurvivalAnalysisMixin)
+def _is_survival_estimator(x):
+    return (
+        inspect.isclass(x)
+        and issubclass(x, BaseEstimator)
+        and not issubclass(x, TransformerMixin)
+        and x.__module__.startswith("sksurv.")
+        and not x.__name__.startswith("_")
+        and x.__module__.split(".", 2)[1] not in {"metrics", "nonparametric"}
+    )
 
 
 def all_survival_estimators():
@@ -84,7 +91,7 @@ def all_survival_estimators():
         if modname.startswith("sksurv.meta"):
             continue
         module = import_module(modname)
-        for _name, cls in inspect.getmembers(module, _is_survival_mixin):
+        for _name, cls in inspect.getmembers(module, _is_survival_estimator):
             if inspect.isabstract(cls):
                 continue
             all_classes.append(cls)
