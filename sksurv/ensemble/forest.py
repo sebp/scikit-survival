@@ -633,7 +633,7 @@ class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
         return super().predict_survival_function(X, return_array)
 
 
-class ExtraSurvivalTrees(_BaseSurvivalForest):
+class ExtraSurvivalTrees(SurvivalAnalysisMixin, _BaseSurvivalForest):
     """An extremely random survival forest.
 
     This class implements a meta estimator that fits a number of randomized
