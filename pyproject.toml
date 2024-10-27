@@ -197,6 +197,8 @@ select = [
 ]
 
 [tool.ruff.lint.flake8-pytest-style]
+fixture-parentheses = true
+mark-parentheses = true
 parametrize-names-type = "csv"
 
 [tool.ruff.lint.mccabe]

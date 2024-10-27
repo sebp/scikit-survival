@@ -2,7 +2,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
     -   id: trailing-whitespace
         exclude: '^\.gitignore$'
@@ -26,7 +26,7 @@ repos:
     -   id: rst-directive-colons
     -   id: rst-inline-touching-normal
 -   repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.28.2
+    rev: 0.29.4
     hooks:
     -   id: check-dependabot
     -   id: check-github-workflows
@@ -39,10 +39,10 @@ repos:
     -   id: forbid-tabs
         types: [python]
 -   repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 24.4.2
+    rev: 24.10.0
     hooks:
     -   id: black-jupyter
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.3
+    rev: v0.7.1
     hooks:
     -   id: ruff
