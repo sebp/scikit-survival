@@ -13,7 +13,7 @@ Bug fixes
 ^^^^^^^^^
 - Add `SurvivalAnalysisMixin` base class to :class:`sksurv.ensemble.ExtraSurvivalTrees`
   to enable the :meth:`sksurv.ensemble.ExtraSurvivalTrees.score` method that has been
-  unintentially removed in 0.23.0 (:issue:`488`).
+  unintentionally removed in 0.23.0 (:issue:`488`).
 
 Enhancements
 ^^^^^^^^^^^^
