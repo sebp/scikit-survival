@@ -16,6 +16,7 @@ jobs:
           - py310
           - py311
           - py312
+          - py313
         runner:
           - ubuntu-latest
           - macos-14

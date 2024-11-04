@@ -13,6 +13,8 @@ environment:
       CONDA_PY: "311"
     - TARGET_ARCH: "x64"
       CONDA_PY: "312"
+    - TARGET_ARCH: "x64"
+      CONDA_PY: "313"
 
 
 # We always use a 64-bit machine.
