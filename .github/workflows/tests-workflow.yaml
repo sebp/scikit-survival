@@ -101,7 +101,7 @@ jobs:
       - name: Set dependencies
         id: dependencies
         env:
-          DEPS_CONFIG: py311
+          DEPS_CONFIG: py312
         run: |
           source ci/deps/${DEPS_CONFIG}.sh
           echo "CI_PYTHON_VERSION=${CI_PYTHON_VERSION}" >> $GITHUB_ENV
@@ -110,12 +110,13 @@ jobs:
           echo "CI_SKLEARN_VERSION=${CI_SKLEARN_VERSION}" >> $GITHUB_ENV
           echo "CI_NO_SLOW=${CI_NO_SLOW}" >> $GITHUB_ENV
           echo "CONDA_PKGS_DIRS=${{ runner.temp }}/conda_pkgs_dir" >> $GITHUB_ENV
+          echo "py_version=$(cut -d'.' -f 1-2 <<< ${CI_PYTHON_VERSION})" >> $GITHUB_OUTPUT
           echo "requirements=ci/deps/${DEPS_CONFIG}.sh" >> $GITHUB_OUTPUT
       - name: Cache downloaded packages
         uses: actions/cache@v4
         with:
           path: ${{ env.CONDA_PKGS_DIRS }}
-          key: ${{ runner.os }}-${{ runner.arch }}-conda-3.11-${{ hashFiles(steps.dependencies.outputs.requirements, 'pyproject.toml', 'ci/deps/requirements.yaml.tmpl') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-conda-${{ steps.dependencies.outputs.py_version }}-${{ hashFiles(steps.dependencies.outputs.requirements, 'pyproject.toml', 'ci/deps/requirements.yaml.tmpl') }}
       - name: Create Conda Environment
         run: |
           source ci/setup_conda.sh "${{ runner.os }}" "${{ runner.arch }}" "${{ env.CONDA_PKGS_DIRS }}"
