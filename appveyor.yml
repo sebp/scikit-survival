@@ -21,8 +21,8 @@ platform:
 
 install:
   - ps: $env:CONDA_INSTALL_LOCN="$env:USERPROFILE\Miniconda3"
-  - ps: Invoke-WebRequest -Uri https://repo.anaconda.com/miniconda/Miniconda3-py312_24.1.2-0-Windows-x86_64.exe -OutFile Miniconda3.exe
-  - ps: ( Get-FileHash -Algorithm SHA256 Miniconda3.exe ).Hash -eq 'ff53a36b7024f8398cbfd043020f1f662cd4c5c2095c0007ddb4348aa5459375'
+  - ps: Invoke-WebRequest -Uri https://repo.anaconda.com/miniconda/Miniconda3-py312_24.9.2-0-Windows-x86_64.exe -OutFile Miniconda3.exe
+  - ps: ( Get-FileHash -Algorithm SHA256 Miniconda3.exe ).Hash -eq '3a8897cc5d27236ade8659f0e119f3a3ccaad68a45de45bfdd3102d8bec412ab'
   - ps: Start-Process Miniconda3.exe -Wait -ArgumentList @('/S', '/InstallationType=JustMe', '/RegisterPython=1', '/D="$env:CONDA_INSTALL_LOCN"')
   - ps: $env:Path += ";$env:CONDA_INSTALL_LOCN\Scripts;$env:CONDA_INSTALL_LOCN\Library\bin"
   - ps: conda init powershell
@@ -37,7 +37,8 @@ install:
   - ps: $envScript=".\ci\appveyor\py$($env:CONDA_PY).ps1"
   - ps: "& $envScript"
   - ps: python "ci\render-requirements.py" "ci\deps\requirements.yaml.tmpl" > environment.yaml
-  - ps: conda env create -n sksurv-test --file environment.yaml
+  # work-around for https://github.com/conda/conda/issues/14355
+  - ps: "& { $env:PYTHONWARNINGS = \"ignore::FutureWarning\"; conda env create -n sksurv-test --file environment.yaml }"
   - cmd: call %CONDA_INSTALL_LOCN%\Scripts\activate.bat sksurv-test
   - cmd: conda list
   # Initialize the submodules
