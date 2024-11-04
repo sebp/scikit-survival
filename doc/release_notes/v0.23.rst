@@ -3,6 +3,28 @@
 What's new in 0.23
 ==================
 
+scikit-survival 0.23.1 (2024-11-04)
+-----------------------------------
+
+This release adds support for Python 3.13.
+The minimum required version for pandas has been bumped to pandas 1.4.0.
+
+Bug fixes
+^^^^^^^^^
+- Add `SurvivalAnalysisMixin` base class to :class:`sksurv.ensemble.ExtraSurvivalTrees`
+  to enable the :meth:`sksurv.ensemble.ExtraSurvivalTrees.score` method that has been
+  unintentially removed in 0.23.0 (:issue:`488`).
+
+Enhancements
+^^^^^^^^^^^^
+- Improve performance of :func:`sksurv.metrics.concordance_index_censored` and
+  :func:`sksurv.metrics.concordance_index_ipcw` (:issue:`465`).
+
+Backwards incompatible changes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- Support for pandas versions before 1.4.0 has been dropped.
+
+
 scikit-survival 0.23.0 (2024-06-30)
 -----------------------------------
 
