@@ -6,8 +6,6 @@ environment:
   # see https://www.appveyor.com/docs/build-environment/#python
   matrix:
     - TARGET_ARCH: "x64"
-      CONDA_PY: "39"
-    - TARGET_ARCH: "x64"
       CONDA_PY: "310"
     - TARGET_ARCH: "x64"
       CONDA_PY: "311"

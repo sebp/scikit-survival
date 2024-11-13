@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from os.path import dirname, join
-from typing import Optional
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal
@@ -68,8 +67,8 @@ def assert_predictions_equal(coxnet, x, expected_pred):
 class CoxnetExpectation:
     alphas: np.ndarray
     coef: pd.DataFrame
-    pred: Optional[np.ndarray] = None
-    dev: Optional[np.ndarray] = None
+    pred: None | np.ndarray = None
+    dev: None | np.ndarray = None
 
 
 class CoxnetCases(FixtureParameterFactory):
