@@ -26,7 +26,7 @@ __all__ = [
     "nelson_aalen_estimator",
     "ipc_weights",
     "SurvivalFunctionEstimator",
-    "km_cumulative_incidence_competing_risks",
+    "cumulative_incidence_competing_risks",
 ]
 
 
@@ -55,7 +55,7 @@ def _compute_counts(event, time, order=None):
 
     n_events : array
         Number of events at each time point.
-        2D array (unique time points, n risks + 1) in the case of competing risks.
+        2D array with shape `(n_unique_time_points, n_risks + 1)` in the case of competing risks.
 
     n_at_risk : array
         Number of samples that have not been censored or have not had an event at each time point.
@@ -601,48 +601,25 @@ class CensoringDistributionEstimator(SurvivalFunctionEstimator):
         return weights
 
 
-def km_cumulative_incidence_competing_risks(
-        event,
-        time_exit,
-        time_enter=None,
-        time_min=None,
-        reverse=None,
-        conf_level=None,
-        conf_type=None
-):
-    """Kaplan-Meier estimator of Cumulative Incidence function in the case of competing risks.
+def cumulative_incidence_competing_risks(event, time_exit, time_min=None):
+    """Non-parametric estimator of Cumulative Incidence function in the case of competing risks.
 
     See [1]_ for further description.
 
     Parameters
     ----------
-    event : array-like, shape = (n_samples)
+    event : array-like, shape = (n_samples,)
         Contains event indicators.
 
     time_exit : array-like, shape = (n_samples,)
-        Contains event/censoring times.
+        Contains event/censoring times. '0' indicates right-censoring.
+        Positive integers (between 1 and n_risks, n_risks being the total number of different risks)
+        indicate the possible different risks.
+        It assumes there are events for all possible risks.
 
-    time_enter : array-like, shape = (n_samples,), optional
-        Contains time when each individual entered the study for
-        left truncated survival data.
-        Not implemented
-
-    time_min : float, optional
+    time_min : float, optional, default: None
         Compute estimator conditional on survival at least up to
         the specified time.
-
-    reverse : bool, optional, default: False
-        Whether to estimate the censoring distribution.
-        Not implemented for competing risks.
-        Can be obtained using regular Kaplan-Meier.
-
-    conf_level : float, optional, default: 0.95
-        The level for a two-sided confidence interval on the survival curves.
-
-    conf_type : None or {'log-log'}, optional, default: None.
-        The type of confidence intervals to estimate.
-        If `None`, no confidence intervals are estimated.
-        Not implemented.
 
     Returns
     -------
@@ -656,19 +633,17 @@ def km_cumulative_incidence_competing_risks(
 
     Examples
     --------
-    Creating a Kaplan-Meier curve:
-
-    >>> x, y = km_cumulative_incidence_competing_risks(event, time)
-    >>> for i=range(1, n_risks + 1):
-    >>>    plt.step(x, y[i], where="post", label=i)
+    Creating cumulative incidence curves:
+    >>> bmt_df = pd.read_csv("tests/data/bmt.csv", sep=";", skiprows=4)
+    >>> event = bmt_df["status"].values
+    >>> time = bmt_df["ftime"].values
+    >>> x, y = cumulative_incidence_competing_risks(event, time)
+    >>> plt.step(x, y[0], where="post", label="Total risk")
+    >>> for i in range(1, n_risks + 1):
+    >>>    plt.step(x, y[i], where="post", label=f"{i}-risk")
     >>> plt.ylim(0, 1)
     >>> plt.legend()
     >>> plt.show()
-
-    See also
-    --------
-    sksurv.nonparametric.SurvivalFunctionEstimator
-        Estimator API of the Kaplan-Meier estimator.
 
     References
     ----------
@@ -677,15 +652,6 @@ def km_cumulative_incidence_competing_risks(
     """
     event, time_exit = check_y_survival(event, time_exit, allow_all_censored=True, competing_risks=True)
     check_consistent_length(event, time_exit)
-
-    if time_enter is not None:
-        raise NotImplementedError("Left censored data is not implemented.")
-
-    if conf_level is not None or conf_type is not None:
-        raise NotImplementedError("Confidence error estimation is not implemented")
-
-    if reverse is not None:
-        raise NotImplementedError("Not implemented for competing risks. Use kaplan_meier_estimator instead.")
 
     n_risks = event.max()
     uniq_times, n_events_cr, n_at_risk, _n_censored = _compute_counts(event, time_exit)
@@ -696,7 +662,7 @@ def km_cumulative_incidence_competing_risks(
         n_events_cr,
         n_at_risk[..., np.newaxis],
         out=np.zeros((n_t, n_risks + 1), dtype=float),
-        where=n_events_cr != 0
+        where=n_events_cr != 0,
     )
 
     if time_min is not None:
@@ -704,12 +670,11 @@ def km_cumulative_incidence_competing_risks(
         uniq_times = np.compress(mask, uniq_times)
         ratio = np.compress(mask, ratio, axis=0)
 
-    kpe_cum_inc = np.empty((n_risks + 1, n_t), dtype=float)
     kpe = np.cumprod(1.0 - ratio[:, 0])
-    kpe_prime = np.ones(shape=kpe.shape, dtype=kpe.dtype)
+    kpe_prime = np.ones_like(kpe)
     kpe_prime[1:] = kpe[:-1]
-    for i in range(1, n_risks + 1):
-        kpe_cum_inc[i] = np.cumsum(ratio[:, i] * kpe_prime)
-    kpe_cum_inc[0] = 1.0 - kpe
+    cum_inc = np.empty((n_risks + 1, n_t), dtype=float)
+    cum_inc[1 : n_risks + 1] = np.cumsum((ratio[:, 1 : n_risks + 1].T * kpe_prime), axis=1)
+    cum_inc[0] = 1.0 - kpe
 
-    return uniq_times, kpe_cum_inc
+    return uniq_times, cum_inc

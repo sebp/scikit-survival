@@ -106,7 +106,8 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False, allow_time_zer
         as first field, and time of event or time of censoring as
         second field. Otherwise, it is assumed that a boolean array
         representing the event indicator is passed.
-        If competing_risks is True it should be a non-negative valued integer array.
+        If competing_risks is True it should be a non-negative valued integer array,
+        also all risks must appear at least once in the event array.
 
     *args : list of array-likes
         Any number of array-like objects representing time information.
@@ -148,6 +149,8 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False, allow_time_zer
 
     event = check_array(y_event, ensure_2d=False)
     check_event_dtype(event, competing_risks)
+    if competing_risks and not np.all(np.isin(range(1, np.max(event) + 1), event)):
+        raise ValueError("Some risks do not appear in the event array.")
 
     if not (allow_all_censored or np.any(event)):
         raise ValueError("all samples are censored")
@@ -178,13 +181,13 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False, allow_time_zer
 
 def check_event_dtype(event, competing_risks=False):
     """Check that the event array has the correct dtypes:
-        Boolean for the general case and Intger in the case of competing risks.
+        Boolean for the general case and Integer in the case of competing risks.
 
     Parameters
     ----------
-    event : numpy array
+    event : array, shape=[n_samples,], dtype=bool|integer
             Array containing the censoring events.
-    competing_risks : boolean
+    competing_risks : bool, optional, default: False
             Boolean that indicates the case of competing risks.
     """
     if competing_risks:

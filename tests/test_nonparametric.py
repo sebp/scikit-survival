@@ -8,8 +8,8 @@ import pytest
 from sksurv.nonparametric import (
     CensoringDistributionEstimator,
     SurvivalFunctionEstimator,
+    cumulative_incidence_competing_risks,
     kaplan_meier_estimator,
-    km_cumulative_incidence_competing_risks,
     nelson_aalen_estimator,
 )
 from sksurv.testing import FixtureParameterFactory
@@ -6243,27 +6243,31 @@ class SimpleDataBMTCases(FixtureParameterFactory):
         time = self.bmt_df["ftime"].values
 
         true_x = np.array([0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 12, 13, 14, 22, 26, 32, 35, 67, 68, 70, 72])
-        true_y = np.array([[0.02857143, 0.02857143],
-                           [0.05714286, 0.05714286],
-                           [0.05714286, 0.08571429],
-                           [0.14581281, 0.11527094],
-                           [0.20492611, 0.14482759],
-                           [0.20492611, 0.1757917],
-                           [0.20492611, 0.23771992],
-                           [0.23771164, 0.27050544],
-                           [0.23771164, 0.30563279],
-                           [0.23771164, 0.34076015],
-                           [0.27283899, 0.34076015],
-                           [0.27283899, 0.3758875],
-                           [0.27283899, 0.41101485],
-                           [0.27283899, 0.4461422],
-                           [0.27283899, 0.48126955],
-                           [0.27283899, 0.48126955],
-                           [0.27283899, 0.48126955],
-                           [0.27283899, 0.48126955],
-                           [0.27283899, 0.48126955],
-                           [0.27283899, 0.48126955],
-                           [0.27283899, 0.48126955]]).T
+        true_y = np.array(
+            [
+                [0.02857143, 0.02857143],
+                [0.05714286, 0.05714286],
+                [0.05714286, 0.08571429],
+                [0.14581281, 0.11527094],
+                [0.20492611, 0.14482759],
+                [0.20492611, 0.1757917],
+                [0.20492611, 0.23771992],
+                [0.23771164, 0.27050544],
+                [0.23771164, 0.30563279],
+                [0.23771164, 0.34076015],
+                [0.27283899, 0.34076015],
+                [0.27283899, 0.3758875],
+                [0.27283899, 0.41101485],
+                [0.27283899, 0.4461422],
+                [0.27283899, 0.48126955],
+                [0.27283899, 0.48126955],
+                [0.27283899, 0.48126955],
+                [0.27283899, 0.48126955],
+                [0.27283899, 0.48126955],
+                [0.27283899, 0.48126955],
+                [0.27283899, 0.48126955],
+            ]
+        ).T
 
         return event, time, true_x, true_y
 
@@ -6274,21 +6278,25 @@ class SimpleDataBMTCases(FixtureParameterFactory):
         time = self.bmt_df[self.bmt_df["dis"] == dis]["ftime"].values
 
         true_x = np.array([0, 1, 3, 4, 5, 7, 8, 9, 12, 13, 14, 22, 26, 35, 72])
-        true_y = np.array([[0.05882353, 0.05882353],
-                           [0.11764706, 0.11764706],
-                           [0.11764706, 0.17647059],
-                           [0.11764706, 0.23529412],
-                           [0.11764706, 0.29411765],
-                           [0.11764706, 0.35294118],
-                           [0.11764706, 0.41176471],
-                           [0.11764706, 0.47058824],
-                           [0.17647059, 0.47058824],
-                           [0.17647059, 0.52941176],
-                           [0.17647059, 0.58823529],
-                           [0.17647059, 0.64705882],
-                           [0.17647059, 0.70588235],
-                           [0.17647059, 0.70588235],
-                           [0.17647059, 0.70588235]]).T
+        true_y = np.array(
+            [
+                [0.05882353, 0.05882353],
+                [0.11764706, 0.11764706],
+                [0.11764706, 0.17647059],
+                [0.11764706, 0.23529412],
+                [0.11764706, 0.29411765],
+                [0.11764706, 0.35294118],
+                [0.11764706, 0.41176471],
+                [0.11764706, 0.47058824],
+                [0.17647059, 0.47058824],
+                [0.17647059, 0.52941176],
+                [0.17647059, 0.58823529],
+                [0.17647059, 0.64705882],
+                [0.17647059, 0.70588235],
+                [0.17647059, 0.70588235],
+                [0.17647059, 0.70588235],
+            ]
+        ).T
 
         return event, time, true_x, true_y
 
@@ -6299,28 +6307,201 @@ class SimpleDataBMTCases(FixtureParameterFactory):
         time = self.bmt_df[self.bmt_df["dis"] == dis]["ftime"].values
 
         true_x = np.array([2, 3, 4, 7, 8, 10, 32, 35, 67, 68, 70])
-        true_y = np.array([[0.        , 0.05555556], # noqa : E203
-                           [0.17708333, 0.05555556],
-                           [0.29513889, 0.05555556],
-                           [0.29513889, 0.12048611],
-                           [0.36818576, 0.12048611],
-                           [0.36818576, 0.20570747],
-                           [0.36818576, 0.20570747],
-                           [0.36818576, 0.20570747],
-                           [0.36818576, 0.20570747],
-                           [0.36818576, 0.20570747],
-                           [0.36818576, 0.20570747]]).T
+        true_y = np.array(
+            [
+                [0.0, 0.05555556],
+                [0.17708333, 0.05555556],
+                [0.29513889, 0.05555556],
+                [0.29513889, 0.12048611],
+                [0.36818576, 0.12048611],
+                [0.36818576, 0.20570747],
+                [0.36818576, 0.20570747],
+                [0.36818576, 0.20570747],
+                [0.36818576, 0.20570747],
+                [0.36818576, 0.20570747],
+                [0.36818576, 0.20570747],
+            ]
+        ).T
+
+        return event, time, true_x, true_y
+
+    def data_three_competing_cases(self):
+        time = np.array(
+            [
+                5.3,
+                10.2,
+                4.5,
+                12.7,
+                7.4,
+                8.6,
+                9.1,
+                3.3,
+                6.9,
+                11.5,
+                15.2,
+                13.1,
+                10.0,
+                5.9,
+                8.2,
+                4.3,
+                6.1,
+                14.7,
+                16.9,
+                3.7,
+                5.0,
+                7.8,
+                9.5,
+                11.9,
+                10.6,
+                6.4,
+                4.8,
+                12.3,
+                14.0,
+            ]
+        )
+
+        event = np.array([1, 0, 3, 0, 2, 3, 0, 1, 3, 0, 1, 0, 3, 0, 2, 0, 0, 3, 0, 1, 0, 3, 1, 0, 2, 0, 3, 2, 0])
+        true_x = np.array(
+            [
+                3.3,
+                3.7,
+                4.3,
+                4.5,
+                4.8,
+                5.0,
+                5.3,
+                5.9,
+                6.1,
+                6.4,
+                6.9,
+                7.4,
+                7.8,
+                8.2,
+                8.6,
+                9.1,
+                9.5,
+                10.0,
+                10.2,
+                10.6,
+                11.5,
+                11.9,
+                12.3,
+                12.7,
+                13.1,
+                14.0,
+                14.7,
+                15.2,
+                16.9,
+            ]
+        )
+        true_y = np.array(
+            [
+                [
+                    0.03448276,
+                    0.06896552,
+                    0.06896552,
+                    0.06896552,
+                    0.06896552,
+                    0.06896552,
+                    0.10633145,
+                    0.10633145,
+                    0.10633145,
+                    0.10633145,
+                    0.10633145,
+                    0.10633145,
+                    0.10633145,
+                    0.10633145,
+                    0.10633145,
+                    0.10633145,
+                    0.15292541,
+                    0.15292541,
+                    0.15292541,
+                    0.15292541,
+                    0.15292541,
+                    0.15292541,
+                    0.15292541,
+                    0.15292541,
+                    0.15292541,
+                    0.15292541,
+                    0.15292541,
+                    0.28471974,
+                    0.28471974,
+                ],
+                [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.04326582,
+                    0.04326582,
+                    0.08653163,
+                    0.08653163,
+                    0.08653163,
+                    0.08653163,
+                    0.08653163,
+                    0.08653163,
+                    0.13778498,
+                    0.13778498,
+                    0.13778498,
+                    0.20368215,
+                    0.20368215,
+                    0.20368215,
+                    0.20368215,
+                    0.20368215,
+                    0.20368215,
+                    0.20368215,
+                ],
+                [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.03580902,
+                    0.07161804,
+                    0.07161804,
+                    0.07161804,
+                    0.07161804,
+                    0.07161804,
+                    0.07161804,
+                    0.11488385,
+                    0.11488385,
+                    0.15814967,
+                    0.15814967,
+                    0.20141549,
+                    0.20141549,
+                    0.20141549,
+                    0.24800944,
+                    0.24800944,
+                    0.24800944,
+                    0.24800944,
+                    0.24800944,
+                    0.24800944,
+                    0.24800944,
+                    0.24800944,
+                    0.24800944,
+                    0.37980378,
+                    0.37980378,
+                    0.37980378,
+                ],
+            ]
+        )
 
         return event, time, true_x, true_y
 
 
-class TestKaplanMeierCompetingRisks:
+class TestCumIncCompetingRisks:
     @staticmethod
     @pytest.mark.parametrize("event, time, true_x, true_y", SimpleDataBMTCases().get_cases())
     def test_wrong_dtype(event, time, true_x, true_y):
         event = event.astype(bool)
         with pytest.raises(ValueError, match=f"Elements of event indicator must be integer, but found {event.dtype}"):
-            _x, _y = km_cumulative_incidence_competing_risks(event, time)
+            _x, _y = cumulative_incidence_competing_risks(event, time)
 
     @staticmethod
     @pytest.mark.parametrize("event, time, true_x, true_y", SimpleDataBMTCases().get_cases())
@@ -6328,16 +6509,25 @@ class TestKaplanMeierCompetingRisks:
         event = event.copy()
         event[0] = -1
         with pytest.raises(ValueError, match="Elements of event indicator must be non-negative"):
-            _x, _y = km_cumulative_incidence_competing_risks(event, time)
+            _x, _y = cumulative_incidence_competing_risks(event, time)
+
+    @staticmethod
+    @pytest.mark.parametrize("event, time, true_x, true_y", SimpleDataBMTCases().get_cases())
+    def test_all_risks_appear(event, time, true_x, true_y):
+        mask = event != 1
+        event = np.compress(mask, event)
+        time = np.compress(mask, time)
+        with pytest.raises(ValueError, match="Some risks do not appear in the event array."):
+            _x, _y = cumulative_incidence_competing_risks(event, time)
 
     @staticmethod
     @pytest.mark.parametrize("event, time, true_x, true_y", SimpleDataBMTCases().get_cases())
     def test_full(event, time, true_x, true_y):
-        x, y = km_cumulative_incidence_competing_risks(event, time)
+        x, y = cumulative_incidence_competing_risks(event, time)
 
         assert_array_equal(x, true_x)
         _x_km, true_km = kaplan_meier_estimator(event > 0, time)
-        assert_array_almost_equal(y[0], 1. - true_km)
+        assert_array_almost_equal(y[0], 1.0 - true_km)
         assert_array_almost_equal(y[1:], true_y)
         assert_array_almost_equal(y[0], y[1:].sum(axis=0))
 
@@ -6345,10 +6535,10 @@ class TestKaplanMeierCompetingRisks:
     @pytest.mark.parametrize("event, time, true_x, true_y", SimpleDataBMTCases().get_cases())
     def test_truncated(event, time, true_x, true_y):
         time_min = -1
-        x, y = km_cumulative_incidence_competing_risks(event, time, time_min=time_min)
+        x, y = cumulative_incidence_competing_risks(event, time, time_min=time_min)
 
         assert_array_equal(x, true_x)
         _x_km, true_km = kaplan_meier_estimator(event > 0, time, time_min=time_min)
-        assert_array_almost_equal(y[0], 1. - true_km)
+        assert_array_almost_equal(y[0], 1.0 - true_km)
         assert_array_almost_equal(y[1:], true_y)
         assert_array_almost_equal(y[0], y[1:].sum(axis=0))
