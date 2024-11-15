@@ -65,10 +65,10 @@ public:
         m_iterations = value;
     }
 
-    int getNumberOfAlphas() const {
+    typename VectorType::Index getNumberOfAlphas() const {
         return m_n_alphas;
     }
-    void setNumberOfAlphas(const int value) {
+    void setNumberOfAlphas(const typename VectorType::Index value) {
         m_n_alphas = value;
     }
 
@@ -84,7 +84,7 @@ private:
     VectorType &m_alphas;
     VectorType &m_deviance_ratio;
     std::size_t m_iterations;
-    int m_n_alphas;
+    typename VectorType::Index m_n_alphas;
     ErrorType m_error;
 
     // intentionally not implemented
