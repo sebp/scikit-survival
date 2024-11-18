@@ -72,7 +72,7 @@ jobs:
             echo "do=false" >> $GITHUB_OUTPUT
           fi
       - name: Submit Coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
