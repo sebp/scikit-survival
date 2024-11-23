@@ -1,4 +1,4 @@
-# Datesets
+# Datasets
 
 This folder contains freely available datasets that than can be used
 for survival analysis.
