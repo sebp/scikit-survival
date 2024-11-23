@@ -106,7 +106,7 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False, allow_time_zer
         as first field, and time of event or time of censoring as
         second field. Otherwise, it is assumed that a boolean array
         representing the event indicator is passed.
-        If competing_risks is True it should be a non-negative valued integer array,
+        If `competing_risks` is `True`, it should be a non-negative valued integer array,
         also all risks must appear at least once in the event array.
 
     *args : list of array-likes
@@ -185,10 +185,10 @@ def check_event_dtype(event, competing_risks=False):
 
     Parameters
     ----------
-    event : array, shape=[n_samples,], dtype=bool|integer
+    event : array, shape=(n_samples,), dtype=bool | int
             Array containing the censoring events.
     competing_risks : bool, optional, default: False
-            Boolean that indicates the case of competing risks.
+            Whether `event` contains competing risks.
     """
     if competing_risks:
         if not np.issubdtype(event.dtype, np.integer):
