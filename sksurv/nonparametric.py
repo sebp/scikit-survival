@@ -634,6 +634,7 @@ def cumulative_incidence_competing_risks(event, time_exit, time_min=None):
     Examples
     --------
     Creating cumulative incidence curves:
+    
     >>> bmt_df = pd.read_csv("tests/data/bmt.csv", sep=";", skiprows=4)
     >>> event = bmt_df["status"].values
     >>> time = bmt_df["ftime"].values
