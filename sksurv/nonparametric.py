@@ -628,8 +628,8 @@ def cumulative_incidence_competing_risks(event, time_exit, time_min=None):
 
     cum_incidence : array, shape = (n_risks + 1, n_times)
         Cumulative incidence at each unique time point.
-        The first dimension indicates total risk (i=0)
-        or the incidence for each competing risk (i=1,n_risks)
+        The first dimension indicates total risk (``cum_incidence[0]``),
+        the dimension `i=1,..,n_risks` the incidence for each competing risk.
 
     Examples
     --------
