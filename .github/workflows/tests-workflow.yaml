@@ -76,7 +76,7 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-          file: coverage.xml
+          files: coverage.xml
           fail_ci_if_error: true
           disable_file_fixes: true
         if: steps.coverage.outputs.do == 'true'
