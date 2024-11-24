@@ -635,9 +635,11 @@ def cumulative_incidence_competing_risks(event, time_exit, time_min=None):
     --------
     Creating cumulative incidence curves:
 
-    >>> bmt_df = pd.read_csv("tests/data/bmt.csv", sep=";", skiprows=4)
-    >>> event = bmt_df["status"].values
-    >>> time = bmt_df["ftime"].values
+    >>> from sksurv.datasets import load_bmt
+    >>> dis, bmt_df = load_bmt()
+    >>> event = bmt_df["status"]
+    >>> time = bmt_df["ftime"]
+    >>> n_risks = event.max()
     >>> x, y = cumulative_incidence_competing_risks(event, time)
     >>> plt.step(x, y[0], where="post", label="Total risk")
     >>> for i in range(1, n_risks + 1):

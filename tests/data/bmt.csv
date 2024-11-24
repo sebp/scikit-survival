@@ -1,6 +1,6 @@
-# Scrucca L., Santucci A., Aversa F. (2010)
-# Regression modeling of competing risk using R: an in depth guide for clinicians.
-# Bone Marrow Transplantation, 45, 1388–1395.
+# Scrucca L., Santucci A., Aversa F. (2007)
+# Competing risks analysis using R: an easy guide for clinicians.
+# Bone Marrow Transplantation 40, 381–387.
 # https://luca-scr.github.io/R/bmt.csv
 dis;ftime;status
 0;13;2
