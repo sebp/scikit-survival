@@ -35,7 +35,7 @@ jobs:
           fi
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.21.3
+        uses: pypa/cibuildwheel@v2.22.0
         env:
           CIBW_ARCHS: auto64
           CIBW_BUILD: cp${{ matrix.python }}-${{ steps.platform.outputs.build_platform }}*
