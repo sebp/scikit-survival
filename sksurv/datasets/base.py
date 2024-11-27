@@ -12,6 +12,7 @@ __all__ = [
     "get_x_y",
     "load_arff_files_standardized",
     "load_aids",
+    "load_bmt",
     "load_breast_cancer",
     "load_flchain",
     "load_gbsg2",
@@ -26,13 +27,17 @@ def _get_data_path(name):
     return files(__package__) / "data" / name
 
 
-def _get_x_y_survival(dataset, col_event, col_time, val_outcome):
+def _get_x_y_survival(dataset, col_event, col_time, val_outcome, competing_risks=False):
     if col_event is None or col_time is None:
         y = None
         x_frame = dataset
     else:
-        y = np.empty(dtype=[(col_event, bool), (col_time, np.float64)], shape=dataset.shape[0])
-        y[col_event] = (dataset[col_event] == val_outcome).values
+        event_type = np.int64 if competing_risks else bool
+        y = np.empty(dtype=[(col_event, event_type), (col_time, np.float64)], shape=dataset.shape[0])
+        if competing_risks:
+            y[col_event] = dataset[col_event].values
+        else:
+            y[col_event] = (dataset[col_event] == val_outcome).values
         y[col_time] = dataset[col_time].values
 
         x_frame = dataset.drop([col_event, col_time], axis=1)
@@ -51,7 +56,7 @@ def _get_x_y_other(dataset, col_label):
     return x_frame, y
 
 
-def get_x_y(data_frame, attr_labels, pos_label=None, survival=True):
+def get_x_y(data_frame, attr_labels, pos_label=None, survival=True, competing_risks=False):
     """Split data frame into features and labels.
 
     Parameters
@@ -75,6 +80,9 @@ def get_x_y(data_frame, attr_labels, pos_label=None, survival=True):
     survival : bool, optional, default: True
         Whether to return `y` that can be used for survival analysis.
 
+    competing_risks : bool, optional, default: False
+        Whether `y` refers to competing risks situation. Only used if `survival` is True
+
     Returns
     -------
     X : pandas.DataFrame, shape = (n_samples, n_columns - len(attr_labels))
@@ -89,9 +97,9 @@ def get_x_y(data_frame, attr_labels, pos_label=None, survival=True):
     if survival:
         if len(attr_labels) != 2:
             raise ValueError(f"expected sequence of length two for attr_labels, but got {len(attr_labels)}")
-        if pos_label is None:
+        if pos_label is None and not competing_risks:
             raise ValueError("pos_label needs to be specified if survival=True")
-        return _get_x_y_survival(data_frame, attr_labels[0], attr_labels[1], pos_label)
+        return _get_x_y_survival(data_frame, attr_labels[0], attr_labels[1], pos_label, competing_risks)
 
     return _get_x_y_other(data_frame, attr_labels)
 
@@ -434,3 +442,41 @@ def load_flchain():
     """
     fn = _get_data_path("flchain.arff")
     return get_x_y(loadarff(fn), attr_labels=["death", "futime"], pos_label="dead")
+
+
+def load_bmt():
+    """Load and return response to Hematopoietic stem cell transplantation (HSCT) for acute leukemia patients.
+
+    The dataset has 35 samples and 1 features:
+
+        1. dis: Type of leukemia. 0=ALL(Acute Lymphoblastic Leukemia), 1=AML(Acute Myeloid Leukemia)
+
+    The endpoint (status) are:
+
+        0. Survival (Right-censored data). 11 patients (31.4%)
+        1. Transplant related mortality (TRM). 9 events (25.7%)
+        2. Relapse. 15 events (42.8%)
+
+    See [1]_ for further description and [2]_ for the dataset.
+
+    Returns
+    -------
+    x : pandas.DataFrame
+        The measurements for each patient.
+
+    y : structured array with 2 fields
+        *status*: Integer indicating the endpoint: 0-(survival i.e. right censored data), 1-(TRM), 2-(relapse)
+
+        *ftime*: total length of follow-up or time of event.
+
+    References
+    ----------
+    .. [1] https://doi.org/10.1038/sj.bmt.1705727
+           Scrucca, L., Santucci, A. & Aversa, F.:
+           "Competing risk analysis using R: an easy guide for clinicians. Bone Marrow Transplant 40, 381–387 (2007)"
+    .. [2] https://luca-scr.github.io/R/bmt.csv
+    """
+    full_path = _get_data_path("bmt.arff")
+    data = loadarff(full_path)
+    data["ftime"] = data["ftime"].astype(int)
+    return get_x_y(data, attr_labels=["status", "ftime"], competing_risks=True)
