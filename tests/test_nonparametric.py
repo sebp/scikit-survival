@@ -5,6 +5,7 @@ from numpy.testing import assert_array_almost_equal, assert_array_equal
 import pandas as pd
 import pytest
 
+from sksurv.datasets import load_bmt
 from sksurv.nonparametric import (
     CensoringDistributionEstimator,
     SurvivalFunctionEstimator,
@@ -18,7 +19,6 @@ from sksurv.util import Surv
 CHANNING_FILE = join(dirname(__file__), "data", "channing.csv")
 AIDS_CHILDREN_FILE = join(dirname(__file__), "data", "Lagakos_AIDS_children.csv")
 AIDS_ADULTS_FILE = join(dirname(__file__), "data", "Lagakos_AIDS_adults.csv")
-BMT_FILE = join(dirname(__file__), "data", "bmt.csv")
 
 
 class SimpleDataKMCases(FixtureParameterFactory):
@@ -6236,11 +6236,12 @@ class TestNelsonAalen:
 
 
 class SimpleDataBMTCases(FixtureParameterFactory):
-    bmt_df = pd.read_csv(BMT_FILE, sep=";", skiprows=4)
+    dis_df, bmt = load_bmt()
+    dis_np = dis_df["dis"].values
 
     def data_full(self):
-        event = self.bmt_df["status"].values
-        time = self.bmt_df["ftime"].values
+        event = self.bmt["status"]
+        time = self.bmt["ftime"]
 
         true_x = np.array([0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 12, 13, 14, 22, 26, 32, 35, 67, 68, 70, 72])
         true_y = np.array(
@@ -6272,10 +6273,10 @@ class SimpleDataBMTCases(FixtureParameterFactory):
         return event, time, true_x, true_y
 
     def data_ALL(self):
-        dis = 0
-
-        event = self.bmt_df[self.bmt_df["dis"] == dis]["status"].values
-        time = self.bmt_df[self.bmt_df["dis"] == dis]["ftime"].values
+        dis = "0"
+        dis_filter = self.dis_np == dis
+        event = self.bmt["status"][dis_filter]
+        time = self.bmt["ftime"][dis_filter]
 
         true_x = np.array([0, 1, 3, 4, 5, 7, 8, 9, 12, 13, 14, 22, 26, 35, 72])
         true_y = np.array(
@@ -6301,10 +6302,10 @@ class SimpleDataBMTCases(FixtureParameterFactory):
         return event, time, true_x, true_y
 
     def data_AML(self):
-        dis = 1
-
-        event = self.bmt_df[self.bmt_df["dis"] == dis]["status"].values
-        time = self.bmt_df[self.bmt_df["dis"] == dis]["ftime"].values
+        dis = "1"
+        dis_filter = self.dis_np == dis
+        event = self.bmt["status"][dis_filter]
+        time = self.bmt["ftime"][dis_filter]
 
         true_x = np.array([2, 3, 4, 7, 8, 10, 32, 35, 67, 68, 70])
         true_y = np.array(
