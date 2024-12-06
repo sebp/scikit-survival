@@ -544,17 +544,14 @@ def load_cgvhd():
     .. [2] https://drive.google.com/file/d/1FPM264pE\_-F8DB7lvFeLB1yQ3HDo7c-i/view
            https://sites.google.com/view/melaniapintiliemscstatistics/home/statistics
     """
-    full_path = _get_data_path("cgvhd.txt")
-
-    df = pd.read_csv(full_path)
-    df["ftime"] = df[["survtime", "reltime", "cgvhtime"]].min(axis=1)
-    df["status"] = (
-        ((df["ftime"] == df["cgvhtime"]) & (df["cgvh"] == 1)).astype(int)
-        + 2 * ((df["ftime"] == df["reltime"]) & (df["rcens"] == 1)).astype(int)
-        + 3 * ((df["ftime"] == df["survtime"]) & (df["stat"] == 1)).astype(int)
+    full_path = _get_data_path("cgvhd.arff")
+    data = loadarff(full_path)
+    data["ftime"] = data[["survtime", "reltime", "cgvhtime"]].min(axis=1)
+    data["status"] = (
+        ((data["ftime"] == data["cgvhtime"]) & (data["cgvh"] == "1")).astype(int)
+        + 2 * ((data["ftime"] == data["reltime"]) & (data["rcens"] == "1")).astype(int)
+        + 3 * ((data["ftime"] == data["survtime"]) & (data["stat"] == "1")).astype(int)
     )
-    df = df[["ftime", "status", "tx"]]
-    ftime, event = df["ftime"].values, df["status"].values
+    data = data[["ftime", "status", "dx", "tx", "extent", "age"]]
 
-    #    return get_x_y(data, attr_labels=["status", "ftime"], competing_risks=True)
-    return None, {"ftime": ftime, "status": event}
+    return get_x_y(data, attr_labels=["status", "ftime"], competing_risks=True)

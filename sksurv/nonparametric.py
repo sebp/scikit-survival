@@ -740,11 +740,11 @@ def cumulative_incidence_competing_risks(
         return uniq_times, cum_inc
 
     if var_type == "Dinse":
-        var = var_dinse(n_events_cr, kpe_prime, n_at_risk, cum_inc)
+        var = _var_dinse(n_events_cr, kpe_prime, n_at_risk, cum_inc)
     elif var_type == "Dinse_Approx":
-        var = var_dinse_approx(n_events_cr, kpe_prime, n_at_risk, cum_inc)
+        var = _var_dinse_approx(n_events_cr, kpe_prime, n_at_risk, cum_inc)
     elif var_type == "Aalen":
-        var = var_aalen(n_events_cr, kpe_prime, n_at_risk, cum_inc)
+        var = _var_aalen(n_events_cr, kpe_prime, n_at_risk, cum_inc)
     else:
         raise ValueError(f"{var_type=} not implemented.")
 
@@ -756,11 +756,11 @@ def cumulative_incidence_competing_risks(
     return uniq_times, cum_inc, ci
 
 
-def var_dinse_approx(n_events_cr, kpe_prime, n_at_risk, cum_inc):
+def _var_dinse_approx(n_events_cr, kpe_prime, n_at_risk, cum_inc):
     """
     Variance estimator from Dinse and Larson, Biometrika (1986), 379
     See Section 4, Eqs. 6.
-    This is an approximation from the var_dinse, so that one should be preferred.
+    This is an approximation from the _var_dinse, so that one should be preferred.
     However, this seems to be more common in the literature.
     """
     dr = n_events_cr[:, 0]
@@ -776,7 +776,7 @@ def var_dinse_approx(n_events_cr, kpe_prime, n_at_risk, cum_inc):
     return var
 
 
-def var_dinse(n_events_cr, kpe_prime, n_at_risk):
+def _var_dinse(n_events_cr, kpe_prime, n_at_risk):
     """
     Variance estimator from Dinse and Larson, Biometrika (1986), 379
     See Section 4, Eqs. 4 and 5
@@ -804,7 +804,7 @@ def var_dinse(n_events_cr, kpe_prime, n_at_risk):
     return var
 
 
-def var_aalen(n_events_cr, kpe_prime, n_at_risk, cum_inc):
+def _var_aalen(n_events_cr, kpe_prime, n_at_risk, cum_inc):
     """
     Variance estimator from Aalen
     Aalen, O. (1978a). Nonparametric estimation of partial transition
