@@ -657,7 +657,7 @@ def cumulative_incidence_competing_risks(
         the specified time.
 
     conf_level : float, optional, default: 0.95
-        The level for a two-sided confidence interval on the survival curves.
+        The level for a two-sided confidence interval on the cumulative incidence curves.
 
     conf_type : None or {'log-log'}, optional, default: None.
         The type of confidence intervals to estimate.
