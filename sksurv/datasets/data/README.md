@@ -12,6 +12,7 @@ for survival analysis.
 | veteran                       | [Veteran's Lung Cancer][Kalbfleisch2008]             | 137     | 6        | 128 (93.4%)  | Death                        |
 | whas500                       | [Worcester Heart Attack Study][Hosmer2008]           | 500     | 14       | 215 (43.0%)  | Death                        |
 | BMT                           | [Leukemia HSC Transplant][Scrucca2007]               | 35      | 1        | 24 (68.6%)   | Transplant related death or relapse |
+| GCVHD                         | [GCVHD][Pintilie2006]                                       | 100     | 4        | 96 (96%)     | Chronic graft disease (GCVHD), relapse or death |
 
 [Desmedt2007]: http://dx.doi.org/10.1158/1078-0432.CCR-06-2765 "Desmedt, C., Piette, F., Loi et al.: Strong Time Dependence of the 76-Gene Prognostic Signature for Node-Negative Breast Cancer Patients in the TRANSBIG Multicenter Independent Validation Series. Clin. Cancer Res. 13(11), 3207–14 (2007)"
 
@@ -24,3 +25,5 @@ for survival analysis.
 [Schumacher1994]: http://ascopubs.org/doi/abs/10.1200/jco.1994.12.10.2086 "Schumacher, M., Basert, G., Bojar, H., et al. Randomized 2 × 2 trial evaluating hormonal treatment and the duration of chemotherapy in node-positive breast cancer patients. Journal of Clinical Oncology 12, 2086–2093. (1994)"
 
 [Scrucca2007]: https://doi.org/10.1038/sj.bmt.1705727 "Scrucca, L., Santucci, A. & Aversa, F. Competing risk analysis using R: an easy guide for clinicians. Bone Marrow Transplant 40, 381–387 (2007)"
+
+[Pintilie2006]: https://www.wiley.com/en-us/Competing+Risks%3A+A+Practical+Perspective-p-9780470870693 "Melania Pintilie: Competing Risks: A Practical Perspective. John Wiley & Sons, (2006)"
