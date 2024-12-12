@@ -7583,6 +7583,7 @@ class TestCumIncCompetingRisks:
     @staticmethod
     @pytest.mark.parametrize("event, time, true_x, true_y", CGVHD_DataSets().get_cases())
     def test_ci(event, time, true_x, true_y):
+        "The true CI values were generated using the cmprsk R package."
         x, y, ci = cumulative_incidence_competing_risks(event, time, conf_type="log-log", var_type="Aalen")
 
         assert_array_equal(x, true_x)
@@ -7602,6 +7603,9 @@ class TestCumIncCompetingRisks:
     @staticmethod
     @pytest.mark.parametrize("event, time, true_x, true_y", CGVHD_DataSets().get_cases())
     def test_dinse_approx_ci(event, time, true_x, true_y):
+        """The true CI values are taken from
+        M. Pintilie: "Competing Risks: A Practical Perspective". John Wiley & Sons, 2006,
+        """
         x, y, ci_full = cumulative_incidence_competing_risks(event, time, conf_type="log-log", var_type="Dinse_Approx")
 
         t = 0.5
@@ -7615,6 +7619,10 @@ class TestCumIncCompetingRisks:
     @staticmethod
     @pytest.mark.parametrize("event, time, true_x, true_y", CGVHD_DataSets().get_cases())
     def test_dinse_ci_regression(event, time, true_x, true_y):
+        """An external implementation of the Dinse variance haven't been found,
+        so the true CI values are taken from this internal code.
+        This is just thus a regression test.
+        """
         x, y, ci = cumulative_incidence_competing_risks(event, time, conf_type="log-log", var_type="Dinse")
 
         assert_array_equal(x, true_x)
