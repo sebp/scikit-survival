@@ -9,6 +9,7 @@ Datasets
     load_aids
     load_arff_files_standardized
     load_bmt
+    load_cgvhd
     load_breast_cancer
     load_flchain
     load_gbsg2
