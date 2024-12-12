@@ -740,7 +740,7 @@ def cumulative_incidence_competing_risks(
         return uniq_times, cum_inc
 
     if var_type == "Dinse":
-        var = _var_dinse(n_events_cr, kpe_prime, n_at_risk, cum_inc)
+        var = _var_dinse(n_events_cr, kpe_prime, n_at_risk)
     elif var_type == "Dinse_Approx":
         var = _var_dinse_approx(n_events_cr, kpe_prime, n_at_risk, cum_inc)
     elif var_type == "Aalen":
