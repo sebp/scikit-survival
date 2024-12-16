@@ -10,7 +10,7 @@ requires = [
 
     # scikit-learn requirements
     "scikit-learn~=1.4.0; python_version<='3.12'",
-    "scikit-learn~=1.5.0; python_version=='3.13'",
+    "scikit-learn~=1.6.0; python_version=='3.13'",
     "scikit-learn; python_version>'3.13'",
 ]
 build-backend = "setuptools.build_meta"
