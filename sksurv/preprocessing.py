@@ -11,7 +11,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import _check_feature_names_in, check_is_fitted
+from sklearn.utils.validation import _check_feature_names, _check_feature_names_in, check_is_fitted
 
 from .column import encode_categorical
 
@@ -97,7 +97,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         Xt : pandas.DataFrame
             Encoded data.
         """
-        self._check_feature_names(X, reset=True)
+        _check_feature_names(self, X, reset=True)
         self._check_n_features(X, reset=True)
         columns_to_encode = X.select_dtypes(include=["object", "category"]).columns
         x_dummy = self._encode(X, columns_to_encode)
