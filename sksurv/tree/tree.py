@@ -285,7 +285,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         random_state = check_random_state(self.random_state)
 
         if check_input:
-            X = validate_data(self, X, dtype=DTYPE, ensure_min_samples=2, accept_sparse="csc", force_all_finite=False)
+            X = validate_data(self, X, dtype=DTYPE, ensure_min_samples=2, accept_sparse="csc", ensure_all_finite=False)
             event, time = check_array_survival(X, y)
             time = time.astype(np.float64)
             self.unique_times_, self.is_event_time_ = get_unique_times(time, event)
@@ -424,16 +424,16 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         """Validate X whenever one tries to predict"""
         if check_input:
             if self._support_missing_values(X):
-                force_all_finite = "allow-nan"
+                ensure_all_finite = "allow-nan"
             else:
-                force_all_finite = True
+                ensure_all_finite = True
             X = validate_data(
                 self,
                 X,
                 dtype=DTYPE,
                 accept_sparse=accept_sparse,
                 reset=False,
-                force_all_finite=force_all_finite,
+                ensure_all_finite=ensure_all_finite,
             )
         else:
             # The number of features is checked regardless of `check_input`
