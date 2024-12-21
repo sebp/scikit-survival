@@ -206,7 +206,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
     def __sklearn_tags__(self):
         tags = super().__sklearn_tags__()
-        tags.input_tags.allow_nan = self.splitter == "best"
+        tags.input_tags.allow_nan = self.splitter in ("best", "random")
         return tags
 
     def _support_missing_values(self, X):
