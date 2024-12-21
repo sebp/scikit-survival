@@ -16,8 +16,7 @@ import numpy as np
 import pandas as pd
 from scipy.special import comb
 from sklearn.svm import LinearSVC
-from sklearn.utils import check_random_state
-from sklearn.utils.validation import _get_feature_names, validate_data
+from sklearn.utils.validation import _get_feature_names, check_random_state, validate_data
 
 from ..base import SurvivalAnalysisMixin
 from ..exceptions import NoComparablePairException
