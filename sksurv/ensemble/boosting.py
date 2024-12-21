@@ -21,10 +21,15 @@ from sklearn.ensemble._gradient_boosting import _random_sample_mask
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.tree._tree import DTYPE
-from sklearn.utils import check_random_state
 from sklearn.utils._param_validation import Interval, StrOptions
 from sklearn.utils.extmath import squared_norm
-from sklearn.utils.validation import _check_sample_weight, check_array, check_is_fitted
+from sklearn.utils.validation import (
+    _check_sample_weight,
+    check_array,
+    check_is_fitted,
+    check_random_state,
+    validate_data,
+)
 
 from ..base import SurvivalAnalysisMixin
 from ..linear_model.coxph import BreslowEstimator
@@ -389,7 +394,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         if not self.warm_start:
             self._clear_state()
 
-        X = self._validate_data(X, ensure_min_samples=2)
+        X = validate_data(self, X, ensure_min_samples=2)
         event, time = check_array_survival(X, y)
 
         sample_weight = _check_sample_weight(sample_weight, X)
@@ -470,7 +475,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
             Predicted risk scores.
         """
         check_is_fitted(self, "estimators_")
-        X = self._validate_data(X, reset=False)
+        X = validate_data(self, X, reset=False)
 
         return self._predict(X)
 
@@ -1234,7 +1239,8 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         if not self.warm_start:
             self._clear_state()
 
-        X = self._validate_data(
+        X = validate_data(
+            self,
             X,
             ensure_min_samples=2,
             order="C",
@@ -1315,7 +1321,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
             begin_at_stage = self.estimators_.shape[0]
             # The requirements of _raw_predict
             # are more constrained than fit. It accepts only CSR
-            # matrices. Finite values have already been checked in _validate_data.
+            # matrices. Finite values have already been checked in validate_data.
             X_train = check_array(
                 X_train,
                 dtype=DTYPE,
@@ -1390,7 +1396,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         return raw_predictions
 
     def _dropout_staged_raw_predict(self, X):
-        X = self._validate_data(X, dtype=DTYPE, order="C", accept_sparse="csr")
+        X = validate_data(self, X, dtype=DTYPE, order="C", accept_sparse="csr")
         raw_predictions = self._raw_predict_init(X)
 
         n_estimators, K = self.estimators_.shape
@@ -1438,7 +1444,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         """
         check_is_fitted(self, "estimators_")
 
-        X = self._validate_data(X, reset=False, order="C", accept_sparse="csr", dtype=DTYPE)
+        X = validate_data(self, X, reset=False, order="C", accept_sparse="csr", dtype=DTYPE)
         return self._predict(X)
 
     def staged_predict(self, X):

@@ -15,6 +15,7 @@ from sklearn.utils.validation import (
     assert_all_finite,
     check_is_fitted,
     check_random_state,
+    validate_data,
 )
 
 from ..base import SurvivalAnalysisMixin
@@ -283,7 +284,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         random_state = check_random_state(self.random_state)
 
         if check_input:
-            X = self._validate_data(X, dtype=DTYPE, ensure_min_samples=2, accept_sparse="csc", force_all_finite=False)
+            X = validate_data(self, X, dtype=DTYPE, ensure_min_samples=2, accept_sparse="csc", force_all_finite=False)
             event, time = check_array_survival(X, y)
             time = time.astype(np.float64)
             self.unique_times_, self.is_event_time_ = get_unique_times(time, event)
@@ -425,7 +426,8 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
                 force_all_finite = "allow-nan"
             else:
                 force_all_finite = True
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 dtype=DTYPE,
                 accept_sparse=accept_sparse,
