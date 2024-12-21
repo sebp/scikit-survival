@@ -15,7 +15,7 @@ from sklearn.ensemble._forest import (
 )
 from sklearn.tree._tree import DTYPE
 from sklearn.utils._tags import _safe_tags
-from sklearn.utils.validation import check_is_fitted, check_random_state
+from sklearn.utils.validation import check_is_fitted, check_random_state, validate_data
 
 from ..base import SurvivalAnalysisMixin
 from ..metrics import concordance_index_censored
@@ -104,7 +104,7 @@ class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
         """
         self._validate_params()
 
-        X = self._validate_data(X, dtype=DTYPE, accept_sparse="csc", ensure_min_samples=2, force_all_finite=False)
+        X = validate_data(self, X, dtype=DTYPE, accept_sparse="csc", ensure_min_samples=2, force_all_finite=False)
         event, time = check_array_survival(X, y)
 
         # _compute_missing_values_in_feature_mask checks if X has missing values and
