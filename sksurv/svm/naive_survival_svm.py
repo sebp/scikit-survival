@@ -16,8 +16,7 @@ import numpy as np
 import pandas as pd
 from scipy.special import comb
 from sklearn.svm import LinearSVC
-from sklearn.utils import check_random_state
-from sklearn.utils.validation import _get_feature_names
+from sklearn.utils.validation import _get_feature_names, check_random_state, validate_data
 
 from ..base import SurvivalAnalysisMixin
 from ..exceptions import NoComparablePairException
@@ -141,7 +140,7 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
     def _get_survival_pairs(self, X, y, random_state):  # pylint: disable=no-self-use
         feature_names = _get_feature_names(X)
 
-        X = self._validate_data(X, ensure_min_samples=2)
+        X = validate_data(self, X, ensure_min_samples=2)
         event, time = check_array_survival(X, y)
 
         idx = np.arange(X.shape[0], dtype=int)

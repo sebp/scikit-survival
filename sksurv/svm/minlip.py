@@ -8,6 +8,7 @@ from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import PAIRWISE_KERNEL_FUNCTIONS, pairwise_kernels
 from sklearn.utils._param_validation import Interval, StrOptions
+from sklearn.utils.validation import validate_data
 
 from ..base import SurvivalAnalysisMixin
 from ..exceptions import NoComparablePairException
@@ -330,9 +331,11 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         self.timeit = timeit
         self.max_iter = max_iter
 
-    def _more_tags(self):
+    def __sklearn_tags__(self):
         # tell sklearn.utils.metaestimators._safe_split function that we expect kernel matrix
-        return {"pairwise": self.kernel == "precomputed"}
+        tags = super().__sklearn_tags__()
+        tags.input_tags.pairwise = self.kernel == "precomputed"
+        return tags
 
     def _get_kernel(self, X, Y=None):
         if callable(self.kernel):
@@ -411,7 +414,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         self
         """
         self._validate_params()
-        X = self._validate_data(X, ensure_min_samples=2)
+        X = validate_data(self, X, ensure_min_samples=2)
         event, time = check_array_survival(X, y)
         self._fit(X, event, time)
 
@@ -433,7 +436,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         y : ndarray, shape = (n_samples,)
             Predicted risk.
         """
-        X = self._validate_data(X, reset=False)
+        X = validate_data(self, X, reset=False)
         K = self._get_kernel(X, self.X_fit_)
         pred = -np.dot(self.coef_, K.T)
         return pred.ravel()

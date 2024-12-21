@@ -18,7 +18,13 @@ from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.preprocessing import normalize as f_normalize
 from sklearn.utils._param_validation import Interval, StrOptions
-from sklearn.utils.validation import assert_all_finite, check_is_fitted, check_non_negative, column_or_1d
+from sklearn.utils.validation import (
+    assert_all_finite,
+    check_is_fitted,
+    check_non_negative,
+    column_or_1d,
+    validate_data,
+)
 
 from ..base import SurvivalAnalysisMixin
 from ..util import check_array_survival
@@ -178,7 +184,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         self._baseline_models = None
 
     def _pre_fit(self, X, y):
-        X = self._validate_data(X, ensure_min_samples=2, dtype=np.float64, copy=self.copy_X)
+        X = validate_data(self, X, ensure_min_samples=2, dtype=np.float64, copy=self.copy_X)
         event, time = check_array_survival(X, y)
         # center feature matrix
         X_offset = np.average(X, axis=0)
@@ -366,7 +372,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         T : array, shape = (n_samples,)
             The predicted decision function
         """
-        X = self._validate_data(X, reset=False)
+        X = validate_data(self, X, reset=False)
         coef, offset = self._get_coef(alpha)
         return np.dot(X, coef) - offset
 
