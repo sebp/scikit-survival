@@ -12,6 +12,7 @@ from sklearn.tree._utils import _any_isnan_axis0
 from sklearn.utils._param_validation import Interval, StrOptions
 from sklearn.utils.validation import (
     _assert_all_finite_element_wise,
+    _check_n_features,
     assert_all_finite,
     check_is_fitted,
     check_random_state,
@@ -437,7 +438,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             )
         else:
             # The number of features is checked regardless of `check_input`
-            self._check_n_features(X, reset=False)
+            _check_n_features(self, X, reset=False)
 
         return X
 
