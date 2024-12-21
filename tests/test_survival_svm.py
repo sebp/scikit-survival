@@ -517,7 +517,7 @@ class TestKernelSurvivalSVM:
             x = whas500.x
         ssvm.fit(x, whas500.y)
 
-        assert ssvm._more_tags()["pairwise"] is (kernel == "precomputed")
+        assert ssvm.__sklearn_tags__().input_tags.pairwise is (kernel == "precomputed")
 
         assert whas500.x.shape[0] == ssvm.coef_.shape[0]
 
@@ -545,7 +545,7 @@ class TestKernelSurvivalSVM:
             x = whas500.x
         ssvm.fit(x, whas500.y)
 
-        assert ssvm._get_tags()["pairwise"] is (kernel == "precomputed")
+        assert ssvm.__sklearn_tags__().input_tags.pairwise is (kernel == "precomputed")
 
         assert float(ssvm.intercept_) == pytest.approx(6.416017539824949, 1e-5)
 
@@ -581,7 +581,7 @@ class TestKernelSurvivalSVM:
         ssvm = FastKernelSurvivalSVM(optimizer=optimizer, kernel="rbf", tol=2e-6, max_iter=75, random_state=0)
         ssvm.fit(whas500.x, whas500.y)
 
-        assert not ssvm._get_tags()["pairwise"]
+        assert not ssvm.__sklearn_tags__().input_tags.pairwise
         assert whas500.x.shape[0] == ssvm.coef_.shape[0]
 
         c = ssvm.score(whas500.x, whas500.y)
@@ -597,7 +597,7 @@ class TestKernelSurvivalSVM:
         )
         ssvm.fit(whas500.x, whas500.y)
 
-        assert not ssvm._get_tags()["pairwise"]
+        assert not ssvm.__sklearn_tags__().input_tags.pairwise
         assert ssvm.intercept_ == pytest.approx(4.9267218894089533, 1e-7)
 
         pred = ssvm.predict(whas500.x)
@@ -623,7 +623,7 @@ class TestKernelSurvivalSVM:
         )
         ssvm.fit(X, whas500.y)
 
-        assert not ssvm._get_tags()["pairwise"]
+        assert not ssvm.__sklearn_tags__().input_tags.pairwise
         assert pytest.approx(6.482593184472981, 1e-5) == ssvm.intercept_
 
         pred = ssvm.predict(X)
@@ -644,7 +644,7 @@ class TestKernelSurvivalSVM:
         )
         ssvm.fit(whas500.x, whas500.y)
 
-        assert not ssvm._get_tags()["pairwise"]
+        assert not ssvm.__sklearn_tags__().input_tags.pairwise
         assert whas500.x.shape[0] == ssvm.coef_.shape[0]
 
         c = ssvm.score(whas500.x, whas500.y)

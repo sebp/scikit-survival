@@ -55,8 +55,8 @@ def test_fit_missing_values(make_whas500):
     forest = RandomSurvivalForest(random_state=42)
     forest.fit(X_train, y_train)
 
-    tags = forest._get_tags()
-    assert tags["allow_nan"]
+    tags = forest.__sklearn_tags__()
+    assert tags.input_tags.allow_nan
 
     cindex = forest.score(X_test, y_test)
     assert cindex == pytest.approx(0.7444120505344995)
@@ -75,8 +75,8 @@ def test_fit_missing_values_not_supported(make_whas500):
     with pytest.raises(ValueError, match="Input X contains NaN"):
         forest.fit(X, whas500.y)
 
-    tags = forest._get_tags()
-    assert not tags["allow_nan"]
+    tags = forest.__sklearn_tags__()
+    assert not tags.input_tags.allow_nan
 
 
 @pytest.mark.parametrize("forst_cls,allows_nan", [(ExtraTreesClassifier, False), (RandomForestClassifier, True)])
@@ -84,11 +84,11 @@ def test_sklearn_random_forest_tags(forst_cls, allows_nan):
     est = forst_cls()
 
     # https://scikit-learn.org/stable/developers/develop.html#estimator-tags
-    tags = est._get_tags()
-    assert tags["multioutput"]
-    assert tags["requires_fit"]
-    assert tags["requires_y"]
-    assert tags["allow_nan"] is allows_nan
+    tags = est.__sklearn_tags__()
+    assert tags.target_tags.multi_output
+    assert tags.requires_fit
+    assert tags.target_tags.required
+    assert tags.input_tags.allow_nan is allows_nan
 
 
 @pytest.mark.parametrize("forest_cls", FORESTS)

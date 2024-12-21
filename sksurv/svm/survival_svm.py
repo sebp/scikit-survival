@@ -1139,9 +1139,11 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         self.coef0 = coef0
         self.kernel_params = kernel_params
 
-    def _more_tags(self):
+    def __sklearn_tags__(self):
         # tell sklearn.utils.metaestimators._safe_split function that we expect kernel matrix
-        return {"pairwise": self.kernel == "precomputed"}
+        tags = super().__sklearn_tags__()
+        tags.input_tags.pairwise = self.kernel == "precomputed"
+        return tags
 
     def _get_kernel(self, X, Y=None):
         if callable(self.kernel):

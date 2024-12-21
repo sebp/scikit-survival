@@ -203,12 +203,13 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         self.max_leaf_nodes = max_leaf_nodes
         self.low_memory = low_memory
 
-    def _more_tags(self):
-        allow_nan = self.splitter == "best"
-        return {"allow_nan": allow_nan}
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.input_tags.allow_nan = self.splitter == "best"
+        return tags
 
     def _support_missing_values(self, X):
-        return not issparse(X) and self._get_tags()["allow_nan"]
+        return not issparse(X) and self.__sklearn_tags__().input_tags.allow_nan
 
     def _compute_missing_values_in_feature_mask(self, X, estimator_name=None):
         """Return boolean mask denoting if there are missing values for each feature.

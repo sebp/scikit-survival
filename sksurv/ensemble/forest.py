@@ -14,7 +14,7 @@ from sklearn.ensemble._forest import (
     _parallel_build_trees,
 )
 from sklearn.tree._tree import DTYPE
-from sklearn.utils._tags import _safe_tags
+from sklearn.utils._tags import get_tags
 from sklearn.utils.validation import check_is_fitted, check_random_state, validate_data
 
 from ..base import SurvivalAnalysisMixin
@@ -29,18 +29,20 @@ __all__ = ["RandomSurvivalForest", "ExtraSurvivalTrees"]
 MAX_INT = np.iinfo(np.int32).max
 
 
-def _more_tags_patch(self):
-    # BaseForest._more_tags calls
+def _sklearn_tags_patch(self):
+    # BaseForest.__sklearn_tags__ calls
     # type(self.estimator)(criterion=self.criterions),
     # which is incompatible with LogrankCriterion
     if isinstance(self, _BaseSurvivalForest):
         estimator = type(self.estimator)()
     else:
         estimator = type(self.estimator)(criterion=self.criterion)
-    return {"allow_nan": _safe_tags(estimator, key="allow_nan")}
+    tags = super(BaseForest, self).__sklearn_tags__()
+    tags.input_tags.allow_nan = get_tags(estimator).input_tags.allow_nan
+    return tags
 
 
-BaseForest._more_tags = _more_tags_patch
+BaseForest.__sklearn_tags__ = _sklearn_tags_patch
 
 
 class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
