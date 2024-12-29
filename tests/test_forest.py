@@ -252,6 +252,18 @@ def test_max_samples_without_bootstrap(make_whas500, forest_cls):
 
 
 @pytest.mark.parametrize("forest_cls", FORESTS)
+def test_estimators_samples(make_whas500, forest_cls):
+    whas500 = make_whas500(to_numeric=True)
+
+    est = forest_cls(n_estimators=10, max_samples=333, random_state=1, low_memory=True)
+    est.fit(whas500.x, whas500.y)
+
+    n_samples = [len(np.unique(arr)) for arr in est.estimators_samples_]
+    expected = np.array([255, 227, 245, 247, 246, 239, 254, 252, 245, 248])
+    assert_array_equal(n_samples, expected)
+
+
+@pytest.mark.parametrize("forest_cls", FORESTS)
 @pytest.mark.parametrize("func", ["predict_survival_function", "predict_cumulative_hazard_function"])
 def test_pipeline_predict(breast_cancer, forest_cls, func):
     X_str, _ = load_breast_cancer()
