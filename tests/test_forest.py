@@ -239,6 +239,19 @@ def test_fit_with_small_max_samples(make_whas500, forest_cls):
 
 
 @pytest.mark.parametrize("forest_cls", FORESTS)
+def test_max_samples_without_bootstrap(make_whas500, forest_cls):
+    whas500 = make_whas500(to_numeric=True)
+
+    est = forest_cls(n_estimators=1, random_state=1, bootstrap=False, max_samples=10)
+    msg = (
+        r"`max_sample` cannot be set if `bootstrap=False`\. "
+        r"Either switch to `bootstrap=True` or set `max_sample=None`\."
+    )
+    with pytest.raises(ValueError, match=msg):
+        est.fit(whas500.x, whas500.y)
+
+
+@pytest.mark.parametrize("forest_cls", FORESTS)
 @pytest.mark.parametrize("func", ["predict_survival_function", "predict_cumulative_hazard_function"])
 def test_pipeline_predict(breast_cancer, forest_cls, func):
     X_str, _ = load_breast_cancer()
