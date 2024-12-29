@@ -127,7 +127,16 @@ class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
         y_numeric[:, 1] = event.astype(np.float64)
 
         # Get bootstrap sample size
-        n_samples_bootstrap = _get_n_samples_bootstrap(n_samples=X.shape[0], max_samples=self.max_samples)
+        if not self.bootstrap and self.max_samples is not None:  # pylint: disable=no-else-raise
+            raise ValueError(
+                "`max_sample` cannot be set if `bootstrap=False`. "
+                "Either switch to `bootstrap=True` or set "
+                "`max_sample=None`."
+            )
+        elif self.bootstrap:
+            n_samples_bootstrap = _get_n_samples_bootstrap(n_samples=X.shape[0], max_samples=self.max_samples)
+        else:
+            n_samples_bootstrap = None
 
         # Check parameters
         self._validate_estimator()
@@ -143,13 +152,12 @@ class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
 
         n_more_estimators = self.n_estimators - len(self.estimators_)
 
-        if n_more_estimators < 0:
+        if n_more_estimators < 0:  # pylint: disable=no-else-raise
             raise ValueError(
                 f"n_estimators={self.n_estimators} must be larger or equal to "
                 f"len(estimators_)={len(self.estimators_)} when warm_start==True"
             )
-
-        if n_more_estimators == 0:
+        elif n_more_estimators == 0:
             warnings.warn("Warm-start fitting without increasing n_estimators does not fit new trees.", stacklevel=2)
         else:
             if self.warm_start and len(self.estimators_) > 0:
