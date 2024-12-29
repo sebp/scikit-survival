@@ -117,7 +117,7 @@ class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
             X, estimator_name=self.__class__.__name__
         )
 
-        self.n_features_in_ = X.shape[1]
+        self._n_samples, self.n_features_in_ = X.shape
         time = time.astype(np.float64)
         self.unique_times_, self.is_event_time_ = get_unique_times(time, event)
         self.n_outputs_ = self.unique_times_.shape[0]
@@ -137,6 +137,8 @@ class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
             n_samples_bootstrap = _get_n_samples_bootstrap(n_samples=X.shape[0], max_samples=self.max_samples)
         else:
             n_samples_bootstrap = None
+
+        self._n_samples_bootstrap = n_samples_bootstrap
 
         # Check parameters
         self._validate_estimator()
