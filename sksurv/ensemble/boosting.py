@@ -962,7 +962,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
                 max_features = max(1, int(np.log2(self.n_features_in_)))
         elif self.max_features is None:
             max_features = self.n_features_in_
-        elif isinstance(self.max_features, (numbers.Integral, np.integer)):
+        elif isinstance(self.max_features, numbers.Integral):
             max_features = self.max_features
         else:  # float
             max_features = max(1, int(self.max_features * self.n_features_in_))
