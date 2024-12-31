@@ -403,7 +403,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             if self.max_features > 0.0:
                 max_features = max(1, int(self.max_features * self.n_features_in_))
             else:
-                max_features = 0
+                max_features = 0  # pragma: no cover
 
         if not 0 < max_features <= self.n_features_in_:
             raise ValueError("max_features must be in (0, n_features]")
