@@ -9,7 +9,7 @@ from sklearn.tree._classes import DENSE_SPLITTERS, SPARSE_SPLITTERS
 from sklearn.tree._splitter import Splitter
 from sklearn.tree._tree import BestFirstTreeBuilder, DepthFirstTreeBuilder, Tree
 from sklearn.tree._utils import _any_isnan_axis0
-from sklearn.utils._param_validation import Interval, StrOptions
+from sklearn.utils._param_validation import Interval, RealNotInt, StrOptions
 from sklearn.utils.validation import (
     _assert_all_finite_element_wise,
     _check_n_features,
@@ -161,16 +161,16 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         "max_depth": [Interval(Integral, 1, None, closed="left"), None],
         "min_samples_split": [
             Interval(Integral, 2, None, closed="left"),
-            Interval(Real, 0.0, 1.0, closed="neither"),
+            Interval(RealNotInt, 0.0, 1.0, closed="neither"),
         ],
         "min_samples_leaf": [
             Interval(Integral, 1, None, closed="left"),
-            Interval(Real, 0.0, 0.5, closed="right"),
+            Interval(RealNotInt, 0.0, 0.5, closed="right"),
         ],
         "min_weight_fraction_leaf": [Interval(Real, 0.0, 0.5, closed="both")],
         "max_features": [
             Interval(Integral, 1, None, closed="left"),
-            Interval(Real, 0.0, 1.0, closed="right"),
+            Interval(RealNotInt, 0.0, 1.0, closed="right"),
             StrOptions({"sqrt", "log2"}),
             None,
         ],
@@ -363,7 +363,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         max_leaf_nodes = -1 if self.max_leaf_nodes is None else self.max_leaf_nodes
 
-        if isinstance(self.min_samples_leaf, (Integral, np.integer)):
+        if isinstance(self.min_samples_leaf, Integral):
             min_samples_leaf = self.min_samples_leaf
         else:  # float
             min_samples_leaf = int(ceil(self.min_samples_leaf * n_samples))
@@ -397,7 +397,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         elif self.max_features is None:
             max_features = self.n_features_in_
-        elif isinstance(self.max_features, (Integral, np.integer)):
+        elif isinstance(self.max_features, Integral):
             max_features = self.max_features
         else:  # float
             if self.max_features > 0.0:
