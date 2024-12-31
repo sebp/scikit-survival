@@ -218,9 +218,6 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     def _check_alphas(self):
         create_path = self.alphas is None
         if create_path:
-            if self.n_alphas <= 0:
-                raise ValueError("n_alphas must be a positive integer")
-
             alphas = np.empty(int(self.n_alphas), dtype=np.float64)
         else:
             alphas = column_or_1d(self.alphas, warn=True)
@@ -244,9 +241,6 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         penalty_factor = self._check_penalty_factor(n_features)
 
         alphas, create_path = self._check_alphas()
-
-        if self.max_iter <= 0:
-            raise ValueError("max_iter must be a positive integer")
 
         alpha_min_ratio = self._check_alpha_min_ratio(n_samples, n_features)
 

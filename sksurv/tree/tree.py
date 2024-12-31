@@ -378,9 +378,6 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         self._check_max_features()
 
-        if not 0 <= self.min_weight_fraction_leaf <= 0.5:
-            raise ValueError("min_weight_fraction_leaf must in [0, 0.5]")
-
         min_weight_leaf = self.min_weight_fraction_leaf * n_samples
 
         return {
