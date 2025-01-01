@@ -51,7 +51,7 @@ def nan_float_array():
 def assert_columns_almost_equal(actual, expected, decimal=6):
     for i, col in enumerate(expected.columns):
         assert_array_almost_equal(
-            expected.loc[:, col].values, actual.loc[:, col].values, decimal=decimal, err_msg="Column %d: %s" % (i, col)
+            expected.loc[:, col].values, actual.loc[:, col].values, decimal=decimal, err_msg=f"Column {i:d}: {col}"
         )
 
 
