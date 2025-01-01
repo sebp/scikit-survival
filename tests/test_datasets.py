@@ -90,13 +90,7 @@ class GetXyCases(FixtureParameterFactory):
         return ["event", "time"]
 
     def _to_data_frame(self, data, columns):
-        if isinstance(
-            data,
-            (
-                tuple,
-                list,
-            ),
-        ):
+        if isinstance(data, tuple | list):
             data = np.column_stack(data)
         return pd.DataFrame(data, columns=columns)
 
