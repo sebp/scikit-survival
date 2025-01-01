@@ -10,6 +10,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+cimport cython
 from libcpp cimport bool
 from libcpp.cast cimport dynamic_cast
 
@@ -76,18 +77,21 @@ cdef class BaseTree:
         return self.count_larger(key)
 
 
+@cython.final
 cdef class RBTree(BaseTree):
     def __cinit__(self, int size):
         if size <= 0:
             raise ValueError('size must be greater zero')
         self.treeptr = new rbtree(size)
 
+@cython.final
 cdef class AVLTree(BaseTree):
     def __cinit__(self, int size):
         if size <= 0:
             raise ValueError('size must be greater zero')
         self.treeptr = dynamic_cast[rbtree_ptr](new avl(size))
 
+@cython.final
 cdef class AATree(BaseTree):
     def __cinit__(self, int size):
         if size <= 0:

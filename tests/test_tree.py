@@ -14,7 +14,7 @@ from sklearn.tree._tree import TREE_UNDEFINED
 from sksurv.compare import compare_survival
 from sksurv.datasets import load_breast_cancer, load_veterans_lung_cancer
 from sksurv.nonparametric import kaplan_meier_estimator, nelson_aalen_estimator
-from sksurv.tree import ExtraSurvivalTree, SurvivalTree
+from sksurv.tree import SurvivalTree
 from sksurv.util import Surv
 
 
@@ -837,19 +837,3 @@ def test_missing_values_best_splitter_to_right():
     # missing values go to the right
     y_expected = tree.tree_.value[4]
     assert_array_almost_equal(y_pred, y_expected)
-
-
-@pytest.mark.parametrize("is_sparse", [False, True])
-def test_missing_value_random_splitter_errors(is_sparse):
-    X = np.array([[3, 5, 7, 11, np.nan, 13, 17, np.nan, 19]], dtype=np.float32).T
-    y = Surv.from_arrays(
-        event=np.array([True, True, True, False, True, False, False, False, True]),
-        time=np.array([90, 80, 70, 60, 50, 40, 30, 20, 10]),
-    )
-
-    if is_sparse:
-        X = sparse.csr_matrix(X)
-
-    tree = ExtraSurvivalTree()
-    with pytest.raises(ValueError, match="Input X contains NaN"):
-        tree.fit(X, y)

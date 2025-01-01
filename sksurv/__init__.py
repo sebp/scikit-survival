@@ -44,7 +44,7 @@ def show_versions():
         max(map(len, deps)),
         max(map(len, sys_info.keys())),
     )
-    fmt = "{0:<%ds}: {1}" % minwidth
+    fmt = f"{{0:<{minwidth}s}}: {{1}}"
 
     print("SYSTEM")
     print("------")

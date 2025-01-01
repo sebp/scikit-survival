@@ -2,6 +2,7 @@
 # cython: boundscheck=False
 # cython: wraparound=False
 
+cimport cython
 from libc.math cimport INFINITY, NAN, fabs, sqrt
 from libc.stdlib cimport free, malloc
 from libc.string cimport memset
@@ -39,6 +40,7 @@ cpdef get_unique_times(cnp.ndarray[float64_t, ndim=1] time, cnp.ndarray[cnp.npy_
     return np.asarray(unique_values), np.asarray(has_event, dtype=np.bool_)
 
 
+@cython.final
 cdef class RisksetCounter:
     cdef:
         const float64_t[:] unique_times
@@ -132,6 +134,7 @@ cdef int argbinsearch(const float64_t[:] arr, float64_t key_val, intp_t * ret) e
     return 0
 
 
+@cython.final
 cdef class LogrankCriterion(Criterion):
 
     cdef:
