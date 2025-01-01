@@ -403,7 +403,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         Xi = np.column_stack((np.ones(n_samples), X))
 
         self._loss = LOSS_FUNCTIONS[self.loss]()
-        if isinstance(self._loss, (CensoredSquaredLoss, IPCWLeastSquaresError)):
+        if isinstance(self._loss, CensoredSquaredLoss | IPCWLeastSquaresError):
             time = np.log(time)
 
         if not self._is_fitted():
@@ -1262,7 +1262,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         # self.loss is guaranteed to be a string
         self._loss = self._get_loss(sample_weight=sample_weight)
 
-        if isinstance(self._loss, (CensoredSquaredLoss, IPCWLeastSquaresError)):
+        if isinstance(self._loss, CensoredSquaredLoss | IPCWLeastSquaresError):
             time = np.log(time)
 
         if self.n_iter_no_change is not None:

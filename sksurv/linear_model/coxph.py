@@ -416,7 +416,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         X = validate_data(self, X, ensure_min_samples=2, dtype=np.float64)
         event, time = check_array_survival(X, y)
 
-        if isinstance(self.alpha, (numbers.Real, numbers.Integral)):
+        if isinstance(self.alpha, numbers.Real | numbers.Integral):
             alphas = np.empty(X.shape[1], dtype=float)
             alphas[:] = self.alpha
         else:
