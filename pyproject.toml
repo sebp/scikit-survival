@@ -187,13 +187,21 @@ target-version = "py310"
 ignore = ["C408"]
 ignore-init-module-imports = true
 select = [
-    "C4",
-    "C9",
+    # pycodestyle
     "E",
-    "F",
-    "I",
-    "PT",
     "W",
+    # mccabe
+    "C90",
+    # pyflakes
+    "F",
+    # isort
+    "I",
+    # flake8-builtins
+    "A",
+    # flake8-comprehensions
+    "C4",
+    # flake8-pytest-style
+    "PT",
 ]
 
 [tool.ruff.lint.flake8-pytest-style]
