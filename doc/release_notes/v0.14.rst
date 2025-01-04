@@ -45,5 +45,5 @@ Enhancements
 - Add :func:`sksurv.show_versions` that prints the version of all dependencies.
 - Add support for pandas 1.1
 - Include interactive notebooks in documentation on readthedocs.
-- Add user guide on `penalized Cox models <user_guide/coxnet.ipynb>`_.
-- Add user guide on `gradient boosted models <user_guide/boosting.ipynb>`_.
+- Add user guide on :ref:`penalized Cox models </user_guide/coxnet.ipynb>`.
+- Add user guide on :ref:`gradient boosted models </user_guide/boosting.ipynb>`.

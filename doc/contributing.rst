@@ -25,10 +25,10 @@ These are the steps you need to take to create a copy of the scikit-survival rep
 on your computer.
 
 
-1. `Create an account <https://github.com/join>`_ on
+1. `Create an account <https://github.com/signup>`_ on
    GitHub if you do not already have one.
 
-2. `Fork <https://help.github.com/en/github/getting-started-with-github/fork-a-repo>`_
+2. `Fork <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo>`_
    the `scikit-survival repository <https://github.com/sebp/scikit-survival>`_.
 
 3. Clone your fork of the scikit-survival repository from your GitHub account to your local disk.
@@ -130,7 +130,7 @@ Submitting a Pull Request
 
     git push -u origin my_feature
 
-4. `Create a pull request <https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request>`_.
+4. `Create a pull request <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request>`_.
 
 
 .. _building-documentation:
@@ -166,5 +166,5 @@ If you are new to Cython you may find the project's documentation on
 .. _Git: https://git-scm.com/
 .. _GitHub: https://github.com/sebp/scikit-survival
 .. _Sphinx: https://www.sphinx-doc.org/
-.. _tox: https://tox.readthedocs.io/en/latest/
+.. _tox: https://tox.wiki/en/stable/
 .. _pre-commit: https://pre-commit.com/#usage
