@@ -454,7 +454,7 @@ class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
     `min_impurity_decrease` or `min_impurity_split` are absent.
     In addition, the `feature_importances_` attribute is not available.
     It is recommended to estimate feature importances via
-    `permutation-based methods <https://eli5.readthedocs.io>`_.
+    :func:`sklearn.inspection.permutation_importance`.
 
     The features are always randomly permuted at each split. Therefore,
     the best found split may vary, even with the same training data,
