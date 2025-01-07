@@ -604,15 +604,15 @@ class CensoringDistributionEstimator(SurvivalFunctionEstimator):
 def _cr_ci_logmlog(cum_inc, sigma_t, z):
     """Compute the pointwise log-minus-log transformed confidence intervals"""
     eps = np.finfo(cum_inc.dtype).eps
+    zero_count = cum_inc <= eps
     log_cum_i = np.zeros_like(cum_inc)
-    np.log(cum_inc, where=cum_inc > eps, out=log_cum_i)
+    np.log(cum_inc, where=~zero_count, out=log_cum_i)
     theta = np.zeros_like(cum_inc)
     den = cum_inc * log_cum_i
-    np.divide(sigma_t, den, where=den < -eps, out=theta)
+    np.divide(sigma_t, den, where=~zero_count, out=theta)
     theta = z * np.multiply.outer(np.array([-1, 1]), theta)
     ci = np.exp(log_cum_i * np.exp(theta))
-    ci[:, cum_inc <= eps] = 0.0
-    ci[:, 1.0 - cum_inc <= eps] = 1.0
+    ci[:, zero_count] = 0.0
     return ci
 
 
@@ -635,7 +635,7 @@ def cumulative_incidence_competing_risks(
     time_min=None,
     conf_level=0.95,
     conf_type=None,
-    var_type=None,
+    var_type="Dinse",
 ):
     """Non-parametric estimator of Cumulative Incidence function in the case of competing risks.
 
@@ -665,8 +665,9 @@ def cumulative_incidence_competing_risks(
         If "log-log", estimate confidence intervals using
         the log hazard or :math:`log(-log(S(t)))`.
 
-    var_type : None or one of {'Dinse', 'Dinse_Approx', 'Aalen'}, optional, default: None
+    var_type : None or one of {'Dinse', 'Dinse_Approx', 'Aalen'}, optional, default: 'Dinse'
         The method for estimating the variance of the estimator.
+        See [2]_, [3]_ and [4]_ for each of the methods.
         Only valid if conf_type is valid.
 
     Returns
@@ -708,6 +709,11 @@ def cumulative_incidence_competing_risks(
     ----------
     .. [1] Kalbfleisch, J.D. and Prentice, R.L. (2002)
            The Statistical Analysis of Failure Time Data. 2nd Edition, John Wiley and Sons, New York.
+    .. [2] Dinse and Larson, Biometrika (1986), 379. Sect. 4, Eqs. 4 and 5.
+    .. [3] Dinse and Larson, Biometrika (1986), 379. Sect. 4, Eq. 6.
+    .. [4] Aalen, O. (1978a). Annals of Statistics, 6, 534–545.
+           We implement the formula in M. Pintilie: "Competing Risks: A Practical Perspective".
+           John Wiley & Sons, 2006, Eq. 4.5
     """
     event, time_exit = check_y_survival(event, time_exit, allow_all_censored=True, competing_risks=True)
     check_consistent_length(event, time_exit)
@@ -746,7 +752,7 @@ def cumulative_incidence_competing_risks(
     elif var_type == "Aalen":
         var = _var_aalen(n_events_cr, kpe_prime, n_at_risk, cum_inc)
     else:
-        raise ValueError(f"{var_type=} not implemented.")
+        raise ValueError(f"{var_type=} must be one of 'Dinse', 'Dinse_approx' or 'Aalen'.")
 
     _x, _y, conf_int_km = kaplan_meier_estimator(event > 0, time_exit, conf_type="log-log")
     ci = np.empty(shape=(2, n_risks + 1, n_t), dtype=conf_int_km.dtype)
@@ -768,9 +774,9 @@ def _var_dinse_approx(n_events_cr, kpe_prime, n_at_risk, cum_inc):
     irt = cum_inc[1:, :, np.newaxis] - cum_inc[1:, np.newaxis, :]
     mask = np.tril(np.ones_like(irt[0]))
 
-    var_a = np.einsum("rjk,jk,k->rj", irt**2, mask, dr / (n_at_risk * (n_at_risk - dr)))
+    var_a = np.sum(irt**2 * mask * (dr / (n_at_risk * (n_at_risk - dr))), axis=2)
     var_b = np.cumsum(((n_at_risk - dr_cr) / n_at_risk) * (dr_cr / n_at_risk**2) * kpe_prime**2, axis=1)
-    var_c = -2 * np.einsum("rjk,jk,rk,k->rj", irt, mask, dr_cr, kpe_prime / n_at_risk**2)
+    var_c = -2 * np.sum(irt * mask * dr_cr[:, np.newaxis, :] * (kpe_prime / n_at_risk**2), axis=2)
 
     var = var_a + var_b + var_c
     return var
@@ -821,7 +827,7 @@ def _var_aalen(n_events_cr, kpe_prime, n_at_risk, cum_inc):
     _va = np.zeros_like(kpe_prime)
     den_a = (n_at_risk - 1) * (n_at_risk - dr)
     np.divide(dr, den_a, out=_va, where=den_a > 0)
-    var_a = np.einsum("rjk,jk,k->rj", irt**2, mask, _va)
+    var_a = np.sum(irt**2 * mask * _va, axis=2)
 
     _vb = np.zeros_like(kpe_prime)
     den_b = (n_at_risk - 1) * n_at_risk**2
@@ -832,7 +838,7 @@ def _var_aalen(n_events_cr, kpe_prime, n_at_risk, cum_inc):
     _vcb = np.zeros_like(kpe_prime)
     den_c = n_at_risk * (n_at_risk - dr) * (n_at_risk - 1)
     np.divide(kpe_prime, den_c, out=_vcb, where=den_c > 0)
-    var_c = -2 * np.einsum("rjk,jk,rk,k->rj", irt, mask, _vca, _vcb)
+    var_c = -2 * np.sum(irt * mask * _vca[:, np.newaxis, :] * _vcb, axis=2)
 
     var = var_a + var_b + var_c
     return var

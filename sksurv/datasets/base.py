@@ -489,26 +489,47 @@ def load_cgvhd():
     initiated for patients with a myeloid malignancy who were to
     undergo an allogeneic bone marrow transplant.
 
-    The dataset has 100 samples and 4 features:::
+    The dataset has 100 samples.
 
-        1. dx: Diagnosis: AML=acute myeloid leukaemia, CML=chronic myeloid leukaemia, MDS=myelodysplastic syndrome
-        2. tx: Randomized treatment: BM=cell harvested from the bone marrow, PB=cell harvested from the peripheral blood
-        3. extent: Extent of disease: L=limited, E=extensive
-        5. age: Age (years)
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | Index | Name       | Description                                  | Encoding                                  |
+    +=======+============+==============================================+===========================================+
+    | 1     | dx         | Diagnosis                                    | | AML=acute myeloid leukaemia             |
+    |       |            |                                              | | CML=chronic myeloid leukaemia           |
+    |       |            |                                              | | MDS=myelodysplastic syndrome            |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 2     | tx         | Randomized treatment                         | | BM=cell harvested from the bone marrow  |
+    |       |            |                                              | | PB=cell harvested from peripheral blood |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 3     | extent     | Extent of disease                            | L=limited, E=extensive                    |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 4     | agvhdgd    | Grade of acute GVHD                          |                                           |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 5     | age        | Age                                          | Years                                     |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 6     | survtime   | Time from date of transplant to death        | Years                                     |
+    |       |            | or last follow-up                            |                                           |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 7     | reltime    | Time from date of transplant to relapse      | Years                                     |
+    |       |            | or last follow-up                            |                                           |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 8     | agvhtime   | Time from date of transplant to acute GVHD   | Years                                     |
+    |       |            | or last follow-up                            |                                           |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 9     | cgvhtime   | Time from date of transplant to chronic GVHD | Years                                     |
+    |       |            | or last follow-up                            |                                           |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 10    | stat       | Status                                       | 1=Dead, 0=Alive                           |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 11    | rcens      | Relapse                                      | 1=Yes, 0=No                               |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 12    | agvh       | Acute GVHD                                   | 1=Yes, 0=No                               |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 13    | cgvh       | Chronic GVHD                                 | 1=Yes, 0=No                               |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 14    | patient ID |                                              |                                           |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
 
-    The rest of the columns correspond to outcome variables:::
-
-        6.  survtime: Time from date of transplant to death or last follow-up (Years)
-        7.  reltime: Time from date of transplant to relapse or last follow-up (Years)
-        8.  agvhtime: Time from date of transplant to acute GVHD or last follow-up (Years)
-        9.  cgvhtime: Time from date of transplant to chronic GVHD or last follow-up (Years)
-        10. stat Status: 1=Dead, 0=Alive
-        11. rcens Relapse: 1=Yes, 0=No
-        4.  agvhdgd: Grade of acute GVHD
-        12. agvh: Acute GVHD: 1=Yes, 0=No
-        13. cgvh: Chronic GVHD: 1=Yes, 0=No
-
-    The last column (14) is a patient ID.
 
     Columns 6,7 and 9 contain the time to death, relapse and CGVHD
     calculated in years (survtime, reltime, cgvhtime) and the
@@ -518,7 +539,7 @@ def load_cgvhd():
     censoring variable cens is coded as 0 when no events were
     observed, 1 if CGVHD was observed as first event, 2 if a relapse
     was observed as the first event and 3 if death occurred before
-    either of the events: The endpoint (status) are therefore:
+    either of the events: The endpoint (status) are therefore::
 
         0. Survival (Right-censored data). 4 patients (4%)
         1. Chronic graft versus host disease (CGVHD). 86 events (86%)
@@ -541,8 +562,7 @@ def load_cgvhd():
     ----------
     .. [1] Melania Pintilie: "Competing Risks: A Practical Perspective". John Wiley & Sons, 2006
 
-    .. [2] https://drive.google.com/file/d/1FPM264pE\_-F8DB7lvFeLB1yQ3HDo7c-i/view
-           https://sites.google.com/view/melaniapintiliemscstatistics/home/statistics
+    .. [2] https://sites.google.com/view/melaniapintiliemscstatistics/home/statistics
     """
     full_path = _get_data_path("cgvhd.arff")
     data = loadarff(full_path)
