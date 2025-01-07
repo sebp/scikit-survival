@@ -527,9 +527,8 @@ def load_cgvhd():
     +-------+------------+----------------------------------------------+-------------------------------------------+
     | 13    | cgvh       | Chronic GVHD                                 | 1=Yes, 0=No                               |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 14    | patient ID |                                              |                                           |
+    | 14    | stnum      | patient ID                                   |                                           |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-
 
     Columns 6,7 and 9 contain the time to death, relapse and CGVHD
     calculated in years (survtime, reltime, cgvhtime) and the
@@ -539,12 +538,19 @@ def load_cgvhd():
     censoring variable cens is coded as 0 when no events were
     observed, 1 if CGVHD was observed as first event, 2 if a relapse
     was observed as the first event and 3 if death occurred before
-    either of the events: The endpoint (status) are therefore::
+    either of the events: The endpoint (status) is therefore defined as
 
-        0. Survival (Right-censored data). 4 patients (4%)
-        1. Chronic graft versus host disease (CGVHD). 86 events (86%)
-        2. Relapse (TRM). 5 events (5%)
-        3. Death. 5 events (5%)
+    +-------+-------------------------------------------+-----------------+
+    | Value | Description                               | Count (%)       |
+    +=======+===========================================+=================+
+    | 0     | Survival (Right-censored data)            | 4 patients (4%) |
+    +-------+-------------------------------------------+-----------------+
+    | 1     | Chronic graft versus host disease (CGVHD) | 86 events (86%) |
+    +-------+-------------------------------------------+-----------------+
+    | 2     | Relapse (TRM)                             | 5 events (5%)   |
+    +-------+-------------------------------------------+-----------------+
+    | 3     | Death                                     | 5 events (5%)   |
+    +-------+-------------------------------------------+-----------------+
 
     See [1]_ for further description and [2]_ for the dataset.
 
@@ -554,7 +560,7 @@ def load_cgvhd():
         The measurements for each patient.
 
     y : structured array with 2 fields
-        *status*: Integer indicating the endpoint: 0-(right censored data), 1-(GCVHD), 2-(relapse), 3-(death)
+        *status*: Integer indicating the endpoint: 0: right censored data; 1: GCVHD; 2: relapse; 3: death.
 
         *ftime*: total length of follow-up or time of event.
 
