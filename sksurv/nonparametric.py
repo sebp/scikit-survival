@@ -604,15 +604,15 @@ class CensoringDistributionEstimator(SurvivalFunctionEstimator):
 def _cr_ci_logmlog(cum_inc, sigma_t, z):
     """Compute the pointwise log-minus-log transformed confidence intervals"""
     eps = np.finfo(cum_inc.dtype).eps
-    zero_count = cum_inc <= eps
+    non_zero_count = cum_inc > eps
     log_cum_i = np.zeros_like(cum_inc)
-    np.log(cum_inc, where=~zero_count, out=log_cum_i)
+    np.log(cum_inc, where=non_zero_count, out=log_cum_i)
     theta = np.zeros_like(cum_inc)
     den = cum_inc * log_cum_i
-    np.divide(sigma_t, den, where=~zero_count, out=theta)
+    np.divide(sigma_t, den, where=non_zero_count, out=theta)
     theta = z * np.multiply.outer(np.array([-1, 1]), theta)
     ci = np.exp(log_cum_i * np.exp(theta))
-    ci[:, zero_count] = 0.0
+    ci[:, ~non_zero_count] = 0.0
     return ci
 
 
@@ -774,9 +774,11 @@ def _var_dinse_approx(n_events_cr, kpe_prime, n_at_risk, cum_inc):
     irt = cum_inc[1:, :, np.newaxis] - cum_inc[1:, np.newaxis, :]
     mask = np.tril(np.ones_like(irt[0]))
 
-    var_a = np.sum(irt**2 * mask * (dr / (n_at_risk * (n_at_risk - dr))), axis=2)
+    # var_a = np.sum(irt**2 * mask * (dr / (n_at_risk * (n_at_risk - dr))), axis=2)
+    var_a = np.einsum("rjk,jk,k->rj", irt**2, mask, dr / (n_at_risk * (n_at_risk - dr)))
     var_b = np.cumsum(((n_at_risk - dr_cr) / n_at_risk) * (dr_cr / n_at_risk**2) * kpe_prime**2, axis=1)
-    var_c = -2 * np.sum(irt * mask * dr_cr[:, np.newaxis, :] * (kpe_prime / n_at_risk**2), axis=2)
+    # var_c = -2 * np.sum(irt * mask * dr_cr[:, np.newaxis, :] * (kpe_prime / n_at_risk**2), axis=2)
+    var_c = -2 * np.einsum("rjk,jk,rk,k->rj", irt, mask, dr_cr, kpe_prime / n_at_risk**2)
 
     var = var_a + var_b + var_c
     return var
@@ -793,10 +795,10 @@ def _var_dinse(n_events_cr, kpe_prime, n_at_risk):
     x = dr / (n_at_risk * (n_at_risk - dr))
     cprod = np.cumprod(1 + x) / (1 + x)
 
-    n_t = dr.size
-    i_idx = np.arange(n_t)[:, None, None]
-    j_idx = np.arange(n_t)[None, :, None]
-    k_idx = np.arange(n_t)[None, None, :]
+    nt_range = np.arange(dr.size)
+    i_idx = nt_range[:, None, None]
+    j_idx = nt_range[None, :, None]
+    k_idx = nt_range[None, None, :]
     mask = ((j_idx < i_idx) & (k_idx > j_idx) & (k_idx <= i_idx)).astype(int)
 
     _v1 = np.zeros_like(theta)
@@ -827,7 +829,8 @@ def _var_aalen(n_events_cr, kpe_prime, n_at_risk, cum_inc):
     _va = np.zeros_like(kpe_prime)
     den_a = (n_at_risk - 1) * (n_at_risk - dr)
     np.divide(dr, den_a, out=_va, where=den_a > 0)
-    var_a = np.sum(irt**2 * mask * _va, axis=2)
+    # var_a = np.sum(irt**2 * mask * _va, axis=2)
+    var_a = np.einsum("rjk,jk,k->rj", irt**2, mask, _va)
 
     _vb = np.zeros_like(kpe_prime)
     den_b = (n_at_risk - 1) * n_at_risk**2
@@ -838,7 +841,8 @@ def _var_aalen(n_events_cr, kpe_prime, n_at_risk, cum_inc):
     _vcb = np.zeros_like(kpe_prime)
     den_c = n_at_risk * (n_at_risk - dr) * (n_at_risk - 1)
     np.divide(kpe_prime, den_c, out=_vcb, where=den_c > 0)
-    var_c = -2 * np.sum(irt * mask * _vca[:, np.newaxis, :] * _vcb, axis=2)
+    # var_c = -2 * np.sum(irt * mask * _vca[:, np.newaxis, :] * _vcb, axis=2)
+    var_c = -2 * np.einsum("rjk,jk,rk,k->rj", irt, mask, _vca, _vcb)
 
     var = var_a + var_b + var_c
     return var

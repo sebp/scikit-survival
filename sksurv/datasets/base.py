@@ -489,14 +489,13 @@ def load_cgvhd():
     initiated for patients with a myeloid malignancy who were to
     undergo an allogeneic bone marrow transplant.
 
-    The dataset has 100 samples.
+    The available dataset [1]_ is a 100 size subsample of the full data set. See [2]_ for further details.
 
     +-------+------------+----------------------------------------------+-------------------------------------------+
     | Index | Name       | Description                                  | Encoding                                  |
     +=======+============+==============================================+===========================================+
     | 1     | dx         | Diagnosis                                    | | AML=acute myeloid leukaemia             |
     |       |            |                                              | | CML=chronic myeloid leukaemia           |
-    |       |            |                                              | | MDS=myelodysplastic syndrome            |
     +-------+------------+----------------------------------------------+-------------------------------------------+
     | 2     | tx         | Randomized treatment                         | | BM=cell harvested from the bone marrow  |
     |       |            |                                              | | PB=cell harvested from peripheral blood |
@@ -566,9 +565,9 @@ def load_cgvhd():
 
     References
     ----------
-    .. [1] Melania Pintilie: "Competing Risks: A Practical Perspective". John Wiley & Sons, 2006
+    .. [1] https://sites.google.com/view/melaniapintiliemscstatistics/home/statistics
 
-    .. [2] https://sites.google.com/view/melaniapintiliemscstatistics/home/statistics
+    .. [2] Melania Pintilie: "Competing Risks: A Practical Perspective". John Wiley & Sons, 2006
     """
     full_path = _get_data_path("cgvhd.arff")
     data = loadarff(full_path)
