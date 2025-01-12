@@ -39,7 +39,7 @@ Requirements
 - numpy
 - osqp
 - pandas 1.4.0 or later
-- scikit-learn 1.4 or 1.5
+- scikit-learn 1.6
 - scipy
 - C/C++ compiler
 

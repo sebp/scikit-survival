@@ -13,7 +13,7 @@
 import numpy as np
 import pandas as pd
 from pandas.api.types import CategoricalDtype
-from sklearn.utils import check_array, check_consistent_length
+from sklearn.utils.validation import check_array, check_consistent_length
 
 __all__ = ["check_array_survival", "check_y_survival", "safe_concat", "Surv"]
 

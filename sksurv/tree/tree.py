@@ -9,12 +9,14 @@ from sklearn.tree._classes import DENSE_SPLITTERS, SPARSE_SPLITTERS
 from sklearn.tree._splitter import Splitter
 from sklearn.tree._tree import BestFirstTreeBuilder, DepthFirstTreeBuilder, Tree
 from sklearn.tree._utils import _any_isnan_axis0
-from sklearn.utils._param_validation import Interval, StrOptions
+from sklearn.utils._param_validation import Interval, RealNotInt, StrOptions
 from sklearn.utils.validation import (
     _assert_all_finite_element_wise,
+    _check_n_features,
     assert_all_finite,
     check_is_fitted,
     check_random_state,
+    validate_data,
 )
 
 from ..base import SurvivalAnalysisMixin
@@ -159,16 +161,16 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         "max_depth": [Interval(Integral, 1, None, closed="left"), None],
         "min_samples_split": [
             Interval(Integral, 2, None, closed="left"),
-            Interval(Real, 0.0, 1.0, closed="neither"),
+            Interval(RealNotInt, 0.0, 1.0, closed="neither"),
         ],
         "min_samples_leaf": [
             Interval(Integral, 1, None, closed="left"),
-            Interval(Real, 0.0, 0.5, closed="right"),
+            Interval(RealNotInt, 0.0, 0.5, closed="right"),
         ],
         "min_weight_fraction_leaf": [Interval(Real, 0.0, 0.5, closed="both")],
         "max_features": [
             Interval(Integral, 1, None, closed="left"),
-            Interval(Real, 0.0, 1.0, closed="right"),
+            Interval(RealNotInt, 0.0, 1.0, closed="right"),
             StrOptions({"sqrt", "log2"}),
             None,
         ],
@@ -202,12 +204,13 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         self.max_leaf_nodes = max_leaf_nodes
         self.low_memory = low_memory
 
-    def _more_tags(self):
-        allow_nan = self.splitter == "best"
-        return {"allow_nan": allow_nan}
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.input_tags.allow_nan = self.splitter in ("best", "random")
+        return tags
 
     def _support_missing_values(self, X):
-        return not issparse(X) and self._get_tags()["allow_nan"]
+        return not issparse(X) and self.__sklearn_tags__().input_tags.allow_nan
 
     def _compute_missing_values_in_feature_mask(self, X, estimator_name=None):
         """Return boolean mask denoting if there are missing values for each feature.
@@ -283,7 +286,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         random_state = check_random_state(self.random_state)
 
         if check_input:
-            X = self._validate_data(X, dtype=DTYPE, ensure_min_samples=2, accept_sparse="csc", force_all_finite=False)
+            X = validate_data(self, X, dtype=DTYPE, ensure_min_samples=2, accept_sparse="csc", ensure_all_finite=False)
             event, time = check_array_survival(X, y)
             time = time.astype(np.float64)
             self.unique_times_, self.is_event_time_ = get_unique_times(time, event)
@@ -360,7 +363,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         max_leaf_nodes = -1 if self.max_leaf_nodes is None else self.max_leaf_nodes
 
-        if isinstance(self.min_samples_leaf, (Integral, np.integer)):
+        if isinstance(self.min_samples_leaf, Integral):
             min_samples_leaf = self.min_samples_leaf
         else:  # float
             min_samples_leaf = int(ceil(self.min_samples_leaf * n_samples))
@@ -374,9 +377,6 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         min_samples_split = max(min_samples_split, 2 * min_samples_leaf)
 
         self._check_max_features()
-
-        if not 0 <= self.min_weight_fraction_leaf <= 0.5:
-            raise ValueError("min_weight_fraction_leaf must in [0, 0.5]")
 
         min_weight_leaf = self.min_weight_fraction_leaf * n_samples
 
@@ -397,13 +397,13 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         elif self.max_features is None:
             max_features = self.n_features_in_
-        elif isinstance(self.max_features, (Integral, np.integer)):
+        elif isinstance(self.max_features, Integral):
             max_features = self.max_features
         else:  # float
             if self.max_features > 0.0:
                 max_features = max(1, int(self.max_features * self.n_features_in_))
             else:
-                max_features = 0
+                max_features = 0  # pragma: no cover
 
         if not 0 < max_features <= self.n_features_in_:
             raise ValueError("max_features must be in (0, n_features]")
@@ -422,19 +422,20 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         """Validate X whenever one tries to predict"""
         if check_input:
             if self._support_missing_values(X):
-                force_all_finite = "allow-nan"
+                ensure_all_finite = "allow-nan"
             else:
-                force_all_finite = True
-            X = self._validate_data(
+                ensure_all_finite = True
+            X = validate_data(
+                self,
                 X,
                 dtype=DTYPE,
                 accept_sparse=accept_sparse,
                 reset=False,
-                force_all_finite=force_all_finite,
+                ensure_all_finite=ensure_all_finite,
             )
         else:
             # The number of features is checked regardless of `check_input`
-            self._check_n_features(X, reset=False)
+            _check_n_features(self, X, reset=False)
 
         return X
 

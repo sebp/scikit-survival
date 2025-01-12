@@ -20,10 +20,16 @@ from scipy.optimize import minimize
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import PAIRWISE_KERNEL_FUNCTIONS, pairwise_kernels
-from sklearn.utils import check_array, check_consistent_length, check_random_state, check_X_y
 from sklearn.utils._param_validation import Interval, StrOptions
 from sklearn.utils.extmath import safe_sparse_dot, squared_norm
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.validation import (
+    check_array,
+    check_consistent_length,
+    check_is_fitted,
+    check_random_state,
+    check_X_y,
+    validate_data,
+)
 
 from ..base import SurvivalAnalysisMixin
 from ..bintrees import AVLTree, RBTree
@@ -727,7 +733,7 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
         """Predict risk score"""
 
     def _validate_for_fit(self, X):
-        return self._validate_data(X, ensure_min_samples=2)
+        return validate_data(self, X, ensure_min_samples=2)
 
     def fit(self, X, y):
         """Build a survival support vector machine model from training data.
@@ -962,7 +968,7 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
             Predicted ranks.
         """
         check_is_fitted(self, "coef_")
-        X = self._validate_data(X, reset=False)
+        X = validate_data(self, X, reset=False)
 
         val = np.dot(X, self.coef_)
         if hasattr(self, "intercept_"):
@@ -1133,9 +1139,11 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         self.coef0 = coef0
         self.kernel_params = kernel_params
 
-    def _more_tags(self):
+    def __sklearn_tags__(self):
         # tell sklearn.utils.metaestimators._safe_split function that we expect kernel matrix
-        return {"pairwise": self.kernel == "precomputed"}
+        tags = super().__sklearn_tags__()
+        tags.input_tags.pairwise = self.kernel == "precomputed"
+        return tags
 
     def _get_kernel(self, X, Y=None):
         if callable(self.kernel):
@@ -1211,7 +1219,7 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         y : ndarray, shape = (n_samples,)
             Predicted ranks.
         """
-        X = self._validate_data(X, reset=False)
+        X = validate_data(self, X, reset=False)
         kernel_mat = self._get_kernel(X, self.fit_X_)
 
         val = np.dot(kernel_mat, self.coef_)

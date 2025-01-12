@@ -40,7 +40,10 @@ def test_fit_predict(make_whas500, forest_cls, expected_c):
     assert_cindex_almost_equal(whas500.y["fstat"], whas500.y["lenfol"], pred, expected_c)
 
 
-def test_fit_missing_values(make_whas500):
+@pytest.mark.parametrize(
+    "forest_cls,expected_cindex", [(ExtraSurvivalTrees, 0.7486232588273405), (RandomSurvivalForest, 0.7444120505344995)]
+)
+def test_fit_missing_values(make_whas500, forest_cls, expected_cindex):
     whas500 = make_whas500(to_numeric=True)
 
     rng = np.random.RandomState(42)
@@ -52,43 +55,26 @@ def test_fit_missing_values(make_whas500):
     X_train, y_train = X[:400], whas500.y[:400]
     X_test, y_test = X[400:], whas500.y[400:]
 
-    forest = RandomSurvivalForest(random_state=42)
+    forest = forest_cls(random_state=42)
     forest.fit(X_train, y_train)
 
-    tags = forest._get_tags()
-    assert tags["allow_nan"]
+    tags = forest.__sklearn_tags__()
+    assert tags.input_tags.allow_nan
 
     cindex = forest.score(X_test, y_test)
-    assert cindex == pytest.approx(0.7444120505344995)
+    assert cindex == pytest.approx(expected_cindex)
 
 
-def test_fit_missing_values_not_supported(make_whas500):
-    whas500 = make_whas500(to_numeric=True)
-
-    rng = np.random.RandomState(42)
-    mask = rng.binomial(n=1, p=0.15, size=whas500.x.shape)
-    mask = mask.astype(bool)
-    X = whas500.x.copy()
-    X[mask] = np.nan
-
-    forest = ExtraSurvivalTrees(random_state=42)
-    with pytest.raises(ValueError, match="Input X contains NaN"):
-        forest.fit(X, whas500.y)
-
-    tags = forest._get_tags()
-    assert not tags["allow_nan"]
-
-
-@pytest.mark.parametrize("forst_cls,allows_nan", [(ExtraTreesClassifier, False), (RandomForestClassifier, True)])
-def test_sklearn_random_forest_tags(forst_cls, allows_nan):
+@pytest.mark.parametrize("forst_cls", [ExtraTreesClassifier, RandomForestClassifier])
+def test_sklearn_random_forest_tags(forst_cls):
     est = forst_cls()
 
     # https://scikit-learn.org/stable/developers/develop.html#estimator-tags
-    tags = est._get_tags()
-    assert tags["multioutput"]
-    assert tags["requires_fit"]
-    assert tags["requires_y"]
-    assert tags["allow_nan"] is allows_nan
+    tags = est.__sklearn_tags__()
+    assert tags.target_tags.multi_output
+    assert tags.requires_fit
+    assert tags.target_tags.required
+    assert tags.input_tags.allow_nan
 
 
 @pytest.mark.parametrize("forest_cls", FORESTS)
@@ -250,6 +236,31 @@ def test_fit_with_small_max_samples(make_whas500, forest_cls):
 
     msg = "Tree without `max_samples` restriction should have more nodes"
     assert tree1.node_count > tree2.node_count, msg
+
+
+@pytest.mark.parametrize("forest_cls", FORESTS)
+def test_max_samples_without_bootstrap(make_whas500, forest_cls):
+    whas500 = make_whas500(to_numeric=True)
+
+    est = forest_cls(n_estimators=1, random_state=1, bootstrap=False, max_samples=10)
+    msg = (
+        r"`max_sample` cannot be set if `bootstrap=False`\. "
+        r"Either switch to `bootstrap=True` or set `max_sample=None`\."
+    )
+    with pytest.raises(ValueError, match=msg):
+        est.fit(whas500.x, whas500.y)
+
+
+@pytest.mark.parametrize("forest_cls", FORESTS)
+def test_estimators_samples(make_whas500, forest_cls):
+    whas500 = make_whas500(to_numeric=True)
+
+    est = forest_cls(n_estimators=10, max_samples=333, random_state=1, low_memory=True)
+    est.fit(whas500.x, whas500.y)
+
+    n_samples = [len(np.unique(arr)) for arr in est.estimators_samples_]
+    expected = np.array([255, 227, 245, 247, 246, 239, 254, 252, 245, 248])
+    assert_array_equal(n_samples, expected)
 
 
 @pytest.mark.parametrize("forest_cls", FORESTS)

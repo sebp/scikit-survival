@@ -12,9 +12,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 from sklearn.base import BaseEstimator
-from sklearn.utils import check_array, check_consistent_length
 from sklearn.utils.metaestimators import available_if
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.validation import check_array, check_consistent_length, check_is_fitted
 
 from .exceptions import NoComparablePairException
 from .nonparametric import CensoringDistributionEstimator, SurvivalFunctionEstimator

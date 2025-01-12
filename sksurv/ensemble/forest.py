@@ -14,8 +14,8 @@ from sklearn.ensemble._forest import (
     _parallel_build_trees,
 )
 from sklearn.tree._tree import DTYPE
-from sklearn.utils._tags import _safe_tags
-from sklearn.utils.validation import check_is_fitted, check_random_state
+from sklearn.utils._tags import get_tags
+from sklearn.utils.validation import check_is_fitted, check_random_state, validate_data
 
 from ..base import SurvivalAnalysisMixin
 from ..metrics import concordance_index_censored
@@ -29,18 +29,20 @@ __all__ = ["RandomSurvivalForest", "ExtraSurvivalTrees"]
 MAX_INT = np.iinfo(np.int32).max
 
 
-def _more_tags_patch(self):
-    # BaseForest._more_tags calls
+def _sklearn_tags_patch(self):
+    # BaseForest.__sklearn_tags__ calls
     # type(self.estimator)(criterion=self.criterions),
     # which is incompatible with LogrankCriterion
     if isinstance(self, _BaseSurvivalForest):
         estimator = type(self.estimator)()
     else:
         estimator = type(self.estimator)(criterion=self.criterion)
-    return {"allow_nan": _safe_tags(estimator, key="allow_nan")}
+    tags = super(BaseForest, self).__sklearn_tags__()
+    tags.input_tags.allow_nan = get_tags(estimator).input_tags.allow_nan
+    return tags
 
 
-BaseForest._more_tags = _more_tags_patch
+BaseForest.__sklearn_tags__ = _sklearn_tags_patch
 
 
 class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
@@ -104,7 +106,7 @@ class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
         """
         self._validate_params()
 
-        X = self._validate_data(X, dtype=DTYPE, accept_sparse="csc", ensure_min_samples=2, force_all_finite=False)
+        X = validate_data(self, X, dtype=DTYPE, accept_sparse="csc", ensure_min_samples=2, ensure_all_finite=False)
         event, time = check_array_survival(X, y)
 
         # _compute_missing_values_in_feature_mask checks if X has missing values and
@@ -115,7 +117,7 @@ class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
             X, estimator_name=self.__class__.__name__
         )
 
-        self.n_features_in_ = X.shape[1]
+        self._n_samples, self.n_features_in_ = X.shape
         time = time.astype(np.float64)
         self.unique_times_, self.is_event_time_ = get_unique_times(time, event)
         self.n_outputs_ = self.unique_times_.shape[0]
@@ -125,7 +127,18 @@ class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
         y_numeric[:, 1] = event.astype(np.float64)
 
         # Get bootstrap sample size
-        n_samples_bootstrap = _get_n_samples_bootstrap(n_samples=X.shape[0], max_samples=self.max_samples)
+        if not self.bootstrap and self.max_samples is not None:  # pylint: disable=no-else-raise
+            raise ValueError(
+                "`max_sample` cannot be set if `bootstrap=False`. "
+                "Either switch to `bootstrap=True` or set "
+                "`max_sample=None`."
+            )
+        elif self.bootstrap:
+            n_samples_bootstrap = _get_n_samples_bootstrap(n_samples=X.shape[0], max_samples=self.max_samples)
+        else:
+            n_samples_bootstrap = None
+
+        self._n_samples_bootstrap = n_samples_bootstrap
 
         # Check parameters
         self._validate_estimator()
@@ -141,13 +154,12 @@ class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
 
         n_more_estimators = self.n_estimators - len(self.estimators_)
 
-        if n_more_estimators < 0:
+        if n_more_estimators < 0:  # pylint: disable=no-else-raise
             raise ValueError(
                 f"n_estimators={self.n_estimators} must be larger or equal to "
                 f"len(estimators_)={len(self.estimators_)} when warm_start==True"
             )
-
-        if n_more_estimators == 0:
+        elif n_more_estimators == 0:
             warnings.warn("Warm-start fitting without increasing n_estimators does not fit new trees.", stacklevel=2)
         else:
             if self.warm_start and len(self.estimators_) > 0:
@@ -442,7 +454,7 @@ class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
     `min_impurity_decrease` or `min_impurity_split` are absent.
     In addition, the `feature_importances_` attribute is not available.
     It is recommended to estimate feature importances via
-    `permutation-based methods <https://eli5.readthedocs.io>`_.
+    :func:`sklearn.inspection.permutation_importance`.
 
     The features are always randomly permuted at each split. Therefore,
     the best found split may vary, even with the same training data,

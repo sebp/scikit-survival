@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import CategoricalDtype, is_numeric_dtype
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.validation import _check_feature_names, _check_n_features, check_is_fitted
 
 from ._clinical_kernel import (
     continuous_ordinal_kernel,
@@ -227,8 +227,8 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         if X.ndim != 2:
             raise ValueError(f"expected 2d array, but got {X.ndim}")
 
-        self._check_feature_names(X, reset=True)
-        self._check_n_features(X, reset=True)
+        _check_feature_names(self, X, reset=True)
+        _check_n_features(self, X, reset=True)
 
         if self.fit_once:
             self.X_fit_ = X
@@ -251,8 +251,8 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         """
         check_is_fitted(self, "X_fit_")
 
-        self._check_feature_names(Y, reset=False)
-        self._check_n_features(Y, reset=False)
+        _check_feature_names(self, Y, reset=False)
+        _check_n_features(self, Y, reset=False)
 
         n_samples_x = self.X_fit_.shape[0]
 
