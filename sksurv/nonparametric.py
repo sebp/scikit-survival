@@ -189,9 +189,13 @@ def _compute_counts_truncated(event, time_enter, time_exit):
 
 
 def _ci_logmlog(s, sigma_t, z):
-    """Compute the pointwise log-minus-log transformed confidence intervals.
+    r"""Compute the pointwise log-minus-log transformed confidence intervals.
     s refers to the prob_survival or the cum_inc (for the competing risks case).
-    sigma_t is the square root of the estimator of the log of the variance of s.
+    sigma_t is the square root of the variance of the log of the estimator of s.
+
+    .. math::
+
+        \sigma_t = \mathrm{Var}(\log(\hat{S}(t)))
     """
     eps = np.finfo(s.dtype).eps
     mask = s > eps
