@@ -13,6 +13,7 @@ __all__ = [
     "load_arff_files_standardized",
     "load_aids",
     "load_bmt",
+    "load_cgvhd",
     "load_breast_cancer",
     "load_flchain",
     "load_gbsg2",
@@ -474,9 +475,108 @@ def load_bmt():
     .. [1] https://doi.org/10.1038/sj.bmt.1705727
            Scrucca, L., Santucci, A. & Aversa, F.:
            "Competing risk analysis using R: an easy guide for clinicians. Bone Marrow Transplant 40, 381–387 (2007)"
+
     .. [2] https://luca-scr.github.io/R/bmt.csv
     """
     full_path = _get_data_path("bmt.arff")
     data = loadarff(full_path)
     data["ftime"] = data["ftime"].astype(int)
+    return get_x_y(data, attr_labels=["status", "ftime"], competing_risks=True)
+
+
+def load_cgvhd():
+    r"""Load and return data from multicentre randomized clinical trial
+    initiated for patients with a myeloid malignancy who were to
+    undergo an allogeneic bone marrow transplant.
+
+    The available dataset [1]_ is a 100 size subsample of the full data set. See [2]_ for further details.
+
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | Index | Name       | Description                                  | Encoding                                  |
+    +=======+============+==============================================+===========================================+
+    | 1     | dx         | Diagnosis                                    | | AML=acute myeloid leukaemia             |
+    |       |            |                                              | | CML=chronic myeloid leukaemia           |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 2     | tx         | Randomized treatment                         | | BM=cell harvested from the bone marrow  |
+    |       |            |                                              | | PB=cell harvested from peripheral blood |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 3     | extent     | Extent of disease                            | L=limited, E=extensive                    |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 4     | agvhdgd    | Grade of acute GVHD                          |                                           |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 5     | age        | Age                                          | Years                                     |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 6     | survtime   | Time from date of transplant to death        | Years                                     |
+    |       |            | or last follow-up                            |                                           |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 7     | reltime    | Time from date of transplant to relapse      | Years                                     |
+    |       |            | or last follow-up                            |                                           |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 8     | agvhtime   | Time from date of transplant to acute GVHD   | Years                                     |
+    |       |            | or last follow-up                            |                                           |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 9     | cgvhtime   | Time from date of transplant to chronic GVHD | Years                                     |
+    |       |            | or last follow-up                            |                                           |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 10    | stat       | Status                                       | 1=Dead, 0=Alive                           |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 11    | rcens      | Relapse                                      | 1=Yes, 0=No                               |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 12    | agvh       | Acute GVHD                                   | 1=Yes, 0=No                               |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 13    | cgvh       | Chronic GVHD                                 | 1=Yes, 0=No                               |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+    | 14    | stnum      | patient ID                                   |                                           |
+    +-------+------------+----------------------------------------------+-------------------------------------------+
+
+    Columns 6,7 and 9 contain the time to death, relapse and CGVHD
+    calculated in years (survtime, reltime, cgvhtime) and the
+    respective indicator variables are in columns 10,11 and 13 (stat,
+    rcens, cgvh). The earliest time that any of these events happened
+    is calculated by taking the minimum of the observed times. The
+    censoring variable cens is coded as 0 when no events were
+    observed, 1 if CGVHD was observed as first event, 2 if a relapse
+    was observed as the first event and 3 if death occurred before
+    either of the events: The endpoint (status) is therefore defined as
+
+    +-------+-------------------------------------------+-----------------+
+    | Value | Description                               | Count (%)       |
+    +=======+===========================================+=================+
+    | 0     | Survival (Right-censored data)            | 4 patients (4%) |
+    +-------+-------------------------------------------+-----------------+
+    | 1     | Chronic graft versus host disease (CGVHD) | 86 events (86%) |
+    +-------+-------------------------------------------+-----------------+
+    | 2     | Relapse (TRM)                             | 5 events (5%)   |
+    +-------+-------------------------------------------+-----------------+
+    | 3     | Death                                     | 5 events (5%)   |
+    +-------+-------------------------------------------+-----------------+
+
+    See [1]_ for further description and [2]_ for the dataset.
+
+    Returns
+    -------
+    x : pandas.DataFrame
+        The measurements for each patient.
+
+    y : structured array with 2 fields
+        *status*: Integer indicating the endpoint: 0: right censored data; 1: GCVHD; 2: relapse; 3: death.
+
+        *ftime*: total length of follow-up or time of event.
+
+    References
+    ----------
+    .. [1] https://sites.google.com/view/melaniapintiliemscstatistics/home/statistics
+
+    .. [2] Melania Pintilie: "Competing Risks: A Practical Perspective". John Wiley & Sons, 2006
+    """
+    full_path = _get_data_path("cgvhd.arff")
+    data = loadarff(full_path)
+    data["ftime"] = data[["survtime", "reltime", "cgvhtime"]].min(axis=1)
+    data["status"] = (
+        ((data["ftime"] == data["cgvhtime"]) & (data["cgvh"] == "1")).astype(int)
+        + 2 * ((data["ftime"] == data["reltime"]) & (data["rcens"] == "1")).astype(int)
+        + 3 * ((data["ftime"] == data["survtime"]) & (data["stat"] == "1")).astype(int)
+    )
+    data = data[["ftime", "status", "dx", "tx", "extent", "age"]]
+
     return get_x_y(data, attr_labels=["status", "ftime"], competing_risks=True)
