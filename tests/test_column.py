@@ -113,12 +113,17 @@ class EncodeCategoricalCases(CategoricalCases):
             np.repeat([None], 10),
             np.repeat(["no"], 16),
         ]
-        expected = np.r_[
+        expected_no = np.r_[
+            np.repeat([0.0], 5),
+            np.repeat([np.nan], 10),
+            np.repeat([1.0], 16),
+        ]
+        expected_yes = np.r_[
             np.repeat([1.0], 5),
             np.repeat([np.nan], 10),
             np.repeat([0.0], 16),
         ]
-        return inputs, expected
+        return inputs, expected_no, expected_yes
 
     def data_series_categorical(self):
         input_series = pd.Series(
@@ -130,6 +135,7 @@ class EncodeCategoricalCases(CategoricalCases):
 
         expected_df = pd.DataFrame.from_dict(
             {
+                "a_series=small": np.array([0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0], dtype=float),
                 "a_series=medium": np.array([1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0], dtype=float),
                 "a_series=large": np.array([0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1], dtype=float),
             }
@@ -140,7 +146,8 @@ class EncodeCategoricalCases(CategoricalCases):
     def data_case_1(self):
         input_df = self.mixed_data_frame
 
-        eb = np.r_[np.repeat([1.0], 8), np.repeat([0.0], 23)]
+        a_binary_yes = np.r_[np.repeat([1.0], 8), np.repeat([0.0], 23)]
+        a_binary_no = np.r_[np.repeat([0.0], 8), np.repeat([1.0], 23)]
 
         a_tiny = np.zeros(31, dtype=float)
         a_tiny[15:28] = 1
@@ -151,12 +158,17 @@ class EncodeCategoricalCases(CategoricalCases):
         a_medium = np.zeros(31, dtype=float)
         a_medium[-3:] = 1
 
+        a_large = np.zeros(31, dtype=float)
+        a_large[:10] = 1
+
         expected_df = pd.DataFrame.from_dict(
             {
+                "a_category=large": a_large,
                 "a_category=medium": a_medium,
                 "a_category=small": a_small,
                 "a_category=tiny": a_tiny,
-                "a_binary=yes": eb,
+                "a_binary=no": a_binary_no,
+                "a_binary=yes": a_binary_yes,
                 "a_number": input_df.loc[:, "a_number"].values.copy(),
             }
         )
@@ -171,16 +183,17 @@ class EncodeCategoricalCases(CategoricalCases):
         input_df.index = index
 
         expected_df = pd.DataFrame(
-            np.zeros((32, 3), dtype=float),
+            np.zeros((32, 4), dtype=float),
             index=index,
-            columns=["a_category=medium", "a_category=small", "a_category=tiny"],
+            columns=["a_category=large", "a_category=medium", "a_category=small", "a_category=tiny"],
         )
-        # tiny
-        expected_df.iloc[16:29, 2] = 1
+        expected_df.iloc[16:29, 3] = 1
         # small
-        expected_df.iloc[10:16, 1] = 1
+        expected_df.iloc[10:16, 2] = 1
         # medium
-        expected_df.iloc[-3:, 0] = 1
+        expected_df.iloc[-3:, 1] = 1
+        # large
+        expected_df.iloc[0:10, 0] = 1
 
         expected_df.loc[:, "a_number"] = input_df.loc[:, "a_number"].values.copy()
 
@@ -197,9 +210,12 @@ class EncodeCategoricalCases(CategoricalCases):
 
         expected_df = pd.DataFrame(
             {
+                "a_binary_int=0": (a == 0).astype(float),
                 "a_binary_int=1": a.astype(float),
+                "a_three_int=1": (b == 1).astype(float),
                 "a_three_int=2": (b == 2).astype(float),
                 "a_three_int=3": (b == 3).astype(float),
+                f"a_four_float={1.0 / 128}": (c == 1.0 / 128).astype(float),
                 f"a_four_float={1.0 / 32}": (c == 1.0 / 32).astype(float),
                 f"a_four_float={1.0 / 8}": (c == 1.0 / 8).astype(float),
                 f"a_four_float={1.0}": (c == 1.0).astype(float),
@@ -209,24 +225,24 @@ class EncodeCategoricalCases(CategoricalCases):
         return input_df, {}, expected_df
 
     def data_with_missing(self):
-        b, eb = self.binary_with_missing
+        b, eb_no, eb_yes = self.binary_with_missing
 
         c = self._make_randn(len(b))
 
         input_df = pd.DataFrame({"a_binary": b, "a_number": c.copy()})
 
-        expected_df = pd.DataFrame.from_dict({"a_binary=yes": eb, "a_number": c.copy()})
+        expected_df = pd.DataFrame.from_dict({"a_binary=no": eb_no, "a_binary=yes": eb_yes, "a_number": c.copy()})
 
         return input_df, {}, expected_df
 
     def data_drop_all_missing(self):
-        b, eb = self.binary_with_missing
+        b, eb_no, eb_yes = self.binary_with_missing
 
         all_missing = pd.Series([np.nan] * len(b), dtype=object)
 
         input_df = pd.DataFrame({"a_binary": b, "bogus": all_missing})
 
-        expected_df = pd.DataFrame({"a_binary=yes": eb})
+        expected_df = pd.DataFrame({"a_binary=no": eb_no, "a_binary=yes": eb_yes})
 
         return input_df, {}, expected_df
 
