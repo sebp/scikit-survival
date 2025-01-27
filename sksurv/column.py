@@ -82,9 +82,9 @@ def _encode_categorical_series(series, allow_drop=True):
         return series
 
     names = []
-    for key in range(1, enc.shape[1]):
+    for key in range(0, enc.shape[1]):
         names.append(f"{series.name}={levels[key]}")
-    series = pd.DataFrame(enc[:, 1:], columns=names, index=series.index)
+    series = pd.DataFrame(enc[:, 0:], columns=names, index=series.index)
 
     return series
 
