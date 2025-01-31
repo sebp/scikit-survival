@@ -19,7 +19,7 @@ def _get_version(name):
 def show_versions():
     sys_info = {
         "Platform": platform.platform(),
-        "Python version": f"{platform.python_implementation()} {platform}",
+        "Python version": f"{platform.python_implementation()} {platform.python_version()}",
         "Python interpreter": sys.executable,
     }
 
