@@ -26,8 +26,8 @@ body:
       description: |
         Please add a *minimal, reproducible example* that can reproduce the error when running it.
 
-        Be as succinct as possible, **do not depend on external data files**, instead use synthetically generated data or one of the datasets provided by [sksurv.datasets]()
-        https://scikit-survival.readthedocs.io/en/latest/api/datasets.html)
+        Be as succinct as possible, **do not depend on external data files**, instead use synthetically generated data or one of the datasets provided by [sksurv.datasets](
+        https://scikit-survival.readthedocs.io/en/latest/api/datasets.html).
 
         In short, **we are going to copy-paste your code** to run it and we expect to get the same result as you.
 
