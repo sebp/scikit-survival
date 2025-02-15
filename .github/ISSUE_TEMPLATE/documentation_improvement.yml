@@ -1,0 +1,31 @@
+name: Documentation improvement
+description:  Report wrong or missing documentation.
+title: "DOC: "
+labels: ["documentation", "needs triage"]
+body:
+  - type: textarea
+    id: location
+    attributes:
+      label: Location of the documentation
+      description: >
+        Please provide the location of the documentation, e.g. "sksurv.metrics.brier_score" or the
+        URL of the documentation, e.g.
+        "https://scikit-survival.readthedocs.io/en/latest/api/generated/sksurv.metrics.brier_score.html"
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Documentation Problem
+      description: |
+        Please provide a description of what documentation you believe needs to be fixed/improved.
+    validations:
+      required: true
+  - type: textarea
+    id: suggested-fix
+    attributes:
+      label: Suggested Fix for Documentation
+      description: |
+        Please tell us how we could improve the documentation to resolve the problem.
+    validations:
+      required: true
