@@ -1,0 +1,103 @@
+name: Bug Report
+description: File a bug report.
+title: "Bug: "
+labels: ["bug", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+
+        > [!IMPORTANT]
+        > Before submitting a bug, please make sure the issue hasn't been addressed already
+        > by searching through [the past issues](https://github.com/sebp/scikit-survival/issues).
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: |
+        Please provide a clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Steps/Code to Reproduce
+      description: |
+        Please add a *minimal, reproducible example* that can reproduce the error when running it.
+
+        Be as succinct as possible, **do not depend on external data files**, instead use synthetically generated data or one of the datasets provided by [sksurv.datasets]()
+        https://scikit-survival.readthedocs.io/en/latest/api/datasets.html)
+
+        In short, **we are going to copy-paste your code** to run it and we expect to get the same result as you.
+
+        Please follow [this guide](https://matthewrocklin.com/minimal-bug-reports) on how to
+        provide a minimal, reproducible example.
+
+        Example:
+        ```python
+        from sksurv.datasets import load_whas500
+        from sksurv.preprocessing import OneHotEncoder
+        from sksurv.linear_model import CoxPHSurvivalAnalysis
+
+        X, y = load_whas500()
+
+        features = OneHotEncoder().fit_transform(X)
+        cph_model = CoxPHSurvivalAnalysis(alphas=[0.01, 0.1, 1.0])
+        cph_model.fit(features, y)
+        ```
+      placeholder: |
+        ```
+        Sample code to reproduce the problem
+        ```
+    validations:
+      required: true
+  - type: textarea
+    id: actual-result
+    attributes:
+      label: Actual Results
+      description: |
+        Please provide verbose output that clearly demonstrates the problem the reproducible example shows.
+
+        If you observe an error, please paste the error message including the **full traceback** of the exception. For instance the code above raises the following exception:
+
+        ```python-traceback
+        ---------------------------------------------------------------------------
+        TypeError                                 Traceback (most recent call last)
+        File my_bug_report.py:8
+              5 X, y = load_whas500()
+              7 features = OneHotEncoder().fit_transform(X)
+        ----> 8 cph_model = CoxPHSurvivalAnalysis(alphas=[0.01, 0.1, 1.0])
+              9 cph_model.fit(features, y)
+
+        TypeError: CoxPHSurvivalAnalysis.__init__() got an unexpected keyword argument 'alphas'. Did you mean 'alpha'?
+        ```
+      placeholder: |
+        Please paste or specifically describe the actual result or traceback.
+    validations:
+      required: true
+  - type: textarea
+    id: expected-results
+    attributes:
+      label: Expected Results
+      description: |
+        Please describe the expected results.
+    validations:
+      required: true
+  - type: textarea
+    id: version
+    attributes:
+      label: Installed Versions
+      render: shell
+      description: |
+        Please execute the code below and paste the output below.
+
+        ```python
+        import sksurv; sksurv.show_versions()
+        ```
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for contributing 🎉!
