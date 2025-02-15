@@ -1,0 +1,46 @@
+name: Feature request
+description: Suggest an idea for scikit-survival.
+title: "ENH: "
+labels: ["enhancement", "needs triage"]
+body:
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Feature Type
+      description: Please check what type of feature request you would like to propose.
+      options:
+        - label: |
+            Adding new functionality to scikit-survival
+        - label: |
+            Changing existing functionality in scikit-survival
+        - label: |
+            Removing existing functionality in scikit-survival
+  - type: textarea
+    id: description
+    attributes:
+      label: Problem Description
+      description: |
+        Please describe what problem the feature would solve or which workflow it would enable, e.g. "I wish scikit-survival would be able to ..."
+    validations:
+      required: true
+  - type: textarea
+    id: feature
+    attributes:
+      label: Feature Description
+      description: |
+        Please describe clearly and concisly how the new feature would be implemented. Use pseudocode if relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: alternative
+    attributes:
+      label: Alternative Solutions
+      description: |
+        Please describe any alternative solution (existing functionality, 3rd party package, etc.)
+        that would satisfy the feature request.
+  - type: textarea
+    id: references
+    attributes:
+      label: References and existing implementations
+      description: |
+        If you want to propose a new algorithm for inclusion, please include the original reference to the publication that first proposed the algorithm. If you are aware of any existing implementations, e.g. for R, please include a link too.
