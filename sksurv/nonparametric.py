@@ -745,7 +745,7 @@ def cumulative_incidence_competing_risks(
     elif var_type == "Aalen":
         var = _var_aalen(n_events_cr, kpe_prime, n_at_risk, cum_inc)
     else:
-        raise ValueError(f"{var_type=} must be one of 'Dinse', 'Dinse_approx' or 'Aalen'.")
+        raise ValueError(f"{var_type=} must be one of 'Dinse', 'Dinse_Approx' or 'Aalen'.")
 
     _x, _y, conf_int_km = kaplan_meier_estimator(event > 0, time_exit, conf_type="log-log")
     ci = np.empty(shape=(2, n_risks + 1, n_t), dtype=conf_int_km.dtype)

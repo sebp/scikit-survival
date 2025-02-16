@@ -7657,6 +7657,6 @@ class TestCumIncCompetingRisks:
     @pytest.mark.parametrize("event, time, true_x, true_y", SimpleDataBMTCases().get_cases())
     @pytest.mark.parametrize("var_type", ["None", "dinse", 1, "", "not"])
     def test_invalid_var_type_competing_risks(event, time, true_x, true_y, var_type):
-        msg = f"{var_type=} must be one of 'Dinse', 'Dinse_approx' or 'Aalen'."
+        msg = f"{var_type=} must be one of 'Dinse', 'Dinse_Approx' or 'Aalen'."
         with pytest.raises(ValueError, match=msg):
             cumulative_incidence_competing_risks(event, time, conf_level=0.95, conf_type="log-log", var_type=var_type)
