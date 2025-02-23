@@ -663,7 +663,7 @@ def cumulative_incidence_competing_risks(
     var_type : None or one of {'Dinse', 'Dinse_Approx', 'Aalen'}, optional, default: 'Dinse'
         The method for estimating the variance of the estimator.
         See [2]_, [3]_ and [4]_ for each of the methods.
-        Only valid if conf_type is valid.
+        Only used if `conf_type` is not None.
 
     Returns
     -------
@@ -673,12 +673,12 @@ def cumulative_incidence_competing_risks(
     cum_incidence : array, shape = (n_risks + 1, n_times)
         Cumulative incidence at each unique time point.
         The first dimension indicates total risk (``cum_incidence[0]``),
-        the dimension `i=1,..,n_risks` the incidence for each competing risk.
+        the dimension `i=1,...,n_risks` the incidence for each competing risk.
 
     conf_int : array, shape = (n_risks + 1, 2, n_times)
         Pointwise confidence interval (second axis) of the Kaplan-Meier estimator
         at each unique time point (last axis)
-        for all possible risks (first axis) including overall risk (``conf_int[0]``).
+        for all possible risks (first axis), including overall risk (``conf_int[0]``).
         Only provided if `conf_type` is not None.
 
     Examples

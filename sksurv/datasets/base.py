@@ -446,17 +446,24 @@ def load_flchain():
 
 
 def load_bmt():
-    """Load and return response to Hematopoietic stem cell transplantation (HSCT) for acute leukemia patients.
+    """Load and return response to hematopoietic stem cell transplantation (HSCT) for acute leukemia patients.
 
-    The dataset has 35 samples and 1 features:
+    The dataset has 35 samples and 1 feature "dis" indicating the type of leukemia::
 
-        1. dis: Type of leukemia. 0=ALL(Acute Lymphoblastic Leukemia), 1=AML(Acute Myeloid Leukemia)
+        0=ALL (Acute Lymphoblastic Leukemia)
+        1=AML (Acute Myeloid Leukemia)
 
-    The endpoint (status) are:
+    The endpoint (status) is defined as
 
-        0. Survival (Right-censored data). 11 patients (31.4%)
-        1. Transplant related mortality (TRM). 9 events (25.7%)
-        2. Relapse. 15 events (42.8%)
+    +-------+------------------------------------+---------------------+
+    | Value | Description                        | Count (%)           |
+    +=======+====================================+=====================+
+    | 0     | Survival (Right-censored data)     | 11 patients (31.4%) |
+    +-------+------------------------------------+---------------------+
+    | 1     | Transplant related mortality (TRM) | 9 events (25.7%)    |
+    +-------+------------------------------------+---------------------+
+    | 2     | Relapse                            | 15 events (42.8%)   |
+    +-------+------------------------------------+---------------------+
 
     See [1]_ for further description and [2]_ for the dataset.
 
@@ -489,7 +496,7 @@ def load_cgvhd():
     initiated for patients with a myeloid malignancy who were to
     undergo an allogeneic bone marrow transplant.
 
-    The available dataset [1]_ is a 100 size subsample of the full data set. See [2]_ for further details.
+    The dataset is a 100 patient subsample of the full data set. See [2]_ for further details.
 
     +-------+------------+----------------------------------------------+-------------------------------------------+
     | Index | Name       | Description                                  | Encoding                                  |
@@ -551,7 +558,7 @@ def load_cgvhd():
     | 3     | Death                                     | 5 events (5%)   |
     +-------+-------------------------------------------+-----------------+
 
-    See [1]_ for further description and [2]_ for the dataset.
+    The dataset has been obtained from [1]_.
 
     Returns
     -------
