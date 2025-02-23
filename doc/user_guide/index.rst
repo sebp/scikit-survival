@@ -26,6 +26,7 @@ Background
    understanding_predictions
    00-introduction
    evaluating-survival-models
+   competing-risks
 
 Models
 ------

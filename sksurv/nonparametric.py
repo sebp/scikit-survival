@@ -634,7 +634,7 @@ def cumulative_incidence_competing_risks(
 ):
     """Non-parametric estimator of Cumulative Incidence function in the case of competing risks.
 
-    See [1]_ for further description.
+    See the :ref:`User Guide </user_guide/competing-risks.ipynb>` and [1]_ for further details.
 
     Parameters
     ----------
