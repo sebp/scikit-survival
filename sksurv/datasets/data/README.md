@@ -11,8 +11,8 @@ for survival analysis.
 | GBSG2                         | [German Breast Cancer Study Group 2][Schumacher1994] | 686     | 8        | 299 (43.6%)  | Recurrence free survival     |
 | veteran                       | [Veteran's Lung Cancer][Kalbfleisch2008]             | 137     | 6        | 128 (93.4%)  | Death                        |
 | whas500                       | [Worcester Heart Attack Study][Hosmer2008]           | 500     | 14       | 215 (43.0%)  | Death                        |
-| BMT                           | [Leukemia HSC Transplant][Scrucca2007]               | 35      | 1        | 24 (68.6%)   | Transplant related death or relapse |
-| GCVHD                         | [GCVHD][Pintilie2006]                                       | 100     | 4        | 96 (96%)     | Chronic graft disease (GCVHD), relapse or death |
+| BMT                           | [Leukemia HSC Transplant][Scrucca2007]               | 35      | 1        | 24 (68.6%)   | Transplant-related death or relapse |
+| CGVHD                         | [CGVHD][Pintilie2006]                                | 100     | 4        | 96 (96%)     | Chronic graft versus host disease (CGVHD), relapse or death |
 
 [Desmedt2007]: http://dx.doi.org/10.1158/1078-0432.CCR-06-2765 "Desmedt, C., Piette, F., Loi et al.: Strong Time Dependence of the 76-Gene Prognostic Signature for Node-Negative Breast Cancer Patients in the TRANSBIG Multicenter Independent Validation Series. Clin. Cancer Res. 13(11), 3207–14 (2007)"
 

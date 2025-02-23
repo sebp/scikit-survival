@@ -559,7 +559,7 @@ def load_cgvhd():
         The measurements for each patient.
 
     y : structured array with 2 fields
-        *status*: Integer indicating the endpoint: 0: right censored data; 1: GCVHD; 2: relapse; 3: death.
+        *status*: Integer indicating the endpoint: 0: right censored data; 1: CGVHD; 2: relapse; 3: death.
 
         *ftime*: total length of follow-up or time of event.
 
