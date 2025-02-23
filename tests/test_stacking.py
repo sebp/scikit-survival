@@ -48,7 +48,7 @@ def iris_data_with_estimator():
         y = data["target"]
 
         meta = Stacking(
-            LogisticRegression(solver="lbfgs", multi_class="multinomial"),
+            LogisticRegression(solver="lbfgs"),
             [
                 ("tree", DecisionTreeClassifier(max_depth=1, random_state=0)),
                 ("svm", SVC(probability=True, gamma="auto", random_state=0)),
