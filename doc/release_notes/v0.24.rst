@@ -1,0 +1,46 @@
+.. _release_notes_0_24:
+
+What's new in 0.24
+==================
+
+scikit-survival 0.24.0 (2025-02-24)
+-----------------------------------
+
+This release adds support for scikit-learn 1.6, which includes missing-values support
+for :class:`sksurv.ensemble.ExtraSurvivalTrees`.
+Moreover, the release features :func:`sksurv.nonparametric.cumulative_incidence_competing_risks`
+which implements a non-parameteric estimator of the cumulative incidence function
+for competing risks.
+See the :ref:`user guide on the analysis of competing risks </user_guide/competing-risks.ipynb>`.
+
+Bug fixes
+^^^^^^^^^
+- In the C++ code of :class:`sksurv.linear_model.CoxnetSurvivalAnalysis`, set type of ``n_alphas``
+  to ``VectorType::Index`` instead of ``ìnt``, because on Windows,
+  int and Eigen's Index differ in size.
+- Fix printing of Python version in :func:`sksurv.show_versions`.
+- Give an error if ``max_sample`` is set, but ``bootstrap`` is False in
+  :class:`sksurv.ensemble.RandomSurvivalForest` and
+  :class:`sksurv.ensemble.ExtraSurvivalTrees`.
+
+Enhancements
+^^^^^^^^^^^^
+- Add :func:`sksurv.nonparametric.cumulative_incidence_competing_risks` to estimate
+  the cumulative incidence function in the case of competing risks (:issue:`491`, :issue:`500`).
+- Add :func:`sksurv.datasets.load_bmt` and :func:`sksurv.datasets.load_cgvhd` which are
+  datasets with competing risks (:issue:`491`, :issue:`500`).
+- Add missing-values support to :class:`sksurv.ensemble.ExtraSurvivalTrees` (:issue:`504`).
+- Add ``estimators_samples_`` property to :class:`sksurv.ensemble.RandomSurvivalForest` and
+  :class:`sksurv.ensemble.ExtraSurvivalTrees`.
+- Upgrade syntax to Python 3.10.
+- Run nbval with Python 3.12, matplotlib 3.9, and seaborn 0.13.
+
+Documentation
+^^^^^^^^^^^^^
+- Fix links in documentation.
+- Add :ref:`user guide on the analysis of competing risks </user_guide/competing-risks.ipynb>`.
+
+Backwards incompatible changes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- Support for scikit-learn versions before 1.6.1 has been dropped (:issue:`504`).
+- Support for Python versions before 3.10 has been dropped.
