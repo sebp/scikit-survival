@@ -6619,9 +6619,7 @@ class TestCumIncCompetingRisks:
     def test_invalid_conf_level_competing_risks(event, time, true_x, true_y, conf_level):
         msg = f"conf_level must be a float in the range (0.0, 1.0), but was {conf_level}"
         with pytest.raises(ValueError, match=re.escape(msg)):
-            cumulative_incidence_competing_risks(
-                event, time, conf_level=conf_level, conf_type="log-log", var_type="Aalen"
-            )
+            cumulative_incidence_competing_risks(event, time, conf_level=conf_level, conf_type="log-log")
 
     @staticmethod
     @pytest.mark.parametrize("event, time, true_x, true_y", SimpleDataBMTCases().get_cases())
@@ -6629,12 +6627,12 @@ class TestCumIncCompetingRisks:
     def test_invalid_conf_type_competing_risks(event, time, true_x, true_y, conf_type):
         msg = f"conf_type must be None or a str among {{'log-log'}}, but was {conf_type!r}"
         with pytest.raises(ValueError, match=msg):
-            cumulative_incidence_competing_risks(event, time, conf_level=0.9, conf_type=conf_type, var_type="Aalen")
+            cumulative_incidence_competing_risks(event, time, conf_level=0.9, conf_type=conf_type)
 
     @staticmethod
     @pytest.mark.parametrize("event, time, true_x, true_y", SimpleDataBMTCases().get_cases())
     @pytest.mark.parametrize("var_type", ["None", "dinse", 1, "", "not"])
     def test_invalid_var_type_competing_risks(event, time, true_x, true_y, var_type):
-        msg = f"{var_type=} must be one of 'Dinse', 'Dinse_Approx' or 'Aalen'."
+        msg = f"{var_type=} must be one of 'Aalen', 'Dinse', or 'Dinse_Approx'."
         with pytest.raises(ValueError, match=msg):
             cumulative_incidence_competing_risks(event, time, conf_level=0.95, conf_type="log-log", var_type=var_type)

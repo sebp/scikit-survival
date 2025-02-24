@@ -630,7 +630,7 @@ def cumulative_incidence_competing_risks(
     time_min=None,
     conf_level=0.95,
     conf_type=None,
-    var_type="Dinse",
+    var_type="Aalen",
 ):
     """Non-parametric estimator of Cumulative Incidence function in the case of competing risks.
 
@@ -660,7 +660,7 @@ def cumulative_incidence_competing_risks(
         If "log-log", estimate confidence intervals using
         the log hazard or :math:`log(-log(S(t)))`.
 
-    var_type : None or one of {'Dinse', 'Dinse_Approx', 'Aalen'}, optional, default: 'Dinse'
+    var_type : None or one of {'Aalen', 'Dinse', 'Dinse_Approx'}, optional, default: 'Aalen'
         The method for estimating the variance of the estimator.
         See [2]_, [3]_ and [4]_ for each of the methods.
         Only used if `conf_type` is not None.
@@ -690,7 +690,7 @@ def cumulative_incidence_competing_risks(
     >>> event = bmt_df["status"]
     >>> time = bmt_df["ftime"]
     >>> n_risks = event.max()
-    >>> x, y, conf_int = cumulative_incidence_competing_risks(event, time, conf_type="log-log", var_type="Aalen")
+    >>> x, y, conf_int = cumulative_incidence_competing_risks(event, time, conf_type="log-log")
     >>> plt.step(x, y[0], where="post", label="Total risk")
     >>> plt.fill_between(x, conf_int[0, 0], conf_int[0, 1], alpha=0.25, step="post")
     >>> for i in range(1, n_risks + 1):
@@ -704,11 +704,11 @@ def cumulative_incidence_competing_risks(
     ----------
     .. [1] Kalbfleisch, J.D. and Prentice, R.L. (2002)
            The Statistical Analysis of Failure Time Data. 2nd Edition, John Wiley and Sons, New York.
-    .. [2] Dinse and Larson, Biometrika (1986), 379. Sect. 4, Eqs. 4 and 5.
-    .. [3] Dinse and Larson, Biometrika (1986), 379. Sect. 4, Eq. 6.
-    .. [4] Aalen, O. (1978a). Annals of Statistics, 6, 534–545.
+    .. [2] Aalen, O. (1978a). Annals of Statistics, 6, 534–545.
            We implement the formula in M. Pintilie: "Competing Risks: A Practical Perspective".
            John Wiley & Sons, 2006, Eq. 4.5
+    .. [3] Dinse and Larson, Biometrika (1986), 379. Sect. 4, Eqs. 4 and 5.
+    .. [4] Dinse and Larson, Biometrika (1986), 379. Sect. 4, Eq. 6.
     """
     event, time_exit = check_y_survival(event, time_exit, allow_all_censored=True, competing_risks=True)
     check_consistent_length(event, time_exit)
@@ -739,14 +739,14 @@ def cumulative_incidence_competing_risks(
     if conf_type is None:
         return uniq_times, cum_inc
 
-    if var_type == "Dinse":
-        var = _var_dinse(n_events_cr, kpe_prime, n_at_risk)
+    if var_type == "Aalen":
+        var = _var_aalen(n_events_cr, kpe_prime, n_at_risk, cum_inc)
     elif var_type == "Dinse_Approx":
         var = _var_dinse_approx(n_events_cr, kpe_prime, n_at_risk, cum_inc)
-    elif var_type == "Aalen":
-        var = _var_aalen(n_events_cr, kpe_prime, n_at_risk, cum_inc)
+    elif var_type == "Dinse":
+        var = _var_dinse(n_events_cr, kpe_prime, n_at_risk)
     else:
-        raise ValueError(f"{var_type=} must be one of 'Dinse', 'Dinse_Approx' or 'Aalen'.")
+        raise ValueError(f"{var_type=} must be one of 'Aalen', 'Dinse', or 'Dinse_Approx'.")
 
     _x, _y, conf_int_km = kaplan_meier_estimator(event > 0, time_exit, conf_type="log-log")
     ci = np.empty(shape=(n_risks + 1, 2, n_t), dtype=conf_int_km.dtype)
