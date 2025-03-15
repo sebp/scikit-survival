@@ -30,6 +30,11 @@ table {
     transition: all .2s
 }
 
+/* see https://github.com/pydata/pydata-sphinx-theme/issues/2112#issuecomment-2619729198 */
+.overview-grid .sd-card .sd-card-body {
+    background-color: unset !important;
+}
+
 .overview-grid .sd-card-hover:hover .sd-card-title {
     color: var(--pst-color-link-hover);
 }
