@@ -73,7 +73,40 @@ jobs:
   publish-to-testpypi:
     name: >-
       Publish scikit-surival 📉 distribution 📦 to TestPyPI
-    if: github.repository_owner == 'sebp' && github.event_name == 'push' #&& startsWith(github.ref, 'refs/tags/')  # only publish to PyPI on tag pushes
+    if: github.repository == 'sebp/scikit-survival' && github.event_name == 'workflow_dispatch'
+    needs:
+    - build_wheels
+    - build_sdist
+    runs-on: ubuntu-latest
+
+    environment:
+      name: testpypi-release
+      url: https://test.pypi.org/p/scikit-survival  # TestPyPI project name
+
+    permissions:
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
+
+    steps:
+      - name: Download packages
+        uses: actions/download-artifact@v4
+        with:
+          pattern: cibw-*
+          path: dist
+          merge-multiple: true
+
+      - name: Print out packages
+        run: ls dist
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          verbose: true
+
+  publish-to-pypi:
+    name: >-
+      Publish scikit-surival 📉 distribution 📦 to PyPI
+    if: github.repository == 'sebp/scikit-survival' && github.event_name == 'release' && startsWith(github.ref, 'refs/tags/')  # only publish to PyPI on tag pushes
     needs:
     - build_wheels
     - build_sdist
@@ -81,7 +114,7 @@ jobs:
 
     environment:
       name: pypi-release
-      url: https://test.pypi.org/p/scikit-survival  # PyPI project name
+      url: https://pypi.org/p/scikit-survival  # PyPI project name
 
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
@@ -99,5 +132,3 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
