@@ -146,7 +146,7 @@ exclude_patterns = ["_build", "**/README.*", "Thumbs.db", ".DS_Store"]
 nbsphinx_execute = "never"
 
 nbsphinx_prolog = r"""
-{% set docname = "doc/" + env.doc2path(env.docname, base=None) %}
+{% set docname = "doc/" + env.doc2path(env.docname, base=None)|string %}
 {% set notebook = env.doc2path(env.docname, base=None)|replace("user_guide/", "notebooks/") %}
 {% set branch = 'master' if 'dev' in env.config.release else 'v{}'.format(env.config.release) %}
 
