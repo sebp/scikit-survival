@@ -43,6 +43,6 @@ repos:
     hooks:
     -   id: black-jupyter
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.4
+    rev: v0.11.1
     hooks:
     -   id: ruff

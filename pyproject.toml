@@ -182,7 +182,7 @@ line-length = 120
 target-version = "py310"
 
 [tool.ruff.lint]
-ignore = ["C408"]
+ignore = ["A005", "C408"]
 ignore-init-module-imports = true
 select = [
     # pycodestyle

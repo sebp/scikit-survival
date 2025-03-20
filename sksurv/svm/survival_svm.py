@@ -460,7 +460,7 @@ class LargeScaleOptimizer(RankSVMOptimizer):
         l_plus, xv_plus, l_minus, xv_minus = self._counter.calculate(wf)  # pylint: disable=unused-variable
         x = self._counter.x
 
-        xw = self._xw  # noqa: F841; # pylint: disable=unused-variable
+        xw = self._xw  # pylint: disable=unused-variable; # noqa: F841
         z = numexpr.evaluate("(l_plus + l_minus) * xw - xv_plus - xv_minus - l_minus + l_plus")
 
         grad = wf + self._rank_penalty * np.dot(x.T, z)
