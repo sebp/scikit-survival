@@ -26,7 +26,7 @@ repos:
     -   id: rst-directive-colons
     -   id: rst-inline-touching-normal
 -   repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.29.4
+    rev: 0.31.3
     hooks:
     -   id: check-dependabot
     -   id: check-github-workflows
