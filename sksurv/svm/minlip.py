@@ -81,17 +81,22 @@ class OsqpSolver(QPSolver):
 
         solver_opts = self._get_options()
         m = osqp.OSQP()
-        m.setup(P=sparse.csc_matrix(P), q=q, A=G, u=h, **solver_opts)  # noqa: E741
+        m.setup(P=sparse.csc_matrix(P), q=q, A=G, l=None, u=h, **solver_opts)  # noqa: E741
         results = m.solve()
 
-        if results.info.status_val == -2:  # max iter reached
+        failed_codes = (
+            m.constant("OSQP_SOLVED"),
+            m.constant("OSQP_SOLVED_INACCURATE"),
+        )
+
+        if results.info.status_val == m.constant("OSQP_MAX_ITER_REACHED"):  # max iter reached
             warnings.warn(
                 (f"OSQP solver did not converge: {results.info.status}"),
                 category=ConvergenceWarning,
                 stacklevel=2,
             )
-        elif results.info.status_val not in (1, 2):  # pragma: no cover
-            # non of solved, solved inaccurate
+        elif results.info.status_val not in failed_codes:  # pragma: no cover
+            # none of SOLVED, solved SOLVED_INACCURATE
             raise RuntimeError(f"OSQP solver failed: {results.info.status}")
 
         n_iter = results.info.iter
@@ -103,7 +108,7 @@ class OsqpSolver(QPSolver):
             "eps_abs": 1e-5,
             "eps_rel": 1e-5,
             "max_iter": self.max_iter or 4000,
-            "polish": True,
+            "polishing": True,
             "verbose": self.verbose,
         }
         return solver_opts
