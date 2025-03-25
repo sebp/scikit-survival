@@ -3,7 +3,7 @@
 What's new in 0.24
 ==================
 
-scikit-survival 0.24.0 (2025-03-25)
+scikit-survival 0.24.1 (2025-03-25)
 -----------------------------------
 
 This release restricts the version of osqp to versions prior to 1.0.0.
