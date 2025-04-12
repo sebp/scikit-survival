@@ -16,11 +16,15 @@ jobs:
           eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
           brew install pandoc
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: astral-sh/setup-uv@v5
         with:
+          version: latest
           python-version: '3.11'
+          cache-dependency-glob: |
+            **/pyproject.toml
+            **/tox.ini
       - name: Install Tox
-        run: python -m pip install tox
+        run: uv tool install tox --with tox-uv
       - name: Run Tox
         env:
           RUFF_OUTPUT_FORMAT: github
