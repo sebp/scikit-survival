@@ -36,6 +36,7 @@ jobs:
         with:
           name: documentation
           path: doc/_build/html
+          compression-level: 9
         if: ${{ matrix.tox_env == 'docs' }}
       - name: Print debug information
         run: cat .tox/${{ matrix.tox_env }}/log/*.log
