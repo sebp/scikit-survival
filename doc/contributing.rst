@@ -161,7 +161,7 @@ please re-run the install command from the :ref:`setup-dev-environment` section.
 If you are new to Cython you may find the project's documentation on
 :ref:`debugging <cython:debugging>` and :ref:`profiling <cython:profiling>` helpful.
 
-.. _conda: https://conda.io/miniconda.html
+.. _conda: https://www.anaconda.com/docs/getting-started/miniconda/install
 .. _Cython: https://cython.org
 .. _Git: https://git-scm.com/
 .. _GitHub: https://github.com/sebp/scikit-survival
