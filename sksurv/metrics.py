@@ -229,11 +229,18 @@ def concordance_index_ipcw(survival_train, survival_test, estimate, tau=None, ti
 
     It is based on inverse probability of censoring weights, thus requires
     access to survival times from the training data to estimate the censoring
-    distribution. Note that this requires that survival times `survival_test`
-    lie within the range of survival times `survival_train`. This can be
-    achieved by specifying the truncation time `tau`.
+    distribution, which `survival_train` provides.
+    Note that survival times in `survival_test` must lie within the range of
+    survival times in `survival_train`. This can be achieved by specifying the
+    truncation time `tau`.
     The resulting `cindex` tells how well the given prediction model works in
     predicting events that occur in the time range from 0 to `tau`.
+
+    For time points in `survival_test` that lie outside of the range specified by
+    values in `survival_train`, the probability of censoring is unknown and an
+    exception will be raised::
+
+        ValueError: time must be smaller than largest observed time point
 
     The estimator uses the Kaplan-Meier estimator to estimate the
     censoring survivor function. Therefore, it is restricted to
@@ -356,11 +363,19 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
 
     where :math:`\\omega_i` are inverse probability of censoring weights (IPCW).
 
-    To estimate IPCW, access to survival times from the training data is required
-    to estimate the censoring distribution. Note that this requires that survival
-    times `survival_test` lie within the range of survival times `survival_train`.
+    Estimating IPCW requires access to survival times from the training data
+    to estimate the censoring distribution, which `survival_train` provides.
+    Note that survival times in `survival_test` must lie within
+    the range of survival times in `survival_train`.
     This can be achieved by specifying `times` accordingly, e.g. by setting
     `times[-1]` slightly below the maximum expected follow-up time.
+
+    For time points in `survival_test` that lie outside of the range specified by
+    values in `survival_train`, the probability of censoring is unknown and an
+    exception will be raised::
+
+        ValueError: time must be smaller than largest observed time point
+
     IPCW are computed using the Kaplan-Meier estimator, which is
     restricted to situations where the random censoring assumption holds and
     censoring is independent of the features.
@@ -526,6 +541,19 @@ def brier_score(survival_train, survival_test, estimate, times):
     remaining event-free up to time point :math:`t` for a feature vector :math:`\\mathbf{x}`,
     and :math:`1/\\hat{G}(t)` is a inverse probability of censoring weight, estimated by
     the Kaplan-Meier estimator.
+
+    Estimating inverse probability of censoring weights requires
+    access to survival times from the training data to estimate the censoring
+    distribution, which `survival_train` provides.
+    Note that survival times in `survival_test` must lie within the range of
+    survival times in `survival_train`. This can be achieved by specifying `times`
+    accordingly, e.g. by setting `times[-1]` slightly below the maximum expected follow-up time.
+
+    For time points in `survival_test` that lie outside of the range specified by
+    values in `survival_train`, the probability of censoring is unknown and an
+    exception will be raised::
+
+        ValueError: time must be smaller than largest observed time point
 
     See the :ref:`User Guide </user_guide/evaluating-survival-models.ipynb#Time-dependent-Brier-Score>`
     and [1]_ for details.
