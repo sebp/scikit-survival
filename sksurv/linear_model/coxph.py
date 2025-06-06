@@ -14,7 +14,6 @@ import numbers
 import warnings
 
 import numpy as np
-from scipy.linalg import solve
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.utils._param_validation import Interval, StrOptions
@@ -428,52 +427,29 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         if alphas.shape[0] != X.shape[1]:
             raise ValueError(f"Length alphas ({alphas.shape[0]}) must match number of features ({X.shape[1]}).")
 
-        optimizer = CoxPHOptimizer(X, event, time, alphas, self.ties)
+        from ._coxph import fit
 
-        verbose_reporter = VerboseReporter(self.verbose)
-        w = np.zeros(X.shape[1])
-        w_prev = w
-        i = 0
-        loss = float("inf")
-        while True:
-            if i >= self.n_iter:
-                verbose_reporter.end_max_iter(i)
-                warnings.warn(
-                    ("Optimization did not converge: Maximum number of iterations has been exceeded."),
-                    stacklevel=2,
-                    category=ConvergenceWarning,
-                )
-                break
+        # sort descending
+        o = np.argsort(-time, kind="mergesort")
 
-            optimizer.update(w)
-            delta = solve(
-                optimizer.hessian, optimizer.gradient, overwrite_a=False, overwrite_b=False, check_finite=False
+        w = np.zeros(X.shape[1], dtype=np.float64)
+        iter_opt, w = fit(
+            np.asfortranarray(X[o, :], dtype=np.float64),
+            event[o].astype(np.uint8),
+            time[o].astype(np.float64),
+            w,
+            alphas.astype(np.float64),
+            self.tol,
+            self.n_iter,
+            self.ties == "breslow",
+        )
+
+        if iter_opt >= self.n_iter:
+            warnings.warn(
+                ("Optimization did not converge: Maximum number of iterations has been exceeded."),
+                stacklevel=2,
+                category=ConvergenceWarning,
             )
-
-            if not np.all(np.isfinite(delta)):
-                raise ValueError("search direction contains NaN or infinite values")
-
-            w_new = w - delta
-            loss_new = optimizer.nlog_likelihood(w_new)
-            verbose_reporter.update(i, delta, loss_new)
-            if loss_new > loss:
-                # perform step-halving if negative log-likelihood does not decrease
-                w = (w_prev + w) / 2
-                loss = optimizer.nlog_likelihood(w)
-                verbose_reporter.step_halving(i, loss)
-                i += 1
-                continue
-
-            w_prev = w
-            w = w_new
-
-            res = np.abs(1 - (loss_new / loss))
-            if res < self.tol:
-                verbose_reporter.end_converged(i)
-                break
-
-            loss = loss_new
-            i += 1
 
         self.coef_ = w
         self._baseline_model.fit(np.dot(X, self.coef_), event, time)
