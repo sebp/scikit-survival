@@ -82,6 +82,12 @@ EXTENSIONS = {
         "include_dirs": ["sksurv/linear_model/src", "sksurv/linear_model/src/eigen"],
         "extra_compile_args": ["-std=c++14"],
     },
+    "_coxph": {
+        "sources": ["sksurv/linear_model/_coxph.pyx", "sksurv/linear_model/src/coxph.cpp"],
+        "language": "c++",
+        "include_dirs": ["sksurv/linear_model/src", "sksurv/linear_model/src/eigen"],
+        "extra_compile_args": ["-std=c++14"],
+    },
 }
 
 

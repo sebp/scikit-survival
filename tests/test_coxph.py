@@ -674,7 +674,7 @@ class TestCoxPH:
         cph.fit(rossi.x.values, rossi.y)
 
         actual = pd.Series(cph.coef_, index=rossi.x.columns)
-        assert_array_almost_equal(coef_rossi_coxph_breslow.values, actual.loc[coef_rossi_coxph_breslow.index].values)
+        assert_array_almost_equal(actual.loc[coef_rossi_coxph_breslow.index].values, coef_rossi_coxph_breslow.values)
 
     @staticmethod
     def test_likelihood_efron(rossi, coef_rossi_coxph_efron):
@@ -706,7 +706,7 @@ class TestCoxPH:
         cph.fit(rossi.x.values, rossi.y)
 
         actual = pd.Series(cph.coef_, index=rossi.x.columns)
-        assert_array_almost_equal(coef_rossi_coxph_efron.values, actual.loc[coef_rossi_coxph_efron.index].values)
+        assert_array_almost_equal(actual.loc[coef_rossi_coxph_efron.index].values, coef_rossi_coxph_efron.values)
 
     @staticmethod
     def test_predict(rossi):
@@ -738,7 +738,7 @@ class TestCoxPH:
 
         pred = cph.predict(xc.iloc[idx, :].values)
 
-        assert_array_almost_equal(expected, pred)
+        assert_array_almost_equal(pred, expected)
 
     @staticmethod
     def test_fit_ridge_1(rossi):
@@ -760,7 +760,7 @@ class TestCoxPH:
         )
 
         actual = pd.Series(cph.coef_, index=rossi.x.columns)
-        assert_array_almost_equal(expected.values, actual.loc[expected.index].values)
+        assert_array_almost_equal(actual.loc[expected.index].values, expected.values)
 
     @staticmethod
     def test_fit_ridge_2(rossi):
@@ -782,7 +782,7 @@ class TestCoxPH:
         )
 
         actual = pd.Series(cph.coef_, index=rossi.x.columns)
-        assert_array_almost_equal(expected.values, actual.loc[expected.index].values)
+        assert_array_almost_equal(actual.loc[expected.index].values, expected.values)
 
     @staticmethod
     def test_fit_unpenalized():
