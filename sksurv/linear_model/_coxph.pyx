@@ -7,7 +7,7 @@ np.import_array()
 cdef extern from "coxph.cpp" nogil:
     np.npy_uint64 coxph_fit[T](
         T* X_ptr, np.npy_uint8* event_ptr, T* time_ptr, T* w_ptr, T* alpha_ptr,
-        np.npy_uint64 n_samples, np.npy_uint64 n_features, T tol, np.npy_uint64 n_iter, bint breslow
+        np.npy_int64 n_samples, np.npy_int64 n_features, T tol, np.npy_uint64 n_iter, bint breslow
     ) except +
 
 @cython.boundscheck(False)
