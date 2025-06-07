@@ -25,27 +25,30 @@ enum {
 };
 
 template <
-    typename DerivedMatrix,
-    typename DerivedFloatVector,
-    typename DerivedIntVector >
+    typename MatrixType,
+    typename FloatVectorType,
+    typename IntVectorType >
 class Data
 {
 public:
-    using Index = typename DerivedMatrix::Index;
-    using Matrix = Eigen::MatrixBase<DerivedMatrix>;
-    using FloatVector = Eigen::MatrixBase<DerivedFloatVector>;
-    using IntVector = Eigen::MatrixBase<DerivedIntVector>;
+    using Index = typename MatrixType::Index;
+    using Matrix = MatrixType;
+    using FloatVector = FloatVectorType;
+    using IntVector = IntVectorType;
 
-    EIGEN_STATIC_ASSERT_VECTOR_ONLY(DerivedFloatVector);
-    EIGEN_STATIC_ASSERT_VECTOR_ONLY(DerivedIntVector);
-    EIGEN_STATIC_ASSERT(Eigen::NumTraits<typename DerivedIntVector::Scalar>::IsInteger,
+    EIGEN_STATIC_ASSERT_VECTOR_ONLY(FloatVectorType);
+    EIGEN_STATIC_ASSERT_VECTOR_ONLY(IntVectorType);
+    EIGEN_STATIC_ASSERT(Eigen::NumTraits<typename IntVectorType::Scalar>::IsInteger,
                         FLOATING_POINT_ARGUMENT_PASSED__INTEGER_WAS_EXPECTED);
 
-    Data(const Matrix &x,
-         const FloatVector &time,
-         const IntVector &event,
-         const FloatVector &penalty_factor) : m_x(x), m_time(time), m_event(event),
-                                               m_penalty_factor(penalty_factor),
+    template<typename DerivedMatrix, typename DerivedFloatVector, typename DerivedIntVector>
+    Data(const Eigen::MatrixBase<DerivedMatrix> &x,
+         const Eigen::MatrixBase<DerivedFloatVector> &time,
+         const Eigen::MatrixBase<DerivedIntVector> &event,
+         const Eigen::MatrixBase<DerivedFloatVector> &penalty_factor) : m_x(x.derived()),
+                                               m_time(time.derived()),
+                                               m_event(event.derived()),
+                                               m_penalty_factor(penalty_factor.derived()),
                                                m_samples(x.rows()),
                                                m_features(x.cols())
     {
@@ -56,10 +59,10 @@ public:
         eigen_assert ((event.array() <= 1).all());
     }
 
-    const DerivedMatrix& x() const { return m_x.derived(); }
-    const DerivedFloatVector& time() const { return m_time.derived(); }
-    const DerivedIntVector& event() const { return m_event.derived(); }
-    const DerivedFloatVector& penalty_factor() const { return m_penalty_factor.derived(); }
+    const MatrixType& x() const { return m_x; }
+    const FloatVectorType& time() const { return m_time; }
+    const IntVectorType& event() const { return m_event; }
+    const FloatVectorType& penalty_factor() const { return m_penalty_factor; }
     const Index& n_samples() const { return m_samples; }
     const Index& n_features() const { return m_features; }
 

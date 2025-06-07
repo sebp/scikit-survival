@@ -15,23 +15,26 @@
 #ifndef GLMNET_FIT_RESULT_H
 #define GLMNET_FIT_RESULT_H
 
+#include <Eigen/Core>
 #include <cstddef>
 #include "error.h"
 
 
 namespace coxnet {
 
-template <typename T, typename S>
+template <typename MatrixType_, typename VectorType_>
 class FitResult {
 public:
-    using MatrixType = T;
-    using VectorType = S;
+    using MatrixType = MatrixType_;
+    using VectorType = VectorType_;
 
-    FitResult(MatrixType &coef,
-              VectorType &alphas,
-              VectorType &deviance_ratio) : m_coef_path(coef),
-                                            m_alphas(alphas),
-                                            m_deviance_ratio(deviance_ratio)
+    template<typename DerivedMatrix, typename DerivedVector>
+    FitResult(Eigen::MatrixBase<DerivedMatrix> &coef,
+              Eigen::MatrixBase<DerivedVector> &alphas,
+              Eigen::MatrixBase<DerivedVector> &deviance_ratio) :
+        m_coef_path(coef.derived()),
+        m_alphas(alphas.derived()),
+        m_deviance_ratio(deviance_ratio.derived())
     {}
 
     const MatrixType& getCoefficientPath() const {
