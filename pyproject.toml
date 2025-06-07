@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "setuptools>=64",
+    "setuptools>=77",
     "setuptools-scm>=8",
     "packaging",
     # same as scikit-learn
@@ -21,13 +21,13 @@ readme = "README.rst"
 authors = [
     {name = "Sebastian Pölsterl", email = "sebp@k-d-w.org"}
 ]
-license = {file = "COPYING"}
+license = "GPL-3.0-or-later"
+license-files = ["COPYING"]
 requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Operating System :: MacOS",
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX",
