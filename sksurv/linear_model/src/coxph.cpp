@@ -19,30 +19,27 @@
 #include <Eigen/Core>
 #include <iostream>
 
-template<typename _Scalar, typename _Int>
+template<typename MatrixType, typename TimeVectorType, typename EventVectorType>
 class CoxPHSolver
 {
 public:
-  typedef _Scalar Scalar;
-  typedef _Int Integer;
-  typedef Eigen::Matrix<_Int, Eigen::Dynamic, 1> IntVector;
-  typedef Eigen::Matrix<_Scalar, Eigen::Dynamic, 1> FloatVector;
-  typedef Eigen::Matrix<_Scalar, Eigen::Dynamic, Eigen::Dynamic> FloatMatrix;
-  typedef typename FloatMatrix::Index Index;
+  using IntVector = EventVectorType;
+  using FloatVector = TimeVectorType;
+  using FloatMatrix = MatrixType;
+  using Index = typename MatrixType::Index;
+  using Scalar = typename MatrixType::Scalar;
+  using Integer = typename EventVectorType::Scalar;
 
   EIGEN_STATIC_ASSERT_VECTOR_ONLY(FloatVector);
   EIGEN_STATIC_ASSERT_VECTOR_ONLY(IntVector);
   EIGEN_STATIC_ASSERT(Eigen::NumTraits<Integer>::IsInteger,
                       FLOATING_POINT_ARGUMENT_PASSED__INTEGER_WAS_EXPECTED);
 
-  template<typename MatrixDerived,
-           typename VectorfDerived,
-           typename VectoriDerived>
-  explicit CoxPHSolver(const Eigen::MatrixBase<MatrixDerived>& x,
-                       const Eigen::MatrixBase<VectoriDerived>& event,
-                       const Eigen::MatrixBase<VectorfDerived>& time,
-                       const Eigen::MatrixBase<VectorfDerived>& alpha,
-                       bool breslow)
+   CoxPHSolver(const Eigen::Ref<const MatrixType>& x,
+               const Eigen::Ref<const EventVectorType>& event,
+               const Eigen::Ref<const TimeVectorType>& time,
+               const Eigen::Ref<const TimeVectorType>& alpha,
+               bool breslow)
     : m_x(x)
     , m_event(event)
     , m_time(time)
@@ -67,18 +64,18 @@ public:
               Scalar offset = 0);
 
 private:
-  const FloatMatrix m_x;
-  const FloatVector m_time;
-  const IntVector m_event;
-  const FloatVector m_alpha;
+  Eigen::Ref<const FloatMatrix> m_x;
+  Eigen::Ref<const FloatVector> m_time;
+  Eigen::Ref<const IntVector> m_event;
+  Eigen::Ref<const FloatVector> m_alpha;
   bool m_breslow;
 };
 
 // Function to compute negative partial log-likelihood
-template<typename _S, typename _I>
+template<typename M_, typename T_, typename E_>
 template<typename VectorDerived>
-typename CoxPHSolver<_S, _I>::Scalar
-CoxPHSolver<_S, _I>::nlog_likelihood(
+typename CoxPHSolver<M_, T_, E_>::Scalar
+CoxPHSolver<M_, T_, E_>::nlog_likelihood(
   const Eigen::MatrixBase<VectorDerived>& w) const
 {
   FloatVector xw = m_x * w;
@@ -123,16 +120,16 @@ CoxPHSolver<_S, _I>::nlog_likelihood(
 }
 
 // Function to update gradient and hessian
-template<typename _S, typename _I>
+template<typename M_, typename T_, typename E_>
 template<typename DerivedA, typename DerivedB, typename DerivedC>
 void
-CoxPHSolver<_S, _I>::update(const Eigen::MatrixBase<DerivedA>& w,
+CoxPHSolver<M_, T_, E_>::update(const Eigen::MatrixBase<DerivedA>& w,
                             Eigen::MatrixBase<DerivedB>& gradient,
                             Eigen::MatrixBase<DerivedC>& hessian,
                             Scalar offset)
 {
-  typedef typename DerivedB::PlainObject Vector;
-  typedef typename DerivedC::PlainObject Matrix;
+  using Vector = typename DerivedB::PlainObject;
+  using Matrix = typename DerivedC::PlainObject;
 
   Vector exp_xw = (m_x * w /*+ offset*/).array().exp().matrix();
   const Index n_samples = m_x.rows();
@@ -211,16 +208,16 @@ coxph_fit(FloatType* X_ptr,
           FloatType* time_ptr,
           FloatType* w_ptr,
           FloatType* alpha_ptr,
-          std::uint64_t n_samples,
-          std::uint64_t n_features,
+          std::int64_t n_samples,
+          std::int64_t n_features,
           FloatType tol,
           std::uint64_t n_iter,
           bool breslow)
 {
-  typedef CoxPHSolver<FloatType, std::uint8_t> SolverType;
-  typedef typename SolverType::IntVector VectorXuint8;
-  typedef typename SolverType::FloatVector VectorXd;
-  typedef typename SolverType::FloatMatrix MatrixXd;
+  using VectorXuint8 = Eigen::Matrix<std::uint8_t, Eigen::Dynamic, 1>;
+  using VectorXd = Eigen::Matrix<FloatType, Eigen::Dynamic, 1>;
+  using MatrixXd = Eigen::Matrix<FloatType, Eigen::Dynamic, Eigen::Dynamic>;
+  using SolverType = CoxPHSolver<MatrixXd, VectorXd, VectorXuint8>;
 
   // Map raw pointers to Eigen objects
   Eigen::Map<MatrixXd> X(X_ptr, n_samples, n_features);
