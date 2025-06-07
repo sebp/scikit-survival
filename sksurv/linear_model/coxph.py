@@ -434,7 +434,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         w = np.zeros(X.shape[1], dtype=np.float64)
         iter_opt, w = fit(
-            np.asfortranarray(X[o, :], dtype=np.float64),
+            np.ascontiguousarray(X[o, :], dtype=np.float64),
             event[o].astype(np.uint8),
             time[o].astype(np.float64),
             w,

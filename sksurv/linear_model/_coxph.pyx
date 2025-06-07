@@ -12,7 +12,7 @@ cdef extern from "coxph.cpp" nogil:
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def fit(np.ndarray[np.float64_t, ndim=2, mode="fortran"] X,
+def fit(np.ndarray[np.float64_t, ndim=2] X,
         np.ndarray[np.uint8_t, ndim=1] event,
         np.ndarray[np.float64_t, ndim=1] time,
         np.ndarray[np.float64_t, ndim=1] w,

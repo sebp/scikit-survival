@@ -216,7 +216,7 @@ coxph_fit(FloatType* X_ptr,
 {
   using VectorXuint8 = Eigen::Matrix<std::uint8_t, Eigen::Dynamic, 1>;
   using VectorXd = Eigen::Matrix<FloatType, Eigen::Dynamic, 1>;
-  using MatrixXd = Eigen::Matrix<FloatType, Eigen::Dynamic, Eigen::Dynamic>;
+  using MatrixXd = Eigen::Matrix<FloatType, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
   using SolverType = CoxPHSolver<MatrixXd, VectorXd, VectorXuint8>;
 
   // Map raw pointers to Eigen objects
