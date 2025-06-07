@@ -34,11 +34,11 @@ template<typename T, typename S, typename U>
 class Coxnet
 {
 public:
-    typedef typename T::Scalar Scalar;
-    typedef typename T::Index Index;
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> MatrixType;
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> VectorType;
-    typedef Data<T, S, U> DataType;
+    using Scalar = typename T::Scalar;
+    using Index = typename T::Index;
+    using MatrixType = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+    using VectorType = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
+    using DataType = Data<T, S, U>;
 
     EIGEN_STATIC_ASSERT_VECTOR_ONLY(VectorType);
 

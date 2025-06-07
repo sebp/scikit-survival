@@ -24,15 +24,15 @@ namespace coxnet {
 
 template <typename Key>
 struct __link {
-    typedef Key key_type;
-    typedef __link<key_type> link_type;
-    typedef std::shared_ptr<link_type> pointer;
+    using key_type = Key;
+    using link_type = __link<key_type>;
+    using pointer = std::shared_ptr<link_type>;
 
     key_type key;
     pointer next;
     std::weak_ptr<link_type> prev;
 
-    explicit __link() {}
+    explicit __link() = default;
     __link (const Key &_key) : key(_key) {}
     __link (const Key &_key,
             pointer &_next,
@@ -42,10 +42,10 @@ struct __link {
 template <typename T>
 class ordered_dict_iterator {
 public:
-    typedef T link_type;
-    typedef std::shared_ptr<link_type> link_pointer;
-    typedef typename link_type::key_type key_type;
-    typedef ordered_dict_iterator<T> iterator;
+    using link_type = T;
+    using link_pointer = std::shared_ptr<link_type>;
+    using key_type = typename link_type::key_type;
+    using iterator = ordered_dict_iterator<T>;
 
     ordered_dict_iterator(const link_pointer &__root) : m_root(__root) {}
 
@@ -75,14 +75,13 @@ private:
 template <typename Key>
 class ordered_dict : public std::set<Key> {
 public:
-    typedef std::set<Key> base;
-    typedef typename base::key_type key_type;
-    typedef __link<Key> link_type;
-    typedef std::shared_ptr<link_type> link_pointer;
-    typedef ordered_dict_iterator<const link_type> const_iterator;
+    using base = std::set<Key>;
+    using key_type = typename base::key_type;
+    using link_type = __link<Key>;
+    using link_pointer = std::shared_ptr<link_type>;
+    using const_iterator = ordered_dict_iterator<const link_type>;
 
-    explicit ordered_dict() {
-        m_root = std::make_shared<link_type>(-1);
+    explicit ordered_dict() : m_root(std::make_shared<link_type>(-1)) {
         m_root->next = m_root;
         m_root->prev = m_root;
     }

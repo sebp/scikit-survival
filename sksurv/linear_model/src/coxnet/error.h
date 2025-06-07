@@ -15,7 +15,9 @@
 #ifndef GLMNET_ERROR_H
 #define GLMNET_ERROR_H
 
-enum ErrorType {
+#include <cstdint>
+
+enum ErrorType : std::uint8_t {
     NONE,
     WEIGHT_TOO_LARGE,  // exponential of weight is infinite
 };

@@ -24,17 +24,14 @@ namespace coxnet {
 template <typename T, typename S>
 class FitResult {
 public:
-    typedef T MatrixType;
-    typedef S VectorType;
+    using MatrixType = T;
+    using VectorType = S;
 
     FitResult(MatrixType &coef,
               VectorType &alphas,
               VectorType &deviance_ratio) : m_coef_path(coef),
                                             m_alphas(alphas),
-                                            m_deviance_ratio(deviance_ratio),
-                                            m_iterations(0),
-                                            m_n_alphas(0),
-                                            m_error(NONE)
+                                            m_deviance_ratio(deviance_ratio)
     {}
 
     const MatrixType& getCoefficientPath() const {
@@ -79,17 +76,17 @@ public:
         m_error = error_type;
     }
 
+    // intentionally not implemented
+    FitResult (const FitResult&) = delete;
+    FitResult& operator=(const FitResult&) = delete;
+
 private:
     MatrixType &m_coef_path;
     VectorType &m_alphas;
     VectorType &m_deviance_ratio;
-    std::size_t m_iterations;
-    typename VectorType::Index m_n_alphas;
-    ErrorType m_error;
-
-    // intentionally not implemented
-    FitResult (const FitResult&);
-    FitResult& operator=(const FitResult&);
+    std::size_t m_iterations {0};
+    typename VectorType::Index m_n_alphas {0};
+    ErrorType m_error {NONE};
 };
 
 }

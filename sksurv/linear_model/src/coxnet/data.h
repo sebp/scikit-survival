@@ -31,10 +31,10 @@ template <
 class Data
 {
 public:
-    typedef typename DerivedMatrix::Index Index;
-    typedef Eigen::MatrixBase<DerivedMatrix> Matrix;
-    typedef Eigen::MatrixBase<DerivedFloatVector> FloatVector;
-    typedef Eigen::MatrixBase<DerivedIntVector> IntVector;
+    using Index = typename DerivedMatrix::Index;
+    using Matrix = Eigen::MatrixBase<DerivedMatrix>;
+    using FloatVector = Eigen::MatrixBase<DerivedFloatVector>;
+    using IntVector = Eigen::MatrixBase<DerivedIntVector>;
 
     EIGEN_STATIC_ASSERT_VECTOR_ONLY(DerivedFloatVector);
     EIGEN_STATIC_ASSERT_VECTOR_ONLY(DerivedIntVector);

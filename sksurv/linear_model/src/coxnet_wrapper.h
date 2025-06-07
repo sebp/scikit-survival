@@ -22,14 +22,14 @@
 
 
 namespace Eigen {
-    typedef Matrix<std::uint8_t, Eigen::Dynamic, 1> VectorXuint8;
+    using VectorXuint8 = Matrix<std::uint8_t, Eigen::Dynamic, 1>;
 }
 
 
 template <typename MatrixType>
 Eigen::Map<MatrixType> create_map(PyArrayObject *object) {
-    typedef Eigen::Map<MatrixType> MapType;
-    typedef typename MapType::PointerType PointerType;
+    using MapType = Eigen::Map<MatrixType>;
+    using PointerType = typename MapType::PointerType;
 
     // ROW: If array is in row-major order, transpose (see README)
     if ((PyObject*)object == Py_None) {
@@ -73,12 +73,12 @@ PyObject* fit_coxnet(
         double eps,
         bool verbose)
 {
-    typedef Eigen::Map<T> MatrixType;
-    typedef Eigen::Map<S> VectorType;
-    typedef Eigen::Map<U> IntVectorType;
-    typedef coxnet::Coxnet<MatrixType, VectorType, IntVectorType> CoxnetType;
-    typedef typename CoxnetType::DataType DataType;
-    typedef coxnet::FitResult<MatrixType, VectorType> ResultType;
+    using MatrixType = Eigen::Map<T>;
+    using VectorType = Eigen::Map<S>;
+    using IntVectorType = Eigen::Map<U>;
+    using CoxnetType = coxnet::Coxnet<MatrixType, VectorType, IntVectorType>;
+    using DataType = typename CoxnetType::DataType;
+    using ResultType = coxnet::FitResult<MatrixType, VectorType>;
 
     MatrixType x_map(create_map<T> (X));
     VectorType time_map(create_map<S> (time));
@@ -87,10 +87,10 @@ PyObject* fit_coxnet(
 
     const DataType _data(x_map, time_map, event_map, pen_map);
 
-    PyArrayObject *final_alphas = (PyArrayObject*)PyArray_EMPTY(1, PyArray_SHAPE(alphas), NPY_FLOAT64, NPY_FORTRANORDER);
-    PyArrayObject *final_dev_ratio = (PyArrayObject*)PyArray_EMPTY(1, PyArray_SHAPE(alphas), NPY_FLOAT64, NPY_FORTRANORDER);
+    auto *final_alphas = (PyArrayObject*)PyArray_EMPTY(1, PyArray_SHAPE(alphas), NPY_FLOAT64, NPY_FORTRANORDER);
+    auto *final_dev_ratio = (PyArrayObject*)PyArray_EMPTY(1, PyArray_SHAPE(alphas), NPY_FLOAT64, NPY_FORTRANORDER);
     npy_intp coef_shape[2] = { PyArray_DIM(X, 1), PyArray_DIM(alphas, 0) };
-    PyArrayObject *coef_path = (PyArrayObject*)PyArray_EMPTY(2, coef_shape, NPY_FLOAT64, NPY_FORTRANORDER);
+    auto *coef_path = (PyArrayObject*)PyArray_EMPTY(2, coef_shape, NPY_FLOAT64, NPY_FORTRANORDER);
 
     MatrixType coef_path_map(create_map<T> (coef_path));
     VectorType final_alphas_map(create_map<S> (final_alphas));

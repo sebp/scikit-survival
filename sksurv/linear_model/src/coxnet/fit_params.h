@@ -15,7 +15,6 @@
 #ifndef GLMNET_FIT_PARAMS_H
 #define GLMNET_FIT_PARAMS_H
 
-#include <cstdint>
 #include <Eigen/Core>
 
 #include "error.h"
@@ -26,8 +25,8 @@ namespace coxnet {
 
 template<typename VectorType>
 struct FitParams {
-    typedef typename VectorType::Index Index;
-    typedef typename VectorType::Scalar Scalar;
+    using Index = typename VectorType::Index;
+    using Scalar = typename VectorType::Scalar;
 
     FitParams(Index n_samples,
               Index n_features,
@@ -37,9 +36,7 @@ struct FitParams {
                                             risk_set(n_samples),
                                             xw(n_samples),
                                             eps(_eps),
-                                            maybe_active_set(n_features),
-                                            n_iterations(0),
-                                            error_type(NONE)
+                                            maybe_active_set(n_features)
     {
     }
 
@@ -55,8 +52,8 @@ struct FitParams {
 
     Eigen::Array<bool, Eigen::Dynamic, 1> maybe_active_set;
     ordered_dict<Index> active_set;
-    std::size_t n_iterations;
-    ErrorType error_type;
+    std::size_t n_iterations {0};
+    ErrorType error_type {NONE};
 };
 
 
