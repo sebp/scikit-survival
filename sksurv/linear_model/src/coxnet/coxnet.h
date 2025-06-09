@@ -34,16 +34,16 @@ template<typename T, typename S, typename U>
 class Coxnet
 {
 public:
-    typedef typename T::Scalar Scalar;
-    typedef typename T::Index Index;
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> MatrixType;
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> VectorType;
-    typedef Data<T, S, U> DataType;
+    using Scalar = typename T::Scalar;
+    using Index = typename T::Index;
+    using MatrixType = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+    using VectorType = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
+    using DataType = Data<T, S, U>;
 
     EIGEN_STATIC_ASSERT_VECTOR_ONLY(VectorType);
 
-    Coxnet(const DataType &data, const Parameters &params) : m_data(data), m_parameters(params),
-        m_params(data.n_samples(), data.n_features(), params.get_tolerance())
+    Coxnet(const DataType &data, const Parameters &params) : m_data{data}, m_parameters{params},
+        m_params{data.n_samples(), data.n_features(), params.get_tolerance()}
     {
     }
 
@@ -72,9 +72,9 @@ Coxnet<T, S, U>::null_deviance (
     Scalar *out_loglik_saturated)
 {
     const U &event = m_data.event();
-    Scalar norm_factor = 1.0 / m_data.n_samples();
-    Index n_events = 0;
-    Scalar out_loglik_null = 0;
+    Scalar norm_factor {1.0 / m_data.n_samples()};
+    Index n_events {0};
+    Scalar out_loglik_null {0};
 
     for (Index i = 0; i < m_data.n_samples(); ++i) {
         if (event[i] != 0) {
@@ -96,8 +96,8 @@ Coxnet<T, S, U>::log_likelihood ()
     const VectorType &xw = m_params.xw;
     const VectorType &risk_set = m_params.risk_set;
 
-    Scalar norm_factor = 1.0 / m_data.n_samples();
-    Scalar loglik = 0.;
+    Scalar norm_factor {1.0 / m_data.n_samples()};
+    Scalar loglik {0.};
 
     /* iterate time in descending order */
     for (Index i = 0; i < m_data.n_samples(); ++i) {
@@ -122,14 +122,14 @@ Coxnet<T, S, U>::update ()
     Scalar ti;
     Scalar v;
 
-    Index n_samples = m_data.n_samples();
-    Scalar norm_factor = 1.0 / n_samples;
+    Index n_samples {m_data.n_samples()};
+    Scalar norm_factor {1.0 / n_samples};
     VectorType exp_xw = xw.array().exp();
 
     /* iterate time in descending order */
     out_risk_set[0] = exp_xw[0] * norm_factor;
-    Index i = 1;
-    Index k = 1;
+    Index i {1};
+    Index k {1};
     while (i < n_samples) {
         ti = time[i];
         v = out_risk_set[i - 1];
@@ -149,15 +149,15 @@ Coxnet<T, S, U>::update ()
         }
     }
 
-    Scalar denominator_risk_set = 0.0;
-    Scalar denominator_risk_set_sq = 0.0;
+    Scalar denominator_risk_set {0.0};
+    Scalar denominator_risk_set_sq {0.0};
 
     /* iterate time in ascending order */
     i = n_samples - 1;
     while (i >= 0) {
         ti = time[i];
-        std::uint64_t c = 0;
-        Index k = i;
+        std::uint64_t c {0};
+        Index k {i};
         while (k >= 0 && ti == time[k]) {
             if (event[k] == 1) {
                 c++;
@@ -187,17 +187,17 @@ void Coxnet<T, S, U>::fit(
         bool create_path,
         ResultType &result)
 {
-    Scalar alpha = 0;
+    Scalar alpha {0};
     Scalar alpha_old;
     Scalar l1penalty;
     Scalar l2penalty;
 
-    Scalar loglik_saturated = 0;
+    Scalar loglik_saturated {0};
     Scalar deviance_null;
 
-    const Index n_alphas = alphas.size();
-    const double factor = std::pow(m_parameters.get_alpha_min_ratio(), 1.0 / (n_alphas - 1.0));
-    const double l1_ratio = m_parameters.get_l1_ratio();
+    const Index n_alphas { alphas.size() };
+    const double factor { std::pow(m_parameters.get_alpha_min_ratio(), 1.0 / (n_alphas - 1.0)) };
+    const double l1_ratio { m_parameters.get_l1_ratio() };
 
     typename ResultType::VectorType &final_alphas = result.getAlphas();
     typename ResultType::MatrixType &coef_path = result.getCoefficientPath();
@@ -281,7 +281,7 @@ void Coxnet<T, S, U>::fit_alpha(Scalar l1penalty, Scalar l2penalty) {
     Scalar delta_coef;
     const T &m_X = m_data.x();
     const S &m_penalty_factor = m_data.penalty_factor();
-    std::size_t max_iter = m_parameters.get_max_iter();
+    std::size_t max_iter { m_parameters.get_max_iter() };
 
     while (true) {
         VectorType coef_x(m_params.coef_x);
@@ -289,7 +289,7 @@ void Coxnet<T, S, U>::fit_alpha(Scalar l1penalty, Scalar l2penalty) {
         while (true) {
             /* complete cycle */
             m_params.n_iterations++;
-            Scalar max_update = 0.;
+            Scalar max_update {0.};
 
             for (Index j = 0; j < m_data.n_features(); ++j) {
                 if (m_params.maybe_active_set[j])
@@ -323,13 +323,13 @@ void Coxnet<T, S, U>::fit_alpha(Scalar l1penalty, Scalar l2penalty) {
             /* iterate over active set */
             while (true) {
                 m_params.n_iterations++;
-                Scalar max_update_old(max_update);
+                Scalar max_update_old {max_update};
                 max_update = 0.;
 
                 /* update coefficients */
                 for (auto it = m_params.active_set.cbegin_ordered();
                      it != m_params.active_set.cend_ordered(); ++it) {
-                    Index j = *it;
+                    Index j {*it};
                     coef_j = coef_x[j];
                     temp = m_X.col(j).dot(m_params.residuals) + coef_j * wx2[j];
                     coef_x[j] = soft_threshold(temp,
@@ -373,7 +373,7 @@ void Coxnet<T, S, U>::fit_alpha(Scalar l1penalty, Scalar l2penalty) {
             /* check active coefficients */
             for (auto it = m_params.active_set.cbegin_ordered();
                  it != m_params.active_set.cend_ordered(); ++it) {
-                Index j = *it;
+                Index j {*it};
                 delta_coef = coef_x[j] - m_params.coef_x[j];
                 if (wx2[j] * delta_coef * delta_coef >= m_params.eps) {
                     converged = false;

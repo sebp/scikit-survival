@@ -22,16 +22,16 @@ namespace coxnet {
 
 class Parameters {
 public:
-    Parameters() : m_alpha_min_ratio(0.01), m_l1_ratio(0.5), m_max_iter(10000), m_eps(1e-7), m_verbose(false) {}
+    Parameters() = default;
     Parameters(const double alpha_min_ratio,
                const double l1_ratio,
                const std::size_t max_iter,
                const double eps,
-               const bool verbose) : m_alpha_min_ratio(alpha_min_ratio),
-                                     m_l1_ratio(l1_ratio),
-                                     m_max_iter(max_iter),
-                                     m_eps(eps),
-                                     m_verbose(verbose) {}
+               const bool verbose) : m_alpha_min_ratio{alpha_min_ratio},
+                                     m_l1_ratio{l1_ratio},
+                                     m_max_iter{max_iter},
+                                     m_eps{eps},
+                                     m_verbose{verbose} {}
 
     void set_alpha_min_ratio(const double value) {
         m_alpha_min_ratio = value;
@@ -69,11 +69,11 @@ public:
     }
 
 private:
-    double m_alpha_min_ratio;
-    double m_l1_ratio;
-    std::size_t m_max_iter;
-    double m_eps;
-    bool m_verbose;
+    double m_alpha_min_ratio {0.01};
+    double m_l1_ratio {0.5};
+    std::size_t m_max_iter {10000};
+    double m_eps {1e-7};
+    bool m_verbose {false};
 };
 
 }

@@ -22,14 +22,14 @@
 
 
 namespace Eigen {
-    typedef Matrix<std::uint8_t, Eigen::Dynamic, 1> VectorXuint8;
+    using VectorXuint8 = Matrix<std::uint8_t, Eigen::Dynamic, 1>;
 }
 
 
 template <typename MatrixType>
 Eigen::Map<MatrixType> create_map(PyArrayObject *object) {
-    typedef Eigen::Map<MatrixType> MapType;
-    typedef typename MapType::PointerType PointerType;
+    using MapType = Eigen::Map<MatrixType>;
+    using PointerType = typename MapType::PointerType;
 
     // ROW: If array is in row-major order, transpose (see README)
     if ((PyObject*)object == Py_None) {
@@ -73,40 +73,40 @@ PyObject* fit_coxnet(
         double eps,
         bool verbose)
 {
-    typedef Eigen::Map<T> MatrixType;
-    typedef Eigen::Map<S> VectorType;
-    typedef Eigen::Map<U> IntVectorType;
-    typedef coxnet::Coxnet<MatrixType, VectorType, IntVectorType> CoxnetType;
-    typedef typename CoxnetType::DataType DataType;
-    typedef coxnet::FitResult<MatrixType, VectorType> ResultType;
+    using MapMatrixType = Eigen::Map<T>;
+    using MapVectorType = Eigen::Map<S>;
+    using MapIntVectorType = Eigen::Map<U>;
+    using CoxnetType = coxnet::Coxnet<MapMatrixType, MapVectorType, MapIntVectorType>;
+    using DataType = typename CoxnetType::DataType;
+    using ResultType = coxnet::FitResult<MapMatrixType, MapVectorType>;
 
-    MatrixType x_map(create_map<T> (X));
-    VectorType time_map(create_map<S> (time));
-    IntVectorType event_map(create_map<U> (event));
-    VectorType pen_map(create_map<S> (penalty_factor));
+    MapMatrixType x_map = create_map<T> (X);
+    MapVectorType time_map = create_map<S> (time);
+    MapIntVectorType event_map = create_map<U> (event);
+    MapVectorType pen_map = create_map<S> (penalty_factor);
 
     const DataType _data(x_map, time_map, event_map, pen_map);
 
-    PyArrayObject *final_alphas = (PyArrayObject*)PyArray_EMPTY(1, PyArray_SHAPE(alphas), NPY_FLOAT64, NPY_FORTRANORDER);
-    PyArrayObject *final_dev_ratio = (PyArrayObject*)PyArray_EMPTY(1, PyArray_SHAPE(alphas), NPY_FLOAT64, NPY_FORTRANORDER);
+    auto *final_alphas = (PyArrayObject*)PyArray_EMPTY(1, PyArray_SHAPE(alphas), NPY_FLOAT64, NPY_FORTRANORDER);
+    auto *final_dev_ratio = (PyArrayObject*)PyArray_EMPTY(1, PyArray_SHAPE(alphas), NPY_FLOAT64, NPY_FORTRANORDER);
     npy_intp coef_shape[2] = { PyArray_DIM(X, 1), PyArray_DIM(alphas, 0) };
-    PyArrayObject *coef_path = (PyArrayObject*)PyArray_EMPTY(2, coef_shape, NPY_FLOAT64, NPY_FORTRANORDER);
+    auto *coef_path = (PyArrayObject*)PyArray_EMPTY(2, coef_shape, NPY_FLOAT64, NPY_FORTRANORDER);
 
-    MatrixType coef_path_map(create_map<T> (coef_path));
-    VectorType final_alphas_map(create_map<S> (final_alphas));
-    VectorType final_dev_ratio_map(create_map<S> (final_dev_ratio));
+    MapMatrixType coef_path_map = create_map<T> (coef_path);
+    MapVectorType final_alphas_map = create_map<S> (final_alphas);
+    MapVectorType final_dev_ratio_map = create_map<S> (final_dev_ratio);
     ResultType result(coef_path_map, final_alphas_map, final_dev_ratio_map);
 
     const coxnet::Parameters _params(alpha_min_ratio, l1_ratio, max_iter, eps, verbose);
     CoxnetType object(_data, _params);
-    const VectorType alphas_map(create_map<S> (alphas));
+    const MapVectorType alphas_map = create_map<S> (alphas);
     object.fit(alphas_map, create_path, result);
 
     switch (result.getError()) {
         case WEIGHT_TOO_LARGE: {
             throw std::range_error(
                 "Numerical error, because weights are too large. Consider increasing alpha.");
-            return NULL;
+            return nullptr;
         }
         case NONE:
             break;

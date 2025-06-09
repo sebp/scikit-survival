@@ -15,26 +15,26 @@
 #ifndef GLMNET_FIT_RESULT_H
 #define GLMNET_FIT_RESULT_H
 
+#include <Eigen/Core>
 #include <cstddef>
 #include "error.h"
 
 
 namespace coxnet {
 
-template <typename T, typename S>
+template <typename MatrixType_, typename VectorType_>
 class FitResult {
 public:
-    typedef T MatrixType;
-    typedef S VectorType;
+    using MatrixType = MatrixType_;
+    using VectorType = VectorType_;
 
-    FitResult(MatrixType &coef,
-              VectorType &alphas,
-              VectorType &deviance_ratio) : m_coef_path(coef),
-                                            m_alphas(alphas),
-                                            m_deviance_ratio(deviance_ratio),
-                                            m_iterations(0),
-                                            m_n_alphas(0),
-                                            m_error(NONE)
+    template<typename DerivedMatrix, typename DerivedVector>
+    FitResult(Eigen::MatrixBase<DerivedMatrix> &coef,
+              Eigen::MatrixBase<DerivedVector> &alphas,
+              Eigen::MatrixBase<DerivedVector> &deviance_ratio) :
+        m_coef_path{coef.derived()},
+        m_alphas{alphas.derived()},
+        m_deviance_ratio{deviance_ratio.derived()}
     {}
 
     const MatrixType& getCoefficientPath() const {
@@ -79,17 +79,17 @@ public:
         m_error = error_type;
     }
 
+    // intentionally not implemented
+    FitResult (const FitResult&) = delete;
+    FitResult& operator=(const FitResult&) = delete;
+
 private:
     MatrixType &m_coef_path;
     VectorType &m_alphas;
     VectorType &m_deviance_ratio;
-    std::size_t m_iterations;
-    typename VectorType::Index m_n_alphas;
-    ErrorType m_error;
-
-    // intentionally not implemented
-    FitResult (const FitResult&);
-    FitResult& operator=(const FitResult&);
+    std::size_t m_iterations {0};
+    typename VectorType::Index m_n_alphas {0};
+    ErrorType m_error {NONE};
 };
 
 }
