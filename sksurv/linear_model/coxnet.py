@@ -35,7 +35,7 @@ __all__ = ["CoxnetSurvivalAnalysis"]
 
 
 class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
-    """Cox's proportional hazard's model with elastic net penalty.
+    r"""Cox's proportional hazard's model with elastic net penalty.
 
     See the :ref:`User Guide </user_guide/coxnet.ipynb>` and [1]_ for further description.
 
@@ -46,14 +46,23 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
     alphas : array-like or None, optional
         List of alphas where to compute the models.
-        If ``None`` alphas are set automatically.
+        If ``None``, alphas are set automatically.
+
+        In this case, the ``alphas`` sequence is determined by :math:`\alpha_\max`
+        and ``alpha_min_ratio``. The latter determines the smallest alpha value
+        :math:`\alpha_\min` in the generated alphas sequence such that
+        ``alpha_min_ratio`` equals the ratio :math:`\frac{\alpha_\min}{\alpha_\max}`.
+        The generated ``alphas`` sequence contains ``n_alphas`` values linear
+        on the log scale from :math:`\alpha_\max` down to :math:`\alpha_\min`.
+        :math:`\alpha_\max` is not user-specified but is computed from the
+        input data.
 
     alpha_min_ratio : float or { "auto" }, optional, default: "auto"
-        Determines minimum alpha of the regularization path
+        Determines the minimum alpha of the regularization path
         if ``alphas`` is ``None``. The smallest value for alpha
-        is computed as the fraction of the data derived maximum
+        is computed as the fraction of the maximum
         alpha (i.e. the smallest value for which all
-        coefficients are zero).
+        coefficients are zero), which is derived from the input data.
 
         If set to "auto", the value will depend on the
         sample size relative to the number of features.
