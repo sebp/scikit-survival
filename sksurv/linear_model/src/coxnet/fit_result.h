@@ -32,9 +32,9 @@ public:
     FitResult(Eigen::MatrixBase<DerivedMatrix> &coef,
               Eigen::MatrixBase<DerivedVector> &alphas,
               Eigen::MatrixBase<DerivedVector> &deviance_ratio) :
-        m_coef_path(coef.derived()),
-        m_alphas(alphas.derived()),
-        m_deviance_ratio(deviance_ratio.derived())
+        m_coef_path{coef.derived()},
+        m_alphas{alphas.derived()},
+        m_deviance_ratio{deviance_ratio.derived()}
     {}
 
     const MatrixType& getCoefficientPath() const {

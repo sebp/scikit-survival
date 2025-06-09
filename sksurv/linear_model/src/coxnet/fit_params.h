@@ -30,13 +30,13 @@ struct FitParams {
 
     FitParams(Index n_samples,
               Index n_features,
-              double _eps) : coef_x(n_features),
-                                            residuals(n_samples),
-                                            weights(n_samples),
-                                            risk_set(n_samples),
-                                            xw(n_samples),
-                                            eps(_eps),
-                                            maybe_active_set(n_features)
+              double _eps) : coef_x{n_features},
+                                            residuals{n_samples},
+                                            weights{n_samples},
+                                            risk_set{n_samples},
+                                            xw{n_samples},
+                                            eps{_eps},
+                                            maybe_active_set{n_features}
     {
     }
 

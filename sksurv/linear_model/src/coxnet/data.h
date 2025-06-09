@@ -45,12 +45,12 @@ public:
     Data(const Eigen::MatrixBase<DerivedMatrix> &x,
          const Eigen::MatrixBase<DerivedFloatVector> &time,
          const Eigen::MatrixBase<DerivedIntVector> &event,
-         const Eigen::MatrixBase<DerivedFloatVector> &penalty_factor) : m_x(x.derived()),
-                                               m_time(time.derived()),
-                                               m_event(event.derived()),
-                                               m_penalty_factor(penalty_factor.derived()),
-                                               m_samples(x.rows()),
-                                               m_features(x.cols())
+         const Eigen::MatrixBase<DerivedFloatVector> &penalty_factor) : m_x{x.derived()},
+                                               m_time{time.derived()},
+                                               m_event{event.derived()},
+                                               m_penalty_factor{penalty_factor.derived()},
+                                               m_samples{x.rows()},
+                                               m_features{x.cols()}
     {
         eigen_assert (time.size() == x.rows());
         eigen_assert (event.size() == x.rows());

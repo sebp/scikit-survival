@@ -27,11 +27,11 @@ public:
                const double l1_ratio,
                const std::size_t max_iter,
                const double eps,
-               const bool verbose) : m_alpha_min_ratio(alpha_min_ratio),
-                                     m_l1_ratio(l1_ratio),
-                                     m_max_iter(max_iter),
-                                     m_eps(eps),
-                                     m_verbose(verbose) {}
+               const bool verbose) : m_alpha_min_ratio{alpha_min_ratio},
+                                     m_l1_ratio{l1_ratio},
+                                     m_max_iter{max_iter},
+                                     m_eps{eps},
+                                     m_verbose{verbose} {}
 
     void set_alpha_min_ratio(const double value) {
         m_alpha_min_ratio = value;

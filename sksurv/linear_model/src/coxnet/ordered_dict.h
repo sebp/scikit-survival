@@ -33,10 +33,10 @@ struct __link {
     std::weak_ptr<link_type> prev;
 
     explicit __link() = default;
-    __link (const Key &_key) : key(_key) {}
+    __link (const Key &_key) : key{_key} {}
     __link (const Key &_key,
             pointer &_next,
-            pointer &_prev) : key(_key), next(_next), prev(_prev) {}
+            pointer &_prev) : key{_key}, next{_next}, prev{_prev} {}
 };
 
 template <typename T>
@@ -47,7 +47,7 @@ public:
     using key_type = typename link_type::key_type;
     using iterator = ordered_dict_iterator<T>;
 
-    ordered_dict_iterator(const link_pointer &__root) : m_root(__root) {}
+    ordered_dict_iterator(const link_pointer &__root) : m_root{__root} {}
 
     iterator& operator++() {
         link_pointer curr = m_root->next;
@@ -81,7 +81,7 @@ public:
     using link_pointer = std::shared_ptr<link_type>;
     using const_iterator = ordered_dict_iterator<const link_type>;
 
-    explicit ordered_dict() : m_root(std::make_shared<link_type>(-1)) {
+    explicit ordered_dict() : m_root { std::make_shared<link_type>(-1) } {
         m_root->next = m_root;
         m_root->prev = m_root;
     }
@@ -106,7 +106,7 @@ void ordered_dict<Key>::insert_ordered( const key_type &key )
 {
     auto search = this->find(key);
     if (search == this->end()) {
-        link_pointer last(m_root->prev.lock());
+        link_pointer last { m_root->prev.lock() };
         link_pointer new_link = std::make_shared<link_type>(key, m_root, last);
         last->next = new_link;
         m_root->prev = new_link;
