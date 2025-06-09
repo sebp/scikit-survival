@@ -66,6 +66,10 @@ public:
     const Index& n_samples() const { return m_samples; }
     const Index& n_features() const { return m_features; }
 
+    // intentionally not implemented
+    Data (const Data&) = delete;
+    Data& operator=(const Data&) = delete;
+
     template<typename _M, typename _V, typename _I>
     friend std::ostream& operator<< (std::ostream& os, const Data<_M, _V, _I> &obj);
 
