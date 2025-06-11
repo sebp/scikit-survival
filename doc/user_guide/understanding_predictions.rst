@@ -52,7 +52,7 @@ often focuses on predicting a function: either the survival or hazard function.
 The survival function :math:`S(t)` returns the probability of survival beyond time :math:`t`, i.e.,
 :math:`S(t) = P(T > t)`, whereas the hazard function :math:`h(t)` denotes an approximate
 probability (it is not bounded from above) that an event occurs in the small time
-interval :math:`[t; t + \Delta t[`, under the condition that an individual would remain event-free
+interval :math:`[t; t + \Delta t)`, under the condition that an individual would remain event-free
 up to time :math:`t`:
 
 .. math::
