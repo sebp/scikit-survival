@@ -927,7 +927,11 @@ class TestCoxPH:
 
         alphas = np.random.randn(rossi.x.shape[1], 3, 4)
         cph.set_params(alpha=alphas)
-        with pytest.raises(ValueError, match=r"Found array with dim 3\. CoxPHSurvivalAnalysis expected <= 2\."):
+        with pytest.raises(
+            ValueError,
+            match=r"Found array with dim 3(\. CoxPHSurvivalAnalysis expected <= 2"
+            r"|, while dim <= 2 is required by CoxPHSurvivalAnalysis)\.",
+        ):
             cph.fit(rossi.x.values, rossi.y)
 
         alphas = np.ones(rossi.x.shape[1])

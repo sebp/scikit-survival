@@ -2852,7 +2852,11 @@ class TestKaplanMeier:
         with pytest.raises(ValueError, match="dtype='numeric' is not compatible with arrays of bytes/strings"):
             est.predict_proba(np.array(["should", "not", "work"]))
 
-        with pytest.raises(ValueError, match=r"Found array with dim 3\. SurvivalFunctionEstimator expected <= 2\."):
+        with pytest.raises(
+            ValueError,
+            match=r"Found array with dim 3(\. SurvivalFunctionEstimator expected <= 2"
+            r"|, while dim <= 2 is required by SurvivalFunctionEstimator)\.",
+        ):
             est.predict_proba(np.random.randn(10, 9, 5))
 
     @staticmethod
