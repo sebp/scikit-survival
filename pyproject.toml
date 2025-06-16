@@ -61,19 +61,10 @@ dynamic = ["version"]
 "Bug Tracker" = "https://github.com/sebp/scikit-survival/issues"
 "Release Notes" = "https://scikit-survival.readthedocs.io/en/latest/release_notes.html"
 
-[project.optional-dependencies]
-dev = [
+[dependency-groups]
+formatting = [
     "black[jupyter]",
-    "build",
-    "coverage",
-    "Cython >=3.0.10",
-    "packaging",
-    "pre-commit",
-    "pytest",
     "ruff",
-    "setuptools-scm >=8",
-    "tomli",
-    "tox",
 ]
 
 # This file purposely does not contain libraries that depend on C modules.
@@ -90,13 +81,30 @@ docs = [
     "sphinx-copybutton ~=0.5.2",
 ]
 
-nbval = [
+test = [
+    "coverage",
+    "pytest",
+]
+
+test-nb = [
     "ipykernel",
     "ipython!=8.7.0",
     "matplotlib~=3.9.0",
     "nbformat",
     "nbval>=0.10.0",
     "seaborn~=0.13.2",
+]
+
+dev = [
+    {include-group = "formatting"},
+    {include-group = "test"},
+    "build",
+    "Cython >=3.0.10",
+    "packaging",
+    "pre-commit",
+    "setuptools-scm >=8",
+    "tomli",
+    "tox",
 ]
 
 [tool.setuptools]
