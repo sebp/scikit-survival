@@ -45,25 +45,29 @@ Setting up a Development Environment
 
 After you created a copy of our main repository on `GitHub`_, you need
 to setup a local development environment.
-We strongly recommend to use `conda`_ to
-create a separate virtual environment containing all dependencies.
-These are the steps you need to take.
+We strongly recommend to create a separate virtual environment containing all dependencies.
 
-1. Install `conda`_ for your operating system if you haven't already.
+You can use `conda`_ or `uv`_ to create a new virtual environment
+and install scikit-survival in development mode.
 
-2. Create a new environment, named ``sksurv``::
+.. tab-set::
+    :sync-group: venv
 
-    python ci/render-requirements.py ci/deps/requirements.yaml.tmpl > dev-environment.yaml
-    conda env create -n sksurv --file dev-environment.yaml
+    .. tab-item:: conda
+        :sync: conda
 
+        .. code-block:: bash
 
-3. Activate the newly created environment::
+            python ci/render-requirements.py ci/deps/requirements.yaml.tmpl > dev-environment.yaml
+            conda env create -n sksurv --file dev-environment.yaml
+            conda run -n sksurv pip install --group dev -e .
 
-    conda activate sksurv
+    .. tab-item:: uv
+        :sync: uv
 
-4. Compile the C/C++ extensions and install scikit-survival in development mode::
+        .. code-block:: bash
 
-    pip install -e .[dev]
+            uv sync
 
 
 .. _making-changes-to-code:
@@ -162,6 +166,7 @@ If you are new to Cython you may find the project's documentation on
 :ref:`debugging <cython:debugging>` and :ref:`profiling <cython:profiling>` helpful.
 
 .. _conda: https://www.anaconda.com/docs/getting-started/miniconda/install
+.. _uv: https://docs.astral.sh/uv/getting-started/installation/
 .. _Cython: https://cython.org
 .. _Git: https://git-scm.com/
 .. _GitHub: https://github.com/sebp/scikit-survival

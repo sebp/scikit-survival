@@ -10,17 +10,17 @@ run_check_sha() {
 
 if [[ "${CONDA:-}" = "" ]]; then
     # download and install conda
-    MINICONDA_VERSION="Miniconda3-py312_24.9.2-0"
+    MINICONDA_VERSION="Miniconda3-py313_25.3.1-1"
 
     if [[ "${RUNNER_OS}" = "macOS" ]] && [[ "${RUNNER_ARCH}" = "ARM64" ]]; then
         MINICONDA_VERSION="${MINICONDA_VERSION}-MacOSX-arm64"
-        MINICONDA_HASH="08d8a82ed21d2dae707554d540b172fe03327347db747644fbb33abfaf07fddd"
+        MINICONDA_HASH="d54b27ed4a6d3c31fedbad6f9f488377702196b0d8d89854e8e7d01f701f225b"
     elif [[ "${RUNNER_OS}" = "macOS" ]] && [[ "${RUNNER_ARCH}" = "X64" ]]; then
         MINICONDA_VERSION="${MINICONDA_VERSION}-MacOSX-x86_64"
-        MINICONDA_HASH="ce3b440c32c9c636bbe529477fd496798c35b96d9db1838e3df6b0a80714da4e"
+        MINICONDA_HASH="614c455b74d85abe98c2d0fb9b00628bbf2d48932ea4b49ec05b5c4bee7e9239"
     elif [[ "${RUNNER_OS}" = "Linux" ]] && [[ "${RUNNER_ARCH}" = "X64" ]]; then
         MINICONDA_VERSION="${MINICONDA_VERSION}-Linux-x86_64"
-        MINICONDA_HASH="8d936ba600300e08eca3d874dee88c61c6f39303597b2b66baee54af4f7b4122"
+        MINICONDA_HASH="53a86109463cfd70ba7acab396d416e623012914eee004729e1ecd6fe94e8c69"
     else
         echo "Unsupported OS or ARCH: ${RUNNER_OS} ${RUNNER_ARCH}"
         exit 1
