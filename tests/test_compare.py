@@ -450,7 +450,11 @@ class LogRankFailureCases(FixtureParameterFactory):
         group[:, 0, :] = "a"
         group[:, 1, :] = "b"
 
-        err = pytest.raises(ValueError, match=r"Found array with dim 3\. compare_survival expected <= 2\.")
+        err = pytest.raises(
+            ValueError,
+            match=r"Found array with dim 3(\. compare_survival expected <= 2"
+            r"|, while dim <= 2 is required by compare_survival)\.",
+        )
         return (y, group), err
 
 

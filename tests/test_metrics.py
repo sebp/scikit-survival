@@ -945,7 +945,10 @@ class UnoAucShapeFailureCases(BaseUnoCAucCases):
     def data_estimate_3d(self):
         y_train, y_test, estimate = self.uno_auc_data_20
         estimate = np.atleast_3d(estimate)
-        match = "Found array with dim 3. cumulative_dynamic_auc expected <= 2."
+        match = (
+            r"Found array with dim 3(\. cumulative_dynamic_auc expected <= 2"
+            r"|, while dim <= 2 is required by cumulative_dynamic_auc)\."
+        )
 
         return y_train, y_test, self.times, estimate, match
 
