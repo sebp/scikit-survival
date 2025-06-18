@@ -48,12 +48,12 @@ Installation
 ============
 
 The easiest way to install scikit-survival is to use
-`Anaconda <https://www.anaconda.com/distribution/>`_ by running::
+`Anaconda <https://www.anaconda.com/docs/getting-started/anaconda/main>`_ by running::
 
   conda install -c conda-forge scikit-survival
 
-Alternatively, you can install scikit-survival from source
-following `this guide <https://scikit-survival.readthedocs.io/en/stable/install.html#from-source>`_.
+Alternatively, you can install scikit-survival `from PyPI <https://scikit-survival.readthedocs.io/en/stable/install.html#pip>`_
+or `from source <https://scikit-survival.readthedocs.io/en/stable/install.html#from-source>`_.
 
 ========
 Examples
