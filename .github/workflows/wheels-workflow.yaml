@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       publish_wheel:
-        description: 'Whether to publish wheels'
+        description: 'Whether to publish wheels to TestPyPI'
         default: false
         type: boolean
 
@@ -74,6 +74,7 @@ jobs:
         with:
           name: cibw-sdist
           path: dist/*.tar.gz
+          if-no-files-found: error
 
   publish-to-testpypi:
     name: >-
@@ -90,6 +91,7 @@ jobs:
 
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
+      attestations: write
 
     steps:
       - name: Download packages
@@ -102,6 +104,11 @@ jobs:
       - name: Print out packages
         run: ls dist
 
+      - name: Generate artifact attestation for sdist and wheel
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: dist/scikit_survival-*
+
       - name: Publish to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
@@ -111,7 +118,7 @@ jobs:
   publish-to-pypi:
     name: >-
       Publish scikit-surival 📉 distribution 📦 to PyPI
-    if: github.repository == 'sebp/scikit-survival' && github.event_name == 'release' && startsWith(github.ref, 'refs/tags/')  # only publish to PyPI on tag pushes
+    if: github.repository == 'sebp/scikit-survival' && github.event_name == 'release' && github.ref_type == 'tag'  # only publish to PyPI on tag pushes
     needs:
     - build_wheels
     - build_sdist
@@ -123,6 +130,7 @@ jobs:
 
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
+      attestations: write
 
     steps:
       - name: Download packages
@@ -134,6 +142,11 @@ jobs:
 
       - name: Print out packages
         run: ls dist
+
+      - name: Generate artifact attestation for sdist and wheel
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: dist/scikit_survival-*
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
