@@ -176,7 +176,8 @@ def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1
         Array containing the time of an event or time of censoring
 
     estimate : array-like, shape = (n_samples,)
-        Estimated risk of experiencing an event
+        Estimated risk of experiencing an event (e.g., from ``estimator.predict(X)``),
+        where a higher value indicates a higher risk of experiencing an event.
 
     tied_tol : float, optional, default: 1e-8
         The tolerance value for considering ties.
@@ -199,6 +200,11 @@ def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1
 
     tied_time : int
         Number of comparable pairs sharing the same time
+
+    Notes
+    -----
+    This metric expects risk scores which are typically returned by ``estimator.predict(X)``.
+    It *does not accept* survival probabilities.
 
     See also
     --------
@@ -266,7 +272,8 @@ def concordance_index_ipcw(survival_train, survival_test, estimate, tau=None, ti
         second field.
 
     estimate : array-like, shape = (n_samples,)
-        Estimated risk of experiencing an event of test data.
+        Estimated risk of experiencing an event of test data (e.g., from ``estimator.predict(X)``),
+        where a higher value indicates a higher risk of experiencing an event.
 
     tau : float, optional
         Truncation time. The survival function for the underlying
@@ -296,6 +303,11 @@ def concordance_index_ipcw(survival_train, survival_test, estimate, tau=None, ti
 
     tied_time : int
         Number of comparable pairs sharing the same time
+
+    Notes
+    -----
+    This metric expects risk scores which are typically returned by ``estimator.predict(X)``.
+    It *does not accept* survival probabilities.
 
     See also
     --------
@@ -416,10 +428,13 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
         second field.
 
     estimate : array-like, shape = (n_samples,) or (n_samples, n_times)
-        Estimated risk of experiencing an event of test data.
+        Estimated risk of experiencing an event of test data (e.g., from ``estimator.predict(X)``
+        for time-independent risks, or ``estimator.predict_cumulative_hazard_function(X)``
+        for time-dependent risks).
         If `estimate` is a 1-d array, the same risk score across all time
         points is used. If `estimate` is a 2-d array, the risk scores in the
-        j-th column are used to evaluate the j-th time point.
+        j-th column are used to evaluate the j-th time point. A higher value
+        indicates a higher risk of experiencing an event.
 
     times : array-like, shape = (n_times,)
         The time points for which the area under the
@@ -439,6 +454,12 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
     mean_auc : float
         Summary measure referring to the mean cumulative/dynamic AUC
         over the specified time range `(times[0], times[-1])`.
+
+    Notes
+    -----
+    This metric expects risk scores which are typically returned by ``estimator.predict(X)``
+    (for time-independent risks), or ``estimator.predict_cumulative_hazard_function(X)``
+    (for time-dependent risks). It *does not accept* survival probabilities.
 
     See also
     --------
@@ -575,11 +596,10 @@ def brier_score(survival_train, survival_test, estimate, times):
 
     estimate : array-like, shape = (n_samples, n_times)
         Estimated probability of remaining event-free at time points
-        specified by `times`. The value of ``estimate[i]`` must correspond to
-        the estimated probability of remaining event-free up to the time point
-        ``times[i]``. Typically, estimated probabilities are obtained via the
-        survival function returned by an estimator's
-        ``predict_survival_function`` method.
+        specified by ``times`` (i.e., survival probabilities), typically obtained
+        from ``estimator.predict_survival_function(X)``. The value of ``estimate[i]``
+        must correspond to the estimated probability of remaining event-free up to
+        the time point ``times[i]``.
 
     times : array-like, shape = (n_times,)
         The time points for which to estimate the Brier score.
@@ -593,6 +613,12 @@ def brier_score(survival_train, survival_test, estimate, times):
 
     brier_scores : array , shape = (n_times,)
         Values of the brier score.
+
+    Notes
+    -----
+    This metric expects survival probabilities which are typically returned by
+    ``estimator.predict_survival_function(X)``.
+    It *does not accept* risk scores.
 
     Examples
     --------
@@ -697,11 +723,10 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
 
     estimate : array-like, shape = (n_samples, n_times)
         Estimated probability of remaining event-free at time points
-        specified by `times`. The value of ``estimate[i]`` must correspond to
-        the estimated probability of remaining event-free up to the time point
-        ``times[i]``. Typically, estimated probabilities are obtained via the
-        survival function returned by an estimator's
-        ``predict_survival_function`` method.
+        specified by ``times`` (i.e., survival probabilities), typically obtained
+        from ``estimator.predict_survival_function(X)``. The value of ``estimate[i]``
+        must correspond to the estimated probability of remaining event-free up to
+        the time point ``times[i]``.
 
     times : array-like, shape = (n_times,)
         The time points for which to estimate the Brier score.
@@ -712,6 +737,12 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
     -------
     ibs : float
         The integrated Brier score.
+
+    Notes
+    -----
+    This metric expects survival probabilities which are typically returned by
+    ``estimator.predict_survival_function(X)``.
+    It *does not accept* risk scores.
 
     Examples
     --------
