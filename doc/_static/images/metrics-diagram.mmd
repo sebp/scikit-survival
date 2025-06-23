@@ -1,0 +1,17 @@
+graph TD
+    A[Survival Model Estimator]-->|<tt>predict&#40X&#41</tt>|B(Time-independent Risk Scores)
+    A-->|<tt>predict_cumulative_hazard_function&#40X&#41</tt>|B2(Time-dependent Risk Scores)
+    A-->|<tt>predict_survival_function&#40X&#41</tt>|C(Survival Probabilities)
+
+    B --> D([<tt>concordance_index_censored</tt>])
+    B --> E([<tt>concordance_index_ipcw</tt>])
+    B --> F([<tt>cumulative_dynamic_auc</tt>])
+    B2 --> F2([<tt>cumulative_dynamic_auc</tt>])
+
+    C --> G([<tt>brier_score</tt>])
+    C --> H([<tt>integrated_brier_score</tt>])
+
+    D & F --> I[Assess model discrimation &#40<i>time-independent</i>&#41]
+    E --> I
+    F2 --> J2[Assess model discrimation &#40<i>time-dependent</i>&#41]
+    G & H --> K[Assess model discrimation and calibration &#40<i>time-dependent</i>&#41]
