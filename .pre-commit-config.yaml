@@ -26,7 +26,7 @@ repos:
     -   id: rst-directive-colons
     -   id: rst-inline-touching-normal
 -   repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.31.3
+    rev: 0.33.1
     hooks:
     -   id: check-dependabot
     -   id: check-github-workflows
@@ -43,6 +43,6 @@ repos:
     hooks:
     -   id: black-jupyter
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.1
+    rev: v0.12.0
     hooks:
-    -   id: ruff
+    -   id: ruff-check
