@@ -1,6 +1,8 @@
 <!--
-Thanks for contributing a pull request! Please ensure you have taken a look at
-the contribution guidelines: https://scikit-survival.readthedocs.io/en/latest/contributing.html#making-changes-to-the-code
+♥ Thanks for contributing a pull request! ♥
+
+Please ensure you have taken a look at the contribution guidelines:
+https://scikit-survival.readthedocs.io/en/latest/contributing.html#making-changes-to-the-code
 -->
 
 **Checklist**
