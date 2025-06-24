@@ -90,7 +90,9 @@ For a pull request to be accepted, your changes must meet the below requirements
 
     tox -e lint
 
-   Alternatively, you can use `pre-commit`_ to check your code on every commit automatically.
+   Alternatively, you can use `pre-commit`_ to check your code on every commit automatically::
+
+    pre-commit install
 
 3. Each function, class, method, and attribute needs to be documented using doc strings.
    scikit-survival conforms to the
