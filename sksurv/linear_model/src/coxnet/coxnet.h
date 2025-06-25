@@ -249,13 +249,13 @@ void Coxnet<T, S, U>::fit(
         coef_path.col(i) = m_params.coef_x;
         dev_ratio_path[i] = 1. - (loglik_saturated - log_likelihood()) / deviance_null;
 
-        if (i >= Constants<Scalar>::MIN_ALPHAS()) {
-            /* abort if change in deviance ratio was small, compared to previous (larger) alpha */
-            if (dev_ratio_path[i - Constants<Scalar>::MIN_ALPHAS() + 1] / dev_ratio_path[i] > 0.999) {
-                ++i;
-                break;
-            }
-        }
+        // if (i >= Constants<Scalar>::MIN_ALPHAS()) {
+        //     /* abort if change in deviance ratio was small, compared to previous (larger) alpha */
+        //     if (dev_ratio_path[i - Constants<Scalar>::MIN_ALPHAS() + 1] / dev_ratio_path[i] > 0.999) {
+        //         ++i;
+        //         break;
+        //     }
+        // }
     }
 
     result.setNumberOfAlphas(i);
