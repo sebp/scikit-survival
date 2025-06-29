@@ -485,7 +485,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         return self._baseline_model
 
     def predict_cumulative_hazard_function(self, X, return_array=False):
-        """Predict cumulative hazard function.
+        r"""Predict cumulative hazard function.
 
         Only available if :meth:`fit` has been called with `loss = "coxph"`.
 
@@ -494,9 +494,9 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         .. math::
 
-            H(t \\mid x) = \\exp(f(x)) H_0(t) ,
+            H(t \mid x) = \exp(f(x)) H_0(t) ,
 
-        where :math:`f(\\cdot)` is the additive ensemble of base learners,
+        where :math:`f(\cdot)` is the additive ensemble of base learners,
         and :math:`H_0(t)` is the baseline hazard function,
         estimated by Breslow's estimator.
 
@@ -505,17 +505,26 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         X : array-like, shape = (n_samples, n_features)
             Data matrix.
 
-        return_array : boolean, default: False
-            If set, return an array with the cumulative hazard rate
-            for each `self.unique_times_`, otherwise an array of
-            :class:`sksurv.functions.StepFunction`.
+        return_array : bool, default: False
+            Whether to return a single array of cumulative hazard values
+            or a list of step functions.
+
+            If `False`, a list of :class:`sksurv.functions.StepFunction`
+            objects is returned.
+
+            If `True`, a 2d-array of shape `(n_samples, n_unique_times)` is
+            returned, where `n_unique_times` is the number of unique
+            event times in the training data. Each row represents the cumulative
+            hazard function of an individual evaluated at `unique_times_`.
 
         Returns
         -------
         cum_hazard : ndarray
-            If `return_array` is set, an array with the cumulative hazard rate
-            for each `self.unique_times_`, otherwise an array of length `n_samples`
-            of :class:`sksurv.functions.StepFunction` instances will be returned.
+            If `return_array` is `False`, an array of `n_samples`
+            :class:`sksurv.functions.StepFunction` instances is returned.
+
+            If `return_array` is `True`, a numeric array of shape
+            `(n_samples, n_unique_times_)` is returned.
 
         Examples
         --------
@@ -547,7 +556,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         return self._predict_cumulative_hazard_function(self._get_baseline_model(), self.predict(X), return_array)
 
     def predict_survival_function(self, X, return_array=False):
-        """Predict survival function.
+        r"""Predict survival function.
 
         Only available if :meth:`fit` has been called with `loss = "coxph"`.
 
@@ -556,9 +565,9 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         .. math::
 
-            S(t \\mid x) = S_0(t)^{\\exp(f(x)} ,
+            S(t \mid x) = S_0(t)^{\exp(f(x)} ,
 
-        where :math:`f(\\cdot)` is the additive ensemble of base learners,
+        where :math:`f(\cdot)` is the additive ensemble of base learners,
         and :math:`S_0(t)` is the baseline survival function,
         estimated by Breslow's estimator.
 
@@ -567,18 +576,26 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         X : array-like, shape = (n_samples, n_features)
             Data matrix.
 
-        return_array : boolean, default: False
-            If set, return an array with the probability
-            of survival for each `self.unique_times_`,
-            otherwise an array of :class:`sksurv.functions.StepFunction`.
+        return_array : bool, default: False
+            Whether to return a single array of survival probabilities
+            or a list of step functions.
+
+            If `False`, a list of :class:`sksurv.functions.StepFunction`
+            objects is returned.
+
+            If `True`, a 2d-array of shape `(n_samples, n_unique_times)` is
+            returned, where `n_unique_times` is the number of unique
+            event times in the training data. Each row represents the survival
+            function of an individual evaluated at `unique_times_`.
 
         Returns
         -------
         survival : ndarray
-            If `return_array` is set, an array with the probability of
-            survival for each `self.unique_times_`, otherwise an array of
-            length `n_samples` of :class:`sksurv.functions.StepFunction`
-            instances will be returned.
+            If `return_array` is `False`, an array of `n_samples`
+            :class:`sksurv.functions.StepFunction` instances is returned.
+
+            If `return_array` is `True`, a numeric array of shape
+            `(n_samples, n_unique_times_)` is returned.
 
         Examples
         --------
@@ -752,7 +769,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         validation set if `n_iter_no_change` is not None.
         Pass an int for reproducible output across multiple function calls.
 
-    max_features : int, float, string or None, optional, default: None
+    max_features : int, float or {'sqrt', 'log2'} or None, optional, default: None
         The number of features to consider when looking for the best split:
 
         - If int, values must be in the range `[1, inf)`.
@@ -1487,7 +1504,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         return self._baseline_model
 
     def predict_cumulative_hazard_function(self, X, return_array=False):
-        """Predict cumulative hazard function.
+        r"""Predict cumulative hazard function.
 
         Only available if :meth:`fit` has been called with `loss = "coxph"`.
 
@@ -1496,9 +1513,9 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         .. math::
 
-            H(t \\mid x) = \\exp(f(x)) H_0(t) ,
+            H(t \mid x) = \exp(f(x)) H_0(t) ,
 
-        where :math:`f(\\cdot)` is the additive ensemble of base learners,
+        where :math:`f(\cdot)` is the additive ensemble of base learners,
         and :math:`H_0(t)` is the baseline hazard function,
         estimated by Breslow's estimator.
 
@@ -1507,17 +1524,26 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         X : array-like, shape = (n_samples, n_features)
             Data matrix.
 
-        return_array : boolean, default: False
-            If set, return an array with the cumulative hazard rate
-            for each `self.unique_times_`, otherwise an array of
-            :class:`sksurv.functions.StepFunction`.
+        return_array : bool, default: False
+            Whether to return a single array of cumulative hazard values
+            or a list of step functions.
+
+            If `False`, a list of :class:`sksurv.functions.StepFunction`
+            objects is returned.
+
+            If `True`, a 2d-array of shape `(n_samples, n_unique_times)` is
+            returned, where `n_unique_times` is the number of unique
+            event times in the training data. Each row represents the cumulative
+            hazard function of an individual evaluated at `unique_times_`.
 
         Returns
         -------
         cum_hazard : ndarray
-            If `return_array` is set, an array with the cumulative hazard rate
-            for each `self.unique_times_`, otherwise an array of length `n_samples`
-            of :class:`sksurv.functions.StepFunction` instances will be returned.
+            If `return_array` is `False`, an array of `n_samples`
+            :class:`sksurv.functions.StepFunction` instances is returned.
+
+            If `return_array` is `True`, a numeric array of shape
+            `(n_samples, n_unique_times_)` is returned.
 
         Examples
         --------
@@ -1549,7 +1575,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         return self._predict_cumulative_hazard_function(self._get_baseline_model(), self.predict(X), return_array)
 
     def predict_survival_function(self, X, return_array=False):
-        """Predict survival function.
+        r"""Predict survival function.
 
         Only available if :meth:`fit` has been called with `loss = "coxph"`.
 
@@ -1558,9 +1584,9 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         .. math::
 
-            S(t \\mid x) = S_0(t)^{\\exp(f(x)} ,
+            S(t \mid x) = S_0(t)^{\exp(f(x)} ,
 
-        where :math:`f(\\cdot)` is the additive ensemble of base learners,
+        where :math:`f(\cdot)` is the additive ensemble of base learners,
         and :math:`S_0(t)` is the baseline survival function,
         estimated by Breslow's estimator.
 
@@ -1569,18 +1595,26 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         X : array-like, shape = (n_samples, n_features)
             Data matrix.
 
-        return_array : boolean, default: False
-            If set, return an array with the probability
-            of survival for each `self.unique_times_`,
-            otherwise an array of :class:`sksurv.functions.StepFunction`.
+        return_array : bool, default: False
+            Whether to return a single array of survival probabilities
+            or a list of step functions.
+
+            If `False`, a list of :class:`sksurv.functions.StepFunction`
+            objects is returned.
+
+            If `True`, a 2d-array of shape `(n_samples, n_unique_times)` is
+            returned, where `n_unique_times` is the number of unique
+            event times in the training data. Each row represents the survival
+            function of an individual evaluated at `unique_times_`.
 
         Returns
         -------
         survival : ndarray
-            If `return_array` is set, an array with the probability of
-            survival for each `self.unique_times_`, otherwise an array of
-            length `n_samples` of :class:`sksurv.functions.StepFunction`
-            instances will be returned.
+            If `return_array` is `False`, an array of `n_samples`
+            :class:`sksurv.functions.StepFunction` instances is returned.
+
+            If `return_array` is `True`, a numeric array of shape
+            `(n_samples, n_unique_times_)` is returned.
 
         Examples
         --------
