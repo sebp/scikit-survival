@@ -19,11 +19,23 @@ __all__ = ["MinlipSurvivalAnalysis", "HingeLossSurvivalSVM"]
 
 
 class QPSolver(metaclass=ABCMeta):
-    """
-    Solves a quadratic program::
+    r"""Abstract base class for quadratic program solvers.
 
-        minimize    (1/2)*x'*P*x + q'*x
-        subject to  G*x <= h
+    This class defines the interface for solvers that minimize a quadratic
+    objective function subject to linear inequality constraints,
+    formulated as:
+
+    .. math::
+
+        \min_{x} \quad (1/2)x^T P x + q^T x \\
+        \text{subject to} \quad G x \preceq h
+
+    Parameters
+    ----------
+    max_iter : int or None
+        Maximum number of iterations to perform.
+    verbose : bool
+        Enable verbose output of the solver.
     """
 
     @abstractmethod
@@ -33,7 +45,26 @@ class QPSolver(metaclass=ABCMeta):
 
     @abstractmethod
     def solve(self, P, q, G, h):
-        """Returns solution to QP."""
+        """Find solution to QP.
+
+        Parameters
+        ----------
+        P : array-like, shape=(n_variables, n_variables)
+            Quadratic part of the objective function.
+        q : array-like, shape=(n_variables,)
+            Linear part of the objective function.
+        G : array-like, shape=(n_constraints, n_variables)
+            Matrix for inequality constraints.
+        h : array-like, shape=(n_constraints,)
+            Vector for inequality constraints.
+
+        Returns
+        -------
+        x : ndarray, shape=(n_variables,)
+            The optimal solution.
+        n_iter : int
+            Number of iterations performed by the solver.
+        """
 
 
 class OsqpSolver(QPSolver):
@@ -67,6 +98,7 @@ class OsqpSolver(QPSolver):
         return results.x[np.newaxis], n_iter
 
     def _get_options(self):
+        """Returns a dictionary of OSQP solver options."""
         solver_opts = {
             "eps_abs": 1e-5,
             "eps_rel": 1e-5,
@@ -78,14 +110,24 @@ class OsqpSolver(QPSolver):
 
 
 class EcosSolver(QPSolver):
-    """Solves QP by expressing it as second-order cone program::
+    r"""Solves QP by expressing it as second-order cone program:
 
-        minimize    c^T @ x
-        subject to  G @ x <=_K h
+    .. math::
 
-    where the last inequality is generalized, i.e. ``h - G*x``
-    belongs to the cone ``K``. ECOS supports the positive orthant
-    ``R_+`` and second-order cones ``Q_n``.
+        \min \quad c^T x \\
+        \text{subject to} \quad G x \preceq_K h
+
+    where the last inequality is generalized, i.e. :math:`h - G x`
+    belongs to the cone :math:`K`.
+
+    Parameters
+    ----------
+    max_iter : int or None
+        Maximum number of iterations to perform.
+    verbose : bool
+        Enable verbose output of the solver.
+    cond : float or None, default: None
+        Condition number for eigenvalue decomposition.
     """
 
     EXIT_OPTIMAL = 0  # Optimal solution found
@@ -144,6 +186,18 @@ class EcosSolver(QPSolver):
         return x[np.newaxis], n_iter
 
     def _check_success(self, results):  # pylint: disable=no-self-use
+        """Checks if the ECOS solver converged successfully.
+
+        Parameters
+        ----------
+        results : dict
+            The results dictionary returned by ``ecos.solve``.
+
+        Raises
+        -------
+        RuntimeError
+            If the solver failed for an unknown reason or found primal/dual infeasibility.
+        """
         exit_flag = results["info"]["exitFlag"]
         if exit_flag in (EcosSolver.EXIT_OPTIMAL, EcosSolver.EXIT_OPTIMAL + EcosSolver.EXIT_INACC_OFFSET):
             return
@@ -160,6 +214,20 @@ class EcosSolver(QPSolver):
             raise RuntimeError(f"Unknown problem in ECOS solver, exit status: {exit_flag}")
 
     def _decompose(self, P):
+        """Performs eigenvalue decomposition of P.
+
+        Parameters
+        ----------
+        P : array-like, shape=(n_variables, n_variables)
+            Quadratic part of the objective function.
+
+        Returns
+        -------
+        decomposed : ndarray
+            Decomposed matrix.
+        largest_eigenvalue : float
+            The largest eigenvalue of P.
+        """
         # from scipy.linalg.pinvh
         s, u = linalg.eigh(P)
         largest_eigenvalue = np.max(np.abs(s))
@@ -182,33 +250,38 @@ class EcosSolver(QPSolver):
 
 
 class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
-    """Survival model related to survival SVM, using a minimal Lipschitz smoothness strategy
-    instead of a maximal margin strategy.
+    r"""Survival model based on a minimal Lipschitz smoothness strategy.
+
+    This model is related to :class:`sksurv.svm.FastKernelSurvivalSVM` but
+    minimizes a different objective function, focusing on Lipschitz
+    smoothness rather than maximal margin. The optimization problem is
+    formulated as:
 
     .. math::
 
-          \\min_{\\mathbf{w}}\\quad
-          \\frac{1}{2} \\lVert \\mathbf{w} \\rVert_2^2
-          + \\gamma \\sum_{i = 1}^n \\xi_i \\\\
-          \\text{subject to}\\quad
-          \\mathbf{w}^\\top \\mathbf{x}_i - \\mathbf{w}^\\top \\mathbf{x}_j \\geq y_i - y_j - \\xi_i,\\quad
-          \\forall (i, j) \\in \\mathcal{P}_\\text{1-NN}, \\\\
-          \\xi_i \\geq 0,\\quad \\forall i = 1,\\dots,n.
+            \min_{\mathbf{w}}\quad
+        \frac{1}{2} \lVert \mathbf{w} \rVert_2^2
+        + \gamma \sum_{i = 1}^n \xi_i \\
+        \text{subject to}\quad
+        \mathbf{w}^\top \mathbf{x}_i - \mathbf{w}^\top \mathbf{x}_j \geq y_i - y_j - \xi_i,\quad
+        \forall (i, j) \in \mathcal{P}_\text{1-NN}, \\
+        \xi_i \geq 0,\quad \forall i = 1,\dots,n.
 
-          \\mathcal{P}_\\text{1-NN} = \\{ (i, j) \\mid y_i > y_j \\land \\delta_j = 1
-          \\land \\nexists k : y_i > y_k > y_j \\land \\delta_k = 1 \\}_{i,j=1}^n.
+        \mathcal{P}_\text{1-NN} = \{ (i, j) \mid y_i > y_j \land \delta_j = 1
+        \land \nexists k : y_i > y_k > y_j \land \delta_k = 1 \}_{i,j=1}^n.
 
     See [1]_ for further description.
 
     Parameters
     ----------
-    alpha : float, strictly positive, default: 1
+    alpha : float, optional, default: 1
         Weight of penalizing the hinge loss in the objective function.
+        Must be greater than 0.
 
     solver : {'ecos', 'osqp'}, optional, default: 'ecos'
         Which quadratic program solver to use.
 
-    kernel : str or callable, default: 'linear'.
+    kernel : str or callable, optional, default: 'linear'.
         Kernel mapping used internally. This parameter is directly passed to
         :func:`sklearn.metrics.pairwise.pairwise_kernels`.
         If `kernel` is a string, it must be one of the metrics
@@ -228,52 +301,52 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         the kernel; see the documentation for :mod:`sklearn.metrics.pairwise`.
         Ignored by other kernels.
 
-    degree : int, default: 3
+    degree : int, optional, default: 3
         Degree of the polynomial kernel. Ignored by other kernels.
 
-    coef0 : float, optional
+    coef0 : float, optional, default: 1
         Zero coefficient for polynomial and sigmoid kernels.
         Ignored by other kernels.
 
-    kernel_params : mapping of string to any, optional
+    kernel_params : dict, optional, default: None
         Additional parameters (keyword arguments) for kernel function passed
         as callable object.
 
     pairs : {'all', 'nearest', 'next'}, optional, default: 'nearest'
         Which constraints to use in the optimization problem.
 
-        - all: Use all comparable pairs. Scales quadratic in number of samples
+        - all: Use all comparable pairs. Scales quadratically in number of samples
           (cf. :class:`sksurv.svm.HingeLossSurvivalSVM`).
         - nearest: Only considers comparable pairs :math:`(i, j)` where :math:`j` is the
           uncensored sample with highest survival time smaller than :math:`y_i`.
-          Scales linear in number of samples.
+          Scales linearly in number of samples.
         - next: Only compare against direct nearest neighbor according to observed time,
-          disregarding its censoring status. Scales linear in number of samples.
+          disregarding its censoring status. Scales linearly in number of samples.
 
-    verbose : bool, default: False
+    verbose : bool, optional, default: False
         Enable verbose output of solver.
 
-    timeit : False, int or None, default: None
-        If non-zero value is provided the time it takes for optimization is measured.
-        The given number of repetitions are performed. Results can be accessed from the
-        ``timings_`` attribute.
+    timeit : bool, int, or None, optional, default: False
+        If ``True`` or a non-zero integer, the time taken for optimization is measured.
+        If an integer is provided, the optimization is repeated that many times.
+        Results can be accessed from the ``timings_`` attribute.
 
     max_iter : int or None, optional, default: None
-        Maximum number of iterations to perform. By default
-        use solver's default value.
+        The maximum number of iterations taken for the solvers to converge.
+        If ``None``, use solver's default value.
 
     Attributes
     ----------
-    X_fit_ : ndarray
+    X_fit_ : ndarray, shape = (n_samples, `n_features_in_`)
         Training data.
 
-    coef_ : ndarray, shape = (n_samples,)
+    coef_ : ndarray, shape = (n_samples,), dtype = float
         Coefficients of the features in the decision function.
 
     n_features_in_ : int
         Number of features seen during ``fit``.
 
-    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+    feature_names_in_ : ndarray, shape = (`n_features_in_`,)
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
 
@@ -406,8 +479,8 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         y : structured array, shape = (n_samples,)
             A structured array containing the binary event indicator
-            as first field, and time of event or time of censoring as
-            second field.
+            (e.g., named 'event') as the first field, and time of event or
+            time of censoring (e.g., named 'time') as the second field.
 
         Returns
         -------
@@ -423,8 +496,10 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     def predict(self, X):
         """Predict risk score of experiencing an event.
 
-        Higher scores indicate shorter survival (high risk),
-        lower scores longer survival (low risk).
+        Higher values indicate an increased risk of experiencing an event,
+        lower values a decreased risk of experiencing an event. The scores
+        have no unit and are only meaningful to rank samples by their risk
+        of experiencing an event.
 
         Parameters
         ----------
@@ -443,37 +518,39 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
 
 class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
-    """Naive implementation of kernel survival support vector machine.
+    r"""Naive implementation of kernel survival support vector machine.
 
-    A new set of samples is created by building the difference between any two feature
-    vectors in the original data, thus this version requires :math:`O(\\text{n_samples}^4)` space and
-    :math:`O(\\text{n_samples}^6 \\cdot \\text{n_features})` time.
+    This implementation creates a new set of samples by building the difference
+    between any two feature vectors in the original data. This approach
+    requires :math:`O(\text{n_samples}^4)` space and
+    :math:`O(\text{n_samples}^6 \cdot \text{n_features})` time, making it
+    computationally intensive for large datasets.
 
-    See :class:`sksurv.svm.NaiveSurvivalSVM` for the linear naive survival SVM based on liblinear.
+    The optimization problem is formulated as:
 
     .. math::
 
-          \\min_{\\mathbf{w}}\\quad
-          \\frac{1}{2} \\lVert \\mathbf{w} \\rVert_2^2
-          + \\gamma \\sum_{i = 1}^n \\xi_i \\\\
-          \\text{subject to}\\quad
-          \\mathbf{w}^\\top \\phi(\\mathbf{x})_i - \\mathbf{w}^\\top \\phi(\\mathbf{x})_j \\geq 1 - \\xi_{ij},\\quad
-          \\forall (i, j) \\in \\mathcal{P}, \\\\
-          \\xi_i \\geq 0,\\quad \\forall (i, j) \\in \\mathcal{P}.
+        \min_{\mathbf{w}}\quad
+        \frac{1}{2} \lVert \mathbf{w} \rVert_2^2
+        + \gamma \sum_{i = 1}^n \xi_i \\
+        \text{subject to}\quad
+        \mathbf{w}^\top \phi(\mathbf{x})_i - \mathbf{w}^\top \phi(\mathbf{x})_j \geq 1 - \xi_{ij},\quad
+        \forall (i, j) \in \mathcal{P}, \\
+        \xi_i \geq 0,\quad \forall (i, j) \in \mathcal{P}.
 
-          \\mathcal{P} = \\{ (i, j) \\mid y_i > y_j \\land \\delta_j = 1 \\}_{i,j=1,\\dots,n}.
+        \mathcal{P} = \{ (i, j) \mid y_i > y_j \land \delta_j = 1 \}_{i,j=1,\dots,n}.
 
     See [1]_, [2]_, [3]_ for further description.
 
     Parameters
     ----------
-    alpha : float, strictly positive, default: 1
-        Weight of penalizing the hinge loss in the objective function.
+    alpha : float, optional, default: 1
+        Weight of penalizing the hinge loss in the objective function. Must be greater than 0.
 
     solver : {'ecos', 'osqp'}, optional, default: 'ecos'
         Which quadratic program solver to use.
 
-    kernel : {'linear', 'poly', 'rbf', 'sigmoid', 'cosine', 'precomputed'} or callable, default: 'linear'.
+    kernel : str or callable, optional, default: 'linear'
         Kernel mapping used internally. This parameter is directly passed to
         :func:`sklearn.metrics.pairwise.pairwise_kernels`.
         If `kernel` is a string, it must be one of the metrics
@@ -487,62 +564,66 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
         they operate on matrices, not single samples. Use the string
         identifying the kernel instead.
 
-    gamma : float, optional, default: None
+    gamma : float or None, optional, default: None
         Gamma parameter for the RBF, laplacian, polynomial, exponential chi2
         and sigmoid kernels. Interpretation of the default value is left to
         the kernel; see the documentation for :mod:`sklearn.metrics.pairwise`.
         Ignored by other kernels.
 
-    degree : int, default: 3
+    degree : int, optional, default: 3
         Degree of the polynomial kernel. Ignored by other kernels.
 
-    coef0 : float, optional
+    coef0 : float, optional, default: 1
         Zero coefficient for polynomial and sigmoid kernels.
         Ignored by other kernels.
 
-    kernel_params : mapping of string to any, optional
+    kernel_params : dict or None, optional, default: None
         Additional parameters (keyword arguments) for kernel function passed
         as callable object.
 
     pairs : {'all', 'nearest', 'next'}, optional, default: 'all'
         Which constraints to use in the optimization problem.
 
-        - all: Use all comparable pairs. Scales quadratic in number of samples.
+        - all: Use all comparable pairs. Scales quadratically in number of samples.
         - nearest: Only considers comparable pairs :math:`(i, j)` where :math:`j` is the
           uncensored sample with highest survival time smaller than :math:`y_i`.
-          Scales linear in number of samples (cf. :class:`sksurv.svm.MinlipSurvivalAnalysis`).
+          Scales linearly in number of samples (cf. :class:`sksurv.svm.MinlipSurvivalAnalysis`).
         - next: Only compare against direct nearest neighbor according to observed time,
-          disregarding its censoring status. Scales linear in number of samples.
+          disregarding its censoring status. Scales linearly in number of samples.
 
-    verbose : bool, default: False
-        Enable verbose output of solver.
+    verbose : bool, optional, default: False
+        If ``True``, enable verbose output of the solver.
 
-    timeit : False, int or None, default: None
-        If non-zero value is provided the time it takes for optimization is measured.
-        The given number of repetitions are performed. Results can be accessed from the
-        ``timings_`` attribute.
+    timeit : bool, int, or None, optional, default: False
+        If ``True`` or a non-zero integer, the time taken for optimization is measured.
+        If an integer is provided, the optimization is repeated that many times.
+        Results can be accessed from the ``timings_`` attribute.
 
     max_iter : int or None, optional, default: None
-        Maximum number of iterations to perform. By default
-        use solver's default value.
+        The maximum number of iterations taken for the solvers to converge.
+        If ``None``, use solver's default value.
 
     Attributes
     ----------
-    X_fit_ : ndarray
+    X_fit_ : ndarray, shape = (n_samples, `n_features_in_`)
         Training data.
 
-    coef_ : ndarray, shape = (n_samples,)
+    coef_ : ndarray, shape = (n_samples,), dtype = float
         Coefficients of the features in the decision function.
 
     n_features_in_ : int
         Number of features seen during ``fit``.
 
-    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+    feature_names_in_ : ndarray, shape = (`n_features_in_`,), dtype = object
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
 
     n_iter_ : int
         Number of iterations run by the optimization routine to fit the model.
+
+    See also
+    --------
+    sksurv.svm.NaiveSurvivalSVM : The linear naive survival SVM based on liblinear.
 
     References
     ----------
