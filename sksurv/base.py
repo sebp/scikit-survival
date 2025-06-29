@@ -44,7 +44,10 @@ class SurvivalAnalysisMixin:
 
         Returns
         -------
-        survival : ndarray
+        survival : ndarray of StepFunction
+            If `return_array` is True, an array of shape (n_samples, n_unique_times)
+            containing the survival function values. Otherwise, a list of
+            :class:`sksurv.functions.StepFunction` instances.
         """
         return self._predict_function("get_survival_function", baseline_model, prediction, return_array)
 
@@ -66,7 +69,10 @@ class SurvivalAnalysisMixin:
 
         Returns
         -------
-        cum_hazard : ndarray
+        cum_hazard : ndarray of StepFunction
+            If `return_array` is True, an array of shape (n_samples, n_unique_times)
+            containing the cumulative hazard function values. Otherwise, a list of
+            :class:`sksurv.functions.StepFunction` instances.
         """
         return self._predict_function("get_cumulative_hazard_function", baseline_model, prediction, return_array)
 
@@ -87,6 +93,10 @@ class SurvivalAnalysisMixin:
         -------
         cindex : float
             Estimated concordance index.
+
+        See also
+        --------
+        sksurv.metrics.concordance_index_censored : Computes the concordance index.
         """
         from .metrics import concordance_index_censored
 

@@ -202,7 +202,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
     Parameters
     ----------
-    alpha : float, positive, default: 1
+    alpha : float, strictly positive, default: 1
         Weight of penalizing the hinge loss in the objective function.
 
     solver : {'ecos', 'osqp'}, optional, default: 'ecos'
@@ -467,7 +467,7 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
 
     Parameters
     ----------
-    alpha : float, positive, default: 1
+    alpha : float, strictly positive, default: 1
         Weight of penalizing the hinge loss in the objective function.
 
     solver : {'ecos', 'osqp'}, optional, default: 'ecos'

@@ -57,7 +57,7 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
         by scipy.sparse.linalg. For 'sag' solver, the default value is 1000.
         For 'lbfgs' solver, the default value is 15000.
 
-    tol : float, default: 1e-4
+    tol : float, default: 1e-3
         Precision of the solution. Note that `tol` has no effect for solvers 'svd' and
         'cholesky'.
 
@@ -111,18 +111,18 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
     coef_ : ndarray, shape = (n_features,)
         Weight vector.
 
-    intercept_ : float or ndarray of shape (n_targets,)
+    intercept_ : float or ndarray, shape = (n_targets,)
         Independent term in decision function. Set to 0.0 if
         ``fit_intercept = False``.
 
-    n_iter_ : None or ndarray of shape (n_targets,)
+    n_iter_ : None or ndarray, shape = (n_targets,)
         Actual number of iterations for each target. Available only for
         sag and lsqr solvers. Other solvers will return None.
 
     n_features_in_ : int
         Number of features seen during ``fit``.
 
-    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+    feature_names_in_ : ndarray, shape = (`n_features_in_`,)
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
 
@@ -196,7 +196,7 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
 
         Returns
         -------
-        C : array, shape = (n_samples,)
+        y_pred : array, shape = (n_samples,)
             Returns predicted values on original scale (NOT log scale).
         """
         return np.exp(super().predict(X))

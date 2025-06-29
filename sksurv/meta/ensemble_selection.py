@@ -57,6 +57,8 @@ class EnsembleAverage(BaseEstimator):
 
 
 class MeanEstimator(BaseEstimator):
+    """A meta-estimator that averages the predictions of base estimators."""
+
     def fit(self, X, y=None, **kwargs):  # pragma: no cover; # pylint: disable=unused-argument
         return self
 
@@ -65,6 +67,8 @@ class MeanEstimator(BaseEstimator):
 
 
 class MeanRankEstimator(BaseEstimator):
+    """A meta-estimator that averages the ranks of predictions of base estimators."""
+
     def fit(self, X, y=None, **kwargs):  # pragma: no cover; # pylint: disable=unused-argument
         return self
 
@@ -379,7 +383,7 @@ class EnsembleSelection(BaseEnsembleSelection):
     n_features_in_ : int
         Number of features seen during ``fit``.
 
-    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+    feature_names_in_ : ndarray, shape = (`n_features_in_`,)
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
 
@@ -534,7 +538,7 @@ class EnsembleSelectionRegressor(BaseEnsembleSelection):
     n_features_in_ : int
         Number of features seen during ``fit``.
 
-    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+    feature_names_in_ : ndarray, shape = (`n_features_in_`,)
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
 

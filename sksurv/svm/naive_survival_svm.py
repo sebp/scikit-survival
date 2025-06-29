@@ -48,7 +48,7 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
 
     Parameters
     ----------
-    alpha : float, positive, default: 1.0
+    alpha : float, strictly positive, default: 1.0
         Weight of penalizing the squared hinge loss in the objective function.
 
     loss : {'hinge', 'squared_hinge'}, default: 'squared_hinge'

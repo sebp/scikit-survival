@@ -46,13 +46,40 @@ def loadarff(filename):
 
     Parameters
     ----------
-    filename : string
-        Path to ARFF file
+    filename : str or file-like
+        Path to ARFF file, or file-like object to read from.
 
     Returns
     -------
     data_frame : :class:`pandas.DataFrame`
         DataFrame containing data of ARFF file
+
+    Examples
+    --------
+    >>> from io import StringIO
+    >>> from sksurv.io import loadarff
+    >>>
+    >>> # Create a dummy ARFF file
+    >>> arff_content = '''
+    ... @relation test_data
+    ... @attribute feature1 numeric
+    ... @attribute feature2 numeric
+    ... @attribute class {A,B,C}
+    ... @data
+    ... 1.0,2.0,A
+    ... 3.0,4.0,B
+    ... 5.0,6.0,C
+    ... '''
+    >>>
+    >>> # Load the ARFF file
+    >>> with StringIO(arff_content) as f:
+    ...     data = loadarff(f)
+    >>>
+    >>> print(data)
+      class  feature1  feature2
+    0     A       1.0       2.0
+    1     B       3.0       4.0
+    2     C       5.0       6.0
     """
     data, meta = scipy_loadarff(filename)
     return _to_pandas(data, meta)

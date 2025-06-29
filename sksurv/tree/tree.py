@@ -85,7 +85,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         the input samples) required to be at a leaf node. Samples have
         equal weight when sample_weight is not provided.
 
-    max_features : int, float, string or None, optional, default: None
+    max_features : int, float or {'sqrt', 'log2'} or None, optional, default: None
         The number of features to consider when looking for the best split:
 
         - If int, then consider `max_features` features at each split.
@@ -117,8 +117,8 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         If None then unlimited number of leaf nodes.
 
     low_memory : boolean, default: False
-        If set, ``predict`` computations use reduced memory but ``predict_cumulative_hazard_function``
-        and ``predict_survival_function`` are not implemented.
+        If set, :meth:`predict` computations use reduced memory but :meth:`predict_cumulative_hazard_function`
+        and :meth:`predict_survival_function` are not implemented.
 
     Attributes
     ----------
@@ -440,15 +440,15 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         return X
 
     def predict(self, X, check_input=True):
-        """Predict risk score.
+        r"""Predict risk score.
 
         The risk score is the total number of events, which can
         be estimated by the sum of the estimated cumulative
-        hazard function :math:`\\hat{H}_h` in terminal node :math:`h`.
+        hazard function :math:`\hat{H}_h` in terminal node :math:`h`.
 
         .. math::
 
-            \\sum_{j=1}^{n(h)} \\hat{H}_h(T_{j} \\mid x) ,
+            \sum_{j=1}^{n(h)} \hat{H}_h(T_{j} \mid x) ,
 
         where :math:`n(h)` denotes the number of distinct event times
         of samples belonging to the same terminal node as :math:`x`.
@@ -501,17 +501,26 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             Allow to bypass several input checking.
             Don't use this parameter unless you know what you do.
 
-        return_array : boolean, default: False
-            If set, return an array with the cumulative hazard rate
-            for each `self.unique_times_`, otherwise an array of
-            :class:`sksurv.functions.StepFunction`.
+        return_array : bool, default: False
+            Whether to return a single array of cumulative hazard values
+            or a list of step functions.
+
+            If `False`, a list of :class:`sksurv.functions.StepFunction`
+            objects is returned.
+
+            If `True`, a 2d-array of shape `(n_samples, n_unique_times)` is
+            returned, where `n_unique_times` is the number of unique
+            event times in the training data. Each row represents the cumulative
+            hazard function of an individual evaluated at `unique_times_`.
 
         Returns
         -------
         cum_hazard : ndarray
-            If `return_array` is set, an array with the cumulative hazard rate
-            for each `self.unique_times_`, otherwise an array of length `n_samples`
-            of :class:`sksurv.functions.StepFunction` instances will be returned.
+            If `return_array` is `False`, an array of `n_samples`
+            :class:`sksurv.functions.StepFunction` instances is returned.
+
+            If `return_array` is `True`, a numeric array of shape
+            `(n_samples, n_unique_times_)` is returned.
 
         Examples
         --------
@@ -571,18 +580,26 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             Allow to bypass several input checking.
             Don't use this parameter unless you know what you do.
 
-        return_array : boolean, default: False
-            If set, return an array with the probability
-            of survival for each `self.unique_times_`,
-            otherwise an array of :class:`sksurv.functions.StepFunction`.
+        return_array : bool, default: False
+            Whether to return a single array of survival probabilities
+            or a list of step functions.
+
+            If `False`, a list of :class:`sksurv.functions.StepFunction`
+            objects is returned.
+
+            If `True`, a 2d-array of shape `(n_samples, n_unique_times)` is
+            returned, where `n_unique_times` is the number of unique
+            event times in the training data. Each row represents the survival
+            function of an individual evaluated at `unique_times_`.
 
         Returns
         -------
         survival : ndarray
-            If `return_array` is set, an array with the probability of
-            survival for each `self.unique_times_`, otherwise an array of
-            length `n_samples` of :class:`sksurv.functions.StepFunction`
-            instances will be returned.
+            If `return_array` is `False`, an array of `n_samples`
+            :class:`sksurv.functions.StepFunction` instances is returned.
+
+            If `return_array` is `True`, a numeric array of shape
+            `(n_samples, n_unique_times_)` is returned.
 
         Examples
         --------

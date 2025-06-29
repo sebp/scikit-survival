@@ -148,19 +148,20 @@ def _estimate_concordance_index(event_indicator, event_time, estimate, weights, 
 
 
 def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1e-8):
-    """Concordance index for right-censored data
+    """Measures the agreement between a predicted risk score and the actual time-to-event.
 
-    The concordance index is defined as the proportion of all comparable pairs
-    in which the predictions and outcomes are concordant.
+    The concordance index is a measure of rank correlation between predicted risk
+    scores and observed time points. It is defined as the proportion of all comparable
+    pairs in which the predictions and outcomes are concordant. Two samples are
+    concordant if the sample with the higher risk score has a shorter actual
+    time-to-event. A higher concordance index indicates a better model performance.
 
-    Two samples are comparable if (i) both of them experienced an event (at different times),
-    or (ii) the one with a shorter observed survival time experienced an event, in which case
-    the event-free subject "outlived" the other. A pair is not comparable if they experienced
-    events at the same time.
+    A pair of samples is considered comparable if the sample with a shorter
+    survival time experienced an event. This means we can confidently say that
+    the individual with the shorter time had a worse outcome. If both samples
+    are censored, or if they experienced an event at the same time, they are
+    not comparable.
 
-    Concordance intuitively means that two samples were ordered correctly by the model.
-    More specifically, two samples are concordant, if the one with a higher estimated
-    risk score has a shorter actual survival time.
     When predicted risks are identical for a pair, 0.5 rather than 1 is added to the count
     of concordant pairs.
 
@@ -350,30 +351,34 @@ def concordance_index_ipcw(survival_train, survival_test, estimate, tau=None, ti
 
 
 def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_tol=1e-8):
-    """Estimator of cumulative/dynamic AUC for right-censored time-to-event data.
+    r"""Computes the cumulative/dynamic AUC for right-censored time-to-event data.
+
+    The cumulative/dynamic AUC at time :math:`t` quantifies how well a model can
+    distinguish subjects who fail by that time from subjects who fail after it.
+    A higher AUC indicates a better model performance.
 
     The receiver operating characteristic (ROC) curve and the area under the
-    ROC curve (AUC) can be extended to survival data by defining
-    sensitivity (true positive rate) and specificity (true negative rate)
-    as time-dependent measures. *Cumulative cases* are all individuals that
-    experienced an event prior to or at time :math:`t` (:math:`t_i \\leq t`),
-    whereas *dynamic controls* are those with :math:`t_i > t`.
-    The associated cumulative/dynamic AUC quantifies how well a model can
-    distinguish subjects who fail by a given time (:math:`t_i \\leq t`) from
-    subjects who fail after this time (:math:`t_i > t`).
+    ROC curve (AUC) are metrics to evaluate a binary classifier. Each point on
+    the ROC denotes the performance of a binary classifier at a specific
+    threshold with respect to the sensitivity (true positive rate) on the
+    y-axis and the specificity (true negative rate) on the x-axis.
 
-    Given an estimator of the :math:`i`-th individual's risk score
-    :math:`\\hat{f}(\\mathbf{x}_i)`, the cumulative/dynamic AUC at time
-    :math:`t` is defined as
+    ROC and AUC can be extended to survival analysis by defining cases and
+    controls based on a time point :math:`t`. *Cumulative cases* are all
+    individuals that experienced an event prior to or at time
+    :math:`t` (:math:`t_i \leq t`), whereas *dynamic controls* are those
+    with :math:`t_i > t`. Given an estimator of the :math:`i`-th individual's
+    risk score :math:`\hat{f}(\mathbf{x}_i)`, the cumulative/dynamic AUC at
+    time :math:`t` is defined as
 
     .. math::
 
-        \\widehat{\\mathrm{AUC}}(t) =
-        \\frac{\\sum_{i=1}^n \\sum_{j=1}^n I(y_j > t) I(y_i \\leq t) \\omega_i
-        I(\\hat{f}(\\mathbf{x}_j) \\leq \\hat{f}(\\mathbf{x}_i))}
-        {(\\sum_{i=1}^n I(y_i > t)) (\\sum_{i=1}^n I(y_i \\leq t) \\omega_i)}
+        \widehat{\mathrm{AUC}}(t) =
+        \frac{\sum_{i=1}^n \sum_{j=1}^n I(y_j > t) I(y_i \leq t) \omega_i
+        I(\hat{f}(\mathbf{x}_j) \leq \hat{f}(\mathbf{x}_i))}
+        {(\sum_{i=1}^n I(y_i > t)) (\sum_{i=1}^n I(y_i \leq t) \omega_i)}
 
-    where :math:`\\omega_i` are inverse probability of censoring weights (IPCW).
+    where :math:`\omega_i` are inverse probability of censoring weights (IPCW).
 
     Estimating IPCW requires access to survival times from the training data
     to estimate the censoring distribution, which `survival_train` provides.
@@ -393,21 +398,21 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
     censoring is independent of the features.
 
     This function can also be used to evaluate models with time-dependent predictions
-    :math:`\\hat{f}(\\mathbf{x}_i, t)`, such as :class:`sksurv.ensemble.RandomSurvivalForest`
+    :math:`\hat{f}(\mathbf{x}_i, t)`, such as :class:`sksurv.ensemble.RandomSurvivalForest`
     (see :ref:`User Guide </user_guide/evaluating-survival-models.ipynb#Using-Time-dependent-Risk-Scores>`).
     In this case, `estimate` must be a 2-d array where ``estimate[i, j]`` is the
     predicted risk score for the i-th instance at time point ``times[j]``.
 
     Finally, the function also provides a single summary measure that refers to the mean
-    of the :math:`\\mathrm{AUC}(t)` over the time range :math:`(\\tau_1, \\tau_2)`.
+    of the :math:`\mathrm{AUC}(t)` over the time range :math:`(\tau_1, \tau_2)`.
 
     .. math::
 
-        \\overline{\\mathrm{AUC}}(\\tau_1, \\tau_2) =
-        \\frac{1}{\\hat{S}(\\tau_1) - \\hat{S}(\\tau_2)}
-        \\int_{\\tau_1}^{\\tau_2} \\widehat{\\mathrm{AUC}}(t)\\,d \\hat{S}(t)
+        \overline{\mathrm{AUC}}(\tau_1, \tau_2) =
+        \frac{1}{\hat{S}(\tau_1) - \hat{S}(\tau_2)}
+        \int_{\tau_1}^{\tau_2} \widehat{\mathrm{AUC}}(t)\,d \hat{S}(t)
 
-    where :math:`\\hat{S}(t)` is the Kaplan–Meier estimator of the survival function.
+    where :math:`\hat{S}(t)` is the Kaplan–Meier estimator of the survival function.
 
     See the :ref:`User Guide </user_guide/evaluating-survival-models.ipynb#Time-dependent-Area-under-the-ROC>`,
     [1]_, [2]_, [3]_ for further description.
@@ -548,19 +553,23 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
 
 
 def brier_score(survival_train, survival_test, estimate, times):
-    """Estimate the time-dependent Brier score for right censored data.
+    r"""Compute the inaccuracy of predicted survival probabilities at a given time point.
 
-    The time-dependent Brier score is the mean squared error at time point :math:`t`:
+    The time-dependent Brier score is the mean squared error between the true
+    survival status and the predicted survival probability at time point :math:`t`.
+    A lower Brier score indicates a better model performance.
+    To handle censoring, the score is weighted using inverse probability of
+    censoring weights (IPCW).
 
     .. math::
 
-        \\mathrm{BS}^c(t) = \\frac{1}{n} \\sum_{i=1}^n I(y_i \\leq t \\land \\delta_i = 1)
-        \\frac{(0 - \\hat{\\pi}(t | \\mathbf{x}_i))^2}{\\hat{G}(y_i)} + I(y_i > t)
-        \\frac{(1 - \\hat{\\pi}(t | \\mathbf{x}_i))^2}{\\hat{G}(t)} ,
+        \mathrm{BS}^c(t) = \frac{1}{n} \sum_{i=1}^n I(y_i \leq t \land \delta_i = 1)
+        \frac{(0 - \hat{\pi}(t | \mathbf{x}_i))^2}{\hat{G}(y_i)} + I(y_i > t)
+        \frac{(1 - \hat{\pi}(t | \mathbf{x}_i))^2}{\hat{G}(t)} ,
 
-    where :math:`\\hat{\\pi}(t | \\mathbf{x})` is the predicted probability of
-    remaining event-free up to time point :math:`t` for a feature vector :math:`\\mathbf{x}`,
-    and :math:`1/\\hat{G}(t)` is a inverse probability of censoring weight, estimated by
+    where :math:`\hat{\pi}(t | \mathbf{x})` is the predicted probability of
+    remaining event-free up to time point :math:`t` for a feature vector :math:`\mathbf{x}`,
+    and :math:`1/\hat{G}(t)` is a inverse probability of censoring weight, estimated by
     the Kaplan-Meier estimator.
 
     Estimating inverse probability of censoring weights requires
@@ -690,17 +699,21 @@ def brier_score(survival_train, survival_test, estimate, times):
 
 
 def integrated_brier_score(survival_train, survival_test, estimate, times):
-    """The Integrated Brier Score (IBS) provides an overall calculation of
-    the model performance at all available times :math:`t_1 \\leq t \\leq t_\\text{max}`.
+    r"""Computes the integrated Brier score (IBS).
+
+    The IBS is an overall measure of the model's performance across all
+    available time points :math:`t_1 \leq t \leq t_\text{max}`.
+    It is the average Brier score, integrated over time.
+    A lower IBS indicates a better model performance.
 
     The integrated time-dependent Brier score over the interval
-    :math:`[t_1; t_\\text{max}]` is defined as
+    :math:`[t_1; t_\text{max}]` is defined as
 
     .. math::
 
-        \\mathrm{IBS} = \\int_{t_1}^{t_\\text{max}} \\mathrm{BS}^c(t) d w(t)
+        \mathrm{IBS} = \int_{t_1}^{t_\text{max}} \mathrm{BS}^c(t) d w(t)
 
-    where the weighting function is :math:`w(t) = t / t_\\text{max}`.
+    where the weighting function is :math:`w(t) = t / t_\text{max}`.
     The integral is estimated via the trapezoidal rule.
 
     See the :ref:`User Guide </user_guide/evaluating-survival-models.ipynb#Time-dependent-Brier-Score>`
@@ -847,11 +860,11 @@ class _ScoreOverrideMixin:
 
         Parameters
         ----------
-        X : array-like of shape (n_samples, n_features)
+        X : array-like, shape = (n_samples, n_features)
             Input data, where n_samples is the number of samples and
             n_features is the number of features.
 
-        y : array-like of shape (n_samples,)
+        y : array-like, shape = (n_samples,)
             Target relative to X for classification or regression;
             None for unsupervised learning.
 

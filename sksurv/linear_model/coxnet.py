@@ -85,7 +85,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         Note: the penalty factors are internally rescaled to sum to
         `n_features`, and the alphas sequence will reflect this change.
 
-    normalize : boolean, optional, default: False
+    normalize : bool, optional, default: False
         If True, the features X will be normalized before optimization by
         subtracting the mean and dividing by the l2-norm.
         If you wish to standardize, please use
@@ -135,11 +135,11 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     n_features_in_ : int
         Number of features seen during ``fit``.
 
-    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+    feature_names_in_ : ndarray, shape = (`n_features_in_`,)
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
 
-    unique_times_ : array of shape = (n_unique_times,)
+    unique_times_ : ndarray, shape = (n_unique_times,)
         Unique time points.
 
     References
@@ -358,7 +358,12 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         return coef, offset
 
     def predict(self, X, alpha=None):
-        """The linear predictor of the model.
+        """Predict risk scores.
+
+        The risk score is the linear predictor of the model,
+        computed as the dot product of the input features `X` and the
+        estimated coefficients `coef_`. A higher score indicates a
+        higher risk of experiencing the event.
 
         Parameters
         ----------
@@ -372,8 +377,8 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Returns
         -------
-        T : array, shape = (n_samples,)
-            The predicted decision function
+        risk_score : array, shape = (n_samples,)
+            Predicted risk scores.
         """
         X = validate_data(self, X, reset=False)
         coef, offset = self._get_coef(alpha)
@@ -420,17 +425,26 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
             Constant that multiplies the penalty terms. The same alpha as used during training
             must be specified. If set to ``None``, the last alpha in the solution path is used.
 
-        return_array : boolean, default: False
-            If set, return an array with the cumulative hazard rate
-            for each `self.unique_times_`, otherwise an array of
-            :class:`sksurv.functions.StepFunction`.
+        return_array : bool, default: False
+            Whether to return a single array of cumulative hazard values
+            or a list of step functions.
+
+            If `False`, a list of :class:`sksurv.functions.StepFunction`
+            objects is returned.
+
+            If `True`, a 2d-array of shape `(n_samples, n_unique_times)` is
+            returned, where `n_unique_times` is the number of unique
+            event times in the training data. Each row represents the cumulative
+            hazard function of an individual evaluated at `unique_times_`.
 
         Returns
         -------
         cum_hazard : ndarray
-            If `return_array` is set, an array with the cumulative hazard rate
-            for each `self.unique_times_`, otherwise an array of length `n_samples`
-            of :class:`sksurv.functions.StepFunction` instances will be returned.
+            If `return_array` is `False`, an array of `n_samples`
+            :class:`sksurv.functions.StepFunction` instances is returned.
+
+            If `return_array` is `True`, a numeric array of shape
+            `(n_samples, n_unique_times_)` is returned.
 
         Examples
         --------
@@ -472,16 +486,16 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         return self._predict_cumulative_hazard_function(baseline_model, self.predict(X, alpha=alpha), return_array)
 
     def predict_survival_function(self, X, alpha=None, return_array=False):
-        """Predict survival function.
+        r"""Predict survival function.
 
         Only available if :meth:`fit` has been called with `fit_baseline_model = True`.
 
         The survival function for an individual
-        with feature vector :math:`x_\\alpha` is defined as
+        with feature vector :math:`x_\alpha` is defined as
 
         .. math::
 
-            S(t \\mid x_\\alpha) = S_0(t)^{\\exp(x_\\alpha^\\top \\beta)} ,
+            S(t \mid x_\alpha) = S_0(t)^{\exp(x_\alpha^\top \beta)} ,
 
         where :math:`S_0(t)` is the baseline survival function,
         estimated by Breslow's estimator.
@@ -495,18 +509,27 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
             Constant that multiplies the penalty terms. The same alpha as used during training
             must be specified. If set to ``None``, the last alpha in the solution path is used.
 
-        return_array : boolean, default: False
-            If set, return an array with the probability
-            of survival for each `self.unique_times_`,
-            otherwise an array of :class:`sksurv.functions.StepFunction`.
+        return_array : bool, default: False
+            Whether to return a single array of survival probabilities
+            or a list of step functions.
+
+            If `False`, a list of :class:`sksurv.functions.StepFunction`
+            objects is returned.
+
+            If `True`, a 2d-array of shape `(n_samples, n_unique_times)` is
+            returned, where `n_unique_times` is the number of unique
+            event times in the training data. Each row represents the survival
+            function of an individual evaluated at `unique_times_`.
 
         Returns
         -------
         survival : ndarray
-            If `return_array` is set, an array with the probability of
-            survival for each `self.unique_times_`, otherwise an array of
-            length `n_samples` of :class:`sksurv.functions.StepFunction`
-            instances will be returned.
+            If `return_array` is `False`, an array of `n_samples`
+            :class:`sksurv.functions.StepFunction` instances is returned.
+
+            If `return_array` is `True`, a numeric array of shape
+            `(n_samples, n_unique_times_)` is returned.
+
 
         Examples
         --------
