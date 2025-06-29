@@ -146,6 +146,8 @@ filterwarnings = [
     "ignore:np\\.find_common_type is deprecated.  Please use `np\\.result_type` or `np\\.promote_types`:DeprecationWarning",
     # deprecated since NumPy 2.0
     "ignore:`trapz` is deprecated\\. Use `trapezoid` instead.*:DeprecationWarning",
+    # deprecated since scipy 1.16.0, scheduled for removal in 1.18
+    "ignore:scipy\\.optimize. The `disp` and `iprint` options of the L-BFGS-B solver are deprecated.*:DeprecationWarning",
 ]
 
 [tool.coverage.run]
