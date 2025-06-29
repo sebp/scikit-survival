@@ -6,3 +6,4 @@ Survival Trees
     :toctree: generated/
 
     SurvivalTree
+    ExtraSurvivalTree
