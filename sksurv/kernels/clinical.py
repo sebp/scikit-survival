@@ -87,6 +87,23 @@ def clinical_kernel(x, y=None):
     .. [1] Daemen, A., De Moor, B.,
            "Development of a kernel function for clinical data".
            Annual International Conference of the IEEE Engineering in Medicine and Biology Society, 5913-7, 2009
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from sksurv.kernels import clinical_kernel
+    >>>
+    >>> data = pd.DataFrame({
+    ...     'feature_num': [1.0, 2.0, 3.0],
+    ...     'feature_ord': pd.Categorical(['low', 'medium', 'high'], ordered=True),
+    ...     'feature_nom': pd.Categorical(['A', 'B', 'A'])
+    ... })
+    >>>
+    >>> kernel_matrix = clinical_kernel(data)
+    >>> print(kernel_matrix)
+    [[1.         0.33333333 0.5       ]
+     [0.33333333 1.         0.16666667]
+     [0.5        0.16666667 1.        ]]
     """
     if y is not None:
         if x.shape[1] != y.shape[1]:

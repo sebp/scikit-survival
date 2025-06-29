@@ -57,6 +57,8 @@ class EnsembleAverage(BaseEstimator):
 
 
 class MeanEstimator(BaseEstimator):
+    """A meta-estimator that averages the predictions of base estimators."""
+
     def fit(self, X, y=None, **kwargs):  # pragma: no cover; # pylint: disable=unused-argument
         return self
 
@@ -65,6 +67,8 @@ class MeanEstimator(BaseEstimator):
 
 
 class MeanRankEstimator(BaseEstimator):
+    """A meta-estimator that averages the ranks of predictions of base estimators."""
+
     def fit(self, X, y=None, **kwargs):  # pragma: no cover; # pylint: disable=unused-argument
         return self
 
