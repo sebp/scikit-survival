@@ -953,10 +953,14 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         return opt_result
 
     def predict(self, X):
-        """Rank samples according to survival times
+        """If rank_ratio=1, assigns to each sample a value representing the risk of an event happening.
 
-        Lower ranks indicate shorter survival, higher ranks longer survival.
+        A low value indicates a lower risk of an event happening, a high value indicates a higher risk of an event happening.
 
+        These risk values have no unit and are meaningful only to rank the samples by event risk.
+
+        If rank_ratio < 1, assigns a survival time to each sample
+        
         Parameters
         ----------
         X : array-like, shape = (n_samples, n_features)
@@ -965,7 +969,7 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         Returns
         -------
         y : ndarray, shape = (n_samples,)
-            Predicted ranks.
+            Predicted risk values.
         """
         check_is_fitted(self, "coef_")
         X = validate_data(self, X, reset=False)
