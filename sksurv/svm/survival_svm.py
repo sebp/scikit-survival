@@ -848,7 +848,7 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
 
     Parameters
     ----------
-    alpha : float, positive, default: 1
+    alpha : float, strictly positive, default: 1
         Weight of penalizing the squared hinge loss in the objective function
 
     rank_ratio : float, optional, default: 1.0
@@ -991,7 +991,7 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
 
     Parameters
     ----------
-    alpha : float, positive, default: 1
+    alpha : float, strictly positive, default: 1
         Weight of penalizing the squared hinge loss in the objective function
 
     rank_ratio : float, optional, default: 1.0
