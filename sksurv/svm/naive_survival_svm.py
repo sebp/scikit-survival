@@ -24,61 +24,63 @@ from ..util import check_array_survival
 
 
 class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
-    """Naive version of linear Survival Support Vector Machine.
+    r"""Naive implementation of linear Survival Support Vector Machine.
 
-    Uses regular linear support vector classifier (liblinear).
-    A new set of samples is created by building the difference between any two feature
-    vectors in the original data, thus this version requires :math:`O(\\text{n_samples}^2)` space.
+    This class uses a regular linear support vector classifier (liblinear)
+    to implement a survival SVM. It constructs a new dataset by computing
+    the difference between feature vectors of comparable pairs from the
+    original data. This approach results in a space complexity of
+    :math:`O(\text{n_samples}^2)`.
 
-    See :class:`sksurv.svm.HingeLossSurvivalSVM` for the kernel naive survival SVM.
+    The optimization problem is formulated as:
 
     .. math::
 
-          \\min_{\\mathbf{w}}\\quad
-          \\frac{1}{2} \\lVert \\mathbf{w} \\rVert_2^2
-          + \\gamma \\sum_{i = 1}^n \\xi_i \\\\
-          \\text{subject to}\\quad
-          \\mathbf{w}^\\top \\mathbf{x}_i - \\mathbf{w}^\\top \\mathbf{x}_j \\geq 1 - \\xi_{ij},\\quad
-          \\forall (i, j) \\in \\mathcal{P}, \\\\
-          \\xi_i \\geq 0,\\quad \\forall (i, j) \\in \\mathcal{P}.
+        \min_{\mathbf{w}}\quad
+        \frac{1}{2} \lVert \mathbf{w} \rVert_2^2
+        + \gamma \sum_{i = 1}^n \xi_i \\
+        \text{subject to}\quad
+        \mathbf{w}^\top \mathbf{x}_i - \mathbf{w}^\top \mathbf{x}_j \geq 1 - \xi_{ij},\quad
+        \forall (i, j) \in \mathcal{P}, \\
+        \xi_i \geq 0,\quad \forall (i, j) \in \mathcal{P}.
 
-          \\mathcal{P} = \\{ (i, j) \\mid y_i > y_j \\land \\delta_j = 1 \\}_{i,j=1,\\dots,n}.
+        \mathcal{P} = \{ (i, j) \mid y_i > y_j \land \delta_j = 1 \}_{i,j=1,\dots,n}.
 
     See [1]_, [2]_ for further description.
 
     Parameters
     ----------
-    alpha : float, strictly positive, default: 1.0
-        Weight of penalizing the squared hinge loss in the objective function.
+    alpha : float, optional, default: 1.0
+        Weight of penalizing the squared hinge loss in the objective function. Must be greater than 0.
 
-    loss : {'hinge', 'squared_hinge'}, default: 'squared_hinge'
+    loss : {'hinge', 'squared_hinge'}, optional,default: 'squared_hinge'
         Specifies the loss function. 'hinge' is the standard SVM loss
         (used e.g. by the SVC class) while 'squared_hinge' is the
         square of the hinge loss.
 
-    penalty : {'l1', 'l2'}, default: 'l2'
+    penalty : {'l1', 'l2'}, optional,default: 'l2'
         Specifies the norm used in the penalization. The 'l2'
         penalty is the standard used in SVC. The 'l1' leads to `coef_`
         vectors that are sparse.
 
-    dual : bool, default: True
+    dual : bool, optional,default: True
         Select the algorithm to either solve the dual or primal
         optimization problem. Prefer dual=False when n_samples > n_features.
 
     tol : float, optional, default: 1e-4
         Tolerance for stopping criteria.
 
-    verbose : int, default: 0
-        Enable verbose output. Note that this setting takes advantage of a
+    verbose : int, optional, default: 0
+        If ``True``, enable verbose output. Note that this setting takes advantage of a
         per-process runtime setting in liblinear that, if enabled, may not work
         properly in a multithreaded context.
 
-    random_state : int seed, RandomState instance, or None, default: None
-        The seed of the pseudo random number generator to use when
-        shuffling the data.
+    random_state : int, :class:`numpy.random.RandomState` instance, or None, optional, default: None
+        Used to resolve ties in survival times. Pass an int for reproducible output across
+        multiple :meth:`fit` calls.
 
-    max_iter : int, default: 1000
-        The maximum number of iterations to be run.
+    max_iter : int, optional, default: 1000
+        The maximum number of iterations taken for the solver to converge.
 
     Attributes
     ----------
@@ -87,8 +89,8 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
 
     See also
     --------
-    sksurv.svm.FastSurvivalSVM
-        Alternative implementation with reduced time complexity for training.
+    sksurv.svm.FastSurvivalSVM : Alternative implementation with reduced time complexity for training.
+    sksurv.svm.HingeLossSurvivalSVM : Non-linear version of the naive survival SVM based on kernel functions.
 
     References
     ----------
@@ -138,6 +140,30 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
         self.alpha = alpha
 
     def _get_survival_pairs(self, X, y, random_state):  # pylint: disable=no-self-use
+        """Generates comparable pairs from survival data.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            Data matrix.
+        y : structured array, shape = (n_samples,)
+            A structured array containing the binary event indicator
+            and time of event or time of censoring.
+        random_state : RandomState instance
+            Random number generator used for shuffling.
+
+        Returns
+        -------
+        x_pairs : ndarray, shape = (n_pairs, n_features)
+            Feature differences for comparable pairs.
+        y_pairs : ndarray, shape = (n_pairs,)
+            Labels for comparable pairs (1 or -1).
+
+        Raises
+        ------
+        NoComparablePairException
+            If no comparable pairs can be formed from the input data.
+        """
         feature_names = _get_feature_names(X)
 
         X = validate_data(self, X, ensure_min_samples=2)
@@ -181,8 +207,8 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
 
         y : structured array, shape = (n_samples,)
             A structured array containing the binary event indicator
-            as first field, and time of event or time of censoring as
-            second field.
+            (e.g., named 'event') as the first field, and time of event or
+            time of censoring (e.g., named 'time') as the second field.
 
         sample_weight : array-like, shape = (n_samples,), optional
             Array of weights that are assigned to individual
@@ -203,9 +229,12 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
         return super().fit(x_pairs, y_pairs, sample_weight=sample_weight)
 
     def predict(self, X):
-        """Rank samples according to survival times
+        """Predict risk scores.
 
-        Lower ranks indicate shorter survival, higher ranks longer survival.
+        Predictions are risk scores (i.e. higher values indicate an
+        increased risk of experiencing an event). The scores have no
+        unit and are only meaningful to rank samples by their risk
+        of experiencing an event.
 
         Parameters
         ----------
@@ -214,7 +243,7 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
 
         Returns
         -------
-        y : ndarray, shape = (n_samples,)
-            Predicted ranks.
+        y : ndarray, shape = (n_samples,), dtype = float
+            Predicted risk scores.
         """
         return -self.decision_function(X)
