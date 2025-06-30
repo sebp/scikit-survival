@@ -322,7 +322,7 @@ class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
 
     Parameters
     ----------
-    n_estimators : integer, optional, default: 100
+    n_estimators : int, optional, default: 100
         The number of trees in the forest.
 
     max_depth : int or None, optional, default: None
@@ -355,7 +355,7 @@ class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
         the input samples) required to be at a leaf node. Samples have
         equal weight when sample_weight is not provided.
 
-    max_features : int, float or {'sqrt', 'log2'} or None, optional, default: None
+    max_features : int, float, {'sqrt', 'log2'} or None, optional, default: 'sqrt'
         The number of features to consider when looking for the best split:
 
         - If int, then consider `max_features` features at each split.
@@ -375,11 +375,11 @@ class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
         Best nodes are defined as relative reduction in impurity.
         If None then unlimited number of leaf nodes.
 
-    bootstrap : boolean, optional, default: True
+    bootstrap : bool, optional, default: True
         Whether bootstrap samples are used when building trees. If False, the
         whole dataset is used to build each tree.
 
-    oob_score : bool, default: False
+    oob_score : bool, optional, default: False
         Whether to use out-of-bag samples to estimate
         the generalization accuracy.
 
@@ -412,7 +412,7 @@ class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
         - If float, then draw `max_samples * X.shape[0]` samples. Thus,
           `max_samples` should be in the interval `(0.0, 1.0]`.
 
-    low_memory : boolean, default: False
+    low_memory : bool, optional, default: False
         If set, :meth:`predict` computations use reduced memory but :meth:`predict_cumulative_hazard_function`
         and :meth:`predict_survival_function` are not implemented.
 
@@ -421,13 +421,13 @@ class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
     estimators_ : list of SurvivalTree instances
         The collection of fitted sub-estimators.
 
-    unique_times_ : array of shape = (n_unique_times,)
+    unique_times_ : ndarray, shape = (n_unique_times,)
         Unique time points.
 
     n_features_in_ : int
         Number of features seen during ``fit``.
 
-    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+    feature_names_in_ : ndarray, shape = (`n_features_in_`,)
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
 
@@ -684,7 +684,7 @@ class ExtraSurvivalTrees(SurvivalAnalysisMixin, _BaseSurvivalForest):
 
     Parameters
     ----------
-    n_estimators : integer, optional, default: 100
+    n_estimators : int, optional, default: 100
         The number of trees in the forest.
 
     max_depth : int or None, optional, default: None
@@ -717,7 +717,7 @@ class ExtraSurvivalTrees(SurvivalAnalysisMixin, _BaseSurvivalForest):
         the input samples) required to be at a leaf node. Samples have
         equal weight when sample_weight is not provided.
 
-    max_features : int, float or {'sqrt', 'log2'} or None, optional, default: None
+    max_features : int, float, {'sqrt', 'log2'} or None, optional, default: 'sqrt'
         The number of features to consider when looking for the best split:
 
         - If int, then consider `max_features` features at each split.
@@ -737,11 +737,11 @@ class ExtraSurvivalTrees(SurvivalAnalysisMixin, _BaseSurvivalForest):
         Best nodes are defined as relative reduction in impurity.
         If None then unlimited number of leaf nodes.
 
-    bootstrap : boolean, optional, default: True
+    bootstrap : bool, optional, default: True
         Whether bootstrap samples are used when building trees. If False, the
         whole dataset is used to build each tree.
 
-    oob_score : bool, default: False
+    oob_score : bool, optional, default: False
         Whether to use out-of-bag samples to estimate
         the generalization accuracy.
 
@@ -774,7 +774,7 @@ class ExtraSurvivalTrees(SurvivalAnalysisMixin, _BaseSurvivalForest):
         - If float, then draw `max_samples * X.shape[0]` samples. Thus,
           `max_samples` should be in the interval `(0.0, 1.0]`.
 
-    low_memory : boolean, default: False
+    low_memory : bool, optional, default: False
         If set, :meth:`predict` computations use reduced memory but :meth:`predict_cumulative_hazard_function`
         and :meth:`predict_survival_function` are not implemented.
 
@@ -783,13 +783,13 @@ class ExtraSurvivalTrees(SurvivalAnalysisMixin, _BaseSurvivalForest):
     estimators_ : list of SurvivalTree instances
         The collection of fitted sub-estimators.
 
-    unique_times_ : array of shape = (n_unique_times,)
+    unique_times_ : ndarray, shape = (n_unique_times,)
         Unique time points.
 
     n_features_in_ : int
-        The number of features when ``fit`` is performed.
+        Number of features seen during ``fit``.
 
-    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+    feature_names_in_ : ndarray, shape = (`n_features_in_`,)
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
 
@@ -876,16 +876,25 @@ class ExtraSurvivalTrees(SurvivalAnalysisMixin, _BaseSurvivalForest):
             Data matrix.
 
         return_array : bool, default: False
-            If set, return an array with the cumulative hazard rate
-            for each `self.unique_times_`, otherwise an array of
-            :class:`sksurv.functions.StepFunction`.
+            Whether to return a single array of cumulative hazard values
+            or a list of step functions.
+
+            If `False`, a list of :class:`sksurv.functions.StepFunction`
+            objects is returned.
+
+            If `True`, a 2d-array of shape `(n_samples, n_unique_times)` is
+            returned, where `n_unique_times` is the number of unique
+            event times in the training data. Each row represents the cumulative
+            hazard function of an individual evaluated at `unique_times_`.
 
         Returns
         -------
         cum_hazard : ndarray
-            If `return_array` is set, an array with the cumulative hazard rate
-            for each `self.unique_times_`, otherwise an array of length `n_samples`
-            of :class:`sksurv.functions.StepFunction` instances will be returned.
+            If `return_array` is `False`, an array of `n_samples`
+            :class:`sksurv.functions.StepFunction` instances is returned.
+
+            If `return_array` is `True`, a numeric array of shape
+            `(n_samples, n_unique_times_)` is returned.
 
         Examples
         --------
@@ -948,10 +957,11 @@ class ExtraSurvivalTrees(SurvivalAnalysisMixin, _BaseSurvivalForest):
         Returns
         -------
         survival : ndarray
-            If `return_array` is set, an array with the probability of
-            survival for each `self.unique_times_`, otherwise an array of
-            length `n_samples` of :class:`sksurv.functions.StepFunction`
-            instances will be returned.
+            If `return_array` is `False`, an array of `n_samples`
+            :class:`sksurv.functions.StepFunction` instances is returned.
+
+            If `return_array` is `True`, a numeric array of shape
+            `(n_samples, n_unique_times_)` is returned.
 
         Examples
         --------
