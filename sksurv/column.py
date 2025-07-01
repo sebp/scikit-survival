@@ -42,27 +42,28 @@ def standardize_column(series_or_array, with_std=True):
 
 
 def standardize(table, with_std=True):
-    """
-    Perform Z-Normalization on each numeric column of the given table.
+    """Standardize numeric features by removing the mean and scaling to unit variance.
 
-    If `table` is a pandas.DataFrame, only numeric columns are modified,
-    all other columns remain unchanged. If `table` is a numpy.ndarray,
-    it is only modified if it has numeric dtype, in which case the returned
-    array will have floating point dtype.
+    This function performs Z-Normalization on each numeric column of the given
+    table.
+
+    If `table` is a :class:`pandas.DataFrame`, only numeric columns are modified;
+    all other columns remain unchanged. If `table` is a :class:`numpy.ndarray`,
+    it is only modified if it has a numeric dtype, in which case the returned
+    array will have a floating-point dtype.
 
     Parameters
     ----------
     table : pandas.DataFrame or numpy.ndarray
         Data to standardize.
-
     with_std : bool, optional, default: True
-        If ``False`` data is only centered and not converted to unit variance.
+        If ``False``, data is only centered (mean removed) and not scaled to
+        unit variance.
 
     Returns
     -------
-    normalized : pandas.DataFrame
-        Table with numeric columns normalized.
-        Categorical columns in the input table remain unchanged.
+    normalized : pandas.DataFrame or numpy.ndarray
+        The standardized data. The output type will be the same as the input type.
     """
     new_frame = _apply_along_column(table, standardize_column, with_std=with_std)
 
@@ -90,28 +91,30 @@ def _encode_categorical_series(series, allow_drop=True):
 
 
 def encode_categorical(table, columns=None, **kwargs):
-    """
-    Encode categorical columns with `M` categories into `M-1` columns according
-    to the one-hot scheme.
+    """One-hot encode categorical features.
+
+    This function creates a binary column for each category and, by default,
+    drops one of the categories per feature: a column with `M` categories
+    is encoded as `M-1` integer columns according to the one-hot
+    scheme.
 
     Parameters
     ----------
-    table : pandas.DataFrame
-        Table with categorical columns to encode.
-
+    table : pandas.DataFrame or pandas.Series
+        Data with categorical columns to encode.
     columns : list-like, optional, default: None
         Column names in the DataFrame to be encoded.
-        If `columns` is None then all the columns with
-        `object` or `category` dtype will be converted.
-
-    allow_drop : boolean, optional, default: True
+        If `columns` is `None`, all columns with `object` or `category`
+        dtype will be converted. This parameter is ignored if `table` is a
+        pandas.Series.
+    allow_drop : bool, optional, default: True
         Whether to allow dropping categorical columns that only consist
         of a single category.
 
     Returns
     -------
     encoded : pandas.DataFrame
-        Table with categorical columns encoded as numeric.
+        The transformed data with categorical columns encoded as numeric.
         Numeric columns in the input table remain unchanged.
     """
     if isinstance(table, pd.Series):
@@ -165,19 +168,20 @@ def _get_dummies_1d(data, allow_drop=True):
 
 
 def categorical_to_numeric(table):
-    """Encode categorical columns to numeric by converting each category to
-    an integer value.
+    """Encode categorical features as integers.
+
+    This function converts each category to a unique integer value.
 
     Parameters
     ----------
-    table : pandas.DataFrame
-        Table with categorical columns to encode.
+    table : pandas.DataFrame or pandas.Series
+        Data with categorical columns to encode.
 
     Returns
     -------
-    encoded : pandas.DataFrame
-        Table with categorical columns encoded as numeric.
-        Numeric columns in the input table remain unchanged.
+    encoded : pandas.DataFrame or pandas.Series
+        The transformed data with categorical columns encoded as integers.
+        The output type will be the same as the input type.
     """
 
     def transform(column):
