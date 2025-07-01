@@ -18,31 +18,29 @@ __all__ = ["StepFunction"]
 
 
 class StepFunction:
-    """Callable step function.
+    r"""A callable step function.
+
+    The function is defined by a set of points :math:`(x_i, y_i)` and is
+    evaluated as:
 
     .. math::
 
-        f(z) = a * y_i + b,
-        x_i \\leq z < x_{i + 1}
+        f(z) = a \cdot y_i + b \quad \text{if} \quad x_i \leq z < x_{i + 1}
 
     Parameters
     ----------
     x : ndarray, shape = (n_points,)
-        Values on the x axis in ascending order.
-
+        The values on the x-axis, must be in ascending order.
     y : ndarray, shape = (n_points,)
-        Corresponding values on the y axis.
-
+        The corresponding values on the y-axis.
     a : float, optional, default: 1.0
-        Constant to multiply by.
-
+        A constant factor to scale ``y`` by.
     b : float, optional, default: 0.0
-        Constant offset term.
-
-    domain : tuple, optional
-        A tuple with two entries that sets the limits of the
-        domain of the step function.
-        If entry is `None`, use the first/last value of `x` as limit.
+        A constant offset term.
+    domain : tuple, optional, default: (0, None)
+        A tuple ``(lower, upper)`` that defines the domain of the step function.
+        If ``lower`` or ``upper`` is ``None``, the first or last value of ``x`` is
+        used as the limit, respectively.
     """
 
     def __init__(self, x, y, *, a=1.0, b=0.0, domain=(0, None)):
@@ -57,36 +55,38 @@ class StepFunction:
 
     @property
     def domain(self):
-        """Returns the domain of the function, that means
-        the range of values that the function accepts.
+        """The domain of the function.
+
+        The domain is the range of values that the function accepts.
 
         Returns
         -------
         lower_limit : float
-            Lower limit of domain.
+            Lower limit of the omain.
 
         upper_limit : float
-            Upper limit of domain.
+            Upper limit of the domain.
         """
         return self._domain
 
     def __call__(self, x):
-        """Evaluate step function.
-
-        Values outside the interval specified by `self.domain`
-        will raise an exception.
-        Values in `x` that are in the interval `[self.domain[0]; self.x[0]]`
-        get mapped to `self.y[0]`.
+        """Evaluate the step function at given values.
 
         Parameters
         ----------
-        x : float|array-like, shape=(n_values,)
-            Values to evaluate step function at.
+        x : float or array-like, shape=(n_values,)
+            The values at which to evaluate the step function.
+            Values must be within the function's ``domain``.
 
         Returns
         -------
-        y : float|array-like, shape=(n_values,)
-            Values of step function at `x`.
+        y : float or array-like, shape=(n_values,)
+            The value of the step function at ``x``.
+
+        Raises
+        ------
+        ValueError
+            If ``x`` contains values outside the function's ``domain``.
         """
         x = np.atleast_1d(x)
         if not np.isfinite(x).all():
