@@ -65,9 +65,10 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         coefficients are zero), which is derived from the input data.
 
         If set to "auto", the value will depend on the
-        sample size relative to the number of features.
-        If ``n_samples > n_features``, the default value is 0.0001
-        If ``n_samples <= n_features``, 0.01 is the default value.
+        sample size relative to the number of features:
+
+        - If ``n_samples > n_features``, the default value is 0.0001.
+        - If ``n_samples <= n_features``, the default value is 0.01.
 
     l1_ratio : float, optional, default: 0.5
         The ElasticNet mixing parameter, with ``0 < l1_ratio <= 1``.
