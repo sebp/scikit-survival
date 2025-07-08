@@ -199,6 +199,7 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
         return Xt
 
     def __len__(self):
+        """Return the number of base estimators."""
         return len(self.base_estimators)
 
     def fit(self, X, y=None, **fit_params):
@@ -209,8 +210,11 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
         X : array-like, shape = (n_samples, n_features)
             Training data.
 
-        y : array-like, optional
+        y : array-like, shape = (n_samples,), optional
             Target data if base estimators are supervised.
+
+        **fit_params : dict
+            Parameters passed to the ``fit`` method of each base estimator.
 
         Returns
         -------
@@ -228,7 +232,7 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
     def predict(self, X):
         """Perform prediction.
 
-        Only available of the meta estimator has a predict method.
+        Only available if the meta estimator has a ``predict`` method.
 
         Parameters
         ----------
@@ -237,10 +241,10 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
 
         Returns
         -------
-        prediction : array, shape = (n_samples, n_dim)
+        prediction : ndarray, shape = (n_samples, n_dim)
             Prediction of meta estimator that combines
             predictions of base estimators. `n_dim` depends
-            on the return value of meta estimator's `predict`
+            on the return value of meta estimator's ``predict``
             method.
         """
         Xt = self._predict_estimators(X)
@@ -250,7 +254,7 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
     def predict_proba(self, X):
         """Perform prediction.
 
-        Only available if the meta estimator has a predict_proba method.
+        Only available if the meta estimator has a ``predict_proba`` method.
 
         Parameters
         ----------
@@ -272,7 +276,7 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
     def predict_log_proba(self, X):
         """Perform prediction.
 
-        Only available if the meta estimator has a predict_log_proba method.
+        Only available if the meta estimator has a ``predict_log_proba`` method.
 
         Parameters
         ----------
@@ -298,7 +302,7 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
     def predict_cumulative_hazard_function(self, X, return_array=False):
         """Perform prediction.
 
-        Only available if the meta estimator has a predict_cumulative_hazard_function method.
+        Only available if the meta estimator has a ``predict_cumulative_hazard_function`` method.
 
         Parameters
         ----------
@@ -333,7 +337,7 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
     def predict_survival_function(self, X, return_array=False):
         """Perform prediction.
 
-        Only available if the meta estimator has a predict_survival_function method.
+        Only available if the meta estimator has a ``predict_survival_function`` method.
 
         Parameters
         ----------
