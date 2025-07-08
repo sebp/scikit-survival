@@ -42,7 +42,7 @@ def _to_pandas(data, meta):
 
 
 def loadarff(filename):
-    """Load ARFF file
+    """Load ARFF file.
 
     Parameters
     ----------
@@ -53,6 +53,10 @@ def loadarff(filename):
     -------
     data_frame : :class:`pandas.DataFrame`
         DataFrame containing data of ARFF file
+
+    See Also
+    --------
+    scipy.io.arff.loadarff : The underlying function that reads the ARFF file.
 
     Examples
     --------
