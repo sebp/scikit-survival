@@ -206,9 +206,9 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
             Data matrix.
 
         y : structured array, shape = (n_samples,)
-            A structured array containing the binary event indicator
-            (e.g., named 'event') as the first field, and time of event or
-            time of censoring (e.g., named 'time') as the second field.
+            A structured array with two fields. The first field is a boolean
+            where ``True`` indicates an event and ``False`` indicates right-censoring.
+            The second field is a float with the time of event or time of censoring.
 
         sample_weight : array-like, shape = (n_samples,), optional
             Array of weights that are assigned to individual

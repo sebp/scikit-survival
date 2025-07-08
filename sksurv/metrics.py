@@ -253,12 +253,14 @@ def concordance_index_ipcw(survival_train, survival_test, estimate, tau=None, ti
     survival_train : structured array, shape = (n_train_samples,)
         Survival times for the training data, used to estimate the censoring
         distribution.
-        A structured array with the first field indicating the binary event indicator
-        and the second field the time of event or censoring.
+        A structured array with two fields. The first field is a boolean
+        where ``True`` indicates an event and ``False`` indicates right-censoring.
+        The second field is a float with the time of event or time of censoring.
     survival_test : structured array, shape = (n_samples,)
         Survival times for the test data.
-        A structured array with the first field indicating the binary event indicator
-        and the second field the time of event or censoring.
+        A structured array with two fields. The first field is a boolean
+        where ``True`` indicates an event and ``False`` indicates right-censoring.
+        The second field is a float with the time of event or time of censoring.
     estimate : array-like, shape = (n_samples,)
         Predicted risk scores for the test data (e.g., from ``estimator.predict(X)``).
         A higher value indicates a higher risk of experiencing an event.
@@ -403,12 +405,14 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
     survival_train : structured array, shape = (n_train_samples,)
         Survival times for the training data, used to estimate the censoring
         distribution.
-        A structured array with the first field indicating the binary event indicator
-        and the second field the time of event or censoring.
+        A structured array with two fields. The first field is a boolean
+        where ``True`` indicates an event and ``False`` indicates right-censoring.
+        The second field is a float with the time of event or time of censoring.
     survival_test : structured array, shape = (n_samples,)
         Survival times for the test data.
-        A structured array with the first field indicating the binary event indicator
-        and the second field the time of event or censoring.
+        A structured array with two fields. The first field is a boolean
+        where ``True`` indicates an event and ``False`` indicates right-censoring.
+        The second field is a float with the time of event or time of censoring.
     estimate : array-like, shape = (n_samples,) or (n_samples, n_times)
         Predicted risk scores for the test data (e.g., from ``estimator.predict(X)``.
         A higher value indicates a higher risk of experiencing an event.
@@ -567,12 +571,14 @@ def brier_score(survival_train, survival_test, estimate, times):
     survival_train : structured array, shape = (n_train_samples,)
         Survival times for the training data, used to estimate the censoring
         distribution.
-        A structured array with the first field indicating the binary event indicator
-        and the second field the time of event or censoring.
+        A structured array with two fields. The first field is a boolean
+        where ``True`` indicates an event and ``False`` indicates right-censoring.
+        The second field is a float with the time of event or time of censoring.
     survival_test : structured array, shape = (n_samples,)
         Survival times for the test data.
-        A structured array with the first field indicating the binary event indicator
-        and the second field the time of event or censoring.
+        A structured array with two fields. The first field is a boolean
+        where ``True`` indicates an event and ``False`` indicates right-censoring.
+        The second field is a float with the time of event or time of censoring.
     estimate : array-like, shape = (n_samples, n_times)
         Predicted survival probabilities for the test data at the time points
         specified by ``times``, typically obtained from
@@ -691,12 +697,14 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
     survival_train : structured array, shape = (n_train_samples,)
         Survival times for the training data, used to estimate the censoring
         distribution.
-        A structured array with the first field indicating the binary event indicator
-        and the second field the time of event or censoring.
+        A structured array with two fields. The first field is a boolean
+        where ``True`` indicates an event and ``False`` indicates right-censoring.
+        The second field is a float with the time of event or time of censoring.
     survival_test : structured array, shape = (n_samples,)
         Survival times for the test data.
-        A structured array with the first field indicating the binary event indicator
-        and the second field the time of event or censoring.
+        A structured array with two fields. The first field is a boolean
+        where ``True`` indicates an event and ``False`` indicates right-censoring.
+        The second field is a float with the time of event or time of censoring.
     estimate : array-like, shape = (n_samples, n_times)
         Predicted survival probabilities for the test data at the time points
         specified by ``times``, typically obtained from

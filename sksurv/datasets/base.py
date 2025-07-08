@@ -82,7 +82,7 @@ def get_x_y(data_frame, attr_labels, pos_label=None, survival=True, competing_ri
         Whether to return `y` that can be used for survival analysis.
 
     competing_risks : bool, optional, default: False
-        Whether `y` refers to competing risks situation. Only used if `survival` is True
+        Whether `y` refers to competing risks situation. Only used if `survival` is `True`.
 
     Returns
     -------
@@ -91,9 +91,9 @@ def get_x_y(data_frame, attr_labels, pos_label=None, survival=True, competing_ri
 
     y : structured array, shape = (n_samples,), or pandas.DataFrame, shape = (n_samples, len(attr_labels)), or None
         If `survival` is `True`, a structured array with two fields.
-        The first field is a boolean indicating whether the endpoint has been reached
-        or the event time is right censored.
-        The second field is a float with the follow-up time.
+        The first field is a boolean where ``True`` indicates an event and ``False``
+        indicates right-censoring. The second field is a float with the time of
+        event or time of censoring.
 
         If `survival` is `False` and `attr_labels` not `None`, a :class:`pandas.DataFrame`
         with columns specified by `attr_labels`.
@@ -172,9 +172,9 @@ def load_arff_files_standardized(
         Dependent variables of training data.
 
         If `survival` is `True`, a structured array with two fields.
-        The first field is a boolean indicating whether the endpoint has been reached
-        or the event time is right censored.
-        The second field is a float with the follow-up time.
+        The first field is a boolean where ``True`` indicates an event and ``False``
+        indicates right-censoring. The second field is a float with the time of
+        event or time of censoring.
 
         If `survival` is `False` and `attr_labels` not `None`, a :class:`pandas.DataFrame`
         with columns specified by `attr_labels`.
@@ -188,9 +188,9 @@ def load_arff_files_standardized(
         Dependent variables of testing data if `path_testing` was provided.
 
         If `survival` is `True`, a structured array with two fields.
-        The first field is a boolean indicating whether the endpoint has been reached
-        or the event time is right censored.
-        The second field is a float with the follow-up time.
+        The first field is a boolean where ``True`` indicates an event and ``False``
+        indicates right-censoring. The second field is a float with the time of
+        event or time of censoring.
 
         If `survival` is `False` and `attr_labels` not `None`, a :class:`pandas.DataFrame`
         with columns specified by `attr_labels`.
@@ -262,7 +262,7 @@ def load_whas500():
 
     y : structured array with 2 fields
         *fstat*: boolean indicating whether the endpoint has been reached
-        or the event time is right censored.
+        or the event time is right-censored.
 
         *lenfol*: total length of follow-up (days from hospital admission date
         to date of last follow-up)
@@ -294,7 +294,7 @@ def load_gbsg2():
 
     y : structured array with 2 fields
         *cens*: boolean indicating whether the endpoint has been reached
-        or the event time is right censored.
+        or the event time is right-censored.
 
         *time*: total length of follow-up
 
@@ -327,7 +327,7 @@ def load_veterans_lung_cancer():
 
     y : structured array with 2 fields
         *Status*: boolean indicating whether the endpoint has been reached
-        or the event time is right censored.
+        or the event time is right-censored.
 
         *Survival_in_days*: total length of follow-up
 
@@ -363,7 +363,7 @@ def load_aids(endpoint="aids"):
 
     y : structured array with 2 fields
         *censor*: boolean indicating whether the endpoint has been reached
-        or the event time is right censored.
+        or the event time is right-censored.
 
         *time*: total length of follow-up
 
@@ -409,7 +409,7 @@ def load_breast_cancer():
 
     y : structured array with 2 fields
         *e.tdm*: boolean indicating whether the endpoint has been reached
-        or the event time is right censored.
+        or the event time is right-censored.
 
         *t.tdm*: time to distant metastasis (days)
 
@@ -453,7 +453,7 @@ def load_flchain():
 
     y : structured array with 2 fields
         *death*: boolean indicating whether the subject died
-        or the event time is right censored.
+        or the event time is right-censored.
 
         *futime*: total length of follow-up or time of death.
 
@@ -498,7 +498,7 @@ def load_bmt():
         The measurements for each patient.
 
     y : structured array with 2 fields
-        *status*: Integer indicating the endpoint: 0-(survival i.e. right censored data), 1-(TRM), 2-(relapse)
+        *status*: Integer indicating the endpoint: 0-(survival i.e. right-censored data), 1-(TRM), 2-(relapse)
 
         *ftime*: total length of follow-up or time of event.
 
@@ -591,7 +591,7 @@ def load_cgvhd():
         The measurements for each patient.
 
     y : structured array with 2 fields
-        *status*: Integer indicating the endpoint: 0: right censored data; 1: CGVHD; 2: relapse; 3: death.
+        *status*: Integer indicating the endpoint: 0: right-censored data; 1: CGVHD; 2: relapse; 3: death.
 
         *ftime*: total length of follow-up or time of event.
 
