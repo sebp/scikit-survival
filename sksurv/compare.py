@@ -26,8 +26,9 @@ def compare_survival(y, group_indicator, return_stats=False):
     Parameters
     ----------
     y : structured array, shape = (n_samples,)
-        A structured array containing the binary event indicator as the first
-        field, and the time of event or time of censoring as the second field.
+        A structured array with two fields. The first field is a boolean
+        where ``True`` indicates an event and ``False`` indicates right-censoring.
+        The second field is a float with the time of event or time of censoring.
     group_indicator : array-like, shape = (n_samples,)
         Group membership of each sample.
     return_stats : bool, optional, default: False

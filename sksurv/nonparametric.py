@@ -31,7 +31,7 @@ __all__ = [
 
 
 def _compute_counts(event, time, order=None):
-    """Count right censored and uncensored samples at each unique time point.
+    """Count right-censored and uncensored samples at each unique time point.
 
     Parameters
     ----------
@@ -116,7 +116,7 @@ def _compute_counts(event, time, order=None):
 
 
 def _compute_counts_truncated(event, time_enter, time_exit):
-    """Compute counts for left truncated and right censored survival data.
+    """Compute counts for left truncated and right-censored survival data.
 
     Parameters
     ----------
@@ -515,9 +515,9 @@ class SurvivalFunctionEstimator(BaseEstimator):
         Parameters
         ----------
         y : structured array, shape = (n_samples,)
-            A structured array containing the binary event indicator
-            as first field, and time of event or time of censoring as
-            second field.
+            A structured array with two fields. The first field is a boolean
+            where ``True`` indicates an event and ``False`` indicates right-censoring.
+            The second field is a float with the time of event or time of censoring.
 
         Returns
         -------
@@ -607,9 +607,9 @@ class CensoringDistributionEstimator(SurvivalFunctionEstimator):
         Parameters
         ----------
         y : structured array, shape = (n_samples,)
-            A structured array containing the binary event indicator
-            as first field, and time of event or time of censoring as
-            second field.
+            A structured array with two fields. The first field is a boolean
+            where ``True`` indicates an event and ``False`` indicates right-censoring.
+            The second field is a float with the time of event or time of censoring.
 
         Returns
         -------
@@ -634,9 +634,9 @@ class CensoringDistributionEstimator(SurvivalFunctionEstimator):
         Parameters
         ----------
         y : structured array, shape = (n_samples,)
-            A structured array containing the binary event indicator
-            as first field, and time of event or time of censoring as
-            second field.
+            A structured array with two fields. The first field is a boolean
+            where ``True`` indicates an event and ``False`` indicates right-censoring.
+            The second field is a float with the time of event or time of censoring.
 
         Returns
         -------
