@@ -62,10 +62,11 @@ def _ordinal_as_numeric(x, ordinal_columns):
 
 
 def clinical_kernel(x, y=None):
-    """Computes clinical kernel
+    """Computes clinical kernel.
 
     The clinical kernel distinguishes between continuous
-    ordinal,and nominal variables.
+    ordinal, and nominal variables.
+    Kernel values are normalized to lie within [0, 1].
 
     See [1]_ for further description.
 
@@ -80,13 +81,30 @@ def clinical_kernel(x, y=None):
     Returns
     -------
     kernel : array, shape = (n_samples_x, n_samples_y)
-        Kernel matrix. Values are normalized to lie within [0, 1].
+        Kernel matrix.
 
     References
     ----------
     .. [1] Daemen, A., De Moor, B.,
            "Development of a kernel function for clinical data".
            Annual International Conference of the IEEE Engineering in Medicine and Biology Society, 5913-7, 2009
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from sksurv.kernels import clinical_kernel
+    >>>
+    >>> data = pd.DataFrame({
+    ...     'feature_num': [1.0, 2.0, 3.0],
+    ...     'feature_ord': pd.Categorical(['low', 'medium', 'high'], ordered=True),
+    ...     'feature_nom': pd.Categorical(['A', 'B', 'A'])
+    ... })
+    >>>
+    >>> kernel_matrix = clinical_kernel(data)
+    >>> print(kernel_matrix)
+    [[1.         0.33333333 0.5       ]
+     [0.33333333 1.         0.16666667]
+     [0.5        0.16666667 1.        ]]
     """
     if y is not None:
         if x.shape[1] != y.shape[1]:
@@ -114,7 +132,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
     """Transform data using a clinical Kernel
 
     The clinical kernel distinguishes between continuous
-    ordinal,and nominal variables.
+    ordinal, and nominal variables.
 
     See [1]_ for further description.
 
@@ -131,7 +149,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
     n_features_in_ : int
         Number of features seen during ``fit``.
 
-    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+    feature_names_in_ : ndarray, shape = (`n_features_in_`,)
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
 
@@ -214,10 +232,12 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
             Data to estimate parameters from.
 
         y : None
-            Argument is ignored (included for compatibility reasons).
+            Ignored. This parameter exists only for compatibility with
+            :class:`sklearn.pipeline.Pipeline`.
 
         kwargs : dict
-            Argument is ignored (included for compatibility reasons).
+            Ignored. This parameter exists only for compatibility with
+            :class:`sklearn.pipeline.Pipeline`.
 
         Returns
         -------
@@ -281,10 +301,10 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        x : array-like, shape = (n_samples_x, n_features)
+        x : pandas.DataFrame, shape = (n_samples_x, n_features)
             Training data
 
-        y : array-like, shape = (n_samples_y, n_features)
+        y : pandas.DataFrame, shape = (n_samples_y, n_features)
             Testing data
 
         Returns
@@ -295,18 +315,18 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         return self.fit(X).transform(Y).T
 
     def pairwise_kernel(self, X, Y):
-        """Function to use with :func:`sklearn.metrics.pairwise.pairwise_kernels`
+        """Function to use with :func:`sklearn.metrics.pairwise.pairwise_kernels`.
 
         Parameters
         ----------
-        X : array, shape = (n_features,)
+        X : ndarray, shape = (n_features,)
 
-        Y : array, shape = (n_features,)
+        Y : ndarray, shape = (n_features,)
 
         Returns
         -------
         similarity : float
-            Similarities are normalized to be within [0, 1]
+            Similarities are normalized to be within [0, 1].
         """
         check_is_fitted(self, "X_fit_")
         if X.shape[0] != Y.shape[0]:

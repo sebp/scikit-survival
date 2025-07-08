@@ -19,40 +19,60 @@ __all__ = ["OneHotEncoder"]
 
 
 def check_columns_exist(actual, expected):
+    """Check if all expected columns are present in a dataframe.
+
+    Parameters
+    ----------
+    actual : pandas.Index
+        The actual columns of a dataframe.
+    expected : pandas.Index
+        The expected columns.
+
+    Raises
+    ------
+    ValueError
+        If any of the expected columns are missing from the actual columns.
+    """
     missing_features = expected.difference(actual)
     if len(missing_features) != 0:
         raise ValueError(f"{len(missing_features)} features are missing from data: {missing_features.tolist()}")
 
 
 class OneHotEncoder(BaseEstimator, TransformerMixin):
-    """Encode categorical columns with `M` categories into `M-1` columns according
-    to the one-hot scheme.
+    """Encode categorical features using a one-hot scheme.
 
-    The order of non-categorical columns is preserved, encoded columns are inserted
-    inplace of the original column.
+    This transformer only works on pandas DataFrames. It identifies columns
+    with `category` or `object` data type as categorical features.
+    The features are encoded using a one-hot (or dummy) encoding scheme, which
+    creates a binary column for each category. By default, one category per feature
+    is dropped. a column with `M` categories is encoded as `M-1` integer columns
+    according to the one-hot scheme.
+
+    The order of non-categorical columns is preserved. Encoded columns are inserted
+    in place of the original column.
 
     Parameters
     ----------
-    allow_drop : boolean, optional, default: True
+    allow_drop : bool, optional, default: True
         Whether to allow dropping categorical columns that only consist
         of a single category.
 
     Attributes
     ----------
     feature_names_ : pandas.Index
-        List of encoded columns.
+        Names of categorical features that were encoded.
 
     categories_ : dict
-        Categories of encoded columns.
+        A dictionary mapping each categorical feature name to a list of its
+        categories.
 
-    encoded_columns_ : list
-        Name of columns after encoding.
-        Includes names of non-categorical columns.
+    encoded_columns_ : pandas.Index
+        The full list of feature names in the transformed output.
 
     n_features_in_ : int
         Number of features seen during ``fit``.
 
-    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+    feature_names_in_ : ndarray, shape = (`n_features_in_`,)
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
     """
@@ -61,18 +81,20 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         self.allow_drop = allow_drop
 
     def fit(self, X, y=None):  # pylint: disable=unused-argument
-        """Retrieve categorical columns.
+        """Determine which features are categorical and should be one-hot encoded.
 
         Parameters
         ----------
         X : pandas.DataFrame
-            Data to encode.
-        y :
-            Ignored. For compatibility with Pipeline.
+            The data to determine categorical features from.
+        y : None
+            Ignored. This parameter exists only for compatibility with
+            :class:`sklearn.pipeline.Pipeline`.
+
         Returns
         -------
         self : object
-            Returns self
+            Returns the instance itself.
         """
         self.fit_transform(X)
         return self
@@ -81,21 +103,27 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         return encode_categorical(X, columns=columns_to_encode, allow_drop=self.allow_drop)
 
     def fit_transform(self, X, y=None, **fit_params):  # pylint: disable=unused-argument
-        """Convert categorical columns to numeric values.
+        """Fit to data, then transform it.
+
+        Fits the transformer to ``X`` by identifying categorical features and
+        then returns a transformed version of ``X`` with categorical features
+        one-hot encoded.
 
         Parameters
         ----------
         X : pandas.DataFrame
-            Data to encode.
-        y :
-            Ignored. For compatibility with TransformerMixin.
-        fit_params :
-            Ignored. For compatibility with TransformerMixin.
+            The data to fit and transform.
+        y : None, optional
+            Ignored. This parameter exists only for compatibility with
+            :class:`sklearn.pipeline.Pipeline`.
+        fit_params : dict, optional
+            Ignored. This parameter exists only for compatibility with
+            :class:`sklearn.pipeline.Pipeline`.
 
         Returns
         -------
         Xt : pandas.DataFrame
-            Encoded data.
+            The transformed data.
         """
         _check_feature_names(self, X, reset=True)
         _check_n_features(self, X, reset=True)
@@ -108,17 +136,17 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         return x_dummy
 
     def transform(self, X):
-        """Convert categorical columns to numeric values.
+        """Transform ``X`` by one-hot encoding categorical features.
 
         Parameters
         ----------
         X : pandas.DataFrame
-            Data to encode.
+            The data to transform.
 
         Returns
         -------
         Xt : pandas.DataFrame
-            Encoded data.
+            The transformed data.
         """
         check_is_fitted(self, "encoded_columns_")
         _check_n_features(self, X, reset=False)
@@ -136,7 +164,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        input_features : array-like of str or None, default=None
+        input_features : array-like of str or None, default: None
             Input features.
 
             - If `input_features` is `None`, then `feature_names_in_` is

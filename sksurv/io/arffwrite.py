@@ -28,15 +28,51 @@ def writearff(data, filename, relation_name=None, index=True):
     data : :class:`pandas.DataFrame`
         DataFrame containing data
 
-    filename : string or file-like object
+    filename : str or file-like object
         Path to ARFF file or file-like object. In the latter case,
         the handle is closed by calling this function.
 
-    relation_name : string, optional, default: "pandas"
+    relation_name : str, optional, default: 'pandas'
         Name of relation in ARFF file.
 
     index : boolean, optional, default: True
         Write row names (index)
+
+    See Also
+    --------
+    loadarff : Function to read ARFF files.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from sksurv.io import writearff
+    >>>
+    >>> # Create a dummy DataFrame
+    >>> data = pd.DataFrame({
+    ...     'feature1': [1.0, 3.0, 5.0],
+    ...     'feature2': [2.0, np.nan, 6.0],
+    ...     'class': ['A', 'B', 'C']
+    ... }, index=['One', 'Two', 'Three'])
+    >>>
+    >>> # Write to ARFF file
+    >>> writearff(data, 'test_output.arff', relation_name='test_data')
+    >>>
+    >>> # Read contents of ARFF file
+    >>> with open('test_output.arff') as f:
+    >>>     arff_contents = "".join(f.readlines())
+    >>> print(arff_contents)
+    @relation test_data
+    <BLANKLINE>
+    @attribute index        {One,Three,Two}
+    @attribute feature1     real
+    @attribute feature2     real
+    @attribute class        {A,B,C}
+    <BLANKLINE>
+    @data
+    One,1.0,2.0,A
+    Two,3.0,?,B
+    Three,5.0,6.0,C
     """
     if isinstance(filename, str):
         fp = open(filename, "w")

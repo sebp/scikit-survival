@@ -38,10 +38,9 @@ def _array_to_step_function(x, array):
 
 
 class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
-    """A survival tree.
+    """A single survival tree.
 
-    The quality of a split is measured by the
-    log-rank splitting rule.
+    The quality of a split is measured by the log-rank splitting rule.
 
     If ``splitter='best'``, fit and predict methods support
     missing values. See :ref:`tree_missing_value_support` for details.
@@ -85,7 +84,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         the input samples) required to be at a leaf node. Samples have
         equal weight when sample_weight is not provided.
 
-    max_features : int, float, string or None, optional, default: None
+    max_features : int, float or {'sqrt', 'log2'} or None, optional, default: None
         The number of features to consider when looking for the best split:
 
         - If int, then consider `max_features` features at each split.
@@ -116,22 +115,22 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         Best nodes are defined as relative reduction in impurity.
         If None then unlimited number of leaf nodes.
 
-    low_memory : boolean, default: False
-        If set, ``predict`` computations use reduced memory but ``predict_cumulative_hazard_function``
-        and ``predict_survival_function`` are not implemented.
+    low_memory : bool, optional, default: False
+        If set, :meth:`predict` computations use reduced memory but :meth:`predict_cumulative_hazard_function`
+        and :meth:`predict_survival_function` are not implemented.
 
     Attributes
     ----------
-    unique_times_ : array of shape = (n_unique_times,)
+    unique_times_ : ndarray, shape = (n_unique_times,), dtype = float
         Unique time points.
 
-    max_features_ : int,
+    max_features_ : int
         The inferred value of max_features.
 
     n_features_in_ : int
         Number of features seen during ``fit``.
 
-    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+    feature_names_in_ : ndarray, shape = (`n_features_in_`,), dtype = object
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
 
@@ -141,8 +140,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
     See also
     --------
-    sksurv.ensemble.RandomSurvivalForest
-        An ensemble of SurvivalTrees.
+    sksurv.ensemble.RandomSurvivalForest : An ensemble of SurvivalTrees.
 
     References
     ----------
@@ -219,7 +217,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         Parameter
         ---------
-        X : array-like of shape (n_samples, n_features), dtype=DOUBLE
+        X : array-like, shape = (n_samples, n_features), dtype = DOUBLE
             Input data.
 
         estimator_name : str or None, default=None
@@ -267,9 +265,9 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             Data matrix
 
         y : structured array, shape = (n_samples,)
-            A structured array containing the binary event indicator
-            as first field, and time of event or time of censoring as
-            second field.
+            A structured array with two fields. The first field is a boolean
+            where ``True`` indicates an event and ``False`` indicates right-censoring.
+            The second field is a float with the time of event or time of censoring.
 
         check_input : boolean, default: True
             Allow to bypass several input checking.
@@ -440,15 +438,15 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         return X
 
     def predict(self, X, check_input=True):
-        """Predict risk score.
+        r"""Predict risk score.
 
         The risk score is the total number of events, which can
         be estimated by the sum of the estimated cumulative
-        hazard function :math:`\\hat{H}_h` in terminal node :math:`h`.
+        hazard function :math:`\hat{H}_h` in terminal node :math:`h`.
 
         .. math::
 
-            \\sum_{j=1}^{n(h)} \\hat{H}_h(T_{j} \\mid x) ,
+            \sum_{j=1}^{n(h)} \hat{H}_h(T_{j} \mid x) ,
 
         where :math:`n(h)` denotes the number of distinct event times
         of samples belonging to the same terminal node as :math:`x`.
@@ -467,7 +465,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         Returns
         -------
-        risk_scores : ndarray, shape = (n_samples,)
+        risk_scores : ndarray, shape = (n_samples,), dtype=float
             Predicted risk scores.
         """
 
@@ -501,17 +499,26 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             Allow to bypass several input checking.
             Don't use this parameter unless you know what you do.
 
-        return_array : boolean, default: False
-            If set, return an array with the cumulative hazard rate
-            for each `self.unique_times_`, otherwise an array of
-            :class:`sksurv.functions.StepFunction`.
+        return_array : bool, default: False
+            Whether to return a single array of cumulative hazard values
+            or a list of step functions.
+
+            If `False`, a list of :class:`sksurv.functions.StepFunction`
+            objects is returned.
+
+            If `True`, a 2d-array of shape `(n_samples, n_unique_times)` is
+            returned, where `n_unique_times` is the number of unique
+            event times in the training data. Each row represents the cumulative
+            hazard function of an individual evaluated at `unique_times_`.
 
         Returns
         -------
         cum_hazard : ndarray
-            If `return_array` is set, an array with the cumulative hazard rate
-            for each `self.unique_times_`, otherwise an array of length `n_samples`
-            of :class:`sksurv.functions.StepFunction` instances will be returned.
+            If `return_array` is `False`, an array of `n_samples`
+            :class:`sksurv.functions.StepFunction` instances is returned.
+
+            If `return_array` is `True`, a numeric array of shape
+            `(n_samples, n_unique_times_)` is returned.
 
         Examples
         --------
@@ -571,18 +578,26 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             Allow to bypass several input checking.
             Don't use this parameter unless you know what you do.
 
-        return_array : boolean, default: False
-            If set, return an array with the probability
-            of survival for each `self.unique_times_`,
-            otherwise an array of :class:`sksurv.functions.StepFunction`.
+        return_array : bool, default: False
+            Whether to return a single array of survival probabilities
+            or a list of step functions.
+
+            If `False`, a list of :class:`sksurv.functions.StepFunction`
+            objects is returned.
+
+            If `True`, a 2d-array of shape `(n_samples, n_unique_times)` is
+            returned, where `n_unique_times` is the number of unique
+            event times in the training data. Each row represents the survival
+            function of an individual evaluated at `unique_times_`.
 
         Returns
         -------
         survival : ndarray
-            If `return_array` is set, an array with the probability of
-            survival for each `self.unique_times_`, otherwise an array of
-            length `n_samples` of :class:`sksurv.functions.StepFunction`
-            instances will be returned.
+            If `return_array` is `False`, an array of `n_samples`
+            :class:`sksurv.functions.StepFunction` instances is returned.
+
+            If `return_array` is `True`, a numeric array of shape
+            `(n_samples, n_unique_times_)` is returned.
 
         Examples
         --------
@@ -640,7 +655,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         Returns
         -------
-        X_leaves : array-like, shape = (n_samples,)
+        X_leaves : ndarray, shape = (n_samples,), dtype=int
             For each datapoint x in X, return the index of the leaf x
             ends up in. Leaves are numbered within
             ``[0; self.tree_.node_count)``, possibly with gaps in the
@@ -678,6 +693,110 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
 
 class ExtraSurvivalTree(SurvivalTree):
+    """An Extremely Randomized Survival Tree.
+
+    This class implements an Extremely Randomized Tree for survival analysis.
+    It differs from :class:`SurvivalTree` in how splits are chosen:
+    instead of searching for the optimal split, it considers a random subset
+    of features and random thresholds for each feature, then picks the best
+    among these random candidates.
+
+    Parameters
+    ----------
+    splitter : {'best', 'random'}, default: 'random'
+        The strategy used to choose the split at each node. Supported
+        strategies are 'best' to choose the best split and 'random' to choose
+        the best random split.
+
+    max_depth : int or None, optional, default: None
+        The maximum depth of the tree. If None, then nodes are expanded until
+        all leaves are pure or until all leaves contain less than
+        `min_samples_split` samples.
+
+    min_samples_split : int, float, optional, default: 6
+        The minimum number of samples required to split an internal node:
+
+        - If int, then consider `min_samples_split` as the minimum number.
+        - If float, then `min_samples_split` is a fraction and
+          `ceil(min_samples_split * n_samples)` are the minimum
+          number of samples for each split.
+
+    min_samples_leaf : int, float, optional, default: 3
+        The minimum number of samples required to be at a leaf node.
+        A split point at any depth will only be considered if it leaves at
+        least ``min_samples_leaf`` training samples in each of the left and
+        right branches.  This may have the effect of smoothing the model,
+        especially in regression.
+
+        - If int, then consider `min_samples_leaf` as the minimum number.
+        - If float, then `min_samples_leaf` is a fraction and
+          `ceil(min_samples_leaf * n_samples)` are the minimum
+          number of samples for each node.
+
+    min_weight_fraction_leaf : float, optional, default: 0.
+        The minimum weighted fraction of the sum total of weights (of all
+        the input samples) required to be at a leaf node. Samples have
+        equal weight when sample_weight is not provided.
+
+    max_features : int, float or {'sqrt', 'log2'} or None, optional, default: None
+        The number of features to consider when looking for the best split:
+
+        - If int, then consider `max_features` features at each split.
+        - If float, then `max_features` is a fraction and
+          `max(1, int(max_features * n_features_in_))` features are considered at
+          each split.
+        - If "sqrt", then `max_features=sqrt(n_features)`.
+        - If "log2", then `max_features=log2(n_features)`.
+        - If None, then `max_features=n_features`.
+
+        Note: the search for a split does not stop until at least one
+        valid partition of the node samples is found, even if it requires to
+        effectively inspect more than ``max_features`` features.
+
+    random_state : int, RandomState instance or None, optional, default: None
+        Controls the randomness of the estimator. The features are always
+        randomly permuted at each split, even if ``splitter`` is set to
+        ``"best"``. When ``max_features < n_features``, the algorithm will
+        select ``max_features`` at random at each split before finding the best
+        split among them. But the best found split may vary across different
+        runs, even if ``max_features=n_features``. That is the case, if the
+        improvement of the criterion is identical for several splits and one
+        split has to be selected at random. To obtain a deterministic behavior
+        during fitting, ``random_state`` has to be fixed to an integer.
+
+    max_leaf_nodes : int or None, optional, default: None
+        Grow a tree with ``max_leaf_nodes`` in best-first fashion.
+        Best nodes are defined as relative reduction in impurity.
+        If None then unlimited number of leaf nodes.
+
+    low_memory : bool, optional, default: False
+        If set, :meth:`predict` computations use reduced memory but :meth:`predict_cumulative_hazard_function`
+        and :meth:`predict_survival_function` are not implemented.
+
+    Attributes
+    ----------
+    unique_times_ : ndarray, shape = (n_unique_times,), dtype = float
+        Unique time points.
+
+    max_features_ : int
+        The inferred value of max_features.
+
+    n_features_in_ : int
+        Number of features seen during ``fit``.
+
+    feature_names_in_ : ndarray, shape = (`n_features_in_`,), dtype = object
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
+
+    tree_ : Tree object
+        The underlying Tree object. Please refer to
+        ``help(sklearn.tree._tree.Tree)`` for attributes of Tree object.
+
+    See also
+    --------
+    sksurv.ensemble.ExtraSurvivalTrees : An ensemble of ExtraSurvivalTrees.
+    """
+
     def __init__(
         self,
         *,
