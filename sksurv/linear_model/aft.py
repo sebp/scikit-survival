@@ -19,15 +19,15 @@ from ..util import check_array_survival
 
 
 class IPCRidge(Ridge, SurvivalAnalysisMixin):
-    """Accelerated failure time model with inverse probability of censoring weights.
+    r"""Accelerated failure time model with inverse probability of censoring weights.
 
     This model assumes a regression model of the form
 
     .. math::
 
-        \\log y = \\beta_0 + \\mathbf{X} \\beta + \\epsilon
+        \log y = \beta_0 + \mathbf{X} \beta + \epsilon
 
-    L2-shrinkage is applied to the coefficients :math:`\\beta` and
+    L2-shrinkage is applied to the coefficients :math:`\beta` and
     each sample is weighted by the inverse probability of censoring
     to account for right censoring (under the assumption that
     censoring is independent of the features, i.e., random censoring).
@@ -203,3 +203,6 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
 
     def score(self, X, y, sample_weight=None):
         return SurvivalAnalysisMixin.score(self, X, y)
+
+
+IPCRidge.score.__doc__ = SurvivalAnalysisMixin.score.__doc__

@@ -29,7 +29,11 @@ __all__ = ["CoxPHSurvivalAnalysis"]
 
 
 class BreslowEstimator:
-    """Implements Breslow's non-parametric estimator for the cumulative baseline hazard function.
+    """Breslow's non-parametric estimator for the cumulative baseline hazard.
+
+    This class is used by :class:`CoxPHSurvivalAnalysis` to estimate the
+    cumulative baseline hazard and baseline survival function after the
+    coefficients of the Cox model have been fitted.
 
     Attributes
     ----------
@@ -39,7 +43,7 @@ class BreslowEstimator:
     baseline_survival_ : :class:`sksurv.functions.StepFunction`
         Estimated baseline survival function.
 
-    unique_times_ : ndarray
+    unique_times_ : ndarray, shape=(n_unique_times,)
         Unique event times.
     """
 
@@ -126,7 +130,29 @@ class BreslowEstimator:
 
 
 class CoxPHOptimizer:
-    """Helper class to compute the value, gradient, and Hessian of the negative log-likelihood of the Cox model."""
+    """Helper class for fitting the Cox proportional hazards model.
+
+    This class computes the negative log-likelihood, its gradient, and the
+    Hessian matrix for the Cox model. It is used internally by
+    :class:`CoxPHSurvivalAnalysis`.
+
+    Parameters
+    ----------
+    X : ndarray, shape=(n_samples, n_features)
+        The feature matrix.
+
+    event : ndarray, shape=(n_samples,)
+        The event indicator.
+
+    time : ndarray, shape=(n_samples,)
+        The event/censoring times.
+
+    alpha : ndarray, shape=(n_features,)
+        The regularization parameters.
+
+    ties : {'breslow', 'efron'}
+        The method to handle tied event times.
+    """
 
     def __init__(self, X, event, time, alpha, ties):
         # sort descending
@@ -270,7 +296,16 @@ class CoxPHOptimizer:
 
 
 class VerboseReporter:
-    """Helper class to report optimization progress based on the verbosity level."""
+    """Helper class to report optimization progress.
+
+    This class is used by :class:`CoxPHSurvivalAnalysis` to print
+    optimization progress depending on the verbosity level.
+
+    Parameters
+    ----------
+    verbose : int
+        The verbosity level.
+    """
 
     def __init__(self, verbose):
         self.verbose = verbose
@@ -325,7 +360,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         no tied event times all the methods are equivalent.
 
     n_iter : int, optional, default: 100
-        Maximum number of iterations.
+        The maximum number of iterations taken for the solver to converge.
 
     tol : float, optional, default: 1e-9
         Convergence criteria. Convergence is based on the negative log-likelihood::
