@@ -38,6 +38,10 @@ def writearff(data, filename, relation_name=None, index=True):
     index : boolean, optional, default: True
         Write row names (index)
 
+    See Also
+    --------
+    loadarff : Function to read ARFF files.
+
     Examples
     --------
     >>> import numpy as np
