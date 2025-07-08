@@ -37,18 +37,55 @@ def _corr_kendalltau(X):
 
 
 class EnsembleAverage(BaseEstimator):
+    """A meta-estimator that averages the predictions of base estimators.
+
+    This estimator is for internal use by :class:`BaseEnsembleSelection`.
+    It takes a list of estimators that have already been fitted and
+    averages their predictions.
+
+    Parameters
+    ----------
+    base_estimators : list of estimators
+        The base estimators to average. The estimators must be fitted.
+
+    name : str, optional, default: None
+        The name of the ensemble.
+    """
+
     def __init__(self, base_estimators, name=None):
         self.base_estimators = base_estimators
         self.name = name
         assert not hasattr(self.base_estimators[0], "classes_"), "base estimator cannot be a classifier"
 
     def get_base_params(self):
+        """Get parameters for this estimator's first base estimator.
+
+        Returns
+        -------
+        params : dict
+            Parameter names mapped to their values.
+        """
         return self.base_estimators[0].get_params()
 
     def fit(self, X, y=None, **kwargs):  # pragma: no cover; # pylint: disable=unused-argument
         return self
 
     def predict(self, X):
+        """Predict using the ensemble of estimators.
+
+        The prediction is the average of the predictions of all base
+        estimators.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            Data to predict on.
+
+        Returns
+        -------
+        y_pred : ndarray, shape = (n_samples,)
+            The predicted values.
+        """
         prediction = np.zeros(X.shape[0])
         for est in self.base_estimators:
             prediction += est.predict(X)
@@ -57,22 +94,59 @@ class EnsembleAverage(BaseEstimator):
 
 
 class MeanEstimator(BaseEstimator):
-    """A meta-estimator that averages the predictions of base estimators."""
+    """A meta-estimator that averages predictions.
+
+    This estimator computes the mean of an array along its last axis.
+    It is intended to be used as a ``meta_estimator`` in an ensemble model,
+    where it averages the predictions of the base estimators.
+    """
 
     def fit(self, X, y=None, **kwargs):  # pragma: no cover; # pylint: disable=unused-argument
         return self
 
     def predict(self, X):  # pylint: disable=no-self-use
+        """Return the mean of an array along its last axis.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_estimators)
+            The predictions of base estimators.
+
+        Returns
+        -------
+        y_pred : ndarray, shape = (n_samples,)
+            The averaged predictions.
+        """
         return X.mean(axis=X.ndim - 1)
 
 
 class MeanRankEstimator(BaseEstimator):
-    """A meta-estimator that averages the ranks of predictions of base estimators."""
+    """A meta-estimator that averages the ranks of predictions of base estimators.
+
+    This estimator first converts the predictions of each base estimator
+    into ranks and then averages the ranks. It is intended to be used as
+    a ``meta_estimator`` in an ensemble model.
+    """
 
     def fit(self, X, y=None, **kwargs):  # pragma: no cover; # pylint: disable=unused-argument
         return self
 
     def predict(self, X):  # pylint: disable=no-self-use
+        """Return the mean of ranks.
+
+        The predictions of each base estimator are first converted into
+        ranks and then averaged.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_estimators)
+            The predictions of base estimators.
+
+        Returns
+        -------
+        y_pred : ndarray, shape = (n_samples,)
+            The averaged ranks.
+        """
         # convert predictions of individual models into ranks
         ranks = np.apply_along_axis(rankdata, 0, X)
         # average predicted ranks
@@ -138,6 +212,7 @@ class BaseEnsembleSelection(Stacking):
         self._extra_params.extend(["scorer", "n_estimators", "min_score", "min_correlation", "cv", "n_jobs", "verbose"])
 
     def __len__(self):
+        """Return the number of fitted models."""
         if hasattr(self, "fitted_models_"):
             return len(self.fitted_models_)
         return 0
@@ -304,15 +379,18 @@ class BaseEnsembleSelection(Stacking):
         raise NotImplementedError()
 
     def fit(self, X, y=None, **fit_params):
-        """Fit ensemble of models
+        """Fit ensemble of models.
 
         Parameters
         ----------
         X : array-like, shape = (n_samples, n_features)
             Training data.
 
-        y : array-like, optional
+        y : array-like, shape = (n_samples,), optional
             Target data if base estimators are supervised.
+
+        **fit_params : dict
+            Parameters passed to the ``fit`` method of each base estimator.
 
         Returns
         -------
@@ -351,7 +429,7 @@ class EnsembleSelection(BaseEnsembleSelection):
         If a float, the percentage of estimators in the ensemble to retain, if an int the
         absolute number of estimators to retain.
 
-    min_score : float, optional, default: 0.66
+    min_score : float, optional, default: 0.2
         Threshold for pruning estimators based on scoring metric. After `fit`, only estimators
         with a score above `min_score` are retained.
 
@@ -477,14 +555,14 @@ class EnsembleSelection(BaseEnsembleSelection):
 
 
 class EnsembleSelectionRegressor(BaseEnsembleSelection):
-    """Ensemble selection for regression that accounts for the accuracy and correlation of errors.
+    r"""Ensemble selection for regression that accounts for the accuracy and correlation of errors.
 
     The ensemble is pruned during training according to estimators' accuracy and the correlation
     between prediction errors per sample. The accuracy of the *i*-th estimator defined as
-    :math:`\\frac{ \\min_{i=1,\\ldots, n}(error_i) }{ error_i }`.
+    :math:`\frac{ \min_{i=1,\ldots, n}(error_i) }{ error_i }`.
     In addition to the accuracy, models are selected based on the correlation between residuals
     of different models (diversity). The diversity of the *i*-th estimator is defined as
-    :math:`\\frac{n-count}{n}`, where *count* is the number of estimators for whom the correlation
+    :math:`\frac{n-count}{n}`, where *count* is the number of estimators for whom the correlation
     of residuals exceeds `min_correlation`.
 
     The hillclimbing is based on cross-validation to avoid having to create a separate validation set.
@@ -508,7 +586,7 @@ class EnsembleSelectionRegressor(BaseEnsembleSelection):
 
     min_score : float, optional, default: 0.66
         Threshold for pruning estimators based on scoring metric. After `fit`, only estimators
-        with a accuracy above `min_score` are retained.
+        with an accuracy above `min_score` are retained.
 
     min_correlation : float, optional, default: 0.6
         Threshold for Pearson's correlation coefficient that determines when residuals of
