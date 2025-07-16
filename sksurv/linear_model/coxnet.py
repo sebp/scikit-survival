@@ -132,6 +132,12 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
     deviance_ratio_ : ndarray, shape=(n_alphas,)
         The fraction of (null) deviance explained.
+        The deviance is defined as :math:`2 \cdot (\text{loglike_sat} - \text{loglike})`,
+        where `loglike_sat` is the log-likelihood for the saturated model
+        (a model with a free parameter per observation). Null deviance is defined as
+        :math:`2 \cdot (\text{loglike_sat} - \text{loglike(Null)})`;
+        The NULL model is the model with all zero coefficients.
+        Hence, ``deviance_ratio_`` is :math:`1 - \frac{\text{deviance}}{\text{null_deviance}}`.
 
     n_features_in_ : int
         Number of features seen during ``fit``.
