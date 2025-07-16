@@ -16,9 +16,9 @@ python ci/render-requirements.py ci/deps/requirements.yaml.tmpl > environment.ya
 
 conda env create -n sksurv-test --file environment.yaml
 
-echo "numpy ${CI_NUMPY_VERSION:?}" > "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
-echo "pandas ${CI_PANDAS_VERSION:?}" >> "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
-echo "scikit-learn ${CI_SKLEARN_VERSION:?}" >> "${CONDA:?}/envs/sksurv-test/conda-meta/pinned"
+echo "numpy ${CI_NUMPY_VERSION:?}" > "${MINIFORGE:?}/envs/sksurv-test/conda-meta/pinned"
+echo "pandas ${CI_PANDAS_VERSION:?}" >> "${MINIFORGE:?}/envs/sksurv-test/conda-meta/pinned"
+echo "scikit-learn ${CI_SKLEARN_VERSION:?}" >> "${MINIFORGE:?}/envs/sksurv-test/conda-meta/pinned"
 
 # Useful for debugging any issues with conda
 conda info -a
