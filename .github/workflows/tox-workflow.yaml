@@ -22,7 +22,6 @@ jobs:
           python-version: '3.11'
           cache-dependency-glob: |
             **/pyproject.toml
-            **/tox.ini
       - name: Install Tox
         run: uv tool install tox --with tox-uv
       - name: Run Tox

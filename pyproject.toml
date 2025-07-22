@@ -225,3 +225,45 @@ force-sort-within-sections = true
 known-first-party = ["sksurv"]
 
 [tool.setuptools_scm]
+
+[tool.tox]
+requires = ["tox>=4.22"]
+env_list = [
+    "lint",
+    "docs",
+]
+
+[tool.tox.env_run_base]
+deps = [
+    "cython",
+    "numpy",
+]
+
+[tool.tox.env.lint]
+description = "Run linters"
+skip_install = true
+deps = [
+    "ruff~=0.12.0",
+]
+commands = [["ruff", "check", "sksurv/", "tests/", "setup.py"]]
+pass_env = ["RUFF_*"]
+
+[tool.tox.env.docs]
+description = "Build documentation"
+dependency_groups = [
+    "docs",
+]
+change_dir = "doc"
+commands = [
+    ["sphinx-build", "-j", "1", "-d", "_build{/}doctrees", "-E", "-W", "-b", "html", ".", "_build{/}html"]
+]
+
+[tool.tox.env.spelling]
+description = "Spellcheck documentation"
+dependency_groups = [
+    "docs",
+]
+change_dir = "doc"
+commands = [
+    ["sphinx-build", "-j", "auto", "-d", "_build{/}doctrees", "-E", "-W", "-b", "spelling", ".", "_build{/}spelling"]
+]
