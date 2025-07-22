@@ -104,7 +104,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         There is a trade-off between `learning_rate` and `n_estimators`.
         Values must be in the range `[0.0, inf)`.
 
-    n_estimators : int, default: 100
+    n_estimators : int, optional, default: 100
         The number of boosting stages to perform. Gradient boosting
         is fairly robust to over-fitting so a large number usually
         results in better performance.
@@ -118,7 +118,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         and an increase in bias.
         Values must be in the range `(0.0, 1.0]`.
 
-    warm_start : bool, default: False
+    warm_start : bool, optional, default: False
         When set to ``True``, reuse the solution of the previous call to fit
         and add more estimators to the ensemble, otherwise, just erase the
         previous solution.
@@ -131,18 +131,19 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         to shrinkage, i.e., setting `learning_rate < 1.0`.
         Values must be in the range `[0.0, 1.0)`.
 
-    random_state : int seed, RandomState instance, or None, default: None
-        The seed of the pseudo random number generator to use when
-        shuffling the data.
+    random_state : int, RandomState instance or None, optional, default: None
+        Controls the randomness of the subsampling of the data if ``subsample < 1.0``,
+        and the random selection of base learners to drop if ``dropout_rate > 0``.
+        Pass an int for reproducible output across multiple function calls.
 
-    verbose : int, default: 0
+    verbose : int, optional, default: 0
         Enable verbose output. If 1 then it prints progress and performance
         once in a while.
         Values must be in the range `[0, inf)`.
 
     Attributes
     ----------
-    coef_ : array, shape = (n_features + 1,)
+    coef_ : ndarray, shape = (n_features + 1,), dtype = float
         The aggregated coefficients. The first element `coef\_[0]` corresponds
         to the intercept. If loss is `coxph`, the intercept will always be zero.
 
@@ -161,7 +162,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         loss of the first stage over the ``init`` estimator.
         Only available if ``subsample < 1.0``.
 
-    oob_scores_ : ndarray of shape (n_estimators,)
+    oob_scores_ : ndarray, shape = (n_estimators,)
         The full history of the loss values on the out-of-bag
         samples. Only available if ``subsample < 1.0``.
 
@@ -172,11 +173,11 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
     n_features_in_ : int
         Number of features seen during ``fit``.
 
-    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+    feature_names_in_ : ndarray, shape = (`n_features_in_`,)
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
 
-    unique_times_ : array of shape = (n_unique_times,)
+    unique_times_ : ndarray, shape = (n_unique_times,)
         Unique time points.
 
     References
@@ -378,9 +379,9 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
             Data matrix
 
         y : structured array, shape = (n_samples,)
-            A structured array containing the binary event indicator
-            as first field, and time of event or time of censoring as
-            second field.
+            A structured array with two fields. The first field is a boolean
+            where ``True`` indicates an event and ``False`` indicates right-censoring.
+            The second field is a float with the time of event or time of censoring.
 
         sample_weight : array-like, shape = (n_samples,), optional
             Weights given to each sample. If omitted, all samples have weight 1.
@@ -485,7 +486,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         return self._baseline_model
 
     def predict_cumulative_hazard_function(self, X, return_array=False):
-        """Predict cumulative hazard function.
+        r"""Predict cumulative hazard function.
 
         Only available if :meth:`fit` has been called with `loss = "coxph"`.
 
@@ -494,9 +495,9 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         .. math::
 
-            H(t \\mid x) = \\exp(f(x)) H_0(t) ,
+            H(t \mid x) = \exp(f(x)) H_0(t) ,
 
-        where :math:`f(\\cdot)` is the additive ensemble of base learners,
+        where :math:`f(\cdot)` is the additive ensemble of base learners,
         and :math:`H_0(t)` is the baseline hazard function,
         estimated by Breslow's estimator.
 
@@ -505,17 +506,26 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         X : array-like, shape = (n_samples, n_features)
             Data matrix.
 
-        return_array : boolean, default: False
-            If set, return an array with the cumulative hazard rate
-            for each `self.unique_times_`, otherwise an array of
-            :class:`sksurv.functions.StepFunction`.
+        return_array : bool, default: False
+            Whether to return a single array of cumulative hazard values
+            or a list of step functions.
+
+            If `False`, a list of :class:`sksurv.functions.StepFunction`
+            objects is returned.
+
+            If `True`, a 2d-array of shape `(n_samples, n_unique_times)` is
+            returned, where `n_unique_times` is the number of unique
+            event times in the training data. Each row represents the cumulative
+            hazard function of an individual evaluated at `unique_times_`.
 
         Returns
         -------
         cum_hazard : ndarray
-            If `return_array` is set, an array with the cumulative hazard rate
-            for each `self.unique_times_`, otherwise an array of length `n_samples`
-            of :class:`sksurv.functions.StepFunction` instances will be returned.
+            If `return_array` is `False`, an array of `n_samples`
+            :class:`sksurv.functions.StepFunction` instances is returned.
+
+            If `return_array` is `True`, a numeric array of shape
+            `(n_samples, n_unique_times_)` is returned.
 
         Examples
         --------
@@ -547,7 +557,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         return self._predict_cumulative_hazard_function(self._get_baseline_model(), self.predict(X), return_array)
 
     def predict_survival_function(self, X, return_array=False):
-        """Predict survival function.
+        r"""Predict survival function.
 
         Only available if :meth:`fit` has been called with `loss = "coxph"`.
 
@@ -556,9 +566,9 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         .. math::
 
-            S(t \\mid x) = S_0(t)^{\\exp(f(x)} ,
+            S(t \mid x) = S_0(t)^{\exp(f(x)} ,
 
-        where :math:`f(\\cdot)` is the additive ensemble of base learners,
+        where :math:`f(\cdot)` is the additive ensemble of base learners,
         and :math:`S_0(t)` is the baseline survival function,
         estimated by Breslow's estimator.
 
@@ -567,18 +577,26 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         X : array-like, shape = (n_samples, n_features)
             Data matrix.
 
-        return_array : boolean, default: False
-            If set, return an array with the probability
-            of survival for each `self.unique_times_`,
-            otherwise an array of :class:`sksurv.functions.StepFunction`.
+        return_array : bool, default: False
+            Whether to return a single array of survival probabilities
+            or a list of step functions.
+
+            If `False`, a list of :class:`sksurv.functions.StepFunction`
+            objects is returned.
+
+            If `True`, a 2d-array of shape `(n_samples, n_unique_times)` is
+            returned, where `n_unique_times` is the number of unique
+            event times in the training data. Each row represents the survival
+            function of an individual evaluated at `unique_times_`.
 
         Returns
         -------
         survival : ndarray
-            If `return_array` is set, an array with the probability of
-            survival for each `self.unique_times_`, otherwise an array of
-            length `n_samples` of :class:`sksurv.functions.StepFunction`
-            instances will be returned.
+            If `return_array` is `False`, an array of `n_samples`
+            :class:`sksurv.functions.StepFunction` instances is returned.
+
+            If `return_array` is `True`, a numeric array of shape
+            `(n_samples, n_unique_times_)` is returned.
 
         Examples
         --------
@@ -673,7 +691,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         There is a trade-off between `learning_rate` and `n_estimators`.
         Values must be in the range `[0.0, inf)`.
 
-    n_estimators : int, default: 100
+    n_estimators : int, optional, default: 100
         The number of regression trees to create. Gradient boosting
         is fairly robust to over-fitting so a large number usually
         results in better performance.
@@ -687,7 +705,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         and an increase in bias.
         Values must be in the range `(0.0, 1.0]`.
 
-    criterion : {'friedman_mse', 'squared_error'}, default: 'friedman_mse'
+    criterion : {'friedman_mse', 'squared_error'}, optional, default: 'friedman_mse'
         The function to measure the quality of a split. Supported criteria are
         'friedman_mse' for the mean squared error with improvement score by
         Friedman, 'squared_error' for mean squared error. The default value of
@@ -701,7 +719,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         - If float, values must be in the range `(0.0, 1.0]` and `min_samples_split`
           will be `ceil(min_samples_split * n_samples)`.
 
-    min_samples_leaf : int or float, default: 1
+    min_samples_leaf : int or float, optional, default: 1
         The minimum number of samples required to be at a leaf node.
         A split point at any depth will only be considered if it leaves at
         least ``min_samples_leaf`` training samples in each of the left and
@@ -743,7 +761,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         ``N``, ``N_t``, ``N_t_R`` and ``N_t_L`` all refer to the weighted sum,
         if ``sample_weight`` is passed.
 
-    random_state : int seed, RandomState instance, or None, default: None
+    random_state : int, RandomState instance, or None, optional, default: None
         Controls the random seed given to each Tree estimator at each
         boosting iteration.
         In addition, it controls the random permutation of the features at
@@ -752,7 +770,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         validation set if `n_iter_no_change` is not None.
         Pass an int for reproducible output across multiple function calls.
 
-    max_features : int, float, string or None, optional, default: None
+    max_features : int, float, {'sqrt', 'log2'} or None, optional, default: None
         The number of features to consider when looking for the best split:
 
         - If int, values must be in the range `[1, inf)`.
@@ -775,17 +793,17 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         Values must be in the range `[2, inf)`.
         If `None`, then unlimited number of leaf nodes.
 
-    warm_start : bool, default: False
+    warm_start : bool, optional, default: False
         When set to ``True``, reuse the solution of the previous call to fit
         and add more estimators to the ensemble, otherwise, just erase the
         previous solution.
 
-    validation_fraction : float, default: 0.1
+    validation_fraction : float, optional, default: 0.1
         The proportion of training data to set aside as validation set for
         early stopping. Values must be in the range `(0.0, 1.0)`.
         Only used if ``n_iter_no_change`` is set to an integer.
 
-    n_iter_no_change : int, default: None
+    n_iter_no_change : int, optional, default: None
         ``n_iter_no_change`` is used to decide if early stopping will be used
         to terminate training when validation score is not improving. By
         default it is set to None to disable early stopping. If set to a
@@ -795,7 +813,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         iterations. The split is stratified.
         Values must be in the range `[1, inf)`.
 
-    tol : float, default: 1e-4
+    tol : float, optional, default: 1e-4
         Tolerance for the early stopping. When the loss is not improving
         by at least tol for ``n_iter_no_change`` iterations (if set to a
         number), the training stops.
@@ -809,13 +827,13 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         to shrinkage, i.e., setting `learning_rate < 1.0`.
         Values must be in the range `[0.0, 1.0)`.
 
-    verbose : int, default: 0
+    verbose : int, optional, default: 0
         Enable verbose output. If 1 then it prints progress and performance
         once in a while (the more trees the lower the frequency). If greater
         than 1 then it prints progress and performance for every tree.
         Values must be in the range `[0, inf)`.
 
-    ccp_alpha : non-negative float, optional, default: 0.0.
+    ccp_alpha : float, optional, default: 0.0
         Complexity parameter used for Minimal Cost-Complexity Pruning. The
         subtree with the largest cost complexity that is smaller than
         ``ccp_alpha`` will be chosen. By default, no pruning is performed.
@@ -846,7 +864,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         loss of the first stage over the ``init`` estimator.
         Only available if ``subsample < 1.0``.
 
-    oob_scores_ : ndarray of shape (n_estimators,)
+    oob_scores_ : ndarray, shape = (n_estimators,)
         The full history of the loss values on the out-of-bag
         samples. Only available if ``subsample < 1.0``.
 
@@ -857,14 +875,14 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
     n_features_in_ : int
         Number of features seen during ``fit``.
 
-    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+    feature_names_in_ : ndarray, shape = (`n_features_in_`,)
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
 
     max_features_ : int
         The inferred value of max_features.
 
-    unique_times_ : array of shape = (n_unique_times,)
+    unique_times_ : ndarray, shape = (n_unique_times,)
         Unique time points.
 
     See also
@@ -1213,9 +1231,9 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
             Data matrix
 
         y : structured array, shape = (n_samples,)
-            A structured array containing the binary event indicator
-            as first field, and time of event or time of censoring as
-            second field.
+            A structured array with two fields. The first field is a boolean
+            where ``True`` indicates an event and ``False`` indicates right-censoring.
+            The second field is a float with the time of event or time of censoring.
 
         sample_weight : array-like, shape = (n_samples,), optional
             Weights given to each sample. If omitted, all samples have weight 1.
@@ -1487,7 +1505,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         return self._baseline_model
 
     def predict_cumulative_hazard_function(self, X, return_array=False):
-        """Predict cumulative hazard function.
+        r"""Predict cumulative hazard function.
 
         Only available if :meth:`fit` has been called with `loss = "coxph"`.
 
@@ -1496,9 +1514,9 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         .. math::
 
-            H(t \\mid x) = \\exp(f(x)) H_0(t) ,
+            H(t \mid x) = \exp(f(x)) H_0(t) ,
 
-        where :math:`f(\\cdot)` is the additive ensemble of base learners,
+        where :math:`f(\cdot)` is the additive ensemble of base learners,
         and :math:`H_0(t)` is the baseline hazard function,
         estimated by Breslow's estimator.
 
@@ -1507,17 +1525,26 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         X : array-like, shape = (n_samples, n_features)
             Data matrix.
 
-        return_array : boolean, default: False
-            If set, return an array with the cumulative hazard rate
-            for each `self.unique_times_`, otherwise an array of
-            :class:`sksurv.functions.StepFunction`.
+        return_array : bool, default: False
+            Whether to return a single array of cumulative hazard values
+            or a list of step functions.
+
+            If `False`, a list of :class:`sksurv.functions.StepFunction`
+            objects is returned.
+
+            If `True`, a 2d-array of shape `(n_samples, n_unique_times)` is
+            returned, where `n_unique_times` is the number of unique
+            event times in the training data. Each row represents the cumulative
+            hazard function of an individual evaluated at `unique_times_`.
 
         Returns
         -------
         cum_hazard : ndarray
-            If `return_array` is set, an array with the cumulative hazard rate
-            for each `self.unique_times_`, otherwise an array of length `n_samples`
-            of :class:`sksurv.functions.StepFunction` instances will be returned.
+            If `return_array` is `False`, an array of `n_samples`
+            :class:`sksurv.functions.StepFunction` instances is returned.
+
+            If `return_array` is `True`, a numeric array of shape
+            `(n_samples, n_unique_times_)` is returned.
 
         Examples
         --------
@@ -1549,7 +1576,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         return self._predict_cumulative_hazard_function(self._get_baseline_model(), self.predict(X), return_array)
 
     def predict_survival_function(self, X, return_array=False):
-        """Predict survival function.
+        r"""Predict survival function.
 
         Only available if :meth:`fit` has been called with `loss = "coxph"`.
 
@@ -1558,9 +1585,9 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         .. math::
 
-            S(t \\mid x) = S_0(t)^{\\exp(f(x)} ,
+            S(t \mid x) = S_0(t)^{\exp(f(x)} ,
 
-        where :math:`f(\\cdot)` is the additive ensemble of base learners,
+        where :math:`f(\cdot)` is the additive ensemble of base learners,
         and :math:`S_0(t)` is the baseline survival function,
         estimated by Breslow's estimator.
 
@@ -1569,18 +1596,26 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         X : array-like, shape = (n_samples, n_features)
             Data matrix.
 
-        return_array : boolean, default: False
-            If set, return an array with the probability
-            of survival for each `self.unique_times_`,
-            otherwise an array of :class:`sksurv.functions.StepFunction`.
+        return_array : bool, default: False
+            Whether to return a single array of survival probabilities
+            or a list of step functions.
+
+            If `False`, a list of :class:`sksurv.functions.StepFunction`
+            objects is returned.
+
+            If `True`, a 2d-array of shape `(n_samples, n_unique_times)` is
+            returned, where `n_unique_times` is the number of unique
+            event times in the training data. Each row represents the survival
+            function of an individual evaluated at `unique_times_`.
 
         Returns
         -------
         survival : ndarray
-            If `return_array` is set, an array with the probability of
-            survival for each `self.unique_times_`, otherwise an array of
-            length `n_samples` of :class:`sksurv.functions.StepFunction`
-            instances will be returned.
+            If `return_array` is `False`, an array of `n_samples`
+            :class:`sksurv.functions.StepFunction` instances is returned.
+
+            If `return_array` is `True`, a numeric array of shape
+            `(n_samples, n_unique_times_)` is returned.
 
         Examples
         --------

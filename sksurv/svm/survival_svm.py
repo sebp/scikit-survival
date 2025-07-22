@@ -83,7 +83,8 @@ class OrderStatisticTreeSurvivalCounter(Counter):
         Event indicator of samples.
 
     tree_class : type
-        Which class to use as order statistic tree
+        The class to use as an order statistic tree, either
+        :class:`sksurv.bintrees.AVLTree` or :class:`sksurv.bintrees.RBTree`.
 
     time : array, shape = (n_samples,)
         Survival times.
@@ -374,8 +375,8 @@ class LargeScaleOptimizer(RankSVMOptimizer):
         Whether to fit an intercept. Only used if regression objective
         is optimized (rank_ratio < 1.0).
 
-    counter : object
-        Instance of :class:`Counter` subclass.
+    counter : :class:`OrderStatisticTreeSurvivalCounter` or :class:`SurvivalCounter`
+        An instance of a :class:`Counter` subclass used for counting comparable pairs.
 
     References
     ----------
@@ -511,8 +512,8 @@ class NonlinearLargeScaleOptimizer(RankSVMOptimizer):
     rank_ratio : float
         Trade-off between regression and ranking objectives.
 
-    counter : object
-        Instance of :class:`Counter` subclass.
+    counter : :class:`OrderStatisticTreeSurvivalCounter` or :class:`SurvivalCounter`
+        An instance of a :class:`Counter` subclass used for counting comparable pairs.
 
     References
     ----------
@@ -730,7 +731,29 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
 
     @abstractmethod
     def predict(self, X):
-        """Predict risk score"""
+        """Predict risk scores or transformed survival times.
+
+        If the model has been fit only considering the ranking objective
+        (``rank_ratio = 1``), predictions are risk scores (i.e. higher values
+        indicate an increased risk of experiencing an event). The scores
+        have no unit and are only meaningful to rank samples by their risk
+        of experiencing an event.
+
+        If the regression objective has been used (``rank_ratio < 1``),
+        predictions are transformed survival times.
+        Lower scores indicate shorter survival, higher scores longer survival.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            The input samples.
+
+        Returns
+        -------
+        y : ndarray, shape = (n_samples,), dtype=float
+            Risk scores (if ``rank_ratio = 1``), or transformed survival times
+            (if ``rank_ratio < 1``).
+        """
 
     def _validate_for_fit(self, X):
         return validate_data(self, X, ensure_min_samples=2)
@@ -744,9 +767,9 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
             Data matrix.
 
         y : structured array, shape = (n_samples,)
-            A structured array containing the binary event indicator
-            as first field, and time of event or time of censoring as
-            second field.
+            A structured array with two fields. The first field is a boolean
+            where ``True`` indicates an event and ``False`` indicates right-censoring.
+            The second field is a float with the time of event or time of censoring.
 
         Returns
         -------
@@ -811,80 +834,82 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
 
 
 class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
-    """Efficient Training of linear Survival Support Vector Machine
+    r"""Implements an efficient linear Support Vector Machine for survival analysis,
+    capable of optimizing both ranking and regression objectives.
 
-    Training data consists of *n* triplets :math:`(\\mathbf{x}_i, y_i, \\delta_i)`,
-    where :math:`\\mathbf{x}_i` is a *d*-dimensional feature vector, :math:`y_i > 0`
-    the survival time or time of censoring, and :math:`\\delta_i \\in \\{0,1\\}`
+    Training data consists of *n* triplets :math:`(\mathbf{x}_i, y_i, \delta_i)`,
+    where :math:`\mathbf{x}_i` is a *d*-dimensional feature vector, :math:`y_i > 0`
+    the survival time or time of censoring, and :math:`\delta_i \in \{0,1\}`
     the binary event indicator. Using the training data, the objective is to
     minimize the following function:
 
     .. math::
 
-         \\arg \\min_{\\mathbf{w}, b} \\frac{1}{2} \\mathbf{w}^\\top \\mathbf{w}
-         + \\frac{\\alpha}{2} \\left[ r \\sum_{i,j \\in \\mathcal{P}}
-         \\max(0, 1 - (\\mathbf{w}^\\top \\mathbf{x}_i - \\mathbf{w}^\\top \\mathbf{x}_j))^2
-         + (1 - r) \\sum_{i=0}^n \\left( \\zeta_{\\mathbf{w}, b} (y_i, x_i, \\delta_i)
-         \\right)^2 \\right]
+         \arg \min_{\mathbf{w}, b} \frac{1}{2} \mathbf{w}^\top \mathbf{w}
+         + \frac{\alpha}{2} \left[ r \sum_{i,j \in \mathcal{P}}
+         \max(0, 1 - (\mathbf{w}^\top \mathbf{x}_i - \mathbf{w}^\top \mathbf{x}_j))^2
+         + (1 - r) \sum_{i=0}^n \left( \zeta_{\mathbf{w}, b} (y_i, x_i, \delta_i)
+         \right)^2 \right]
 
-        \\zeta_{\\mathbf{w},b} (y_i, \\mathbf{x}_i, \\delta_i) =
-        \\begin{cases}
-        \\max(0, y_i - \\mathbf{w}^\\top \\mathbf{x}_i - b) \\quad \\text{if $\\delta_i = 0$,} \\\\
-        y_i - \\mathbf{w}^\\top \\mathbf{x}_i - b \\quad \\text{if $\\delta_i = 1$,} \\\\
-        \\end{cases}
+        \zeta_{\mathbf{w},b} (y_i, \mathbf{x}_i, \delta_i) =
+        \begin{cases}
+        \max(0, y_i - \mathbf{w}^\top \mathbf{x}_i - b) \quad \text{if $\delta_i = 0$,} \\
+        y_i - \mathbf{w}^\top \mathbf{x}_i - b \quad \text{if $\delta_i = 1$,} \\
+        \end{cases}
 
-        \\mathcal{P} = \\{ (i, j) \\mid y_i > y_j \\land \\delta_j = 1 \\}_{i,j=1,\\dots,n}
+        \mathcal{P} = \{ (i, j) \mid y_i > y_j \land \delta_j = 1 \}_{i,j=1,\dots,n}
 
-    The hyper-parameter :math:`\\alpha > 0` determines the amount of regularization
+    The hyper-parameter :math:`\alpha > 0` determines the amount of regularization
     to apply: a smaller value increases the amount of regularization and a
     higher value reduces the amount of regularization. The hyper-parameter
-    :math:`r \\in [0; 1]` determines the trade-off between the ranking objective
+    :math:`r \in [0; 1]` determines the trade-off between the ranking objective
     and the regression objective. If :math:`r = 1` it reduces to the ranking
     objective, and if :math:`r = 0` to the regression objective. If the regression
-    objective is used, survival/censoring times are log-transform and thus cannot be
+    objective is used, survival/censoring times are log-transformed and thus cannot be
     zero or negative.
 
     See the :ref:`User Guide </user_guide/survival-svm.ipynb>` and [1]_ for further description.
 
     Parameters
     ----------
-    alpha : float, positive, default: 1
-        Weight of penalizing the squared hinge loss in the objective function
+    alpha : float, default: 1
+        Weight of penalizing the squared hinge loss in the objective function. Must be greater than 0.
 
     rank_ratio : float, optional, default: 1.0
-        Mixing parameter between regression and ranking objective with ``0 <= rank_ratio <= 1``.
-        If ``rank_ratio = 1``, only ranking is performed, if ``rank_ratio = 0``, only regression
-        is performed. A non-zero value is only allowed if optimizer is one of 'avltree', 'rbtree',
-        or 'direct-count'.
+        Mixing parameter between regression and ranking objectives, with ``0 <= rank_ratio <= 1``.
+        If ``rank_ratio = 1``, only ranking is performed. If ``rank_ratio = 0``, only regression
+        is performed. A ``rank_ratio`` less than 1.0 (i.e., including a regression objective) is
+        only supported if the ``optimizer`` is 'avltree', 'rbtree', or 'direct-count'.
 
-    fit_intercept : boolean, optional, default: False
+    fit_intercept : bool, optional, default: False
         Whether to calculate an intercept for the regression model. If set to ``False``, no intercept
-        will be calculated. Has no effect if ``rank_ratio = 1``, i.e., only ranking is performed.
+        will be calculated. This parameter has no effect if ``rank_ratio = 1``, i.e., only ranking is performed.
 
     max_iter : int, optional, default: 20
-        Maximum number of iterations to perform in Newton optimization
+        Maximum number of iterations to perform in Newton optimization.
 
     verbose : bool, optional, default: False
-        Whether to print messages during optimization
+        If ``True``, print messages during optimization.
 
     tol : float or None, optional, default: None
-        Tolerance for termination. For detailed control, use solver-specific
-        options.
+        Tolerance for termination. If ``None``, the solver's default tolerance is used.
+        See :func:`scipy.optimize.minimize`.
 
     optimizer : {'avltree', 'direct-count', 'PRSVM', 'rbtree', 'simple'}, optional, default: 'avltree'
-        Which optimizer to use.
+        Specifies which optimizer to use.
 
-    random_state : int or :class:`numpy.random.RandomState` instance, optional
-        Random number generator (used to resolve ties in survival times).
+    random_state : int, :class:`numpy.random.RandomState` instance, or None, optional, default: None
+        Used to resolve ties in survival times. Pass an int for reproducible output across
+        multiple :meth:`fit` calls.
 
-    timeit : False, int or None, default: None
-        If non-zero value is provided the time it takes for optimization is measured.
-        The given number of repetitions are performed. Results can be accessed from the
-        ``optimizer_result_`` attribute.
+    timeit : bool, int, or None, optional, default: False
+        If ``True`` or a non-zero integer, the time taken for optimization is measured.
+        If an integer is provided, the optimization is repeated that many times.
+        Results can be accessed from the ``optimizer_result_`` attribute.
 
     Attributes
     ----------
-    coef_ : ndarray, shape = (n_features,)
+    coef_ : ndarray, shape = (n_features,), dtype = float
         Coefficients of the features in the decision function.
 
     optimizer_result_ : :class:`scipy.optimize.OptimizeResult`
@@ -893,7 +918,7 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     n_features_in_ : int
         Number of features seen during ``fit``.
 
-    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+    feature_names_in_ : ndarray, shape = (`n_features_in_`,), dtype = object
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
 
@@ -953,20 +978,6 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         return opt_result
 
     def predict(self, X):
-        """Rank samples according to survival times
-
-        Lower ranks indicate shorter survival, higher ranks longer survival.
-
-        Parameters
-        ----------
-        X : array-like, shape = (n_samples, n_features)
-            The input samples.
-
-        Returns
-        -------
-        y : ndarray, shape = (n_samples,)
-            Predicted ranks.
-        """
         check_is_fitted(self, "coef_")
         X = validate_data(self, X, reset=False)
 
@@ -985,26 +996,28 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
 
 
 class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
-    """Efficient Training of kernel Survival Support Vector Machine.
+    """Implements an efficient kernel Support Vector Machine for survival analysis.
+
+    The model extends :class:`FastSurvivalSVM` to non-linear relationships through kernel functions.
 
     See the :ref:`User Guide </user_guide/survival-svm.ipynb>` and [1]_ for further description.
 
     Parameters
     ----------
-    alpha : float, positive, default: 1
-        Weight of penalizing the squared hinge loss in the objective function
+    alpha : float, default: 1
+        Weight of penalizing the squared hinge loss in the objective function. Must be greater than 0.
 
     rank_ratio : float, optional, default: 1.0
-        Mixing parameter between regression and ranking objective with ``0 <= rank_ratio <= 1``.
-        If ``rank_ratio = 1``, only ranking is performed, if ``rank_ratio = 0``, only regression
-        is performed. A non-zero value is only allowed if optimizer is one of 'avltree', 'PRSVM',
-        or 'rbtree'.
+        Mixing parameter between regression and ranking objectives, with ``0 <= rank_ratio <= 1``.
+        If ``rank_ratio = 1``, only ranking is performed. If ``rank_ratio = 0``, only regression
+        is performed. A ``rank_ratio`` less than 1.0 (i.e., including a regression objective) is
+        only supported if the ``optimizer`` is 'avltree', 'PRSVM', or 'rbtree'.
 
-    fit_intercept : boolean, optional, default: False
+    fit_intercept : bool, optional, default: False
         Whether to calculate an intercept for the regression model. If set to ``False``, no intercept
-        will be calculated. Has no effect if ``rank_ratio = 1``, i.e., only ranking is performed.
+        will be calculated. This parameter has no effect if ``rank_ratio = 1``, i.e., only ranking is performed.
 
-    kernel : str or callable, default: 'linear'.
+    kernel : str or callable, default: 'rbf'
         Kernel mapping used internally. This parameter is directly passed to
         :func:`sklearn.metrics.pairwise.pairwise_kernels`.
         If `kernel` is a string, it must be one of the metrics
@@ -1024,14 +1037,14 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         the kernel; see the documentation for :mod:`sklearn.metrics.pairwise`.
         Ignored by other kernels.
 
-    degree : int, default: 3
+    degree : int, optional, default: 3
         Degree of the polynomial kernel. Ignored by other kernels.
 
-    coef0 : float, optional
+    coef0 : float, optional, default: 1
         Zero coefficient for polynomial and sigmoid kernels.
         Ignored by other kernels.
 
-    kernel_params : mapping of string to any, optional
+    kernel_params : dict or None, optional, default: None
         Additional parameters (keyword arguments) for kernel function passed
         as callable object.
 
@@ -1039,31 +1052,32 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         Maximum number of iterations to perform in Newton optimization
 
     verbose : bool, optional, default: False
-        Whether to print messages during optimization
+        If ``True``, print messages during optimization.
 
     tol : float or None, optional, default: None
-        Tolerance for termination. For detailed control, use solver-specific
-        options.
+        Tolerance for termination. If ``None``, the solver's default tolerance is used.
+        See :func:`scipy.optimize.minimize`.
 
     optimizer : {'avltree', 'rbtree'}, optional, default: 'rbtree'
-        Which optimizer to use.
+        Specifies which optimizer to use..
 
-    random_state : int or :class:`numpy.random.RandomState` instance, optional
-        Random number generator (used to resolve ties in survival times).
+    random_state : int, :class:`numpy.random.RandomState` instance, or None, optional, default: None
+        Used to resolve ties in survival times. Pass an int for reproducible output across
+        multiple :meth:`fit` calls.
 
-    timeit : False, int or None, default: None
-        If non-zero value is provided the time it takes for optimization is measured.
-        The given number of repetitions are performed. Results can be accessed from the
-        ``optimizer_result_`` attribute.
+    timeit : bool, int, or None, optional, default: False
+        If ``True`` or a non-zero integer, the time taken for optimization is measured.
+        If an integer is provided, the optimization is repeated that many times.
+        Results can be accessed from the ``optimizer_result_`` attribute.
 
     Attributes
     ----------
-    coef_ : ndarray, shape = (n_samples,)
+    coef_ : ndarray, shape = (n_samples,), dtype = float
         Weights assigned to the samples in training data to represent
         the decision function in kernel space.
 
-    fit_X_ : ndarray
-        Training data.
+    fit_X_ : ndarray, shape = (n_samples, `n_features_in_`), dtype = float
+        Training data used for fitting. Used to compute the kernel matrix for prediction.
 
     optimizer_result_ : :class:`scipy.optimize.OptimizeResult`
         Stats returned by the optimizer. See :class:`scipy.optimize.OptimizeResult`.
@@ -1071,7 +1085,7 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     n_features_in_ : int
         Number of features seen during ``fit``.
 
-    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+    feature_names_in_ : ndarray, shape = (`n_features_in_`,), dtype = object
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
 
@@ -1205,20 +1219,6 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         return opt_result
 
     def predict(self, X):
-        """Rank samples according to survival times
-
-        Lower ranks indicate shorter survival, higher ranks longer survival.
-
-        Parameters
-        ----------
-        X : array-like, shape = (n_samples, n_features)
-            The input samples.
-
-        Returns
-        -------
-        y : ndarray, shape = (n_samples,)
-            Predicted ranks.
-        """
         X = validate_data(self, X, reset=False)
         kernel_mat = self._get_kernel(X, self.fit_X_)
 

@@ -148,19 +148,20 @@ def _estimate_concordance_index(event_indicator, event_time, estimate, weights, 
 
 
 def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1e-8):
-    """Concordance index for right-censored data
+    """Measures the agreement between a predicted risk score and the actual time-to-event.
 
-    The concordance index is defined as the proportion of all comparable pairs
-    in which the predictions and outcomes are concordant.
+    The concordance index is a measure of rank correlation between predicted risk
+    scores and observed time points. It is defined as the proportion of all comparable
+    pairs in which the predictions and outcomes are concordant.
+    A pair of samples is concordant if the sample with a higher risk score has a
+    shorter time-to-event. A higher concordance index indicates better model performance.
 
-    Two samples are comparable if (i) both of them experienced an event (at different times),
-    or (ii) the one with a shorter observed survival time experienced an event, in which case
-    the event-free subject "outlived" the other. A pair is not comparable if they experienced
-    events at the same time.
+    A pair of samples is considered comparable if the sample with a shorter
+    survival time experienced an event. This means we can confidently say that
+    the individual with the shorter time had a worse outcome. If both samples
+    are censored, or if they experienced an event at the same time, they are
+    not comparable.
 
-    Concordance intuitively means that two samples were ordered correctly by the model.
-    More specifically, two samples are concordant, if the one with a higher estimated
-    risk score has a shorter actual survival time.
     When predicted risks are identical for a pair, 0.5 rather than 1 is added to the count
     of concordant pairs.
 
@@ -170,46 +171,40 @@ def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1
     Parameters
     ----------
     event_indicator : array-like, shape = (n_samples,)
-        Boolean array denotes whether an event occurred
-
+        A boolean array where ``True`` indicates an event and ``False`` indicates
+        censoring.
     event_time : array-like, shape = (n_samples,)
-        Array containing the time of an event or time of censoring
-
+        Array containing the time of an event or time of censoring.
     estimate : array-like, shape = (n_samples,)
-        Estimated risk of experiencing an event (e.g., from ``estimator.predict(X)``),
-        where a higher value indicates a higher risk of experiencing an event.
-
+        The predicted risk score for each sample (e.g., from ``estimator.predict(X)``).
+        A higher value indicates a higher risk of experiencing an event.
     tied_tol : float, optional, default: 1e-8
-        The tolerance value for considering ties.
-        If the absolute difference between risk scores is smaller
-        or equal than `tied_tol`, risk scores are considered tied.
+        The tolerance value for considering ties in risk scores. If the
+        absolute difference between two risk scores is smaller than or equal to
+        ``tied_tol``, they are considered tied.
 
     Returns
     -------
     cindex : float
-        Concordance index
-
+        The concordance index.
     concordant : int
-        Number of concordant pairs
-
+        The number of concordant pairs.
     discordant : int
-        Number of discordant pairs
-
+        The number of discordant pairs.
     tied_risk : int
-        Number of pairs having tied estimated risks
-
+        The number of pairs with tied risk scores.
     tied_time : int
-        Number of comparable pairs sharing the same time
+        The number of comparable pairs with tied survival times.
 
     Notes
     -----
-    This metric expects risk scores which are typically returned by ``estimator.predict(X)``.
+    This metric expects risk scores, which are typically returned by ``estimator.predict(X)``.
     It *does not accept* survival probabilities.
 
     See also
     --------
     concordance_index_ipcw
-        Alternative estimator of the concordance index with less bias.
+        A less biased estimator of the concordance index.
 
     References
     ----------
@@ -226,16 +221,15 @@ def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1
 
 
 def concordance_index_ipcw(survival_train, survival_test, estimate, tau=None, tied_tol=1e-8):
-    """Concordance index for right-censored data based on inverse probability of censoring weights.
+    r"""Concordance index for right-censored data based on inverse probability of censoring weights.
 
     This is an alternative to the estimator in :func:`concordance_index_censored`
     that does not depend on the distribution of censoring times in the test data.
-    Therefore, the estimate is unbiased and consistent for a population concordance
-    measure that is free of censoring.
+    By using inverse probability of censoring weights (IPCW), it provides an unbiased
+    and consistent estimate of the population concordance measure.
 
-    It is based on inverse probability of censoring weights, thus requires
-    access to survival times from the training data to estimate the censoring
-    distribution, which `survival_train` provides.
+    This estimator requires access to survival times from the training data to
+    estimate the censoring distribution.
     Note that survival times in `survival_test` must lie within the range of
     survival times in `survival_train`. This can be achieved by specifying the
     truncation time `tau`.
@@ -248,10 +242,8 @@ def concordance_index_ipcw(survival_train, survival_test, estimate, tau=None, ti
 
         ValueError: time must be smaller than largest observed time point
 
-    The estimator uses the Kaplan-Meier estimator to estimate the
-    censoring survivor function. Therefore, it is restricted to
-    situations where the random censoring assumption holds and
-    censoring is independent of the features.
+    The censoring distribution is estimated using the Kaplan-Meier estimator, which
+    assumes that censoring is random and independent of the features.
 
     See the :ref:`User Guide </user_guide/evaluating-survival-models.ipynb>`
     and [1]_ for further description.
@@ -259,63 +251,54 @@ def concordance_index_ipcw(survival_train, survival_test, estimate, tau=None, ti
     Parameters
     ----------
     survival_train : structured array, shape = (n_train_samples,)
-        Survival times for training data to estimate the censoring
-        distribution from.
-        A structured array containing the binary event indicator
-        as first field, and time of event or time of censoring as
-        second field.
-
+        Survival times for the training data, used to estimate the censoring
+        distribution.
+        A structured array with two fields. The first field is a boolean
+        where ``True`` indicates an event and ``False`` indicates right-censoring.
+        The second field is a float with the time of event or time of censoring.
     survival_test : structured array, shape = (n_samples,)
-        Survival times of test data.
-        A structured array containing the binary event indicator
-        as first field, and time of event or time of censoring as
-        second field.
-
+        Survival times for the test data.
+        A structured array with two fields. The first field is a boolean
+        where ``True`` indicates an event and ``False`` indicates right-censoring.
+        The second field is a float with the time of event or time of censoring.
     estimate : array-like, shape = (n_samples,)
-        Estimated risk of experiencing an event of test data (e.g., from ``estimator.predict(X)``),
-        where a higher value indicates a higher risk of experiencing an event.
-
+        Predicted risk scores for the test data (e.g., from ``estimator.predict(X)``).
+        A higher value indicates a higher risk of experiencing an event.
     tau : float, optional
         Truncation time. The survival function for the underlying
         censoring time distribution :math:`D` needs to be positive
         at `tau`, i.e., `tau` should be chosen such that the
         probability of being censored after time `tau` is non-zero:
-        :math:`P(D > \\tau) > 0`. If `None`, no truncation is performed.
-
+        :math:`P(D > \tau) > 0`. If `None`, no truncation is performed.
     tied_tol : float, optional, default: 1e-8
-        The tolerance value for considering ties.
-        If the absolute difference between risk scores is smaller
-        or equal than `tied_tol`, risk scores are considered tied.
+        The tolerance value for considering ties in risk scores.
+        If the absolute difference between two risk scores is smaller than
+        or equal to ``tied_tol``, they are considered tied.
 
     Returns
     -------
     cindex : float
-        Concordance index
-
+        The concordance index.
     concordant : int
-        Number of concordant pairs
-
+        The number of concordant pairs.
     discordant : int
-        Number of discordant pairs
-
+        The number of discordant pairs.
     tied_risk : int
-        Number of pairs having tied estimated risks
-
+        The number of pairs with tied risk scores.
     tied_time : int
-        Number of comparable pairs sharing the same time
+        The number of comparable pairs with tied survival times.
 
     Notes
     -----
-    This metric expects risk scores which are typically returned by ``estimator.predict(X)``.
+    This metric expects risk scores, which are typically returned by ``estimator.predict(X)``.
     It *does not accept* survival probabilities.
 
     See also
     --------
     concordance_index_censored
-        Simpler estimator of the concordance index.
-
+        A simpler, but potentially biased, estimator of the concordance index.
     as_concordance_index_ipcw_scorer
-        Wrapper class that uses :func:`concordance_index_ipcw`
+        A wrapper class that uses :func:`concordance_index_ipcw`
         in its ``score`` method instead of the default
         :func:`concordance_index_censored`.
 
@@ -350,64 +333,69 @@ def concordance_index_ipcw(survival_train, survival_test, estimate, tau=None, ti
 
 
 def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_tol=1e-8):
-    """Estimator of cumulative/dynamic AUC for right-censored time-to-event data.
+    r"""Computes the cumulative/dynamic area under the ROC curve (AUC) for right-censored data.
+
+    This metric evaluates a model's performance at specific time points.
+    The cumulative/dynamic AUC at time :math:`t` quantifies how well a model can
+    distinguish subjects who experience an event by time :math:`t` (cases) from
+    those who do not (controls). A higher AUC indicates better model performance.
+
+    This function can also evaluate models with time-dependent predictions, such as
+    :class:`sksurv.ensemble.RandomSurvivalForest`
+    (see :ref:`User Guide </user_guide/evaluating-survival-models.ipynb#Using-Time-dependent-Risk-Scores>`).
+    In this case, ``estimate`` must be a 2D array where ``estimate[i, j]`` is the
+    predicted risk score for the :math:`i`-th instance at time point ``times[j]``.
 
     The receiver operating characteristic (ROC) curve and the area under the
-    ROC curve (AUC) can be extended to survival data by defining
-    sensitivity (true positive rate) and specificity (true negative rate)
-    as time-dependent measures. *Cumulative cases* are all individuals that
-    experienced an event prior to or at time :math:`t` (:math:`t_i \\leq t`),
-    whereas *dynamic controls* are those with :math:`t_i > t`.
-    The associated cumulative/dynamic AUC quantifies how well a model can
-    distinguish subjects who fail by a given time (:math:`t_i \\leq t`) from
-    subjects who fail after this time (:math:`t_i > t`).
+    ROC curve (AUC) are metrics to evaluate a binary classifier. Each point on
+    the ROC denotes the performance of a binary classifier at a specific
+    threshold with respect to the sensitivity (true positive rate) on the
+    y-axis and the specificity (true negative rate) on the x-axis.
 
-    Given an estimator of the :math:`i`-th individual's risk score
-    :math:`\\hat{f}(\\mathbf{x}_i)`, the cumulative/dynamic AUC at time
-    :math:`t` is defined as
+    ROC and AUC can be extended to survival analysis by defining cases and
+    controls based on a time point :math:`t`. *Cumulative cases* are all
+    individuals that experienced an event prior to or at time
+    :math:`t` (:math:`t_i \leq t`), whereas *dynamic controls* are those
+    with :math:`t_i > t`. Given an estimator of the :math:`i`-th individual's
+    risk score :math:`\hat{f}(\mathbf{x}_i)`, the cumulative/dynamic AUC at
+    time :math:`t` is defined as
 
     .. math::
 
-        \\widehat{\\mathrm{AUC}}(t) =
-        \\frac{\\sum_{i=1}^n \\sum_{j=1}^n I(y_j > t) I(y_i \\leq t) \\omega_i
-        I(\\hat{f}(\\mathbf{x}_j) \\leq \\hat{f}(\\mathbf{x}_i))}
-        {(\\sum_{i=1}^n I(y_i > t)) (\\sum_{i=1}^n I(y_i \\leq t) \\omega_i)}
+        \widehat{\mathrm{AUC}}(t) =
+        \frac{\sum_{i=1}^n \sum_{j=1}^n I(y_j > t) I(y_i \leq t) \omega_i
+        I(\hat{f}(\mathbf{x}_j) \leq \hat{f}(\mathbf{x}_i))}
+        {(\sum_{i=1}^n I(y_i > t)) (\sum_{i=1}^n I(y_i \leq t) \omega_i)}
 
-    where :math:`\\omega_i` are inverse probability of censoring weights (IPCW).
+    where :math:`\omega_i` are inverse probability of censoring weights (IPCW).
 
-    Estimating IPCW requires access to survival times from the training data
-    to estimate the censoring distribution, which `survival_train` provides.
-    Note that survival times in `survival_test` must lie within
-    the range of survival times in `survival_train`.
-    This can be achieved by specifying `times` accordingly, e.g. by setting
-    `times[-1]` slightly below the maximum expected follow-up time.
+    To account for censoring, this metric uses inverse probability of censoring
+    weights (IPCW), which requires access to survival times from the training
+    data to estimate the censoring distribution. Note that survival times in
+    ``survival_test`` must lie within the range of survival times in ``survival_train``.
+    This can be achieved by specifying ``times`` accordingly, e.g. by setting
+    ``times[-1]`` slightly below the maximum expected follow-up time.
 
-    For time points in `survival_test` that lie outside of the range specified by
-    values in `survival_train`, the probability of censoring is unknown and an
+    For time points in ``survival_test`` that lie outside of the range specified by
+    values in ``survival_train``, the probability of censoring is unknown and an
     exception will be raised::
 
         ValueError: time must be smaller than largest observed time point
 
-    IPCW are computed using the Kaplan-Meier estimator, which is
-    restricted to situations where the random censoring assumption holds and
-    censoring is independent of the features.
+    The censoring distribution is estimated using the Kaplan-Meier estimator, which
+    assumes that censoring is random and independent of the features.
 
-    This function can also be used to evaluate models with time-dependent predictions
-    :math:`\\hat{f}(\\mathbf{x}_i, t)`, such as :class:`sksurv.ensemble.RandomSurvivalForest`
-    (see :ref:`User Guide </user_guide/evaluating-survival-models.ipynb#Using-Time-dependent-Risk-Scores>`).
-    In this case, `estimate` must be a 2-d array where ``estimate[i, j]`` is the
-    predicted risk score for the i-th instance at time point ``times[j]``.
-
-    Finally, the function also provides a single summary measure that refers to the mean
-    of the :math:`\\mathrm{AUC}(t)` over the time range :math:`(\\tau_1, \\tau_2)`.
+    The function also returns a summary measure, which is the mean of the
+    :math:`\mathrm{AUC}(t)` over the specified time range, weighted by the
+    estimated survival function:
 
     .. math::
 
-        \\overline{\\mathrm{AUC}}(\\tau_1, \\tau_2) =
-        \\frac{1}{\\hat{S}(\\tau_1) - \\hat{S}(\\tau_2)}
-        \\int_{\\tau_1}^{\\tau_2} \\widehat{\\mathrm{AUC}}(t)\\,d \\hat{S}(t)
+        \overline{\mathrm{AUC}}(\tau_1, \tau_2) =
+        \frac{1}{\hat{S}(\tau_1) - \hat{S}(\tau_2)}
+        \int_{\tau_1}^{\tau_2} \widehat{\mathrm{AUC}}(t)\,d \hat{S}(t)
 
-    where :math:`\\hat{S}(t)` is the Kaplan–Meier estimator of the survival function.
+    where :math:`\hat{S}(t)` is the Kaplan–Meier estimator of the survival function.
 
     See the :ref:`User Guide </user_guide/evaluating-survival-models.ipynb#Time-dependent-Area-under-the-ROC>`,
     [1]_, [2]_, [3]_ for further description.
@@ -415,56 +403,47 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
     Parameters
     ----------
     survival_train : structured array, shape = (n_train_samples,)
-        Survival times for training data to estimate the censoring
-        distribution from.
-        A structured array containing the binary event indicator
-        as first field, and time of event or time of censoring as
-        second field.
-
+        Survival times for the training data, used to estimate the censoring
+        distribution.
+        A structured array with two fields. The first field is a boolean
+        where ``True`` indicates an event and ``False`` indicates right-censoring.
+        The second field is a float with the time of event or time of censoring.
     survival_test : structured array, shape = (n_samples,)
-        Survival times of test data.
-        A structured array containing the binary event indicator
-        as first field, and time of event or time of censoring as
-        second field.
-
+        Survival times for the test data.
+        A structured array with two fields. The first field is a boolean
+        where ``True`` indicates an event and ``False`` indicates right-censoring.
+        The second field is a float with the time of event or time of censoring.
     estimate : array-like, shape = (n_samples,) or (n_samples, n_times)
-        Estimated risk of experiencing an event of test data (e.g., from ``estimator.predict(X)``
-        for time-independent risks, or ``estimator.predict_cumulative_hazard_function(X)``
-        for time-dependent risks).
-        If `estimate` is a 1-d array, the same risk score across all time
-        points is used. If `estimate` is a 2-d array, the risk scores in the
-        j-th column are used to evaluate the j-th time point. A higher value
-        indicates a higher risk of experiencing an event.
-
+        Predicted risk scores for the test data (e.g., from ``estimator.predict(X)``.
+        A higher value indicates a higher risk of experiencing an event.
+        If a 1D array is provided, the same risk score is used for all time points.
+        If a 2D array is provided, ``estimate[:, j]`` is used for the :math:`j`-th
+        time point.
     times : array-like, shape = (n_times,)
-        The time points for which the area under the
-        time-dependent ROC curve is computed. Values must be
-        within the range of follow-up times of the test data
-        `survival_test`.
-
+        The time points at which to compute the AUC. Values must be within the
+        range of follow-up times in ``survival_test``.
     tied_tol : float, optional, default: 1e-8
-        The tolerance value for considering ties.
-        If the absolute difference between risk scores is smaller
-        or equal than `tied_tol`, risk scores are considered tied.
+        The tolerance value for considering ties in risk scores. If the
+        absolute difference between two risk scores is smaller than or equal to
+        ``tied_tol``, they are considered tied.
 
     Returns
     -------
-    auc : array, shape = (n_times,)
-        The cumulative/dynamic AUC estimates (evaluated at `times`).
+    auc : ndarray, shape = (n_times,)
+        The cumulative/dynamic AUC estimates at each time point in ``times``.
     mean_auc : float
-        Summary measure referring to the mean cumulative/dynamic AUC
-        over the specified time range `(times[0], times[-1])`.
+        The mean cumulative/dynamic AUC over the specified time range ``(times[0], times[-1])``.
 
     Notes
     -----
-    This metric expects risk scores which are typically returned by ``estimator.predict(X)``
+    This metric expects risk scores, which are typically returned by ``estimator.predict(X)``
     (for time-independent risks), or ``estimator.predict_cumulative_hazard_function(X)``
     (for time-dependent risks). It *does not accept* survival probabilities.
 
     See also
     --------
     as_cumulative_dynamic_auc_scorer
-        Wrapper class that uses :func:`cumulative_dynamic_auc`
+        A wrapper class that uses :func:`cumulative_dynamic_auc`
         in its ``score`` method instead of the default
         :func:`concordance_index_censored`.
 
@@ -548,33 +527,41 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
 
 
 def brier_score(survival_train, survival_test, estimate, times):
-    """Estimate the time-dependent Brier score for right censored data.
+    r"""The time-dependent Brier score for right-censored data.
 
-    The time-dependent Brier score is the mean squared error at time point :math:`t`:
+    The time-dependent Brier score measures the inaccuracy of
+    predicted survival probabilities at a given time point.
+    It is the mean squared error between the true survival status
+    and the predicted survival probability at time point :math:`t`.
+    A lower Brier score indicates better model performance.
 
-    .. math::
+    To account for censoring, this metric uses inverse probability of censoring
+    weights (IPCW), which requires access to survival times from the training
+    data to estimate the censoring distribution. Note that survival times in
+    ``survival_test`` must lie within the range of survival times in ``survival_train``.
+    This can be achieved by specifying ``times`` accordingly, e.g. by setting
+    ``times[-1]`` slightly below the maximum expected follow-up time.
 
-        \\mathrm{BS}^c(t) = \\frac{1}{n} \\sum_{i=1}^n I(y_i \\leq t \\land \\delta_i = 1)
-        \\frac{(0 - \\hat{\\pi}(t | \\mathbf{x}_i))^2}{\\hat{G}(y_i)} + I(y_i > t)
-        \\frac{(1 - \\hat{\\pi}(t | \\mathbf{x}_i))^2}{\\hat{G}(t)} ,
-
-    where :math:`\\hat{\\pi}(t | \\mathbf{x})` is the predicted probability of
-    remaining event-free up to time point :math:`t` for a feature vector :math:`\\mathbf{x}`,
-    and :math:`1/\\hat{G}(t)` is a inverse probability of censoring weight, estimated by
-    the Kaplan-Meier estimator.
-
-    Estimating inverse probability of censoring weights requires
-    access to survival times from the training data to estimate the censoring
-    distribution, which `survival_train` provides.
-    Note that survival times in `survival_test` must lie within the range of
-    survival times in `survival_train`. This can be achieved by specifying `times`
-    accordingly, e.g. by setting `times[-1]` slightly below the maximum expected follow-up time.
-
-    For time points in `survival_test` that lie outside of the range specified by
-    values in `survival_train`, the probability of censoring is unknown and an
+    For time points in ``survival_test`` that lie outside of the range specified by
+    values in ``survival_train``, the probability of censoring is unknown and an
     exception will be raised::
 
         ValueError: time must be smaller than largest observed time point
+
+    The censoring distribution is estimated using the Kaplan-Meier estimator, which
+    assumes that censoring is random and independent of the features.
+
+    The time-dependent Brier score at time :math:`t` is defined as
+
+    .. math::
+
+        \mathrm{BS}^c(t) = \frac{1}{n} \sum_{i=1}^n I(y_i \leq t \land \delta_i = 1)
+        \frac{(0 - \hat{\pi}(t | \mathbf{x}_i))^2}{\hat{G}(y_i)} + I(y_i > t)
+        \frac{(1 - \hat{\pi}(t | \mathbf{x}_i))^2}{\hat{G}(t)} ,
+
+    where :math:`\hat{\pi}(t | \mathbf{x})` is the predicted survival probability
+    up to the time point :math:`t` for a feature vector :math:`\mathbf{x}`,
+    and :math:`1/\hat{G}(t)` is a inverse probability of censoring weight.
 
     See the :ref:`User Guide </user_guide/evaluating-survival-models.ipynb#Time-dependent-Brier-Score>`
     and [1]_ for details.
@@ -582,41 +569,36 @@ def brier_score(survival_train, survival_test, estimate, times):
     Parameters
     ----------
     survival_train : structured array, shape = (n_train_samples,)
-        Survival times for training data to estimate the censoring
-        distribution from.
-        A structured array containing the binary event indicator
-        as first field, and time of event or time of censoring as
-        second field.
-
+        Survival times for the training data, used to estimate the censoring
+        distribution.
+        A structured array with two fields. The first field is a boolean
+        where ``True`` indicates an event and ``False`` indicates right-censoring.
+        The second field is a float with the time of event or time of censoring.
     survival_test : structured array, shape = (n_samples,)
-        Survival times of test data.
-        A structured array containing the binary event indicator
-        as first field, and time of event or time of censoring as
-        second field.
-
+        Survival times for the test data.
+        A structured array with two fields. The first field is a boolean
+        where ``True`` indicates an event and ``False`` indicates right-censoring.
+        The second field is a float with the time of event or time of censoring.
     estimate : array-like, shape = (n_samples, n_times)
-        Estimated probability of remaining event-free at time points
-        specified by ``times`` (i.e., survival probabilities), typically obtained
-        from ``estimator.predict_survival_function(X)``. The value of ``estimate[i]``
-        must correspond to the estimated probability of remaining event-free up to
+        Predicted survival probabilities for the test data at the time points
+        specified by ``times``, typically obtained from
+        ``estimator.predict_survival_function(X)``. The value of ``estimate[:, i]``
+        must correspond to the estimated survival probability up to
         the time point ``times[i]``.
-
     times : array-like, shape = (n_times,)
-        The time points for which to estimate the Brier score.
-        Values must be within the range of follow-up times of
-        the test data `survival_test`.
+        The time points at which to compute the Brier score. Values must be
+        within the range of follow-up times in ``survival_test``.
 
     Returns
     -------
-    times : array, shape = (n_times,)
-        Unique time points at which the brier scores was estimated.
-
-    brier_scores : array , shape = (n_times,)
-        Values of the brier score.
+    times : ndarray, shape = (n_times,)
+        The unique time points at which the Brier score was estimated.
+    brier_scores : ndarray, shape = (n_times,)
+        The Brier score at each time point in ``times``.
 
     Notes
     -----
-    This metric expects survival probabilities which are typically returned by
+    This metric expects survival probabilities, which are typically returned by
     ``estimator.predict_survival_function(X)``.
     It *does not accept* risk scores.
 
@@ -690,17 +672,21 @@ def brier_score(survival_train, survival_test, estimate, times):
 
 
 def integrated_brier_score(survival_train, survival_test, estimate, times):
-    """The Integrated Brier Score (IBS) provides an overall calculation of
-    the model performance at all available times :math:`t_1 \\leq t \\leq t_\\text{max}`.
+    r"""Computes the integrated Brier score (IBS).
+
+    The IBS is an overall measure of the model's performance across all
+    available time points :math:`t_1 \leq t \leq t_\text{max}`.
+    It is the average Brier score, integrated over time.
+    A lower IBS indicates better model performance.
 
     The integrated time-dependent Brier score over the interval
-    :math:`[t_1; t_\\text{max}]` is defined as
+    :math:`[t_1; t_\text{max}]` is defined as
 
     .. math::
 
-        \\mathrm{IBS} = \\int_{t_1}^{t_\\text{max}} \\mathrm{BS}^c(t) d w(t)
+        \mathrm{IBS} = \int_{t_1}^{t_\text{max}} \mathrm{BS}^c(t) d w(t)
 
-    where the weighting function is :math:`w(t) = t / t_\\text{max}`.
+    where the weighting function is :math:`w(t) = t / t_\text{max}`.
     The integral is estimated via the trapezoidal rule.
 
     See the :ref:`User Guide </user_guide/evaluating-survival-models.ipynb#Time-dependent-Brier-Score>`
@@ -709,29 +695,25 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
     Parameters
     ----------
     survival_train : structured array, shape = (n_train_samples,)
-        Survival times for training data to estimate the censoring
-        distribution from.
-        A structured array containing the binary event indicator
-        as first field, and time of event or time of censoring as
-        second field.
-
+        Survival times for the training data, used to estimate the censoring
+        distribution.
+        A structured array with two fields. The first field is a boolean
+        where ``True`` indicates an event and ``False`` indicates right-censoring.
+        The second field is a float with the time of event or time of censoring.
     survival_test : structured array, shape = (n_samples,)
-        Survival times of test data.
-        A structured array containing the binary event indicator
-        as first field, and time of event or time of censoring as
-        second field.
-
+        Survival times for the test data.
+        A structured array with two fields. The first field is a boolean
+        where ``True`` indicates an event and ``False`` indicates right-censoring.
+        The second field is a float with the time of event or time of censoring.
     estimate : array-like, shape = (n_samples, n_times)
-        Estimated probability of remaining event-free at time points
-        specified by ``times`` (i.e., survival probabilities), typically obtained
-        from ``estimator.predict_survival_function(X)``. The value of ``estimate[i]``
-        must correspond to the estimated probability of remaining event-free up to
+        Predicted survival probabilities for the test data at the time points
+        specified by ``times``, typically obtained from
+        ``estimator.predict_survival_function(X)``. The value of ``estimate[:, i]``
+        must correspond to the estimated survival probability up to
         the time point ``times[i]``.
-
     times : array-like, shape = (n_times,)
-        The time points for which to estimate the Brier score.
-        Values must be within the range of follow-up times of
-        the test data `survival_test`.
+        The time points at which to compute the Brier score. Values must be
+        within the range of follow-up times in ``survival_test``.
 
     Returns
     -------
@@ -740,7 +722,7 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
 
     Notes
     -----
-    This metric expects survival probabilities which are typically returned by
+    This metric expects survival probabilities, which are typically returned by
     ``estimator.predict_survival_function(X)``.
     It *does not accept* risk scores.
 
@@ -847,11 +829,11 @@ class _ScoreOverrideMixin:
 
         Parameters
         ----------
-        X : array-like of shape (n_samples, n_features)
+        X : array-like, shape = (n_samples, n_features)
             Input data, where n_samples is the number of samples and
             n_features is the number of features.
 
-        y : array-like of shape (n_samples,)
+        y : array-like, shape = (n_samples,)
             Target relative to X for classification or regression;
             None for unsupervised learning.
 
@@ -926,17 +908,13 @@ class as_cumulative_dynamic_auc_scorer(_ScoreOverrideMixin, BaseEstimator):
     ----------
     estimator : object
         Instance of an estimator.
-
     times : array-like, shape = (n_times,)
-        The time points for which the area under the
-        time-dependent ROC curve is computed. Values must be
-        within the range of follow-up times of the test data
-        `survival_test`.
-
+        The time points at which to compute the AUC. Values must be within the
+        range of follow-up times of the test data.
     tied_tol : float, optional, default: 1e-8
-        The tolerance value for considering ties.
-        If the absolute difference between risk scores is smaller
-        or equal than `tied_tol`, risk scores are considered tied.
+        The tolerance value for considering ties in risk scores. If the
+        absolute difference between two risk scores is smaller than or equal to
+        ``tied_tol``, they are considered tied.
 
     Attributes
     ----------
@@ -961,7 +939,7 @@ class as_cumulative_dynamic_auc_scorer(_ScoreOverrideMixin, BaseEstimator):
 
 
 class as_concordance_index_ipcw_scorer(_ScoreOverrideMixin, BaseEstimator):
-    """Wraps an estimator to use :func:`concordance_index_ipcw` as ``score`` function.
+    r"""Wraps an estimator to use :func:`concordance_index_ipcw` as ``score`` function.
 
     See the :ref:`User Guide </user_guide/evaluating-survival-models.ipynb#Using-Metrics-in-Hyper-parameter-Search>`
     for using it for hyper-parameter optimization.
@@ -970,18 +948,16 @@ class as_concordance_index_ipcw_scorer(_ScoreOverrideMixin, BaseEstimator):
     ----------
     estimator : object
         Instance of an estimator.
-
     tau : float, optional
         Truncation time. The survival function for the underlying
         censoring time distribution :math:`D` needs to be positive
         at `tau`, i.e., `tau` should be chosen such that the
         probability of being censored after time `tau` is non-zero:
-        :math:`P(D > \\tau) > 0`. If `None`, no truncation is performed.
-
+        :math:`P(D > \tau) > 0`. If `None`, no truncation is performed.
     tied_tol : float, optional, default: 1e-8
-        The tolerance value for considering ties.
-        If the absolute difference between risk scores is smaller
-        or equal than `tied_tol`, risk scores are considered tied.
+        The tolerance value for considering ties in risk scores.
+        If the absolute difference between two risk scores is smaller than
+        or equal to ``tied_tol``, they are considered tied.
 
     Attributes
     ----------
@@ -1018,11 +994,9 @@ class as_integrated_brier_score_scorer(_ScoreOverrideMixin, BaseEstimator):
     ----------
     estimator : object
         Instance of an estimator that provides ``predict_survival_function``.
-
     times : array-like, shape = (n_times,)
-        The time points for which to estimate the Brier score.
-        Values must be within the range of follow-up times of
-        the test data `survival_test`.
+        The time points at which to compute the Brier score. Values must be
+        within the range of follow-up times of the test data.
 
     Attributes
     ----------

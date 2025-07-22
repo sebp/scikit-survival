@@ -29,17 +29,21 @@ __all__ = ["CoxPHSurvivalAnalysis"]
 
 
 class BreslowEstimator:
-    """Breslow's estimator of the cumulative hazard function.
+    """Breslow's non-parametric estimator for the cumulative baseline hazard.
+
+    This class is used by :class:`CoxPHSurvivalAnalysis` to estimate the
+    cumulative baseline hazard and baseline survival function after the
+    coefficients of the Cox model have been fitted.
 
     Attributes
     ----------
     cum_baseline_hazard_ : :class:`sksurv.functions.StepFunction`
-        Cumulative baseline hazard function.
+        Estimated cumulative baseline hazard function.
 
     baseline_survival_ : :class:`sksurv.functions.StepFunction`
-        Baseline survival function.
+        Estimated baseline survival function.
 
-    unique_times_ : ndarray
+    unique_times_ : ndarray, shape=(n_unique_times,)
         Unique event times.
     """
 
@@ -126,7 +130,29 @@ class BreslowEstimator:
 
 
 class CoxPHOptimizer:
-    """Negative partial log-likelihood of Cox proportional hazards model"""
+    """Helper class for fitting the Cox proportional hazards model.
+
+    This class computes the negative log-likelihood, its gradient, and the
+    Hessian matrix for the Cox model. It is used internally by
+    :class:`CoxPHSurvivalAnalysis`.
+
+    Parameters
+    ----------
+    X : ndarray, shape=(n_samples, n_features)
+        The feature matrix.
+
+    event : ndarray, shape=(n_samples,)
+        The event indicator.
+
+    time : ndarray, shape=(n_samples,)
+        The event/censoring times.
+
+    alpha : ndarray, shape=(n_features,)
+        The regularization parameters.
+
+    ties : {'breslow', 'efron'}
+        The method to handle tied event times.
+    """
 
     def __init__(self, X, event, time, alpha, ties):
         # sort descending
@@ -270,6 +296,17 @@ class CoxPHOptimizer:
 
 
 class VerboseReporter:
+    """Helper class to report optimization progress.
+
+    This class is used by :class:`CoxPHSurvivalAnalysis` to print
+    optimization progress depending on the verbosity level.
+
+    Parameters
+    ----------
+    verbose : int
+        The verbosity level.
+    """
+
     def __init__(self, verbose):
         self.verbose = verbose
 
@@ -293,20 +330,25 @@ class VerboseReporter:
 
 
 class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
-    """Cox proportional hazards model.
+    """The Cox proportional hazards model, also known as Cox regression.
+
+    This model is a semi-parametric model that can be used to model the
+    relationship between a set of features and the time to an event.
+    The model is fitted by maximizing the partial likelihood
+    using Newton-Raphson optimization.
 
     There are two possible choices for handling tied event times.
     The default is Breslow's method, which considers each of the
     events at a given time as distinct. Efron's method is more
     accurate if there are a large number of ties. When the number
     of ties is small, the estimated coefficients by Breslow's and
-    Efron's method are quite close. Uses Newton-Raphson optimization.
+    Efron's method are quite close.
 
     See [1]_, [2]_, [3]_ for further description.
 
     Parameters
     ----------
-    alpha : float, ndarray of shape (n_features,), optional, default: 0
+    alpha : float or ndarray, shape = (n_features,), optional, default: 0
         Regularization parameter for ridge regression penalty.
         If a single float, the same penalty is used for all features.
         If an array, there must be one penalty for each feature.
@@ -318,7 +360,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         no tied event times all the methods are equivalent.
 
     n_iter : int, optional, default: 100
-        Maximum number of iterations.
+        The maximum number of iterations taken for the solver to converge.
 
     tol : float, optional, default: 1e-9
         Convergence criteria. Convergence is based on the negative log-likelihood::
@@ -332,7 +374,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     Attributes
     ----------
     coef_ : ndarray, shape = (n_features,)
-        Coefficients of the model
+        Coefficients of the model.
 
     cum_baseline_hazard_ : :class:`sksurv.functions.StepFunction`
         Estimated baseline cumulative hazard function.
@@ -343,11 +385,11 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     n_features_in_ : int
         Number of features seen during ``fit``.
 
-    feature_names_in_ : ndarray of shape (`n_features_in_`,)
+    feature_names_in_ : ndarray, shape = (`n_features_in_`,)
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
 
-    unique_times_ : array of shape = (n_unique_times,)
+    unique_times_ : ndarray, shape = (n_unique_times,)
         Unique time points.
 
     See also
@@ -395,7 +437,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         return self._baseline_model.unique_times_
 
     def fit(self, X, y):
-        """Minimize negative partial log-likelihood for provided data.
+        """Fit the model to the given data.
 
         Parameters
         ----------
@@ -403,9 +445,9 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
             Data matrix
 
         y : structured array, shape = (n_samples,)
-            A structured array containing the binary event indicator
-            as first field, and time of event or time of censoring as
-            second field.
+            A structured array with two fields. The first field is a boolean
+            where ``True`` indicates an event and ``False`` indicates right-censoring.
+            The second field is a float with the time of event or time of censoring.
 
         Returns
         -------
@@ -482,6 +524,11 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     def predict(self, X):
         """Predict risk scores.
 
+        The risk score is the linear predictor of the model,
+        computed as the dot product of the input features `X` and the
+        estimated coefficients `coef_`. A higher score indicates a
+        higher risk of experiencing the event.
+
         Parameters
         ----------
         X : array-like, shape = (n_samples, n_features)
@@ -516,17 +563,26 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         X : array-like, shape = (n_samples, n_features)
             Data matrix.
 
-        return_array : boolean
-            If set, return an array with the cumulative hazard rate
-            for each `self.unique_times_`, otherwise an array of
-            :class:`sksurv.functions.StepFunction`.
+        return_array : bool, default: False
+            Whether to return a single array of cumulative hazard values
+            or a list of step functions.
+
+            If `False`, a list of :class:`sksurv.functions.StepFunction`
+            objects is returned.
+
+            If `True`, a 2d-array of shape `(n_samples, n_unique_times)` is
+            returned, where `n_unique_times` is the number of unique
+            event times in the training data. Each row represents the cumulative
+            hazard function of an individual evaluated at `unique_times_`.
 
         Returns
         -------
         cum_hazard : ndarray
-            If `return_array` is set, an array with the cumulative hazard rate
-            for each `self.unique_times_`, otherwise an array of length `n_samples`
-            of :class:`sksurv.functions.StepFunction` instances will be returned.
+            If `return_array` is `False`, an array of `n_samples`
+            :class:`sksurv.functions.StepFunction` instances is returned.
+
+            If `return_array` is `True`, a numeric array of shape
+            `(n_samples, n_unique_times_)` is returned.
 
         Examples
         --------
@@ -575,18 +631,26 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         X : array-like, shape = (n_samples, n_features)
             Data matrix.
 
-        return_array : boolean, default: False
-            If set, return an array with the probability
-            of survival for each `self.unique_times_`,
-            otherwise an array of :class:`sksurv.functions.StepFunction`.
+        return_array : bool, default: False
+            Whether to return a single array of survival probabilities
+            or a list of step functions.
+
+            If `False`, a list of :class:`sksurv.functions.StepFunction`
+            objects is returned.
+
+            If `True`, a 2d-array of shape `(n_samples, n_unique_times)` is
+            returned, where `n_unique_times` is the number of unique
+            event times in the training data. Each row represents the survival
+            function of an individual evaluated at `unique_times_`.
 
         Returns
         -------
         survival : ndarray
-            If `return_array` is set, an array with the probability of
-            survival for each `self.unique_times_`, otherwise an array of
-            length `n_samples` of :class:`sksurv.functions.StepFunction`
-            instances will be returned.
+            If `return_array` is `False`, an array of `n_samples`
+            :class:`sksurv.functions.StepFunction` instances is returned.
+
+            If `return_array` is `True`, a numeric array of shape
+            `(n_samples, n_unique_times_)` is returned.
 
         Examples
         --------

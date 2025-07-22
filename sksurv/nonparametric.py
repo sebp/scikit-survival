@@ -31,36 +31,36 @@ __all__ = [
 
 
 def _compute_counts(event, time, order=None):
-    """Count right censored and uncensored samples at each unique time point.
+    """Count right-censored and uncensored samples at each unique time point.
 
     Parameters
     ----------
-    event : array
+    event : ndarray
         Boolean event indicator.
         Integer in the case of multiple risks.
         Zero means right-censored event.
         Positive values for each of the possible risk events.
 
-    time : array
+    time : ndarray
         Survival time or time of censoring.
 
-    order : array or None
+    order : ndarray or None
         Indices to order time in ascending order.
         If None, order will be computed.
 
     Returns
     -------
-    times : array
+    times : ndarray
         Unique time points.
 
-    n_events : array
+    n_events : ndarray
         Number of events at each time point.
         2D array with shape `(n_unique_time_points, n_risks + 1)` in the case of competing risks.
 
-    n_at_risk : array
+    n_at_risk : ndarray
         Number of samples that have not been censored or have not had an event at each time point.
 
-    n_censored : array
+    n_censored : ndarray
         Number of censored samples at each time point.
     """
     n_samples = event.shape[0]
@@ -116,29 +116,29 @@ def _compute_counts(event, time, order=None):
 
 
 def _compute_counts_truncated(event, time_enter, time_exit):
-    """Compute counts for left truncated and right censored survival data.
+    """Compute counts for left truncated and right-censored survival data.
 
     Parameters
     ----------
-    event : array
+    event : ndarray
         Boolean event indicator.
 
-    time_start : array
+    time_enter : ndarray
         Time when a subject entered the study.
 
-    time_exit : array
+    time_exit : ndarray
         Time when a subject left the study due to an
         event or censoring.
 
     Returns
     -------
-    times : array
+    times : ndarray
         Unique time points.
 
-    n_events : array
+    n_events : ndarray
         Number of events at each time point.
 
-    n_at_risk : array
+    n_at_risk : ndarray
         Number of samples that are censored or have an event at each time point.
     """
     if (time_enter > time_exit).any():
@@ -212,6 +212,27 @@ def _ci_logmlog(s, sigma_t, conf_level):
 
 
 def _km_ci_estimator(prob_survival, ratio_var, conf_level, conf_type):
+    """Helper to compute confidence intervals for the Kaplan-Meier estimate.
+
+    Parameters
+    ----------
+    prob_survival : ndarray, shape = (n_times,)
+        Survival probability at each unique time point.
+
+    ratio_var : ndarray, shape = (n_times,)
+        The variance ratio term for each unique time point.
+
+    conf_level : float
+        The level for a two-sided confidence interval.
+
+    conf_type : {'log-log'}
+        The type of confidence intervals to estimate.
+
+    Returns
+    -------
+    ci : ndarray, shape = (2, n_times)
+        Pointwise confidence interval.
+    """
     if conf_type not in {"log-log"}:
         raise ValueError(f"conf_type must be None or a str among {{'log-log'}}, but was {conf_type!r}")
 
@@ -232,17 +253,18 @@ def kaplan_meier_estimator(
     conf_level=0.95,
     conf_type=None,
 ):
-    """Kaplan-Meier estimator of survival function.
+    """Computes the Kaplan-Meier estimate of the survival function.
 
     See [1]_ for further description.
 
     Parameters
     ----------
     event : array-like, shape = (n_samples,)
-        Contains binary event indicators.
+        A boolean array where ``True`` indicates an event and ``False`` indicates
+        right-censoring.
 
     time_exit : array-like, shape = (n_samples,)
-        Contains event/censoring times.
+        Time of event or censoring.
 
     time_enter : array-like, shape = (n_samples,), optional
         Contains time when each individual entered the study for
@@ -270,14 +292,14 @@ def kaplan_meier_estimator(
 
     Returns
     -------
-    time : array, shape = (n_times,)
+    time : ndarray, shape = (n_times,)
         Unique times.
 
-    prob_survival : array, shape = (n_times,)
+    prob_survival : ndarray, shape = (n_times,)
         Survival probability at each unique time point.
         If `time_enter` is provided, estimates are conditional probabilities.
 
-    conf_int : array, shape = (2, n_times)
+    conf_int : ndarray, shape = (2, n_times)
         Pointwise confidence interval of the Kaplan-Meier estimator
         at each unique time point.
         Only provided if `conf_type` is not None.
@@ -286,9 +308,17 @@ def kaplan_meier_estimator(
     --------
     Creating a Kaplan-Meier curve:
 
-    >>> x, y, conf_int = kaplan_meier_estimator(event, time, conf_type="log-log")
-    >>> plt.step(x, y, where="post")
-    >>> plt.fill_between(x, conf_int[0], conf_int[1], alpha=0.25, step="post")
+    >>> import matplotlib.pyplot as plt
+    >>> from sksurv.datasets import load_veterans_lung_cancer
+    >>> from sksurv.nonparametric import kaplan_meier_estimator
+    >>>
+    >>> _, y = load_veterans_lung_cancer()
+    >>> time, prob_surv, conf_int = kaplan_meier_estimator(
+    ...     y["Status"], y["Survival_in_days"], conf_type="log-log"
+    ... )
+    >>>
+    >>> plt.step(time, prob_surv, where="post")
+    >>> plt.fill_between(time, conf_int[0], conf_int[1], alpha=0.25, step="post")
     >>> plt.ylim(0, 1)
     >>> plt.show()
 
@@ -359,25 +389,40 @@ def kaplan_meier_estimator(
 
 
 def nelson_aalen_estimator(event, time):
-    """Nelson-Aalen estimator of cumulative hazard function.
+    """Computes the Nelson-Aalen estimate of the cumulative hazard function.
 
     See [1]_, [2]_ for further description.
 
     Parameters
     ----------
     event : array-like, shape = (n_samples,)
-        Contains binary event indicators.
+        A boolean array where ``True`` indicates an event and ``False`` indicates
+        right-censoring.
 
     time : array-like, shape = (n_samples,)
-        Contains event/censoring times.
+        Time of event or censoring.
 
     Returns
     -------
-    time : array, shape = (n_times,)
+    time : ndarray, shape = (n_times,)
         Unique times.
 
-    cum_hazard : array, shape = (n_times,)
+    cum_hazard : ndarray, shape = (n_times,)
         Cumulative hazard at each unique time point.
+
+    Examples
+    --------
+    Creating a cumulative hazard curve:
+
+    >>> import matplotlib.pyplot as plt
+    >>> from sksurv.datasets import load_aids
+    >>> from sksurv.nonparametric import nelson_aalen_estimator
+    >>>
+    >>> _, y = load_aids(endpoint="death")
+    >>> time, cum_hazard = nelson_aalen_estimator(y["censor_d"], y["time_d"])
+    >>>
+    >>> plt.step(time, cum_hazard, where="post")
+    >>> plt.show()
 
     References
     ----------
@@ -401,15 +446,16 @@ def ipc_weights(event, time):
 
     Parameters
     ----------
-    event : array, shape = (n_samples,)
-        Boolean event indicator.
+    event : array-like, shape = (n_samples,)
+        A boolean array where ``True`` indicates an event and ``False`` indicates
+        right-censoring.
 
-    time : array, shape = (n_samples,)
+    time : array-like, shape = (n_samples,)
         Time when a subject experienced an event or was censored.
 
     Returns
     -------
-    weights : array, shape = (n_samples,)
+    weights : ndarray, shape = (n_samples,)
         inverse probability of censoring weights
 
     See also
@@ -469,9 +515,9 @@ class SurvivalFunctionEstimator(BaseEstimator):
         Parameters
         ----------
         y : structured array, shape = (n_samples,)
-            A structured array containing the binary event indicator
-            as first field, and time of event or time of censoring as
-            second field.
+            A structured array with two fields. The first field is a boolean
+            where ``True`` indicates an event and ``False`` indicates right-censoring.
+            The second field is a float with the time of event or time of censoring.
 
         Returns
         -------
@@ -493,13 +539,13 @@ class SurvivalFunctionEstimator(BaseEstimator):
         return self
 
     def predict_proba(self, time, return_conf_int=False):
-        """Return probability of an event after given time point.
+        r"""Return probability of remaining event-free at given time points.
 
-        :math:`\\hat{S}(t) = P(T > t)`
+        :math:`\hat{S}(t) = P(T > t)`
 
         Parameters
         ----------
-        time : array, shape = (n_samples,)
+        time : array-like, shape = (n_samples,)
             Time to estimate probability at.
 
         return_conf_int : bool, optional, default: False
@@ -510,10 +556,10 @@ class SurvivalFunctionEstimator(BaseEstimator):
 
         Returns
         -------
-        prob : array, shape = (n_samples,)
-            Probability of an event at the passed time points.
+        prob : ndarray, shape = (n_samples,)
+            Probability of remaining event-free at the given time points.
 
-        conf_int : array, shape = (2, n_samples)
+        conf_int : ndarray, shape = (2, n_samples)
             Pointwise confidence interval at the passed time points.
             Only provided if `return_conf_int` is True.
         """
@@ -561,9 +607,9 @@ class CensoringDistributionEstimator(SurvivalFunctionEstimator):
         Parameters
         ----------
         y : structured array, shape = (n_samples,)
-            A structured array containing the binary event indicator
-            as first field, and time of event or time of censoring as
-            second field.
+            A structured array with two fields. The first field is a boolean
+            where ``True`` indicates an event and ``False`` indicates right-censoring.
+            The second field is a float with the time of event or time of censoring.
 
         Returns
         -------
@@ -581,20 +627,20 @@ class CensoringDistributionEstimator(SurvivalFunctionEstimator):
         return self
 
     def predict_ipcw(self, y):
-        """Return inverse probability of censoring weights at given time points.
+        r"""Return inverse probability of censoring weights at given time points.
 
-        :math:`\\omega_i = \\delta_i / \\hat{G}(y_i)`
+        :math:`\omega_i = \delta_i / \hat{G}(y_i)`
 
         Parameters
         ----------
         y : structured array, shape = (n_samples,)
-            A structured array containing the binary event indicator
-            as first field, and time of event or time of censoring as
-            second field.
+            A structured array with two fields. The first field is a boolean
+            where ``True`` indicates an event and ``False`` indicates right-censoring.
+            The second field is a float with the time of event or time of censoring.
 
         Returns
         -------
-        ipcw : array, shape = (n_samples,)
+        ipcw : ndarray, shape = (n_samples,)
             Inverse probability of censoring weights.
         """
         event, time = check_y_survival(y)
@@ -638,14 +684,14 @@ def cumulative_incidence_competing_risks(
 
     Parameters
     ----------
-    event : array-like, shape = (n_samples,)
-        Contains event indicators.
+    event : array-like, shape = (n_samples,), dtype = int
+        Contains event indicators. A value of 0 indicates right-censoring,
+        while a positive integer from 1 to `n_risks` corresponds to a specific risk.
+        `n_risks` is the total number of different risks.
+        It assumes there are events for all possible risks.
 
     time_exit : array-like, shape = (n_samples,)
-        Contains event/censoring times. '0' indicates right-censoring.
-        Positive integers (between 1 and n_risks, n_risks being the total number of different risks)
-        indicate the possible different risks.
-        It assumes there are events for all possible risks.
+        Contains event or censoring times.
 
     time_min : float, optional, default: None
         Compute estimator conditional on survival at least up to
@@ -660,23 +706,24 @@ def cumulative_incidence_competing_risks(
         If "log-log", estimate confidence intervals using
         the log hazard or :math:`log(-log(S(t)))`.
 
-    var_type : None or one of {'Aalen', 'Dinse', 'Dinse_Approx'}, optional, default: 'Aalen'
+    var_type : {'Aalen', 'Dinse', 'Dinse_Approx'}, optional, default: 'Aalen'
         The method for estimating the variance of the estimator.
         See [2]_, [3]_ and [4]_ for each of the methods.
         Only used if `conf_type` is not None.
 
     Returns
     -------
-    time : array, shape = (n_times,)
+    time : ndarray, shape = (n_times,)
         Unique times.
 
-    cum_incidence : array, shape = (n_risks + 1, n_times)
-        Cumulative incidence at each unique time point.
-        The first dimension indicates total risk (``cum_incidence[0]``),
-        the dimension `i=1,...,n_risks` the incidence for each competing risk.
+    cum_incidence : ndarray, shape = (n_risks + 1, n_times)
+        Cumulative incidence for each risk. The first row (``cum_incidence[0]``)
+        is the cumulative incidence of any risk (total risk). The remaining
+        rows (``cum_incidence[1:]``) are the cumulative incidences for each
+        competing risk.
 
-    conf_int : array, shape = (n_risks + 1, 2, n_times)
-        Pointwise confidence interval (second axis) of the Kaplan-Meier estimator
+    conf_int : ndarray, shape = (n_risks + 1, 2, n_times)
+        Pointwise confidence interval (second axis) of the cumulative incidence function
         at each unique time point (last axis)
         for all possible risks (first axis), including overall risk (``conf_int[0]``).
         Only provided if `conf_type` is not None.
@@ -685,12 +732,18 @@ def cumulative_incidence_competing_risks(
     --------
     Creating cumulative incidence curves:
 
+    >>> import matplotlib.pyplot as plt
     >>> from sksurv.datasets import load_bmt
+    >>>
     >>> dis, bmt_df = load_bmt()
     >>> event = bmt_df["status"]
     >>> time = bmt_df["ftime"]
     >>> n_risks = event.max()
-    >>> x, y, conf_int = cumulative_incidence_competing_risks(event, time, conf_type="log-log")
+    >>>
+    >>> x, y, conf_int = cumulative_incidence_competing_risks(
+    ...     event, time, conf_type="log-log"
+    ... )
+    >>>
     >>> plt.step(x, y[0], where="post", label="Total risk")
     >>> plt.fill_between(x, conf_int[0, 0], conf_int[0, 1], alpha=0.25, step="post")
     >>> for i in range(1, n_risks + 1):

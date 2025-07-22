@@ -217,8 +217,9 @@ extlinks = {
 }
 
 intersphinx_mapping = {
-    "sklearn": ("https://scikit-learn.org/1.6", None),
+    "sklearn": ("https://scikit-learn.org/1.7", None),
     "cython": ("https://cython.readthedocs.io/en/latest/", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/", None),
     "pandas": ("https://pandas.pydata.org/docs/", None),
 }
@@ -336,7 +337,7 @@ nbsphinx_from_notebook_node = nbsphinx.Exporter.from_notebook_node
 nbsphinx.Exporter.from_notebook_node = _from_notebook_node
 
 
-def patch_sklearn():
+def patch_sklearn_gb_doc():
     from sklearn.ensemble._gb import BaseGradientBoosting
     from sklearn.utils.metaestimators import _BaseComposition
 
@@ -347,4 +348,16 @@ def patch_sklearn():
     _BaseComposition.steps = []
 
 
-patch_sklearn()
+def patch_sklearn_metadata_requests_doc():
+    # Workaround for https://github.com/scikit-learn/scikit-learn/issues/31804
+    # introduced in scikit-learn 1.7.1
+    from sklearn.utils import _metadata_requests
+
+    _metadata_requests.REQUESTER_DOC = _metadata_requests.REQUESTER_DOC.replace(
+        "\nConfigure whether metadata should be requested",
+        "        Configure whether metadata should be requested",
+    )
+
+
+patch_sklearn_gb_doc()
+patch_sklearn_metadata_requests_doc()
