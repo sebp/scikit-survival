@@ -60,7 +60,7 @@ def writearff(data, filename, relation_name=None, index=True):
     >>>
     >>> # Read contents of ARFF file
     >>> with open('test_output.arff') as f:
-    >>>     arff_contents = "".join(f.readlines())
+    ...     arff_contents = "".join(f.readlines())
     >>> print(arff_contents)
     @relation test_data
     <BLANKLINE>
