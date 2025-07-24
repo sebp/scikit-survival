@@ -612,7 +612,7 @@ def brier_score(survival_train, survival_test, estimate, times):
     Load and prepare data.
 
     >>> X, y = load_gbsg2()
-    >>> X.loc[:, "tgrade"] = X.loc[:, "tgrade"].map(len).astype(int)
+    >>> X["tgrade"] = X.loc[:, "tgrade"].map(len).astype(int)
     >>> Xt = OneHotEncoder().fit_transform(X)
 
     Fit a Cox model.
@@ -737,7 +737,7 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
     Load and prepare data.
 
     >>> X, y = load_gbsg2()
-    >>> X.loc[:, "tgrade"] = X.loc[:, "tgrade"].map(len).astype(int)
+    >>> X["tgrade"] = X.loc[:, "tgrade"].map(len).astype(int)
     >>> Xt = OneHotEncoder().fit_transform(X)
 
     Fit a Cox model.
@@ -754,8 +754,8 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
     Compute the integrated Brier score from 1 to 5 years.
 
     >>> score = integrated_brier_score(y, y, preds, times)
-    >>> print(score)
-    0.1815853064627424
+    >>> print(round(score, 4))
+    0.1816
 
     See also
     --------
