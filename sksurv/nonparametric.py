@@ -753,8 +753,8 @@ def cumulative_incidence_competing_risks(
         >>> plt.step(x, y[0], where="post", label="Total risk")
         >>> plt.fill_between(x, conf_int[0, 0], conf_int[0, 1], alpha=0.25, step="post")
         >>> for i in range(1, n_risks + 1):
-        >>>    plt.step(x, y[i], where="post", label=f"{i}-risk")
-        >>>    plt.fill_between(x, conf_int[i, 0], conf_int[i, 1], alpha=0.25, step="post")
+        ...     plt.step(x, y[i], where="post", label=f"{i}-risk")
+        ...     plt.fill_between(x, conf_int[i, 0], conf_int[i, 1], alpha=0.25, step="post")
         >>> plt.ylim(0, 1)
         >>> plt.legend()
         >>> plt.show()  # doctest: +SKIP
