@@ -308,19 +308,23 @@ def kaplan_meier_estimator(
     --------
     Creating a Kaplan-Meier curve:
 
-    >>> import matplotlib.pyplot as plt
-    >>> from sksurv.datasets import load_veterans_lung_cancer
-    >>> from sksurv.nonparametric import kaplan_meier_estimator
-    >>>
-    >>> _, y = load_veterans_lung_cancer()
-    >>> time, prob_surv, conf_int = kaplan_meier_estimator(
-    ...     y["Status"], y["Survival_in_days"], conf_type="log-log"
-    ... )
-    >>>
-    >>> plt.step(time, prob_surv, where="post")
-    >>> plt.fill_between(time, conf_int[0], conf_int[1], alpha=0.25, step="post")
-    >>> plt.ylim(0, 1)
-    >>> plt.show()
+    .. plot::
+
+        >>> import matplotlib.pyplot as plt
+        >>> from sksurv.datasets import load_veterans_lung_cancer
+        >>> from sksurv.nonparametric import kaplan_meier_estimator
+        >>>
+        >>> _, y = load_veterans_lung_cancer()
+        >>> time, prob_surv, conf_int = kaplan_meier_estimator(
+        ...     y["Status"], y["Survival_in_days"], conf_type="log-log"
+        ... )
+        >>> plt.step(time, prob_surv, where="post")
+        [...]
+        >>> plt.fill_between(time, conf_int[0], conf_int[1], alpha=0.25, step="post")
+        <matplotlib.collections.PolyCollection object at 0x...>
+        >>> plt.ylim(0, 1)
+        (0.0, 1.0)
+        >>> plt.show()  # doctest: +SKIP
 
     See also
     --------
@@ -414,15 +418,18 @@ def nelson_aalen_estimator(event, time):
     --------
     Creating a cumulative hazard curve:
 
-    >>> import matplotlib.pyplot as plt
-    >>> from sksurv.datasets import load_aids
-    >>> from sksurv.nonparametric import nelson_aalen_estimator
-    >>>
-    >>> _, y = load_aids(endpoint="death")
-    >>> time, cum_hazard = nelson_aalen_estimator(y["censor_d"], y["time_d"])
-    >>>
-    >>> plt.step(time, cum_hazard, where="post")
-    >>> plt.show()
+    .. plot::
+
+        >>> import matplotlib.pyplot as plt
+        >>> from sksurv.datasets import load_aids
+        >>> from sksurv.nonparametric import nelson_aalen_estimator
+        >>>
+        >>> _, y = load_aids(endpoint="death")
+        >>> time, cum_hazard = nelson_aalen_estimator(y["censor_d"], y["time_d"])
+        >>>
+        >>> plt.step(time, cum_hazard, where="post")
+        [...]
+        >>> plt.show()  # doctest: +SKIP
 
     References
     ----------
@@ -732,26 +739,35 @@ def cumulative_incidence_competing_risks(
     --------
     Creating cumulative incidence curves:
 
-    >>> import matplotlib.pyplot as plt
-    >>> from sksurv.datasets import load_bmt
-    >>>
-    >>> dis, bmt_df = load_bmt()
-    >>> event = bmt_df["status"]
-    >>> time = bmt_df["ftime"]
-    >>> n_risks = event.max()
-    >>>
-    >>> x, y, conf_int = cumulative_incidence_competing_risks(
-    ...     event, time, conf_type="log-log"
-    ... )
-    >>>
-    >>> plt.step(x, y[0], where="post", label="Total risk")
-    >>> plt.fill_between(x, conf_int[0, 0], conf_int[0, 1], alpha=0.25, step="post")
-    >>> for i in range(1, n_risks + 1):
-    >>>    plt.step(x, y[i], where="post", label=f"{i}-risk")
-    >>>    plt.fill_between(x, conf_int[i, 0], conf_int[i, 1], alpha=0.25, step="post")
-    >>> plt.ylim(0, 1)
-    >>> plt.legend()
-    >>> plt.show()
+    .. plot::
+
+        >>> import matplotlib.pyplot as plt
+        >>> from sksurv.datasets import load_bmt
+        >>> from sksurv.nonparametric import cumulative_incidence_competing_risks
+        >>>
+        >>> dis, bmt_df = load_bmt()
+        >>> event = bmt_df["status"]
+        >>> time = bmt_df["ftime"]
+        >>> n_risks = event.max()
+        >>>
+        >>> x, y, conf_int = cumulative_incidence_competing_risks(
+        ...     event, time, conf_type="log-log"
+        ... )
+        >>>
+        >>> plt.step(x, y[0], where="post", label="Total risk")
+        [...]
+        >>> plt.fill_between(x, conf_int[0, 0], conf_int[0, 1], alpha=0.25, step="post")
+        <matplotlib.collections.PolyCollection object at 0x...>
+        >>> for i in range(1, n_risks + 1):
+        ...     plt.step(x, y[i], where="post", label=f"{i}-risk")
+        ...     plt.fill_between(x, conf_int[i, 0], conf_int[i, 1], alpha=0.25, step="post")
+        [...]
+        <matplotlib.collections.PolyCollection object at 0x...>
+        >>> plt.ylim(0, 1)
+        (0.0, 1.0)
+        >>> plt.legend()
+        <matplotlib.legend.Legend object at 0x...>
+        >>> plt.show()  # doctest: +SKIP
 
     References
     ----------

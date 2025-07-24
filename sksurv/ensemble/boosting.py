@@ -529,30 +529,31 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         Examples
         --------
-        >>> import matplotlib.pyplot as plt
-        >>> from sksurv.datasets import load_whas500
-        >>> from sksurv.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis
+        .. plot::
 
-        Load the data.
+            >>> import matplotlib.pyplot as plt
+            >>> from sksurv.datasets import load_whas500
+            >>> from sksurv.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis
 
-        >>> X, y = load_whas500()
-        >>> X = X.astype(float)
+            Load the data.
 
-        Fit the model.
+            >>> X, y = load_whas500()
+            >>> X = X.astype(float)
 
-        >>> estimator = ComponentwiseGradientBoostingSurvivalAnalysis(loss="coxph").fit(X, y)
+            Fit the model.
 
-        Estimate the cumulative hazard function for the first 10 samples.
+            >>> estimator = ComponentwiseGradientBoostingSurvivalAnalysis(loss="coxph").fit(X, y)
 
-        >>> chf_funcs = estimator.predict_cumulative_hazard_function(X.iloc[:10])
+            Estimate the cumulative hazard function for the first 10 samples.
 
-        Plot the estimated cumulative hazard functions.
+            >>> chf_funcs = estimator.predict_cumulative_hazard_function(X.iloc[:10])
 
-        >>> for fn in chf_funcs:
-        ...     plt.step(fn.x, fn(fn.x), where="post")
-        ...
-        >>> plt.ylim(0, 1)
-        >>> plt.show()
+            Plot the estimated cumulative hazard functions.
+
+            >>> for fn in chf_funcs:
+            ...     plt.step(fn.x, fn(fn.x), where="post")
+            ...
+            >>> plt.show()  # doctest: +SKIP
         """
         return self._predict_cumulative_hazard_function(self._get_baseline_model(), self.predict(X), return_array)
 
@@ -600,30 +601,32 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         Examples
         --------
-        >>> import matplotlib.pyplot as plt
-        >>> from sksurv.datasets import load_whas500
-        >>> from sksurv.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis
+        .. plot::
 
-        Load the data.
+            >>> import matplotlib.pyplot as plt
+            >>> from sksurv.datasets import load_whas500
+            >>> from sksurv.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis
 
-        >>> X, y = load_whas500()
-        >>> X = X.astype(float)
+            Load the data.
 
-        Fit the model.
+            >>> X, y = load_whas500()
+            >>> X = X.astype(float)
 
-        >>> estimator = ComponentwiseGradientBoostingSurvivalAnalysis(loss="coxph").fit(X, y)
+            Fit the model.
 
-        Estimate the survival function for the first 10 samples.
+            >>> estimator = ComponentwiseGradientBoostingSurvivalAnalysis(loss="coxph").fit(X, y)
 
-        >>> surv_funcs = estimator.predict_survival_function(X.iloc[:10])
+            Estimate the survival function for the first 10 samples.
 
-        Plot the estimated survival functions.
+            >>> surv_funcs = estimator.predict_survival_function(X.iloc[:10])
 
-        >>> for fn in surv_funcs:
-        ...     plt.step(fn.x, fn(fn.x), where="post")
-        ...
-        >>> plt.ylim(0, 1)
-        >>> plt.show()
+            Plot the estimated survival functions.
+
+            >>> for fn in surv_funcs:
+            ...     plt.step(fn.x, fn(fn.x), where="post")
+            ...
+            >>> plt.ylim(0, 1)
+            >>> plt.show()  # doctest: +SKIP
         """
         return self._predict_survival_function(self._get_baseline_model(), self.predict(X), return_array)
 
@@ -1548,30 +1551,31 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         Examples
         --------
-        >>> import matplotlib.pyplot as plt
-        >>> from sksurv.datasets import load_whas500
-        >>> from sksurv.ensemble import GradientBoostingSurvivalAnalysis
+        .. plot::
 
-        Load the data.
+            >>> import matplotlib.pyplot as plt
+            >>> from sksurv.datasets import load_whas500
+            >>> from sksurv.ensemble import GradientBoostingSurvivalAnalysis
 
-        >>> X, y = load_whas500()
-        >>> X = X.astype(float)
+            Load the data.
 
-        Fit the model.
+            >>> X, y = load_whas500()
+            >>> X = X.astype(float)
 
-        >>> estimator = GradientBoostingSurvivalAnalysis(loss="coxph").fit(X, y)
+            Fit the model.
 
-        Estimate the cumulative hazard function for the first 10 samples.
+            >>> estimator = GradientBoostingSurvivalAnalysis(loss="coxph").fit(X, y)
 
-        >>> chf_funcs = estimator.predict_cumulative_hazard_function(X.iloc[:10])
+            Estimate the cumulative hazard function for the first 10 samples.
 
-        Plot the estimated cumulative hazard functions.
+            >>> chf_funcs = estimator.predict_cumulative_hazard_function(X.iloc[:10])
 
-        >>> for fn in chf_funcs:
-        ...     plt.step(fn.x, fn(fn.x), where="post")
-        ...
-        >>> plt.ylim(0, 1)
-        >>> plt.show()
+            Plot the estimated cumulative hazard functions.
+
+            >>> for fn in chf_funcs:
+            ...     plt.step(fn.x, fn(fn.x), where="post")
+            ...
+            >>> plt.show()  # doctest: +SKIP
         """
         return self._predict_cumulative_hazard_function(self._get_baseline_model(), self.predict(X), return_array)
 
@@ -1619,30 +1623,32 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         Examples
         --------
-        >>> import matplotlib.pyplot as plt
-        >>> from sksurv.datasets import load_whas500
-        >>> from sksurv.ensemble import GradientBoostingSurvivalAnalysis
+        .. plot::
 
-        Load the data.
+            >>> import matplotlib.pyplot as plt
+            >>> from sksurv.datasets import load_whas500
+            >>> from sksurv.ensemble import GradientBoostingSurvivalAnalysis
 
-        >>> X, y = load_whas500()
-        >>> X = X.astype(float)
+            Load the data.
 
-        Fit the model.
+            >>> X, y = load_whas500()
+            >>> X = X.astype(float)
 
-        >>> estimator = GradientBoostingSurvivalAnalysis(loss="coxph").fit(X, y)
+            Fit the model.
 
-        Estimate the survival function for the first 10 samples.
+            >>> estimator = GradientBoostingSurvivalAnalysis(loss="coxph").fit(X, y)
 
-        >>> surv_funcs = estimator.predict_survival_function(X.iloc[:10])
+            Estimate the survival function for the first 10 samples.
 
-        Plot the estimated survival functions.
+            >>> surv_funcs = estimator.predict_survival_function(X.iloc[:10])
 
-        >>> for fn in surv_funcs:
-        ...     plt.step(fn.x, fn(fn.x), where="post")
-        ...
-        >>> plt.ylim(0, 1)
-        >>> plt.show()
+            Plot the estimated survival functions.
+
+            >>> for fn in surv_funcs:
+            ...     plt.step(fn.x, fn(fn.x), where="post")
+            ...
+            >>> plt.ylim(0, 1)
+            >>> plt.show()  # doctest: +SKIP
         """
         return self._predict_survival_function(self._get_baseline_model(), self.predict(X), return_array)
 
