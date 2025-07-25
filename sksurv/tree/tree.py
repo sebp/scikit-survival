@@ -522,30 +522,45 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         Examples
         --------
-        >>> import matplotlib.pyplot as plt
-        >>> from sksurv.datasets import load_whas500
-        >>> from sksurv.tree import SurvivalTree
 
-        Load and prepare the data.
+        .. plot::
+            :context: reset
 
-        >>> X, y = load_whas500()
-        >>> X = X.astype(float)
+            >>> import matplotlib.pyplot as plt
+            >>> from sksurv.datasets import load_whas500
+            >>> from sksurv.tree import SurvivalTree
 
-        Fit the model.
+        .. plot::
+            :context:
 
-        >>> estimator = SurvivalTree().fit(X, y)
+            Load and prepare the data.
 
-        Estimate the cumulative hazard function for the first 5 samples.
+            >>> X, y = load_whas500()
+            >>> X = X.astype(float)
 
-        >>> chf_funcs = estimator.predict_cumulative_hazard_function(X.iloc[:5])
+        .. plot::
+            :context:
 
-        Plot the estimated cumulative hazard functions.
+            Fit the model.
 
-        >>> for fn in chf_funcs:
-        ...    plt.step(fn.x, fn(fn.x), where="post")
-        ...
-        >>> plt.ylim(0, 1)
-        >>> plt.show()
+            >>> estimator = SurvivalTree().fit(X, y)
+
+        .. plot::
+            :context:
+
+            Estimate the cumulative hazard function for the first 5 samples.
+
+            >>> chf_funcs = estimator.predict_cumulative_hazard_function(X.iloc[:5])
+
+        .. plot::
+            :context:
+
+            Plot the estimated cumulative hazard functions.
+
+            >>> for fn in chf_funcs:
+            ...     plt.step(fn.x, fn(fn.x), where="post")
+            ...
+            >>> plt.show()  # doctest: +SKIP
         """
         self._check_low_memory("predict_cumulative_hazard_function")
         check_is_fitted(self, "tree_")
@@ -601,30 +616,32 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         Examples
         --------
-        >>> import matplotlib.pyplot as plt
-        >>> from sksurv.datasets import load_whas500
-        >>> from sksurv.tree import SurvivalTree
+        .. plot::
 
-        Load and prepare the data.
+            >>> import matplotlib.pyplot as plt
+            >>> from sksurv.datasets import load_whas500
+            >>> from sksurv.tree import SurvivalTree
 
-        >>> X, y = load_whas500()
-        >>> X = X.astype(float)
+            Load and prepare the data.
 
-        Fit the model.
+            >>> X, y = load_whas500()
+            >>> X = X.astype(float)
 
-        >>> estimator = SurvivalTree().fit(X, y)
+            Fit the model.
 
-        Estimate the survival function for the first 5 samples.
+            >>> estimator = SurvivalTree().fit(X, y)
 
-        >>> surv_funcs = estimator.predict_survival_function(X.iloc[:5])
+            Estimate the survival function for the first 5 samples.
 
-        Plot the estimated survival functions.
+            >>> surv_funcs = estimator.predict_survival_function(X.iloc[:5])
 
-        >>> for fn in surv_funcs:
-        ...    plt.step(fn.x, fn(fn.x), where="post")
-        ...
-        >>> plt.ylim(0, 1)
-        >>> plt.show()
+            Plot the estimated survival functions.
+
+            >>> for fn in surv_funcs:
+            ...     plt.step(fn.x, fn(fn.x), where="post")
+            ...
+            >>> plt.ylim(0, 1)
+            >>> plt.show()  # doctest: +SKIP
         """
         self._check_low_memory("predict_survival_function")
         check_is_fitted(self, "tree_")

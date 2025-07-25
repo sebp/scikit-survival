@@ -57,6 +57,7 @@ extensions = [
     "nbsphinx",
     "sphinx_design",
     "sphinx_copybutton",
+    "matplotlib.sphinxext.plot_directive",
 ]
 
 spelling_word_list_filename = "spelling_wordlist.txt"
@@ -361,3 +362,9 @@ def patch_sklearn_metadata_requests_doc():
 
 patch_sklearn_gb_doc()
 patch_sklearn_metadata_requests_doc()
+
+# configure matplotlib plot directive
+# https://matplotlib.org/stable/api/sphinxext_plot_directive_api.html#configuration-options
+plot_include_source = True
+plot_html_show_formats = False
+plot_html_show_source_link = False
