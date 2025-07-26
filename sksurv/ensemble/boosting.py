@@ -32,6 +32,7 @@ from sklearn.utils.validation import (
 )
 
 from ..base import SurvivalAnalysisMixin
+from ..docstrings import append_cumulative_hazard_example, append_survival_function_example
 from ..linear_model.coxph import BreslowEstimator
 from ..util import check_array_survival
 from .survival_loss import LOSS_FUNCTIONS, CensoredSquaredLoss, CoxPH, IPCWLeastSquaresError
@@ -485,6 +486,9 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
             raise ValueError("`fit` must be called with the loss option set to 'coxph'.")
         return self._baseline_model
 
+    @append_cumulative_hazard_example(
+        estimator_mod="ensemble", estimator_class="ComponentwiseGradientBoostingSurvivalAnalysis"
+    )
     def predict_cumulative_hazard_function(self, X, return_array=False):
         r"""Predict cumulative hazard function.
 
@@ -529,34 +533,12 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         Examples
         --------
-        .. plot::
-
-            >>> import matplotlib.pyplot as plt
-            >>> from sksurv.datasets import load_whas500
-            >>> from sksurv.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis
-
-            Load the data.
-
-            >>> X, y = load_whas500()
-            >>> X = X.astype(float)
-
-            Fit the model.
-
-            >>> estimator = ComponentwiseGradientBoostingSurvivalAnalysis(loss="coxph").fit(X, y)
-
-            Estimate the cumulative hazard function for the first 10 samples.
-
-            >>> chf_funcs = estimator.predict_cumulative_hazard_function(X.iloc[:10])
-
-            Plot the estimated cumulative hazard functions.
-
-            >>> for fn in chf_funcs:
-            ...     plt.step(fn.x, fn(fn.x), where="post")
-            ...
-            >>> plt.show()  # doctest: +SKIP
         """
         return self._predict_cumulative_hazard_function(self._get_baseline_model(), self.predict(X), return_array)
 
+    @append_survival_function_example(
+        estimator_mod="ensemble", estimator_class="ComponentwiseGradientBoostingSurvivalAnalysis"
+    )
     def predict_survival_function(self, X, return_array=False):
         r"""Predict survival function.
 
@@ -601,32 +583,6 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         Examples
         --------
-        .. plot::
-
-            >>> import matplotlib.pyplot as plt
-            >>> from sksurv.datasets import load_whas500
-            >>> from sksurv.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis
-
-            Load the data.
-
-            >>> X, y = load_whas500()
-            >>> X = X.astype(float)
-
-            Fit the model.
-
-            >>> estimator = ComponentwiseGradientBoostingSurvivalAnalysis(loss="coxph").fit(X, y)
-
-            Estimate the survival function for the first 10 samples.
-
-            >>> surv_funcs = estimator.predict_survival_function(X.iloc[:10])
-
-            Plot the estimated survival functions.
-
-            >>> for fn in surv_funcs:
-            ...     plt.step(fn.x, fn(fn.x), where="post")
-            ...
-            >>> plt.ylim(0, 1)
-            >>> plt.show()  # doctest: +SKIP
         """
         return self._predict_survival_function(self._get_baseline_model(), self.predict(X), return_array)
 
@@ -1507,6 +1463,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
             raise ValueError("`fit` must be called with the loss option set to 'coxph'.")
         return self._baseline_model
 
+    @append_cumulative_hazard_example(estimator_mod="ensemble", estimator_class="GradientBoostingSurvivalAnalysis")
     def predict_cumulative_hazard_function(self, X, return_array=False):
         r"""Predict cumulative hazard function.
 
@@ -1551,34 +1508,10 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         Examples
         --------
-        .. plot::
-
-            >>> import matplotlib.pyplot as plt
-            >>> from sksurv.datasets import load_whas500
-            >>> from sksurv.ensemble import GradientBoostingSurvivalAnalysis
-
-            Load the data.
-
-            >>> X, y = load_whas500()
-            >>> X = X.astype(float)
-
-            Fit the model.
-
-            >>> estimator = GradientBoostingSurvivalAnalysis(loss="coxph").fit(X, y)
-
-            Estimate the cumulative hazard function for the first 10 samples.
-
-            >>> chf_funcs = estimator.predict_cumulative_hazard_function(X.iloc[:10])
-
-            Plot the estimated cumulative hazard functions.
-
-            >>> for fn in chf_funcs:
-            ...     plt.step(fn.x, fn(fn.x), where="post")
-            ...
-            >>> plt.show()  # doctest: +SKIP
         """
         return self._predict_cumulative_hazard_function(self._get_baseline_model(), self.predict(X), return_array)
 
+    @append_survival_function_example(estimator_mod="ensemble", estimator_class="GradientBoostingSurvivalAnalysis")
     def predict_survival_function(self, X, return_array=False):
         r"""Predict survival function.
 
@@ -1623,32 +1556,6 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         Examples
         --------
-        .. plot::
-
-            >>> import matplotlib.pyplot as plt
-            >>> from sksurv.datasets import load_whas500
-            >>> from sksurv.ensemble import GradientBoostingSurvivalAnalysis
-
-            Load the data.
-
-            >>> X, y = load_whas500()
-            >>> X = X.astype(float)
-
-            Fit the model.
-
-            >>> estimator = GradientBoostingSurvivalAnalysis(loss="coxph").fit(X, y)
-
-            Estimate the survival function for the first 10 samples.
-
-            >>> surv_funcs = estimator.predict_survival_function(X.iloc[:10])
-
-            Plot the estimated survival functions.
-
-            >>> for fn in surv_funcs:
-            ...     plt.step(fn.x, fn(fn.x), where="post")
-            ...
-            >>> plt.ylim(0, 1)
-            >>> plt.show()  # doctest: +SKIP
         """
         return self._predict_survival_function(self._get_baseline_model(), self.predict(X), return_array)
 

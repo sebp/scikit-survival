@@ -18,6 +18,7 @@ from sklearn.utils._tags import get_tags
 from sklearn.utils.validation import check_is_fitted, check_random_state, validate_data
 
 from ..base import SurvivalAnalysisMixin
+from ..docstrings import append_cumulative_hazard_example, append_survival_function_example
 from ..metrics import concordance_index_censored
 from ..tree import ExtraSurvivalTree, SurvivalTree
 from ..tree._criterion import get_unique_times
@@ -527,6 +528,7 @@ class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
         self.max_leaf_nodes = max_leaf_nodes
         self.low_memory = low_memory
 
+    @append_cumulative_hazard_example(estimator_mod="ensemble", estimator_class="RandomSurvivalForest")
     def predict_cumulative_hazard_function(self, X, return_array=False):
         """Predict cumulative hazard function.
 
@@ -567,34 +569,10 @@ class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
 
         Examples
         --------
-        .. plot::
-
-            >>> import matplotlib.pyplot as plt
-            >>> from sksurv.datasets import load_whas500
-            >>> from sksurv.ensemble import RandomSurvivalForest
-
-            Load and prepare the data.
-
-            >>> X, y = load_whas500()
-            >>> X = X.astype(float)
-
-            Fit the model.
-
-            >>> estimator = RandomSurvivalForest().fit(X, y)
-
-            Estimate the cumulative hazard function for the first 5 samples.
-
-            >>> chf_funcs = estimator.predict_cumulative_hazard_function(X.iloc[:5])
-
-            Plot the estimated cumulative hazard functions.
-
-            >>> for fn in chf_funcs:
-            ...     plt.step(fn.x, fn(fn.x), where="post")
-            ...
-            >>> plt.show()  # doctest: +SKIP
         """
         return super().predict_cumulative_hazard_function(X, return_array)
 
+    @append_survival_function_example(estimator_mod="ensemble", estimator_class="RandomSurvivalForest")
     def predict_survival_function(self, X, return_array=False):
         """Predict survival function.
 
@@ -635,32 +613,6 @@ class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
 
         Examples
         --------
-        .. plot::
-
-            >>> import matplotlib.pyplot as plt
-            >>> from sksurv.datasets import load_whas500
-            >>> from sksurv.ensemble import RandomSurvivalForest
-
-            Load and prepare the data.
-
-            >>> X, y = load_whas500()
-            >>> X = X.astype(float)
-
-            Fit the model.
-
-            >>> estimator = RandomSurvivalForest().fit(X, y)
-
-            Estimate the survival function for the first 5 samples.
-
-            >>> surv_funcs = estimator.predict_survival_function(X.iloc[:5])
-
-            Plot the estimated survival functions.
-
-            >>> for fn in surv_funcs:
-            ...     plt.step(fn.x, fn(fn.x), where="post")
-            ...
-            >>> plt.ylim(0, 1)
-            >>> plt.show()  # doctest: +SKIP
         """
         return super().predict_survival_function(X, return_array)
 
@@ -861,6 +813,7 @@ class ExtraSurvivalTrees(SurvivalAnalysisMixin, _BaseSurvivalForest):
         self.max_leaf_nodes = max_leaf_nodes
         self.low_memory = low_memory
 
+    @append_cumulative_hazard_example(estimator_mod="ensemble", estimator_class="ExtraSurvivalTrees")
     def predict_cumulative_hazard_function(self, X, return_array=False):
         """Predict cumulative hazard function.
 
@@ -901,34 +854,10 @@ class ExtraSurvivalTrees(SurvivalAnalysisMixin, _BaseSurvivalForest):
 
         Examples
         --------
-        .. plot::
-
-            >>> import matplotlib.pyplot as plt
-            >>> from sksurv.datasets import load_whas500
-            >>> from sksurv.ensemble import ExtraSurvivalTrees
-
-            Load and prepare the data.
-
-            >>> X, y = load_whas500()
-            >>> X = X.astype(float)
-
-            Fit the model.
-
-            >>> estimator = ExtraSurvivalTrees().fit(X, y)
-
-            Estimate the cumulative hazard function for the first 5 samples.
-
-            >>> chf_funcs = estimator.predict_cumulative_hazard_function(X.iloc[:5])
-
-            Plot the estimated cumulative hazard functions.
-
-            >>> for fn in chf_funcs:
-            ...     plt.step(fn.x, fn(fn.x), where="post")
-            ...
-            >>> plt.show()  # doctest: +SKIP
         """
         return super().predict_cumulative_hazard_function(X, return_array)
 
+    @append_survival_function_example(estimator_mod="ensemble", estimator_class="ExtraSurvivalTrees")
     def predict_survival_function(self, X, return_array=False):
         """Predict survival function.
 
@@ -969,31 +898,5 @@ class ExtraSurvivalTrees(SurvivalAnalysisMixin, _BaseSurvivalForest):
 
         Examples
         --------
-        .. plot::
-
-            >>> import matplotlib.pyplot as plt
-            >>> from sksurv.datasets import load_whas500
-            >>> from sksurv.ensemble import ExtraSurvivalTrees
-
-            Load and prepare the data.
-
-            >>> X, y = load_whas500()
-            >>> X = X.astype(float)
-
-            Fit the model.
-
-            >>> estimator = ExtraSurvivalTrees().fit(X, y)
-
-            Estimate the survival function for the first 5 samples.
-
-            >>> surv_funcs = estimator.predict_survival_function(X.iloc[:5])
-
-            Plot the estimated survival functions.
-
-            >>> for fn in surv_funcs:
-            ...     plt.step(fn.x, fn(fn.x), where="post")
-            ...
-            >>> plt.ylim(0, 1)
-            >>> plt.show()  # doctest: +SKIP
         """
         return super().predict_survival_function(X, return_array)

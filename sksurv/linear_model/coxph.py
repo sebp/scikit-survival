@@ -21,6 +21,7 @@ from sklearn.utils._param_validation import Interval, StrOptions
 from sklearn.utils.validation import check_array, check_is_fitted, validate_data
 
 from ..base import SurvivalAnalysisMixin
+from ..docstrings import append_cumulative_hazard_example, append_survival_function_example
 from ..functions import StepFunction
 from ..nonparametric import _compute_counts
 from ..util import check_array_survival
@@ -545,6 +546,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         return np.dot(X, self.coef_)
 
+    @append_cumulative_hazard_example(estimator_mod="linear_model", estimator_class="CoxPHSurvivalAnalysis")
     def predict_cumulative_hazard_function(self, X, return_array=False):
         r"""Predict cumulative hazard function.
 
@@ -586,35 +588,10 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Examples
         --------
-        .. plot::
-
-            >>> import matplotlib.pyplot as plt
-            >>> from sksurv.datasets import load_veterans_lung_cancer
-            >>> from sksurv.preprocessing import OneHotEncoder
-            >>> from sksurv.linear_model import CoxPHSurvivalAnalysis
-
-            Load the data and encode categorical features.
-
-            >>> X, y = load_veterans_lung_cancer()
-            >>> Xt = OneHotEncoder().fit_transform(X)
-
-            Fit the model.
-
-            >>> estimator = CoxPHSurvivalAnalysis().fit(Xt, y)
-
-            Estimate the cumulative hazard function for the first 10 samples.
-
-            >>> chf_funcs = estimator.predict_cumulative_hazard_function(Xt.iloc[:10])
-
-            Plot the estimated cumulative hazard functions.
-
-            >>> for fn in chf_funcs:
-            ...     plt.step(fn.x, fn(fn.x), where="post")
-            ...
-            >>> plt.show()  # doctest: +SKIP
         """
         return self._predict_cumulative_hazard_function(self._baseline_model, self.predict(X), return_array)
 
+    @append_survival_function_example(estimator_mod="linear_model", estimator_class="CoxPHSurvivalAnalysis")
     def predict_survival_function(self, X, return_array=False):
         r"""Predict survival function.
 
@@ -656,32 +633,5 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Examples
         --------
-        .. plot::
-
-            >>> import matplotlib.pyplot as plt
-            >>> from sksurv.datasets import load_veterans_lung_cancer
-            >>> from sksurv.preprocessing import OneHotEncoder
-            >>> from sksurv.linear_model import CoxPHSurvivalAnalysis
-
-            Load the data and encode categorical features.
-
-            >>> X, y = load_veterans_lung_cancer()
-            >>> Xt = OneHotEncoder().fit_transform(X)
-
-            Fit the model.
-
-            >>> estimator = CoxPHSurvivalAnalysis().fit(Xt, y)
-
-            Estimate the survival function for the first 10 samples.
-
-            >>> surv_funcs = estimator.predict_survival_function(Xt.iloc[:10])
-
-            Plot the estimated survival functions.
-
-            >>> for fn in surv_funcs:
-            ...     plt.step(fn.x, fn(fn.x), where="post")
-            ...
-            >>> plt.ylim(0, 1)
-            >>> plt.show()  # doctest: +SKIP
         """
         return self._predict_survival_function(self._baseline_model, self.predict(X), return_array)
