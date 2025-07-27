@@ -409,16 +409,16 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         return baseline_model
 
     def predict_cumulative_hazard_function(self, X, alpha=None, return_array=False):
-        """Predict cumulative hazard function.
+        r"""Predict cumulative hazard function.
 
         Only available if :meth:`fit` has been called with `fit_baseline_model = True`.
 
         The cumulative hazard function for an individual
-        with feature vector :math:`x_\\alpha` is defined as
+        with feature vector :math:`x_\alpha` is defined as
 
         .. math::
 
-            H(t \\mid x_\\alpha) = \\exp(x_\\alpha^\\top \\beta) H_0(t) ,
+            H(t \mid x_\alpha) = \exp(x_\alpha^\top \beta) H_0(t) ,
 
         where :math:`H_0(t)` is the baseline hazard function,
         estimated by Breslow's estimator.
@@ -455,39 +455,43 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Examples
         --------
-        >>> import matplotlib.pyplot as plt
-        >>> from sksurv.datasets import load_breast_cancer
-        >>> from sksurv.preprocessing import OneHotEncoder
-        >>> from sksurv.linear_model import CoxnetSurvivalAnalysis
+        .. plot::
 
-        Load and prepare the data.
+            >>> import matplotlib.pyplot as plt
+            >>> from sksurv.datasets import load_breast_cancer
+            >>> from sksurv.preprocessing import OneHotEncoder
+            >>> from sksurv.linear_model import CoxnetSurvivalAnalysis
 
-        >>> X, y = load_breast_cancer()
-        >>> X = OneHotEncoder().fit_transform(X)
+            Load and prepare the data.
 
-        Fit the model.
+            >>> X, y = load_breast_cancer()
+            >>> X = OneHotEncoder().fit_transform(X)
 
-        >>> estimator = CoxnetSurvivalAnalysis(l1_ratio=0.99, fit_baseline_model=True)
-        >>> estimator.fit(X, y)
+            Fit the model.
 
-        Estimate the cumulative hazard function for one sample and the five highest alpha.
+            >>> estimator = CoxnetSurvivalAnalysis(
+            ...     l1_ratio=0.99, fit_baseline_model=True
+            ... ).fit(X, y)
 
-        >>> chf_funcs = {}
-        >>> for alpha in estimator.alphas_[:5]:
-        ...     chf_funcs[alpha] = estimator.predict_cumulative_hazard_function(
-        ...         X.iloc[:1], alpha=alpha)
-        ...
+            Estimate the cumulative hazard function for one sample and the five highest alpha.
 
-        Plot the estimated cumulative hazard functions.
+            >>> chf_funcs = {}
+            >>> for alpha in estimator.alphas_[:5]:
+            ...     chf_funcs[alpha] = estimator.predict_cumulative_hazard_function(
+            ...         X.iloc[:1], alpha=alpha)
+            ...
 
-        >>> for alpha, chf_alpha in chf_funcs.items():
-        ...     for fn in chf_alpha:
-        ...         plt.step(fn.x, fn(fn.x), where="post",
-        ...                  label=f"alpha = {alpha:.3f}")
-        ...
-        >>> plt.ylim(0, 1)
-        >>> plt.legend()
-        >>> plt.show()
+            Plot the estimated cumulative hazard functions.
+
+            >>> for alpha, chf_alpha in chf_funcs.items():
+            ...     for fn in chf_alpha:
+            ...         plt.step(fn.x, fn(fn.x), where="post",
+            ...                  label=f"alpha = {alpha:.3f}")
+            ...
+            [...]
+            >>> plt.legend()
+            <matplotlib.legend.Legend object at 0x...>
+            >>> plt.show()  # doctest: +SKIP
         """
         baseline_model = self._get_baseline_model(alpha)
         return self._predict_cumulative_hazard_function(baseline_model, self.predict(X, alpha=alpha), return_array)
@@ -540,39 +544,45 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Examples
         --------
-        >>> import matplotlib.pyplot as plt
-        >>> from sksurv.datasets import load_breast_cancer
-        >>> from sksurv.preprocessing import OneHotEncoder
-        >>> from sksurv.linear_model import CoxnetSurvivalAnalysis
+        .. plot::
 
-        Load and prepare the data.
+            >>> import matplotlib.pyplot as plt
+            >>> from sksurv.datasets import load_breast_cancer
+            >>> from sksurv.preprocessing import OneHotEncoder
+            >>> from sksurv.linear_model import CoxnetSurvivalAnalysis
 
-        >>> X, y = load_breast_cancer()
-        >>> X = OneHotEncoder().fit_transform(X)
+            Load and prepare the data.
 
-        Fit the model.
+            >>> X, y = load_breast_cancer()
+            >>> X = OneHotEncoder().fit_transform(X)
 
-        >>> estimator = CoxnetSurvivalAnalysis(l1_ratio=0.99, fit_baseline_model=True)
-        >>> estimator.fit(X, y)
+            Fit the model.
 
-        Estimate the survival function for one sample and the five highest alpha.
+            >>> estimator = CoxnetSurvivalAnalysis(
+            ...     l1_ratio=0.99, fit_baseline_model=True
+            ... ).fit(X, y)
 
-        >>> surv_funcs = {}
-        >>> for alpha in estimator.alphas_[:5]:
-        ...     surv_funcs[alpha] = estimator.predict_survival_function(
-        ...         X.iloc[:1], alpha=alpha)
-        ...
+            Estimate the survival function for one sample and the five highest alpha.
 
-        Plot the estimated survival functions.
+            >>> surv_funcs = {}
+            >>> for alpha in estimator.alphas_[:5]:
+            ...     surv_funcs[alpha] = estimator.predict_survival_function(
+            ...         X.iloc[:1], alpha=alpha)
+            ...
 
-        >>> for alpha, surv_alpha in surv_funcs.items():
-        ...     for fn in surv_alpha:
-        ...         plt.step(fn.x, fn(fn.x), where="post",
-        ...                  label=f"alpha = {alpha:.3f}")
-        ...
-        >>> plt.ylim(0, 1)
-        >>> plt.legend()
-        >>> plt.show()
+            Plot the estimated survival functions.
+
+            >>> for alpha, surv_alpha in surv_funcs.items():
+            ...     for fn in surv_alpha:
+            ...         plt.step(fn.x, fn(fn.x), where="post",
+            ...                  label=f"alpha = {alpha:.3f}")
+            ...
+            [...]
+            >>> plt.ylim(0, 1)
+            (0.0, 1.0)
+            >>> plt.legend()
+            <matplotlib.legend.Legend object at 0x...>
+            >>> plt.show()  # doctest: +SKIP
         """
         baseline_model = self._get_baseline_model(alpha)
         return self._predict_survival_function(baseline_model, self.predict(X, alpha=alpha), return_array)

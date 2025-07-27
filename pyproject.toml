@@ -71,6 +71,7 @@ formatting = [
 # See https://docs.readthedocs.io/en/latest/faq.html#i-get-import-errors-on-libraries-that-depend-on-c-modules
 docs = [
     "ipython !=8.7.0",
+    "matplotlib~=3.9.0",
     "nbsphinx>=0.9.2",
     "docutils",
     "setuptools-scm",
@@ -125,6 +126,8 @@ target-version = ["py310"]
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "--strict-markers"
+doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
+norecursedirs = ".* *.egg build dist venv {arch} eigen"
 testpaths = ["tests"]
 filterwarnings = [
     # Treat all warnings as errors other than the ignored ones
@@ -250,6 +253,10 @@ pass_env = ["RUFF_*"]
 
 [tool.tox.env.docs]
 description = "Build documentation"
+pass_env = [
+    "MACOSX_DEPLOYMENT_TARGET",
+    "CXXFLAGS",
+]
 dependency_groups = [
     "docs",
 ]

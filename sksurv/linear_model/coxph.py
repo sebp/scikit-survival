@@ -21,6 +21,7 @@ from sklearn.utils._param_validation import Interval, StrOptions
 from sklearn.utils.validation import check_array, check_is_fitted, validate_data
 
 from ..base import SurvivalAnalysisMixin
+from ..docstrings import append_cumulative_hazard_example, append_survival_function_example
 from ..functions import StepFunction
 from ..nonparametric import _compute_counts
 from ..util import check_array_survival
@@ -545,15 +546,16 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         return np.dot(X, self.coef_)
 
+    @append_cumulative_hazard_example(estimator_mod="linear_model", estimator_class="CoxPHSurvivalAnalysis")
     def predict_cumulative_hazard_function(self, X, return_array=False):
-        """Predict cumulative hazard function.
+        r"""Predict cumulative hazard function.
 
         The cumulative hazard function for an individual
         with feature vector :math:`x` is defined as
 
         .. math::
 
-            H(t \\mid x) = \\exp(x^\\top \\beta) H_0(t) ,
+            H(t \mid x) = \exp(x^\top \beta) H_0(t) ,
 
         where :math:`H_0(t)` is the baseline hazard function,
         estimated by Breslow's estimator.
@@ -586,42 +588,19 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Examples
         --------
-        >>> import matplotlib.pyplot as plt
-        >>> from sksurv.datasets import load_whas500
-        >>> from sksurv.linear_model import CoxPHSurvivalAnalysis
-
-        Load the data.
-
-        >>> X, y = load_whas500()
-        >>> X = X.astype(float)
-
-        Fit the model.
-
-        >>> estimator = CoxPHSurvivalAnalysis().fit(X, y)
-
-        Estimate the cumulative hazard function for the first 10 samples.
-
-        >>> chf_funcs = estimator.predict_cumulative_hazard_function(X.iloc[:10])
-
-        Plot the estimated cumulative hazard functions.
-
-        >>> for fn in chf_funcs:
-        ...     plt.step(fn.x, fn(fn.x), where="post")
-        ...
-        >>> plt.ylim(0, 1)
-        >>> plt.show()
         """
         return self._predict_cumulative_hazard_function(self._baseline_model, self.predict(X), return_array)
 
+    @append_survival_function_example(estimator_mod="linear_model", estimator_class="CoxPHSurvivalAnalysis")
     def predict_survival_function(self, X, return_array=False):
-        """Predict survival function.
+        r"""Predict survival function.
 
         The survival function for an individual
         with feature vector :math:`x` is defined as
 
         .. math::
 
-            S(t \\mid x) = S_0(t)^{\\exp(x^\\top \\beta)} ,
+            S(t \mid x) = S_0(t)^{\exp(x^\top \beta)} ,
 
         where :math:`S_0(t)` is the baseline survival function,
         estimated by Breslow's estimator.
@@ -654,29 +633,5 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Examples
         --------
-        >>> import matplotlib.pyplot as plt
-        >>> from sksurv.datasets import load_whas500
-        >>> from sksurv.linear_model import CoxPHSurvivalAnalysis
-
-        Load the data.
-
-        >>> X, y = load_whas500()
-        >>> X = X.astype(float)
-
-        Fit the model.
-
-        >>> estimator = CoxPHSurvivalAnalysis().fit(X, y)
-
-        Estimate the survival function for the first 10 samples.
-
-        >>> surv_funcs = estimator.predict_survival_function(X.iloc[:10])
-
-        Plot the estimated survival functions.
-
-        >>> for fn in surv_funcs:
-        ...     plt.step(fn.x, fn(fn.x), where="post")
-        ...
-        >>> plt.ylim(0, 1)
-        >>> plt.show()
         """
         return self._predict_survival_function(self._baseline_model, self.predict(X), return_array)
