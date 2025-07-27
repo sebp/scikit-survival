@@ -11,6 +11,8 @@ else
   pytest_opts+=(-m 'not slow')
 fi
 
+pytest --doctest-modules --doctest-continue-on-failure --pyargs sksurv
+
 coverage run -m pytest "${pytest_opts[@]}"
 
 coverage xml
