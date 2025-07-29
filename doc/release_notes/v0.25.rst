@@ -1,0 +1,44 @@
+.. _release_notes_0_25:
+
+What's new in 0.25
+==================
+
+scikit-survival 0.25.0 (2025-XX-XX)
+-----------------------------------
+
+.. important::
+
+    This are the release notes are for a future release and work in progress.
+
+This release adds support for scikit-learn 1.7 and overhauls the API documentation to improve clarity and consistency.
+
+Enhancements
+^^^^^^^^^^^^
+
+- Add support for scikit-learn 1.7 (:issue:`532`).
+- Move `tox` configuration to `pyproject.toml`.
+- Add PEP 735 dependency groups for optional dependencies.
+- Modernize C++ syntax in the `coxnet` model, improving code clarity and maintainability (:issue:`526`).
+- Add `license-files` field to `pyproject.toml` (PEP 639).
+- Add artifact attestation for sdist and wheel files.
+- Update CI infrastructure to use the latest runners and tools, including `check-jsonschema`, `ruff`, and `uv`.
+- Update CI infrastructure to use miniforge to avoid licensing issues related to Anaconda's default channels (:issue:`542`).
+
+Documentation
+^^^^^^^^^^^^^
+
+- Overhaul the entire API documentation for improved clarity, consistency, and user experience.
+  This includes updated docstrings for all major modules, including :doc:`ensemble </api/ensemble>`,
+  :doc:`linear_model </api/linear_model>`,
+  :doc:`svm </api/svm>`,
+  :doc:`tree </api/tree>`,
+  :doc:`metrics </api/metrics>`,
+  and :doc:`nonparametric </api/nonparametric>` (:issue:`539`).
+- For examples with matplotlib plots, include the plot as a static image in the documentation (:issue:`543`).
+- Clarify what inputs each metric expects and add a graphical overview to :doc:`/user_guide/evaluating-survival-models` (:issue:`535`).
+- Clarify the calculation of the ``deviance_ratio_`` in :class:`sksurv.linear_model.CoxnetSurvivalAnalysis` with a detailed mathematical definition (:issue:`541`).
+- Standardize the description of the structured survival array ``y`` across the library.
+- Clarify that an exception is raised for out-of-range test times when the censoring distribution cannot be estimated (:issue:`524`).
+- Explain how the ``alphas`` sequence is automatically generated in :class:`sksurv.linear_model.CoxnetSurvivalAnalysis`.
+- Fix pandas warnings in example code.
+- Update links to external documentation, including scikit-learn and numpy.
