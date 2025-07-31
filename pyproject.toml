@@ -253,10 +253,6 @@ pass_env = ["RUFF_*"]
 
 [tool.tox.env.docs]
 description = "Build documentation"
-pass_env = [
-    "MACOSX_DEPLOYMENT_TARGET",
-    "CXXFLAGS",
-]
 dependency_groups = [
     "docs",
 ]
