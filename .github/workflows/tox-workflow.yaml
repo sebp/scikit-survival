@@ -7,7 +7,7 @@ jobs:
     name: Linting and Docs
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: true
       - name: Install third-party tools
