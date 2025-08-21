@@ -3,14 +3,11 @@
 What's new in 0.25
 ==================
 
-scikit-survival 0.25.0 (2025-XX-XX)
+scikit-survival 0.25.0 (2025-08-21)
 -----------------------------------
 
-.. important::
-
-    This are the release notes are for a future release and work in progress.
-
-This release adds support for scikit-learn 1.7 and overhauls the API documentation to improve clarity and consistency.
+This release adds support for scikit-learn 1.7 and overhauls the
+:doc:`API documentation </api/index>` to improve clarity and consistency.
 
 Enhancements
 ^^^^^^^^^^^^
@@ -23,6 +20,8 @@ Enhancements
 - Add artifact attestation for sdist and wheel files.
 - Update CI infrastructure to use the latest runners and tools, including `check-jsonschema`, `ruff`, and `uv`.
 - Update CI infrastructure to use miniforge to avoid licensing issues related to Anaconda's default channels (:issue:`542`).
+- Add running doctest to CI.
+- Bump versions of dependencies on Binder.
 
 Documentation
 ^^^^^^^^^^^^^
