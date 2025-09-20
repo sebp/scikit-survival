@@ -92,7 +92,7 @@ def test_standardize(in_data, expected):
 
 class CategoricalCases(FixtureParameterFactory):
     def _make_randn(self, shape):
-        return np.random.RandomState(0).randn(shape)
+        return np.random.default_rng(0).standard_normal(shape)
 
     @property
     def mixed_data_frame(self):

@@ -14,13 +14,13 @@ from sksurv.util import Surv, _PropertyAvailableIfDescriptor, property_available
 class ConcatCasesFactory(FixtureParameterFactory):
     @property
     def rnd(self):
-        return np.random.RandomState(14)
+        return np.random.default_rng(14)
 
     def to_data_frame(self, data):
         return pd.DataFrame.from_dict(OrderedDict(data))
 
     def make_numeric_series(self, name):
-        return pd.Series(self.rnd.randn(100), name=name)
+        return pd.Series(self.rnd.standard_normal(100), name=name)
 
     def make_categorical_5_series(self, name):
         return pd.Series(
@@ -155,8 +155,9 @@ def test_concat_axis_0(inputs, expected_df, expected_error):
 class SurvCases(FixtureParameterFactory):
     @property
     def event_and_time(self):
-        event = np.random.binomial(1, 0.5, size=100)
-        time = np.exp(np.random.randn(100))
+        rng = np.random.default_rng()
+        event = rng.binomial(1, 0.5, size=100)
+        time = np.exp(rng.standard_normal(100))
         return event, time
 
 

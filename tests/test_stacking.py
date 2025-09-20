@@ -117,7 +117,7 @@ class TestStackingClassifier:
     def test_fit_sample_weights(iris_data_with_estimator):
         x, y, meta = iris_data_with_estimator()
 
-        sample_weight = np.random.RandomState(0).uniform(size=x.shape[0])
+        sample_weight = np.random.default_rng(0).uniform(size=x.shape[0])
         meta.fit(x, y, tree__sample_weight=sample_weight, svm__sample_weight=sample_weight)
 
     @staticmethod

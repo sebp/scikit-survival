@@ -27,8 +27,8 @@ def _encoded_data(data):
 @pytest.fixture()
 def create_data():
     def _create_data(n_samples=117):
-        rnd = np.random.RandomState(51365192)
-        data_num = pd.DataFrame(rnd.rand(n_samples, 5), columns=[f"N{i}" for i in range(5)])
+        rnd = np.random.default_rng(51365192)
+        data_num = pd.DataFrame(rnd.random((n_samples, 5)), columns=[f"N{i}" for i in range(5)])
 
         dat_cat = pd.DataFrame(
             OrderedDict(

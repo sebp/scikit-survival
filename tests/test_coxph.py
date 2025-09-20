@@ -50,7 +50,7 @@ def assert_gradient_correctness(cph):
         cph.update(x)
         return cph.gradient
 
-    coef = np.random.RandomState(9).randn(cph.x.shape[1])
+    coef = np.random.default_rng(9).standard_normal(cph.x.shape[1])
 
     err = check_grad(cph.nlog_likelihood, grad, coef)
 
@@ -925,7 +925,8 @@ class TestCoxPH:
         with pytest.raises(ValueError, match="dtype='numeric' is not compatible with arrays of bytes/strings"):
             cph.fit(rossi.x.values, rossi.y)
 
-        alphas = np.random.randn(rossi.x.shape[1], 3, 4)
+        rng = np.random.default_rng()
+        alphas = rng.standard_normal((rossi.x.shape[1], 3, 4))
         cph.set_params(alpha=alphas)
         with pytest.raises(
             ValueError,

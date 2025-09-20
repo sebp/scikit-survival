@@ -40,7 +40,7 @@ def breast_cancer():
 
 @pytest.fixture()
 def toy_data():
-    rnd = np.random.RandomState(1)
+    rnd = np.random.default_rng(1)
     n_samples = 500
     X = np.empty((n_samples, 4), dtype=float)
     X[:, :2] = rnd.normal(scale=2, size=(n_samples, 2))
@@ -626,7 +626,8 @@ def test_predict_wrong_features(toy_data, n_features):
     tree = SurvivalTree(max_depth=1)
     tree.fit(X, y)
 
-    X_new = np.random.randn(12, n_features)
+    rng = np.random.default_rng()
+    X_new = rng.standard_normal((12, n_features))
     with pytest.raises(
         ValueError, match=f"X has {n_features} features, but SurvivalTree is expecting 4 features as input."
     ):
@@ -779,7 +780,7 @@ def test_predict_sparse(make_whas500):
     # Duplicates values in whas500 leads to assert errors because of
     # tie resolution during tree fitting.
     # Using a synthetic dataset resolves this issue.
-    X = np.random.RandomState(seed).binomial(n=5, p=0.1, size=X.shape)
+    X = np.random.default_rng(seed).binomial(n=5, p=0.1, size=X.shape)
 
     X_train, X_test, y_train, _ = train_test_split(X, y, random_state=seed)
 

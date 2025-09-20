@@ -56,11 +56,11 @@ def temp_file_pair():
 
 
 def _make_features(n_samples, n_features, seed):
-    return np.random.RandomState(seed).randn(n_samples, n_features)
+    return np.random.default_rng(seed).standard_normal((n_samples, n_features))
 
 
 def _make_survival_data(n_samples, n_features, seed):
-    rnd = np.random.RandomState(seed)
+    rnd = np.random.default_rng(seed)
 
     x = _make_features(n_samples, n_features, seed)
     event = rnd.binomial(1, 0.2, n_samples)
@@ -69,7 +69,7 @@ def _make_survival_data(n_samples, n_features, seed):
 
 
 def _make_classification_data(n_samples, n_features, n_classes, seed):
-    rnd = np.random.RandomState(seed)
+    rnd = np.random.default_rng(seed)
 
     x = _make_features(n_samples, n_features, seed)
     y = rnd.binomial(n_classes - 1, 0.2, 100)
@@ -283,7 +283,7 @@ def _make_and_write_data(fp, n_samples, n_features, with_index, with_labels, see
 
     if with_index:
         index = np.arange(n_samples, dtype=float)
-        np.random.RandomState(0).shuffle(index)
+        np.random.default_rng(0).shuffle(index)
     else:
         index = None
 

@@ -110,11 +110,12 @@ class TestGradientBoosting:
 
     def test_predict_incorrect_features(self):
         model = self.assert_fit_and_predict(expected_cindex=None)
+        rng = np.random.default_rng()
         with pytest.raises(
             ValueError,
             match="X has 2 features, but GradientBoostingSurvivalAnalysis is expecting 14 features as input.",
         ):
-            model.predict(np.random.randn(10, 2))
+            model.predict(rng.standard_normal((10, 2)))
 
     def test_fit_subsample(self):
         idx = np.array(
