@@ -41,12 +41,12 @@ def test_fit_predict(make_whas500, forest_cls, expected_c):
 
 
 @pytest.mark.parametrize(
-    "forest_cls,expected_cindex", [(ExtraSurvivalTrees, 0.7486232588273405), (RandomSurvivalForest, 0.7444120505344995)]
+    "forest_cls,expected_cindex", [(ExtraSurvivalTrees, 0.7379332685455134), (RandomSurvivalForest, 0.732102364755426)]
 )
 def test_fit_missing_values(make_whas500, forest_cls, expected_cindex):
     whas500 = make_whas500(to_numeric=True)
 
-    rng = np.random.RandomState(42)
+    rng = np.random.default_rng(42)
     mask = rng.binomial(n=1, p=0.15, size=whas500.x.shape)
     mask = mask.astype(bool)
     X = whas500.x.copy()
@@ -367,7 +367,7 @@ def test_predict_sparse(make_whas500, forest_cls):
     seed = 42
     whas500 = make_whas500(to_numeric=True)
     X, y = whas500.x, whas500.y
-    X = np.random.RandomState(seed).binomial(n=5, p=0.1, size=X.shape)
+    X = np.random.default_rng(seed).binomial(n=5, p=0.1, size=X.shape)
 
     X_train, X_test, y_train, _ = train_test_split(X, y, random_state=seed)
 

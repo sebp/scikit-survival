@@ -36,7 +36,8 @@ def test_survival_functions(estimator, make_whas500):
 @pytest.mark.parametrize("estimator", all_survival_function_estimators())
 @pytest.mark.parametrize("y_time", [-1e-8, -1, np.finfo(float).min])
 def test_fit_negative_survial_time_raises(estimator, y_time):
-    X = np.random.randn(7, 3)
+    rng = np.random.default_rng()
+    X = rng.standard_normal((7, 3))
     y = Surv.from_arrays(event=np.ones(7, dtype=bool), time=[1, 9, 3, y_time, 1, 8, 1e10])
 
     with pytest.raises(ValueError, match="observed time contains values smaller zero"):

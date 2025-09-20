@@ -2404,7 +2404,7 @@ def make_aids():
 
 @pytest.fixture()
 def truncated_failure_data():
-    rnd = np.random.RandomState(2016)
+    rnd = np.random.default_rng(2016)
     time_exit = rnd.uniform(1, 100, size=25)
     time_enter = time_exit + 1
     event = rnd.binomial(1, 0.6, size=25).astype(bool)
@@ -2415,7 +2415,8 @@ def truncated_failure_data():
 def random_survival_data():
     event = np.ones(10, dtype=bool)
     event[:5] = False
-    return Surv.from_arrays(event=event, time=np.random.rand(10))
+    rng = np.random.default_rng()
+    return Surv.from_arrays(event=event, time=rng.random(10))
 
 
 @pytest.fixture()
@@ -2852,12 +2853,13 @@ class TestKaplanMeier:
         with pytest.raises(ValueError, match="dtype='numeric' is not compatible with arrays of bytes/strings"):
             est.predict_proba(np.array(["should", "not", "work"]))
 
+        rng = np.random.default_rng()
         with pytest.raises(
             ValueError,
             match=r"Found array with dim 3(\. SurvivalFunctionEstimator expected <= 2"
             r"|, while dim <= 2 is required by SurvivalFunctionEstimator)\.",
         ):
-            est.predict_proba(np.random.randn(10, 9, 5))
+            est.predict_proba(rng.standard_normal((10, 9, 5)))
 
     @staticmethod
     @pytest.mark.parametrize("conf_level", [None, -1, 1.0, 3.0, np.inf, np.nan])

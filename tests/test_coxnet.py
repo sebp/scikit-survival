@@ -1424,7 +1424,8 @@ class TestCoxnetSurvivalAnalysis:
     def test_predict_func_no_such_alpha(self):
         x, coxnet = self._fit(l1_ratio=0.9, n_alphas=11, alpha_min_ratio=0.001, fit_baseline_model=True)
 
-        for a in 1.0 + np.random.randn(100):
+        rng = np.random.default_rng()
+        for a in 1.0 + rng.standard_normal(100):
             with pytest.raises(ValueError, match=r"alpha must be one value of alphas_: \[.+"):
                 coxnet.predict_cumulative_hazard_function(x, alpha=a)
 

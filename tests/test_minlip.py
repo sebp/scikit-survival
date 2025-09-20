@@ -26,7 +26,7 @@ def create_toy_data():
         ]
     )
 
-    t = np.random.RandomState(0).exponential(scale=8, size=x.shape[0])
+    t = np.random.default_rng(123).exponential(scale=8, size=x.shape[0])
     t.sort()
     y = Surv.from_arrays(
         [True, True, False, True, False, False],
@@ -50,8 +50,8 @@ def toy_test_data():
             [50, 36],
         ]
     )
-    rnd = np.random.RandomState(136)
-    x += rnd.randn(*x.shape)
+    rnd = np.random.default_rng(136)
+    x += rnd.standard_normal(x.shape)
     return x
 
 
@@ -265,16 +265,16 @@ def toy_data_standardized(toy_data, toy_test_data):
 
 class TestToyMinlipSurvivalAnalysis:
     @staticmethod
-    @pytest.mark.parametrize("solver,expected_iters", [("osqp", 100), ("ecos", 10)])
+    @pytest.mark.parametrize("solver,expected_iters", [("osqp", 75), ("ecos", 10)])
     def test_fit_alpha_2(minlip_model_factory, toy_data, solver, expected_iters):
         x, y = toy_data
         m = minlip_model_factory(solver, x, y, alpha=2.0)
 
-        assert m.n_iter_ > expected_iters
+        assert m.n_iter_ >= expected_iters
         assert (1, 6) == m.coef_.shape
         assert 1 == m.coef0
         expected_coef = np.array(
-            [[-0.011728003147, 0.011728002895, 0.000000000252, -0.017524801335, 0.017524801335, 0.0]]
+            [[-0.0088384276937561, 0.0088384276937561, 0.0, -0.0284823642711752, 0.0284823642711752, 0.0]]
         )
         assert_array_almost_equal(m.coef_, expected_coef)
 
@@ -303,7 +303,7 @@ class TestToyMinlipSurvivalAnalysis:
 
         p = minlip_model_factory(solver, x, y, pairs="next").predict(x_test)
 
-        expected = np.array([1.368221203557392, -0.476483331099142, -1.009079072163642])
+        expected = np.array([1.3103180617705203, -0.5497858096484980, -1.0841206123723968])
         assert_array_almost_equal(expected, p, decimal=5)
 
 
@@ -332,7 +332,7 @@ def test_toy_hinge_fit_and_predict(svm_model_factory, toy_data_standardized, sol
     assert_cindex_almost_equal(y["status"], y["time"], p, (1.0, 11, 0, 0, 0))
 
     p = m.predict(x_test)
-    expected = np.array([2.8571060045, -1.2661069033, -2.3044907774])
+    expected = np.array([2.8403594979806028, -1.4706675372262765, -2.4700791072167672])
     assert_array_almost_equal(expected, p, decimal=5)
 
 

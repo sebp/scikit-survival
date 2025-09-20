@@ -16,9 +16,9 @@ def a_step_function():
 
 @pytest.fixture()
 def toy_data_exponential():
-    rnd = np.random.RandomState(2)
+    rnd = np.random.default_rng(2)
     n_samples = 100
-    x = rnd.randn(n_samples, 2)
+    x = rnd.standard_normal((n_samples, 2))
     y = np.empty(n_samples, dtype=[("event", bool), ("time", float)])
     y["time"] = rnd.exponential(scale=np.exp(x[:, 0]), size=n_samples)
     y["event"] = rnd.binomial(1, 0.5, size=n_samples) == 1

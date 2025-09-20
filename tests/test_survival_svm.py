@@ -497,7 +497,7 @@ class TestFastSurvivalSVM:
     @pytest.mark.slow()
     def test_fit_timeit(make_whas500, optimizer_any):
         whas500 = make_whas500(to_numeric=True)
-        idx = np.random.RandomState(0).choice(np.arange(whas500.x.shape[0]), replace=False, size=100)
+        idx = np.random.default_rng(0).choice(np.arange(whas500.x.shape[0]), replace=False, size=100)
 
         ssvm = FastSurvivalSVM(optimizer=optimizer_any, timeit=3, random_state=0)
         ssvm.fit(whas500.x[idx, :], whas500.y[idx])
@@ -522,7 +522,7 @@ class TestKernelSurvivalSVM:
         assert whas500.x.shape[0] == ssvm.coef_.shape[0]
 
         i = np.arange(250)
-        np.random.RandomState(0).shuffle(i)
+        np.random.default_rng(0).shuffle(i)
         c = ssvm.score(x[i], whas500.y[i])
         assert c == pytest.approx(0.76923445664157997)
 
@@ -550,7 +550,7 @@ class TestKernelSurvivalSVM:
         assert float(ssvm.intercept_) == pytest.approx(6.416017539824949, 1e-5)
 
         i = np.arange(250)
-        np.random.RandomState(0).shuffle(i)
+        np.random.default_rng(0).shuffle(i)
         pred = ssvm.predict(x[i])
         rmse = np.sqrt(mean_squared_error(whas500.y["lenfol"][i], pred))
         assert rmse <= 1342.274550652291 + 0.293
@@ -717,7 +717,8 @@ class TestKernelSurvivalSVM:
     @staticmethod
     def test_fit_precomputed_kernel_not_symmetric():
         ssvm = FastKernelSurvivalSVM(optimizer="rbtree", kernel="precomputed", random_state=0)
-        x = np.random.randn(100, 100)
+        rng = np.random.default_rng()
+        x = rng.standard_normal((100, 100))
         x[10, 12] = -1
         x[12, 10] = 9
         y = Surv.from_arrays(np.ones(100).astype(bool), np.ones(100))
@@ -732,7 +733,8 @@ class TestKernelSurvivalSVM:
         x = np.dot(whas500.x, whas500.x.T)
         ssvm.fit(x, whas500.y)
 
-        x_new = np.random.randn(100, 14)
+        rng = np.random.default_rng()
+        x_new = rng.standard_normal((100, 14))
         with pytest.raises(
             ValueError,
             match=r"Precomputed metric requires shape \(n_queries, n_indexed\)\. Got \(100, 14\) for 500 indexed\.",

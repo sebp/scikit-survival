@@ -22,7 +22,8 @@ def pytest_configure(config):
 
 @pytest.fixture()
 def fake_data():
-    x = np.random.randn(100, 11)
+    rng = np.random.default_rng()
+    x = rng.standard_normal((100, 11))
     y = Surv.from_arrays(np.ones(100, dtype=bool), np.arange(1, 101, dtype=float))
     return x, y
 

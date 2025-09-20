@@ -140,12 +140,13 @@ class TestClinicalKernel:
     @staticmethod
     def test_fit_error_ndim():
         t = ClinicalKernelTransform()
+        rng = np.random.default_rng()
 
         with pytest.raises(ValueError, match="expected 2d array, but got 1"):
-            t.fit(np.random.randn(31))
+            t.fit(rng.standard_normal(31))
 
         with pytest.raises(ValueError, match="expected 2d array, but got 3"):
-            t.fit(np.random.randn(31, 20, 2))
+            t.fit(rng.standard_normal((31, 20, 2)))
 
     @staticmethod
     def test_kernel_transform(make_data):

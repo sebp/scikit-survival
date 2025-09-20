@@ -74,7 +74,8 @@ def no_comparable_pairs():
         ],
         dtype=[("event", bool), ("time", float)],
     )
-    scores = np.random.randn(y.shape[0])
+    rng = np.random.default_rng()
+    scores = rng.standard_normal(y.shape[0])
     return y, scores
 
 
@@ -909,7 +910,8 @@ class UnoCAucFailureCases(BaseUnoCAucCases):
 
 @pytest.mark.parametrize("y_train,y_test,times,match", UnoCAucFailureCases().get_cases())
 def test_uno_auc_failure(y_train, y_test, times, match):
-    estimate = np.random.randn(y_test.shape[0])
+    rng = np.random.default_rng()
+    estimate = rng.standard_normal(y_test.shape[0])
     with pytest.raises(ValueError, match=match):
         cumulative_dynamic_auc(y_train, y_test, estimate, times)
 
@@ -1078,7 +1080,7 @@ def test_brier_coxph():
 
 def test_brier_score_int_dtype():
     times = np.arange(1, 31, dtype=int)
-    rnd = np.random.RandomState(1)
+    rnd = np.random.default_rng(1)
     times = rnd.choice(times, 20)
 
     y_int = np.empty(20, dtype=[("event", bool), ("time", int)])
@@ -1086,7 +1088,7 @@ def test_brier_score_int_dtype():
     y_int["event"][:10] = False
     y_int["time"] = times
 
-    pred = rnd.randn(20, 10)
+    pred = rnd.standard_normal((20, 10))
     tp = np.linspace(1.0, 2.0, 10)
     _, bs_int = brier_score(y_int, y_int, pred, times=tp)
 
