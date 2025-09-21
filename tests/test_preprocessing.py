@@ -51,6 +51,28 @@ def create_data():
     return _create_data
 
 
+@pytest.fixture()
+def create_object_data():
+    def _create_data(n_samples=97):
+        rnd = np.random.default_rng(882)
+        data = pd.DataFrame(
+            OrderedDict(
+                [
+                    ("answer", np.array(["Yes", "No"])[rnd.binomial(1, 0.6, n_samples)]),
+                    ("direction", np.array(["East", "North", "West", "South"])[rnd.integers(4, size=n_samples)]),
+                    ("color", np.array(["Green", "Blue", "Red"])[rnd.integers(3, size=n_samples)]),
+                ]
+            )
+        )
+
+        data_cat = data.copy()
+        for col in data.columns:
+            data_cat[col] = data_cat[col].astype("category")
+        return data, _encoded_data(data_cat)
+
+    return _create_data
+
+
 class TestOneHotEncoder:
     @staticmethod
     def test_fit(create_data):
@@ -143,3 +165,58 @@ class TestOneHotEncoder:
         data_renamed = data.rename(columns={"binary_1": "renamed_1", "many": "too_many"})
         with pytest.raises(ValueError, match=r"2 features are missing from data: \['binary_1', 'many'\]"):
             t.transform(data_renamed)
+
+    @staticmethod
+    def test_fit_transform_object_dtype(create_object_data):
+        data, expected = create_object_data()
+
+        t = OneHotEncoder()
+        transformed = t.fit_transform(data)
+
+        assert t.feature_names_in_.tolist() == ["answer", "direction", "color"]
+
+        assert t.get_feature_names_out().tolist() == [
+            "answer=Yes",
+            "direction=North",
+            "direction=South",
+            "direction=West",
+            "color=Green",
+            "color=Red",
+        ]
+
+        tm.assert_frame_equal(transformed, expected)
+
+    @pytest.mark.parametrize("n_rows_transform", [1, 2, 3, 4, 5, 10, 15, 20, 39])
+    @staticmethod
+    def test_fit_transform_mixed_dtype(create_data, create_object_data, n_rows_transform):
+        data_cat, expected_cat = create_data(101)
+        data_obj, expected_obj = create_object_data(101)
+
+        data = pd.concat((data_cat, data_obj), axis=1)
+        expected = pd.concat((expected_cat, expected_obj), axis=1)
+
+        data_fit = data.iloc[n_rows_transform:]
+        data_transform = data.iloc[:n_rows_transform]
+        expected_transformed = expected.iloc[:n_rows_transform]
+
+        t = OneHotEncoder().fit(data_fit)
+
+        assert t.feature_names_in_.tolist() == [
+            "N0",
+            "N1",
+            "N2",
+            "N3",
+            "N4",
+            "binary_1",
+            "binary_2",
+            "trinary",
+            "many",
+            "answer",
+            "direction",
+            "color",
+        ]
+
+        transformed = t.transform(data_transform)
+        assert transformed.shape[0] == n_rows_transform
+
+        tm.assert_frame_equal(transformed, expected_transformed)
