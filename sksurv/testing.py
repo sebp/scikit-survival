@@ -106,3 +106,10 @@ class FixtureParameterFactory:
                 values = func()
                 cases.append(pytest.param(*values, id=name))
         return cases
+
+    def get_cases_func(self):
+        cases = []
+        for name, func in inspect.getmembers(self):
+            if name.startswith("data_"):
+                cases.append(pytest.param(func, id=name))
+        return cases

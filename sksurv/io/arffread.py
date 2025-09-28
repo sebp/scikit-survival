@@ -12,6 +12,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import pandas as pd
+from pandas.api.types import is_string_dtype
 from scipy.io.arff import loadarff as scipy_loadarff
 
 __all__ = ["loadarff"]
@@ -34,7 +35,8 @@ def _to_pandas(data, meta):
             data_dict[name] = pd.Categorical(raw, categories=attr_format, ordered=False)
         else:
             arr = data[name]
-            p = pd.Series(arr, dtype=arr.dtype)
+            dtype = "str" if is_string_dtype(arr.dtype) else arr.dtype
+            p = pd.Series(arr, dtype=dtype)
             data_dict[name] = p
 
     # currently, this step converts all pandas.Categorial columns back to pandas.Series

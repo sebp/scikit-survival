@@ -117,7 +117,7 @@ def compare_survival(y, group_indicator, return_stats=False):
         table["expected"] = expected
         table["statistic"] = observed - expected
         table = pd.DataFrame.from_dict(table)
-        table.index = pd.Index(groups, name="group", dtype=groups.dtype)
+        table.index = pd.Index(groups, name="group")
         return chisq, pval, table, covar
 
     return chisq, pval

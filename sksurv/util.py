@@ -345,7 +345,7 @@ def safe_concat(objs, *args, **kwargs):
                         raise ValueError(f"categories for column {name} do not match")
                 else:
                     categories[name] = {"categories": s.cat.categories, "ordered": s.cat.ordered}
-                df[name] = df[name].astype(object)
+                df[name] = df[name].astype("str")
 
     concatenated = pd.concat(objs, *args, axis=axis, **kwargs)
 

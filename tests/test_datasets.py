@@ -216,59 +216,71 @@ def assert_structured_array_dtype(arr, event, time, num_events):
 
 
 class TestLoadDatasets:
+    @pytest.mark.parametrize("infer_string", [False, True])
     @staticmethod
-    def test_load_whas500():
-        x, y = sdata.load_whas500()
-        assert x.shape == (500, 14)
-        assert y.shape == (500,)
-        assert_structured_array_dtype(y, "fstat", "lenfol", 215)
+    def test_load_whas500(infer_string):
+        with pd.option_context("future.infer_string", infer_string):
+            x, y = sdata.load_whas500()
+            assert x.shape == (500, 14)
+            assert y.shape == (500,)
+            assert_structured_array_dtype(y, "fstat", "lenfol", 215)
 
+    @pytest.mark.parametrize("infer_string", [False, True])
     @staticmethod
-    def test_load_gbsg2():
-        x, y = sdata.load_gbsg2()
-        assert x.shape == (686, 8)
-        assert y.shape == (686,)
-        assert_structured_array_dtype(y, "cens", "time", 299)
+    def test_load_gbsg2(infer_string):
+        with pd.option_context("future.infer_string", infer_string):
+            x, y = sdata.load_gbsg2()
+            assert x.shape == (686, 8)
+            assert y.shape == (686,)
+            assert_structured_array_dtype(y, "cens", "time", 299)
 
+    @pytest.mark.parametrize("infer_string", [False, True])
     @staticmethod
-    def test_load_veterans_lung_cancer():
-        x, y = sdata.load_veterans_lung_cancer()
-        assert x.shape == (137, 6)
-        assert y.shape == (137,)
-        assert_structured_array_dtype(y, "Status", "Survival_in_days", 128)
+    def test_load_veterans_lung_cancer(infer_string):
+        with pd.option_context("future.infer_string", infer_string):
+            x, y = sdata.load_veterans_lung_cancer()
+            assert x.shape == (137, 6)
+            assert y.shape == (137,)
+            assert_structured_array_dtype(y, "Status", "Survival_in_days", 128)
 
+    @pytest.mark.parametrize("infer_string", [False, True])
     @staticmethod
-    def test_load_aids():
-        x, y = sdata.load_aids(endpoint="aids")
-        assert x.shape == (1151, 11)
-        assert y.shape == (1151,)
-        assert_structured_array_dtype(y, "censor", "time", 96)
-        assert "censor_d" not in x.columns
-        assert "time_d" not in x.columns
+    def test_load_aids(infer_string):
+        with pd.option_context("future.infer_string", infer_string):
+            x, y = sdata.load_aids(endpoint="aids")
+            assert x.shape == (1151, 11)
+            assert y.shape == (1151,)
+            assert_structured_array_dtype(y, "censor", "time", 96)
+            assert "censor_d" not in x.columns
+            assert "time_d" not in x.columns
 
-        x, y = sdata.load_aids(endpoint="death")
-        assert x.shape == (1151, 11)
-        assert y.shape == (1151,)
-        assert_structured_array_dtype(y, "censor_d", "time_d", 26)
-        assert "censor" not in x.columns
-        assert "time" not in x.columns
+            x, y = sdata.load_aids(endpoint="death")
+            assert x.shape == (1151, 11)
+            assert y.shape == (1151,)
+            assert_structured_array_dtype(y, "censor_d", "time_d", 26)
+            assert "censor" not in x.columns
+            assert "time" not in x.columns
 
-        with pytest.raises(ValueError, match="endpoint must be 'aids' or 'death'"):
-            sdata.load_aids(endpoint="foobar")
+            with pytest.raises(ValueError, match="endpoint must be 'aids' or 'death'"):
+                sdata.load_aids(endpoint="foobar")
 
+    @pytest.mark.parametrize("infer_string", [False, True])
     @staticmethod
-    def test_load_breast_cancer():
-        x, y = sdata.load_breast_cancer()
-        assert x.shape == (198, 80)
-        assert y.shape == (198,)
-        assert_structured_array_dtype(y, "e.tdm", "t.tdm", 51)
+    def test_load_breast_cancer(infer_string):
+        with pd.option_context("future.infer_string", infer_string):
+            x, y = sdata.load_breast_cancer()
+            assert x.shape == (198, 80)
+            assert y.shape == (198,)
+            assert_structured_array_dtype(y, "e.tdm", "t.tdm", 51)
 
+    @pytest.mark.parametrize("infer_string", [False, True])
     @staticmethod
-    def test_load_flchain():
-        x, y = sdata.load_flchain()
-        assert x.shape == (7874, 9)
-        assert y.shape == (7874,)
-        assert_structured_array_dtype(y, "death", "futime", 2169)
+    def test_load_flchain(infer_string):
+        with pd.option_context("future.infer_string", infer_string):
+            x, y = sdata.load_flchain()
+            assert x.shape == (7874, 9)
+            assert y.shape == (7874,)
+            assert_structured_array_dtype(y, "death", "futime", 2169)
 
 
 def _make_and_write_data(fp, n_samples, n_features, with_index, with_labels, seed, column_prefix="V"):
@@ -328,7 +340,7 @@ class LoadArffFilesCases(FixtureParameterFactory):
 
     def data_with_categorical_index_1(self):
         values = ["SampleOne", "SampleTwo", "SampleThree", "SampleFour"]
-        index = pd.Index(values, name="index", dtype=object)
+        index = pd.Index(values, name="index", dtype="str")
         x = pd.DataFrame.from_dict(
             {
                 "size": pd.Series(
@@ -365,7 +377,7 @@ class LoadArffFilesCases(FixtureParameterFactory):
 
     def data_with_categorical_index_2(self):
         values = ["ASampleOne", "ASampleTwo", "ASampleThree", "ASampleFour", "ASampleFive"]
-        index = pd.Index(values, name="index", dtype=object)
+        index = pd.Index(values, name="index", dtype="str")
 
         y = pd.DataFrame.from_dict(
             {
@@ -418,35 +430,35 @@ class LoadArffFilesCases(FixtureParameterFactory):
         return args, kwargs, x_train, y_train, x_test, y_test
 
 
-@pytest.mark.parametrize(
-    "args,kwargs,x_train_expected,y_train_expected,x_test_expected,y_test_expected",
-    LoadArffFilesCases().get_cases(),
-)
-def test_load_arff_files(
-    args,
-    kwargs,
-    x_train_expected,
-    y_train_expected,
-    x_test_expected,
-    y_test_expected,
-):
-    x_train, y_train, x_test, y_test = sdata.load_arff_files_standardized(
-        *args,
-        **kwargs,
-    )
+@pytest.mark.parametrize("infer_string", [False, True])
+@pytest.mark.parametrize("make_data_fn", LoadArffFilesCases().get_cases_func())
+def test_load_arff_files(make_data_fn, infer_string):
+    with pd.option_context("future.infer_string", infer_string):
+        (
+            args,
+            kwargs,
+            x_train_expected,
+            y_train_expected,
+            x_test_expected,
+            y_test_expected,
+        ) = make_data_fn()
+        x_train, y_train, x_test, y_test = sdata.load_arff_files_standardized(
+            *args,
+            **kwargs,
+        )
 
-    tm.assert_frame_equal(x_train, x_train_expected, check_exact=True)
-    tm.assert_frame_equal(y_train, y_train_expected, check_exact=True)
+        tm.assert_frame_equal(x_train, x_train_expected, check_exact=True)
+        tm.assert_frame_equal(y_train, y_train_expected, check_exact=True)
 
-    if x_test_expected is None:
-        assert x_test is None
-    else:
-        tm.assert_frame_equal(x_test, x_test_expected, check_exact=True)
+        if x_test_expected is None:
+            assert x_test is None
+        else:
+            tm.assert_frame_equal(x_test, x_test_expected, check_exact=True)
 
-    if y_test_expected is None:
-        assert y_test is None
-    else:
-        tm.assert_frame_equal(y_test, y_test_expected, check_exact=True)
+        if y_test_expected is None:
+            assert y_test is None
+        else:
+            tm.assert_frame_equal(y_test, y_test_expected, check_exact=True)
 
 
 class LoadArffFilesWithTempFileCases(FixtureParameterFactory):
@@ -499,53 +511,60 @@ class LoadArffFilesWithTempFileCases(FixtureParameterFactory):
         )
 
 
-@pytest.mark.parametrize(
-    "args_train,kwargs_train,args_test,kwargs_test,errors_expected", LoadArffFilesWithTempFileCases().get_cases()
-)
-def test_load_from_temp_file(args_train, kwargs_train, args_test, kwargs_test, errors_expected, temp_file_pair):
-    tmp_train, tmp_test = temp_file_pair
+@pytest.mark.parametrize("infer_string", [False, True])
+@pytest.mark.parametrize("make_data_fn", LoadArffFilesWithTempFileCases().get_cases_func())
+def test_load_from_temp_file(make_data_fn, temp_file_pair, infer_string):
+    with pd.option_context("future.infer_string", infer_string):
+        (
+            args_train,
+            kwargs_train,
+            args_test,
+            kwargs_test,
+            errors_expected,
+        ) = make_data_fn()
+        tmp_train, tmp_test = temp_file_pair
 
-    train_dataset = _make_and_write_data(tmp_train, *args_train, **kwargs_train)
-    if args_test is not None:
-        test_dataset = _make_and_write_data(tmp_test, *args_test, **kwargs_test)
-        path_testing = tmp_test.name
-        check_y_test = args_test[-2]  # with_label
-    else:
-        test_dataset = None
-        path_testing = None
-        check_y_test = False
-        tmp_test.close()
-
-    with ExitStack() as stack:
-        for error_expected in errors_expected:
-            stack.enter_context(error_expected)
-        x_train, y_train, x_test, y_test = sdata.load_arff_files_standardized(
-            tmp_train.name,
-            ["event", "time"],
-            1,
-            path_testing=path_testing,
-            survival=True,
-            standardize_numeric=False,
-            to_numeric=False,
-        )
-
-    if all(not isinstance(err, does_not_raise) for err in errors_expected):
-        return
-
-    cols = ["event", "time"]
-
-    x_true = train_dataset.drop(cols, axis=1)
-    assert_x_equal(x_true, x_train)
-    assert_y_equal(train_dataset, y_train)
-
-    if test_dataset is not None:
-        x_true = test_dataset
-        if check_y_test:
-            assert_y_equal(test_dataset, y_test)
-            x_true = test_dataset.drop(cols, axis=1)
+        train_dataset = _make_and_write_data(tmp_train, *args_train, **kwargs_train)
+        if args_test is not None:
+            test_dataset = _make_and_write_data(tmp_test, *args_test, **kwargs_test)
+            path_testing = tmp_test.name
+            check_y_test = args_test[-2]  # with_label
         else:
+            test_dataset = None
+            path_testing = None
+            check_y_test = False
+            tmp_test.close()
+
+        with ExitStack() as stack:
+            for error_expected in errors_expected:
+                stack.enter_context(error_expected)
+            x_train, y_train, x_test, y_test = sdata.load_arff_files_standardized(
+                tmp_train.name,
+                ["event", "time"],
+                1,
+                path_testing=path_testing,
+                survival=True,
+                standardize_numeric=False,
+                to_numeric=False,
+            )
+
+        if all(not isinstance(err, does_not_raise) for err in errors_expected):
+            return
+
+        cols = ["event", "time"]
+
+        x_true = train_dataset.drop(cols, axis=1)
+        assert_x_equal(x_true, x_train)
+        assert_y_equal(train_dataset, y_train)
+
+        if test_dataset is not None:
+            x_true = test_dataset
+            if check_y_test:
+                assert_y_equal(test_dataset, y_test)
+                x_true = test_dataset.drop(cols, axis=1)
+            else:
+                assert y_test is None
+            assert_x_equal(x_true, x_test)
+        else:
+            assert x_test is None
             assert y_test is None
-        assert_x_equal(x_true, x_test)
-    else:
-        assert x_test is None
-        assert y_test is None

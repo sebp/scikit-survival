@@ -14,7 +14,7 @@ import logging
 
 import numpy as np
 import pandas as pd
-from pandas.api.types import CategoricalDtype, is_object_dtype
+from pandas.api.types import CategoricalDtype, is_string_dtype
 
 __all__ = ["categorical_to_numeric", "encode_categorical", "standardize"]
 
@@ -118,12 +118,12 @@ def encode_categorical(table, columns=None, **kwargs):
         Numeric columns in the input table remain unchanged.
     """
     if isinstance(table, pd.Series):
-        if not isinstance(table.dtype, CategoricalDtype) and not is_object_dtype(table.dtype):
+        if not isinstance(table.dtype, CategoricalDtype) and not is_string_dtype(table.dtype):
             raise TypeError(f"series must be of categorical dtype, but was {table.dtype}")
         return _encode_categorical_series(table, **kwargs)
 
     def _is_categorical_or_object(series):
-        return isinstance(series.dtype, CategoricalDtype) or is_object_dtype(series.dtype)
+        return isinstance(series.dtype, CategoricalDtype) or is_string_dtype(series.dtype)
 
     if columns is None:
         # for columns containing categories
@@ -187,13 +187,12 @@ def categorical_to_numeric(table):
     def transform(column):
         if isinstance(column.dtype, CategoricalDtype):
             return column.cat.codes
-        if is_object_dtype(column.dtype):
+        if is_string_dtype(column.dtype):
             try:
                 nc = column.astype(np.int64)
             except ValueError:
                 classes = column.dropna().unique()
-                classes.sort(kind="mergesort")
-                nc = column.map(dict(zip(classes, range(classes.shape[0]))))
+                nc = column.map(dict(zip(sorted(classes), range(classes.shape[0]))))
             return nc
         if column.dtype == bool:
             return column.astype(np.int64)

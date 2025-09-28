@@ -116,7 +116,7 @@ def _loadarff_with_index(filename):
         if isinstance(dataset["index"].dtype, CategoricalDtype):
             # concatenating categorical index may raise TypeError
             # see https://github.com/pandas-dev/pandas/issues/14586
-            dataset["index"] = dataset["index"].astype(object)
+            dataset["index"] = dataset["index"].astype("str")
         dataset.set_index("index", inplace=True)
     return dataset
 
