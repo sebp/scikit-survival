@@ -249,10 +249,6 @@ class EncodeCategoricalCases(CategoricalCases):
 
 @pytest.mark.parametrize("infer_string", [False, True])
 @pytest.mark.parametrize("make_data_fn", EncodeCategoricalCases().get_cases_func())
-@pytest.mark.filterwarnings(
-    "ignore:In a future version, the Index constructor will not infer numeric dtypes when "
-    "passed object-dtype sequences \\(matching Series behavior\\):FutureWarning"
-)  # deprecated in pandas 1.4.0
 def test_encode_categorical(make_data_fn, infer_string):
     with pd.option_context("future.infer_string", infer_string):
         inputs, kwargs, expected_df = make_data_fn()
