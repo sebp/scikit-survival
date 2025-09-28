@@ -793,7 +793,7 @@ class TestCoxPH:
 
         X["grade"] = pd.Series(
             pd.Categorical(
-                X["grade"].astype(object), categories=["intermediate", "poorly differentiated", "well differentiated"]
+                X["grade"].astype("str"), categories=["intermediate", "poorly differentiated", "well differentiated"]
             ),
             index=X.index,
             name="grade",

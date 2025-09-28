@@ -10,7 +10,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from pandas.api.types import CategoricalDtype
+import pandas as pd
+from pandas.api.types import CategoricalDtype, is_string_dtype
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import _check_feature_names, _check_feature_names_in, _check_n_features, check_is_fitted
 
@@ -128,7 +129,13 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         """
         _check_feature_names(self, X, reset=True)
         _check_n_features(self, X, reset=True)
-        columns_to_encode = X.select_dtypes(include=["object", "category"]).columns
+
+        def is_string_or_categorical_dtype(dtype):
+            return is_string_dtype(dtype) or isinstance(dtype, CategoricalDtype)
+
+        columns_to_encode = pd.Index(
+            [name for name, dtype in X.dtypes.items() if is_string_or_categorical_dtype(dtype)]
+        )
         x_dummy = self._encode(X, columns_to_encode)
 
         self.feature_names_ = columns_to_encode

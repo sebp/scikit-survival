@@ -7,7 +7,7 @@ import pandas.testing as tm
 import pytest
 
 from sksurv.io import loadarff, writearff
-from sksurv.testing import FixtureParameterFactory
+from sksurv.testing import FixtureParameterFactory, get_pandas_infer_string_context
 
 EXPECTED_1 = [
     "@relation test_nominal\n",
@@ -109,34 +109,42 @@ class DataFrameCases(FixtureParameterFactory):
         return data, "test_datetime", EXPECTED_DATETIME.copy()
 
 
-def test_loadarff_dataframe():
-    contents = "".join(EXPECTED_NO_QUOTES)
-    with StringIO(contents) as fp:
-        actual_df = loadarff(fp)
+@pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
+def test_loadarff_dataframe(infer_string_context):
+    with infer_string_context:
+        contents = "".join(EXPECTED_NO_QUOTES)
+        with StringIO(contents) as fp:
+            actual_df = loadarff(fp)
 
-    expected_df = pd.DataFrame.from_dict(
-        OrderedDict(
-            [
-                ("attr_nominal", pd.Series(pd.Categorical.from_codes([1, 2, 0, -1, 2, 1], ["beer", "water", "wine"]))),
-                (
-                    "attr_nominal_spaces",
-                    pd.Series(pd.Categorical.from_codes([2, 0, -1, 1, 0, 1], ["hard liquor", "mate", "red wine"])),
-                ),
-            ]
+        expected_df = pd.DataFrame.from_dict(
+            OrderedDict(
+                [
+                    (
+                        "attr_nominal",
+                        pd.Series(pd.Categorical.from_codes([1, 2, 0, -1, 2, 1], ["beer", "water", "wine"])),
+                    ),
+                    (
+                        "attr_nominal_spaces",
+                        pd.Series(pd.Categorical.from_codes([2, 0, -1, 1, 0, 1], ["hard liquor", "mate", "red wine"])),
+                    ),
+                ]
+            )
         )
-    )
 
-    tm.assert_frame_equal(expected_df, actual_df, check_exact=True)
+        tm.assert_frame_equal(expected_df, actual_df, check_exact=True)
 
 
-@pytest.mark.parametrize("data_frame,relation_name,expectation", DataFrameCases().get_cases())
-def test_writearff(data_frame, relation_name, expectation, temp_file):
-    writearff(data_frame, temp_file, relation_name=relation_name, index=False)
+@pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
+@pytest.mark.parametrize("make_data_fn", DataFrameCases().get_cases_func())
+def test_writearff(make_data_fn, temp_file, infer_string_context):
+    with infer_string_context:
+        data_frame, relation_name, expectation = make_data_fn()
+        writearff(data_frame, temp_file, relation_name=relation_name, index=False)
 
-    with open(temp_file.name) as fp:
-        read_date = fp.readlines()
+        with open(temp_file.name) as fp:
+            read_date = fp.readlines()
 
-    assert expectation == read_date
+        assert expectation == read_date
 
 
 def test_writearff_unsupported_column_type(temp_file):

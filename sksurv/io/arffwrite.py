@@ -15,7 +15,7 @@ import re
 
 import numpy as np
 import pandas as pd
-from pandas.api.types import CategoricalDtype, is_object_dtype
+from pandas.api.types import CategoricalDtype, is_string_dtype
 
 _ILLEGAL_CHARACTER_PAT = re.compile(r"[^-_=\w\d\(\)<>\.]")
 
@@ -106,7 +106,7 @@ def _write_header(data, fp, relation_name, index):
         name = attribute_names[column]
         fp.write(f"@attribute {name}\t")
 
-        if isinstance(series.dtype, CategoricalDtype) or is_object_dtype(series):
+        if isinstance(series.dtype, CategoricalDtype) or is_string_dtype(series.dtype):
             _write_attribute_categorical(series, fp)
         elif np.issubdtype(series.dtype, np.floating):
             fp.write("real")
