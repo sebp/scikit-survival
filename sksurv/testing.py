@@ -10,13 +10,17 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from contextlib import nullcontext
 from importlib import import_module
+from importlib.metadata import PackageNotFoundError, version
 import inspect
 from pathlib import Path
 import pkgutil
 
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_array_equal
+from packaging.version import parse
+import pandas as pd
 import pytest
 from sklearn.base import BaseEstimator, TransformerMixin
 
@@ -113,3 +117,39 @@ class FixtureParameterFactory:
             if name.startswith("data_"):
                 cases.append(pytest.param(func, id=name))
         return cases
+
+
+def check_module_minimum_version(module, version_str):
+    """
+    Check whether a module of a specified minimum version is available.
+
+    Parameters
+    ----------
+    module : str
+        Name of the module.
+    version_str : str
+        Minimum version of the module.
+
+    Returns
+    -------
+    available : bool
+        True if the module is available and its version is >= `version_str`.
+    """
+    try:
+        module_version = parse(version(module))
+        required_version = parse(version_str)
+        return module_version >= required_version
+    except PackageNotFoundError:  # pragma: no cover
+        return False
+
+
+def get_pandas_infer_string_context():
+    if check_module_minimum_version("pandas", "2.3.0"):
+        return (
+            pytest.param(pd.option_context("future.infer_string", False), id="infer_string=False"),
+            pytest.param(pd.option_context("future.infer_string", True), id="infer_string=True"),
+        )
+    return (
+        pytest.param(nullcontext(), id="pandas default options"),
+        pytest.param(nullcontext(), marks=pytest.mark.skip("no pandas 2.3.0")),
+    )

@@ -7,7 +7,7 @@ import pandas.testing as tm
 import pytest
 
 from sksurv.io import loadarff, writearff
-from sksurv.testing import FixtureParameterFactory
+from sksurv.testing import FixtureParameterFactory, get_pandas_infer_string_context
 
 EXPECTED_1 = [
     "@relation test_nominal\n",
@@ -109,9 +109,9 @@ class DataFrameCases(FixtureParameterFactory):
         return data, "test_datetime", EXPECTED_DATETIME.copy()
 
 
-@pytest.mark.parametrize("infer_string", [False, True])
-def test_loadarff_dataframe(infer_string):
-    with pd.option_context("future.infer_string", infer_string):
+@pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
+def test_loadarff_dataframe(infer_string_context):
+    with infer_string_context:
         contents = "".join(EXPECTED_NO_QUOTES)
         with StringIO(contents) as fp:
             actual_df = loadarff(fp)
@@ -134,10 +134,10 @@ def test_loadarff_dataframe(infer_string):
         tm.assert_frame_equal(expected_df, actual_df, check_exact=True)
 
 
-@pytest.mark.parametrize("infer_string", [False, True])
+@pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
 @pytest.mark.parametrize("make_data_fn", DataFrameCases().get_cases_func())
-def test_writearff(make_data_fn, temp_file, infer_string):
-    with pd.option_context("future.infer_string", infer_string):
+def test_writearff(make_data_fn, temp_file, infer_string_context):
+    with infer_string_context:
         data_frame, relation_name, expectation = make_data_fn()
         writearff(data_frame, temp_file, relation_name=relation_name, index=False)
 

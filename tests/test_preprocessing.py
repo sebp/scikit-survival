@@ -7,6 +7,7 @@ import pandas.testing as tm
 import pytest
 
 from sksurv.preprocessing import OneHotEncoder
+from sksurv.testing import get_pandas_infer_string_context
 
 
 def _encoded_data(data):
@@ -74,10 +75,10 @@ def create_string_data():
 
 
 class TestOneHotEncoder:
-    @pytest.mark.parametrize("infer_string", [False, True])
+    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
     @staticmethod
-    def test_fit(create_categorical_data, infer_string):
-        with pd.option_context("future.infer_string", infer_string):
+    def test_fit(create_categorical_data, infer_string_context):
+        with infer_string_context:
             data, expected_data = create_categorical_data()
 
             t = OneHotEncoder().fit(data)
@@ -87,19 +88,19 @@ class TestOneHotEncoder:
 
             assert t.categories_ == {k: data[k].cat.categories for k in ["binary_1", "binary_2", "trinary", "many"]}
 
-    @pytest.mark.parametrize("infer_string", [False, True])
+    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
     @staticmethod
-    def test_fit_transform(create_categorical_data, infer_string):
-        with pd.option_context("future.infer_string", infer_string):
+    def test_fit_transform(create_categorical_data, infer_string_context):
+        with infer_string_context:
             data, expected_data = create_categorical_data()
 
             actual_data = OneHotEncoder().fit_transform(data)
             tm.assert_frame_equal(actual_data, expected_data)
 
-    @pytest.mark.parametrize("infer_string", [False, True])
+    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
     @staticmethod
-    def test_transform(create_categorical_data, infer_string):
-        with pd.option_context("future.infer_string", infer_string):
+    def test_transform(create_categorical_data, infer_string_context):
+        with infer_string_context:
             data, _ = create_categorical_data()
 
             t = OneHotEncoder().fit(data)
@@ -111,10 +112,10 @@ class TestOneHotEncoder:
             actual_data = t.transform(data)
             tm.assert_frame_equal(actual_data, expected_data)
 
-    @pytest.mark.parametrize("infer_string", [False, True])
+    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
     @staticmethod
-    def test_get_feature_names_out(create_categorical_data, infer_string):
-        with pd.option_context("future.infer_string", infer_string):
+    def test_get_feature_names_out(create_categorical_data, infer_string_context):
+        with infer_string_context:
             data, expected_data = create_categorical_data()
 
             t = OneHotEncoder()
@@ -123,10 +124,10 @@ class TestOneHotEncoder:
             out_names = t.get_feature_names_out()
             assert_array_equal(out_names, expected_data.columns.values)
 
-    @pytest.mark.parametrize("infer_string", [False, True])
+    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
     @staticmethod
-    def test_get_feature_names_out_shuffled(create_categorical_data, infer_string):
-        with pd.option_context("future.infer_string", infer_string):
+    def test_get_feature_names_out_shuffled(create_categorical_data, infer_string_context):
+        with infer_string_context:
             data, _ = create_categorical_data()
             order = np.array(["binary_1", "N0", "N3", "trinary", "binary_2", "N1", "N2", "many"])
             expected_columns = np.array(
@@ -156,10 +157,10 @@ class TestOneHotEncoder:
             with pytest.raises(ValueError, match="input_features is not equal to feature_names_in_"):
                 t.get_feature_names_out(data.columns.tolist())
 
-    @pytest.mark.parametrize("infer_string", [False, True])
+    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
     @staticmethod
-    def test_transform_other_columns(create_categorical_data, infer_string):
-        with pd.option_context("future.infer_string", infer_string):
+    def test_transform_other_columns(create_categorical_data, infer_string_context):
+        with infer_string_context:
             data, _ = create_categorical_data()
 
             t = OneHotEncoder().fit(data)
@@ -178,10 +179,10 @@ class TestOneHotEncoder:
             with pytest.raises(ValueError, match=r"2 features are missing from data: \['binary_1', 'many'\]"):
                 t.transform(data_renamed)
 
-    @pytest.mark.parametrize("infer_string", [False, True])
+    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
     @staticmethod
-    def test_fit_transform_string_dtype(create_string_data, infer_string):
-        with pd.option_context("future.infer_string", infer_string):
+    def test_fit_transform_string_dtype(create_string_data, infer_string_context):
+        with infer_string_context:
             data, expected = create_string_data()
 
             t = OneHotEncoder()
@@ -200,11 +201,13 @@ class TestOneHotEncoder:
 
             tm.assert_frame_equal(transformed, expected)
 
-    @pytest.mark.parametrize("infer_string", [False, True])
+    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
     @pytest.mark.parametrize("n_rows_transform", [1, 2, 3, 4, 5, 10, 15, 20, 39])
     @staticmethod
-    def test_fit_transform_mixed_dtype(create_categorical_data, create_string_data, n_rows_transform, infer_string):
-        with pd.option_context("future.infer_string", infer_string):
+    def test_fit_transform_mixed_dtype(
+        create_categorical_data, create_string_data, n_rows_transform, infer_string_context
+    ):
+        with infer_string_context:
             data_cat, expected_cat = create_categorical_data(101)
             data_obj, expected_obj = create_string_data(101)
 

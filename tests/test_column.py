@@ -5,7 +5,7 @@ import pandas.testing as tm
 import pytest
 
 from sksurv import column
-from sksurv.testing import FixtureParameterFactory
+from sksurv.testing import FixtureParameterFactory, get_pandas_infer_string_context
 
 
 class StandardizeCase(FixtureParameterFactory):
@@ -247,10 +247,10 @@ class EncodeCategoricalCases(CategoricalCases):
         return input_df, kwargs, expected_df
 
 
-@pytest.mark.parametrize("infer_string", [False, True])
+@pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
 @pytest.mark.parametrize("make_data_fn", EncodeCategoricalCases().get_cases_func())
-def test_encode_categorical(make_data_fn, infer_string):
-    with pd.option_context("future.infer_string", infer_string):
+def test_encode_categorical(make_data_fn, infer_string_context):
+    with infer_string_context:
         inputs, kwargs, expected_df = make_data_fn()
         actual_df = column.encode_categorical(inputs, **kwargs)
         tm.assert_frame_equal(actual_df.isnull(), expected_df.isnull())
@@ -300,10 +300,10 @@ class CategoricalToNumeric(CategoricalCases):
         return input_df, expected
 
 
-@pytest.mark.parametrize("infer_string", [False, True])
+@pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
 @pytest.mark.parametrize("make_data_fn", CategoricalToNumeric().get_cases_func())
-def test_categorical_to_numeric(make_data_fn, infer_string):
-    with pd.option_context("future.infer_string", infer_string):
+def test_categorical_to_numeric(make_data_fn, infer_string_context):
+    with infer_string_context:
         input_df, expected = make_data_fn()
         actual = column.categorical_to_numeric(input_df)
 

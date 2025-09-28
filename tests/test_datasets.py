@@ -12,7 +12,7 @@ import pytest
 
 import sksurv.datasets as sdata
 from sksurv.io import writearff
-from sksurv.testing import FixtureParameterFactory
+from sksurv.testing import FixtureParameterFactory, get_pandas_infer_string_context
 
 ARFF_CATEGORICAL_INDEX_1 = """@relation arff_categorical_index
 @attribute index {SampleOne,SampleTwo,SampleThree,SampleFour}
@@ -216,37 +216,37 @@ def assert_structured_array_dtype(arr, event, time, num_events):
 
 
 class TestLoadDatasets:
-    @pytest.mark.parametrize("infer_string", [False, True])
+    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
     @staticmethod
-    def test_load_whas500(infer_string):
-        with pd.option_context("future.infer_string", infer_string):
+    def test_load_whas500(infer_string_context):
+        with infer_string_context:
             x, y = sdata.load_whas500()
             assert x.shape == (500, 14)
             assert y.shape == (500,)
             assert_structured_array_dtype(y, "fstat", "lenfol", 215)
 
-    @pytest.mark.parametrize("infer_string", [False, True])
+    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
     @staticmethod
-    def test_load_gbsg2(infer_string):
-        with pd.option_context("future.infer_string", infer_string):
+    def test_load_gbsg2(infer_string_context):
+        with infer_string_context:
             x, y = sdata.load_gbsg2()
             assert x.shape == (686, 8)
             assert y.shape == (686,)
             assert_structured_array_dtype(y, "cens", "time", 299)
 
-    @pytest.mark.parametrize("infer_string", [False, True])
+    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
     @staticmethod
-    def test_load_veterans_lung_cancer(infer_string):
-        with pd.option_context("future.infer_string", infer_string):
+    def test_load_veterans_lung_cancer(infer_string_context):
+        with infer_string_context:
             x, y = sdata.load_veterans_lung_cancer()
             assert x.shape == (137, 6)
             assert y.shape == (137,)
             assert_structured_array_dtype(y, "Status", "Survival_in_days", 128)
 
-    @pytest.mark.parametrize("infer_string", [False, True])
+    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
     @staticmethod
-    def test_load_aids(infer_string):
-        with pd.option_context("future.infer_string", infer_string):
+    def test_load_aids(infer_string_context):
+        with infer_string_context:
             x, y = sdata.load_aids(endpoint="aids")
             assert x.shape == (1151, 11)
             assert y.shape == (1151,)
@@ -264,19 +264,19 @@ class TestLoadDatasets:
             with pytest.raises(ValueError, match="endpoint must be 'aids' or 'death'"):
                 sdata.load_aids(endpoint="foobar")
 
-    @pytest.mark.parametrize("infer_string", [False, True])
+    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
     @staticmethod
-    def test_load_breast_cancer(infer_string):
-        with pd.option_context("future.infer_string", infer_string):
+    def test_load_breast_cancer(infer_string_context):
+        with infer_string_context:
             x, y = sdata.load_breast_cancer()
             assert x.shape == (198, 80)
             assert y.shape == (198,)
             assert_structured_array_dtype(y, "e.tdm", "t.tdm", 51)
 
-    @pytest.mark.parametrize("infer_string", [False, True])
+    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
     @staticmethod
-    def test_load_flchain(infer_string):
-        with pd.option_context("future.infer_string", infer_string):
+    def test_load_flchain(infer_string_context):
+        with infer_string_context:
             x, y = sdata.load_flchain()
             assert x.shape == (7874, 9)
             assert y.shape == (7874,)
@@ -430,10 +430,10 @@ class LoadArffFilesCases(FixtureParameterFactory):
         return args, kwargs, x_train, y_train, x_test, y_test
 
 
-@pytest.mark.parametrize("infer_string", [False, True])
+@pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
 @pytest.mark.parametrize("make_data_fn", LoadArffFilesCases().get_cases_func())
-def test_load_arff_files(make_data_fn, infer_string):
-    with pd.option_context("future.infer_string", infer_string):
+def test_load_arff_files(make_data_fn, infer_string_context):
+    with infer_string_context:
         (
             args,
             kwargs,
@@ -511,10 +511,10 @@ class LoadArffFilesWithTempFileCases(FixtureParameterFactory):
         )
 
 
-@pytest.mark.parametrize("infer_string", [False, True])
+@pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
 @pytest.mark.parametrize("make_data_fn", LoadArffFilesWithTempFileCases().get_cases_func())
-def test_load_from_temp_file(make_data_fn, temp_file_pair, infer_string):
-    with pd.option_context("future.infer_string", infer_string):
+def test_load_from_temp_file(make_data_fn, temp_file_pair, infer_string_context):
+    with infer_string_context:
         (
             args_train,
             kwargs_train,
