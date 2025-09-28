@@ -5,7 +5,6 @@ image: Visual Studio 2022
 environment:
   # see https://www.appveyor.com/docs/build-environment/#python
   matrix:
-    - CONDA_PY: "310"
     - CONDA_PY: "311"
     - CONDA_PY: "312"
     - CONDA_PY: "313"
