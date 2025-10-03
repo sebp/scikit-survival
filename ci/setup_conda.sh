@@ -11,17 +11,17 @@ run_check_sha() {
 
 if [[ "${MINIFORGE:-}" = "" ]]; then
     # download and install conda
-    MINIFORGE_VERSION="25.3.0-3"
+    MINIFORGE_VERSION="25.3.1-0"
 
     if [[ "${RUNNER_OS}" = "macOS" ]] && [[ "${RUNNER_ARCH}" = "ARM64" ]]; then
         MINIFORGE_FILENAME="${MINIFORGE_VERSION}-MacOSX-arm64"
-        MINIFORGE_HASH="16205127ac2b5701881636229b7fe42e1f961007513b8673f8064da331e496a0"
+        MINIFORGE_HASH="d9eabd1868030589a1d74017b8723b01cf81b5fec1b9da8021b6fa44be7bbeae"
     elif [[ "${RUNNER_OS}" = "macOS" ]] && [[ "${RUNNER_ARCH}" = "X64" ]]; then
         MINIFORGE_FILENAME="${MINIFORGE_VERSION}-MacOSX-x86_64"
-        MINIFORGE_HASH="c562e11d8f9caca3dcfb9ba6d5043b9238975d271751e12c3fbfc2a472b4b8fb"
+        MINIFORGE_HASH="6c09a3550bb65bdb6d3db6f6c2b890b987b57189f3b71c67a5af49943d2522e8"
     elif [[ "${RUNNER_OS}" = "Linux" ]] && [[ "${RUNNER_ARCH}" = "X64" ]]; then
         MINIFORGE_FILENAME="${MINIFORGE_VERSION}-Linux-x86_64"
-        MINIFORGE_HASH="1b57f8cb991982063f79b56176881093abb1dc76d73fda32102afde60585b5a1"
+        MINIFORGE_HASH="376b160ed8130820db0ab0f3826ac1fc85923647f75c1b8231166e3d559ab768"
     else
         echo "Unsupported OS or ARCH: ${RUNNER_OS} ${RUNNER_ARCH}"
         exit 1
