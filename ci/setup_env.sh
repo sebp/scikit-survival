@@ -14,7 +14,7 @@ fi
 
 python ci/render-requirements.py ci/deps/requirements.yaml.tmpl > environment.yaml
 
-conda env create -n sksurv-test --file environment.yaml
+mamba env create -n sksurv-test --file environment.yaml
 
 echo "numpy ${CI_NUMPY_VERSION:?}" > "${MINIFORGE:?}/envs/sksurv-test/conda-meta/pinned"
 echo "pandas ${CI_PANDAS_VERSION:?}" >> "${MINIFORGE:?}/envs/sksurv-test/conda-meta/pinned"
@@ -29,4 +29,4 @@ source activate sksurv-test
 # delete any version that is already installed
 pip uninstall --yes scikit-survival || exit 0
 
-conda list -n sksurv-test
+mamba list -n sksurv-test

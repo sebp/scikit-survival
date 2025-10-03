@@ -54,7 +54,6 @@ fi
 sudo chown -R "${USER}" "${CONDA_PKGS_DIR}" || \
 exit 1
 
-sudo "${MINIFORGE}/bin/conda" update -q -n base conda && \
 sudo chown -R "${USER}" "${MINIFORGE}" || \
 exit 1
 
