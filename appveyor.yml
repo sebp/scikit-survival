@@ -33,7 +33,7 @@ install:
   - ps: "& $envScript"
   - ps: python "ci\render-requirements.py" "ci\deps\requirements.yaml.tmpl" > environment.yaml
   # work-around for https://github.com/conda/conda/issues/14355
-  - ps: "& { $env:PYTHONWARNINGS = \"ignore::FutureWarning\"; conda env create -n sksurv-test --file environment.yaml }"
+  - ps: "& { $env:PYTHONWARNINGS = \"ignore::FutureWarning\"; mamba env create -n sksurv-test --file environment.yaml }"
   - cmd: call %CONDA_INSTALL_LOCN%\Scripts\activate.bat sksurv-test
   - cmd: conda list
   # Initialize the submodules
