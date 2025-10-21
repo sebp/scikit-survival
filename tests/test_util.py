@@ -308,7 +308,7 @@ class SurvDataFrameCases(SurvCases):
 
     def data_bool(self):
         data, expected = self.get_surv_data_frame()
-        data["event"] = data["event"].astype(bool)
+        data = data.astype({"event": bool})
 
         inputs = ("event", "time", data)
         return inputs, expected, does_not_raise()
@@ -320,7 +320,7 @@ class SurvDataFrameCases(SurvCases):
 
     def data_float(self):
         data, expected = self.get_surv_data_frame()
-        data["event"] = data["event"].astype(float)
+        data = data.astype({"event": float})
         inputs = ("event", "time", data)
         return inputs, expected, does_not_raise()
 

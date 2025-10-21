@@ -508,12 +508,12 @@ class TestComponentwiseGradientBoosting:
         )
 
         expected_coef = pd.Series(np.zeros(15, dtype=float), index=whas500_data.names)
-        expected_coef["age"] = 0.040919
-        expected_coef["hr"] = 0.004977
-        expected_coef["diasbp"] = -0.003407
-        expected_coef["bmi"] = -0.017938
-        expected_coef["sho"] = 0.429904
-        expected_coef["chf"] = 0.508211
+        expected_coef.loc["age"] = 0.040919
+        expected_coef.loc["hr"] = 0.004977
+        expected_coef.loc["diasbp"] = -0.003407
+        expected_coef.loc["bmi"] = -0.017938
+        expected_coef.loc["sho"] = 0.429904
+        expected_coef.loc["chf"] = 0.508211
 
         assert_array_almost_equal(expected_coef.values, model.coef_)
 
@@ -539,12 +539,12 @@ class TestComponentwiseGradientBoosting:
         )
 
         expected_coef = pd.Series(np.zeros(15, dtype=float), index=whas500_data.names)
-        expected_coef["age"] = 0.041299
-        expected_coef["hr"] = 0.00487
-        expected_coef["diasbp"] = -0.003381
-        expected_coef["bmi"] = -0.017018
-        expected_coef["sho"] = 0.433685
-        expected_coef["chf"] = 0.510277
+        expected_coef.loc["age"] = 0.041299
+        expected_coef.loc["hr"] = 0.00487
+        expected_coef.loc["diasbp"] = -0.003381
+        expected_coef.loc["bmi"] = -0.017018
+        expected_coef.loc["sho"] = 0.433685
+        expected_coef.loc["chf"] = 0.510277
 
         assert_array_almost_equal(expected_coef.values, model.coef_)
 
@@ -573,13 +573,13 @@ class TestComponentwiseGradientBoosting:
         )
 
         expected_coef = pd.Series(np.zeros(15, dtype=float), index=whas500_data.names)
-        expected_coef["age"] = 0.248771
-        expected_coef["hr"] = 0.04392
-        expected_coef["diasbp"] = -0.022432
-        expected_coef["bmi"] = -0.138095
-        expected_coef["sho"] = 2.863096
-        expected_coef["chf"] = 3.552457
-        expected_coef["mitype"] = -0.074266
+        expected_coef.loc["age"] = 0.248771
+        expected_coef.loc["hr"] = 0.04392
+        expected_coef.loc["diasbp"] = -0.022432
+        expected_coef.loc["bmi"] = -0.138095
+        expected_coef.loc["sho"] = 2.863096
+        expected_coef.loc["chf"] = 3.552457
+        expected_coef.loc["mitype"] = -0.074266
 
         assert_array_almost_equal(expected_coef.values, model.coef_)
 

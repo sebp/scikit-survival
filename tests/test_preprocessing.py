@@ -66,9 +66,7 @@ def create_string_data():
             )
         )
 
-        data_cat = data.copy()
-        for col in data.columns:
-            data_cat[col] = data_cat[col].astype("category")
+        data_cat = data.astype(dict.fromkeys(data.columns, "category"))
         return data, _encoded_data(data_cat)
 
     return _create_data

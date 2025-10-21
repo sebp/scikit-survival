@@ -3,6 +3,7 @@ from io import StringIO
 
 import numpy as np
 import pandas as pd
+from pandas.api.types import CategoricalDtype
 import pandas.testing as tm
 import pytest
 
@@ -65,35 +66,42 @@ class DataFrameCases(FixtureParameterFactory):
 
     def data_nominal_with_quotes(self):
         data, rel_name, expected = self.data_nominal()
-        data["attr_nominal_spaces"] = ["'red wine'", "'hard liquor'", None, "mate", "'hard liquor'", "mate"]
+        data.loc[:, "attr_nominal_spaces"] = ["'red wine'", "'hard liquor'", None, "mate", "'hard liquor'", "mate"]
         return data, rel_name, expected
 
     def data_nominal_as_category(self):
         data, rel_name, expected = self.data_nominal_with_quotes()
-        for name, series in data.items():
-            data[name] = pd.Categorical(series, ordered=False)
+        data = data.astype(dict.fromkeys(data.keys(), "category"))
 
         expected[3] = '@attribute attr_nominal_spaces\t{"hard liquor","red wine",mate}\n'
         return data, rel_name, expected
 
     def data_nominal_as_category_extra(self):
         data, rel_name, expected = self.data_nominal_as_category()
-        data["attr_nominal"] = pd.Categorical(
-            ["water", "wine", "beer", None, "wine", "water"],
-            categories=["beer", "coke", "water", "wine"],
-            ordered=False,
+        data = data.astype(
+            {
+                "attr_nominal": CategoricalDtype(
+                    categories=["beer", "coke", "water", "wine"],
+                    ordered=False,
+                )
+            }
         )
+        data.loc[:, "attr_nominal"] = ["water", "wine", "beer", None, "wine", "water"]
 
         expected[2] = "@attribute attr_nominal\t{beer,coke,water,wine}\n"
         return data, rel_name, expected
 
     def data_nominal_with_category_ordering(self):
         data, rel_name, expected = self.data_nominal_with_quotes()
-        data["attr_nominal"] = pd.Categorical(
-            ["water", "wine", "beer", None, "wine", "water"],
-            categories=["water", "coke", "beer", "wine"],
-            ordered=False,
+        data = data.astype(
+            {
+                "attr_nominal": CategoricalDtype(
+                    categories=["water", "coke", "beer", "wine"],
+                    ordered=False,
+                )
+            }
         )
+        data.loc[:, "attr_nominal"] = ["water", "wine", "beer", None, "wine", "water"]
 
         expected[2] = "@attribute attr_nominal\t{water,coke,beer,wine}\n"
         return data, rel_name, expected

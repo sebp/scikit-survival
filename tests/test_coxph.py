@@ -791,12 +791,8 @@ class TestCoxPH:
         X = X.loc[included, :]
         y = y[included.values]
 
-        X["grade"] = pd.Series(
-            pd.Categorical(
-                X["grade"].astype("str"), categories=["intermediate", "poorly differentiated", "well differentiated"]
-            ),
-            index=X.index,
-            name="grade",
+        X = X.astype(
+            {"grade": pd.CategoricalDtype(categories=["intermediate", "poorly differentiated", "well differentiated"])}
         )
 
         X = OneHotEncoder().fit_transform(X)

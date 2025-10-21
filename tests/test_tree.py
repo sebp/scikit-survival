@@ -26,14 +26,16 @@ def veterans():
 @pytest.fixture()
 def breast_cancer():
     X, y = load_breast_cancer()
-    X["er"] = X.loc[:, "er"].map({"negative": 0, "positive": 1})
-    X["grade"] = X.loc[:, "grade"].map(
-        {
-            "intermediate": 0,
-            "poorly differentiated": 1,
-            "unkown": 2,
-            "well differentiated": 3,
-        }
+    X = X.assign(
+        er=X["er"].map({"negative": 0, "positive": 1}),
+        grade=X["grade"].map(
+            {
+                "intermediate": 0,
+                "poorly differentiated": 1,
+                "unkown": 2,
+                "well differentiated": 3,
+            }
+        ),
     )
     return X, y
 

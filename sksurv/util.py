@@ -337,6 +337,7 @@ def safe_concat(objs, *args, **kwargs):
                 categories[df.name] = {"categories": df.cat.categories, "ordered": df.cat.ordered}
         else:
             dfc = df.select_dtypes(include=["category"])
+            new_dtypes = {}
             for name, s in dfc.items():
                 if name in categories:
                     if axis == 1:
@@ -345,12 +346,12 @@ def safe_concat(objs, *args, **kwargs):
                         raise ValueError(f"categories for column {name} do not match")
                 else:
                     categories[name] = {"categories": s.cat.categories, "ordered": s.cat.ordered}
-                df[name] = df[name].astype("str")
+                new_dtypes[name] = "str"
+            df = df.astype(new_dtypes)
 
     concatenated = pd.concat(objs, *args, axis=axis, **kwargs)
 
-    for name, params in categories.items():
-        concatenated[name] = pd.Categorical(concatenated[name], **params)
+    concatenated = concatenated.astype({name: pd.CategoricalDtype(**params) for name, params in categories.items()})
 
     return concatenated
 
