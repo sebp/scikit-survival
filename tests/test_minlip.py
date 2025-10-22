@@ -345,7 +345,7 @@ def gbsg2_scaled(gbsg2):
 
 class TestMinlipBreastCancer:
     @staticmethod
-    @pytest.mark.parametrize("solver,expected_iters", [("osqp", 1000), ("ecos", 10)])
+    @pytest.mark.parametrize("solver,expected_iters", [("osqp", 900), ("ecos", 10)])
     def test_fit_and_predict(gbsg2_scaled, minlip_model_factory, solver, expected_iters):
         x, y = gbsg2_scaled
         m = minlip_model_factory(solver, x, y)
