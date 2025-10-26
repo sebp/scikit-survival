@@ -1926,9 +1926,9 @@ class Whas500CIData(FixtureParameterFactory):
 def make_channing():
     def _make_channing(sex):  # pylint: disable=unused-argument
         data = pd.read_csv(CHANNING_FILE).query("entry < exit and sex == @sex")
-        time_enter_m = data.loc[:, "entry"].values
-        time_exit_m = data.loc[:, "exit"].values
-        event_m = data.loc[:, "cens"].values == 1
+        time_enter_m = data.loc[:, "entry"].to_numpy()
+        time_exit_m = data.loc[:, "exit"].to_numpy()
+        event_m = data.loc[:, "cens"].to_numpy() == 1
         return time_enter_m, time_exit_m, event_m
 
     return _make_channing
@@ -5517,7 +5517,7 @@ class TestKaplanMeier:
     def test_right_truncated_children(make_aids):
         event, time_enter, time_exit = make_aids("children")
 
-        x, y, km_ci = kaplan_meier_estimator(event, time_exit.values, time_enter.values, conf_type="log-log")
+        x, y, km_ci = kaplan_meier_estimator(event, time_exit.to_numpy(), time_enter.to_numpy(), conf_type="log-log")
         true_x = np.array(
             [
                 7.75,
@@ -5641,7 +5641,7 @@ class TestKaplanMeier:
     def test_right_truncated_adults(make_aids):
         event, time_enter, time_exit = make_aids("adults")
 
-        x, y, km_ci = kaplan_meier_estimator(event, time_exit.values, time_enter.values, conf_type="log-log")
+        x, y, km_ci = kaplan_meier_estimator(event, time_exit.to_numpy(), time_enter.to_numpy(), conf_type="log-log")
 
         true_x = np.array(
             [
@@ -6251,7 +6251,7 @@ class SimpleDataBMTCases(FixtureParameterFactory):
         event = bmt["status"]
         time = bmt["ftime"]
         if dis is not None:
-            dis_np = dis_df["dis"].values
+            dis_np = dis_df["dis"].to_numpy()
             dis_filter = dis_np == dis
             event = event[dis_filter]
             time = time[dis_filter]

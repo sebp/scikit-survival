@@ -205,7 +205,7 @@ def test_get_xy(args, kwargs, x_expected, y_expected, error_expected):
             assert_array_almost_equal(y_test["time"], time)
         else:
             assert y_test.ndim == 2
-            assert_array_equal(y_test.values.ravel(), y_expected)
+            assert_array_equal(y_test.to_numpy().ravel(), y_expected)
 
 
 def assert_structured_array_dtype(arr, event, time, num_events):
@@ -324,9 +324,9 @@ def assert_y_equal(y_true, y_train):
 
     assert_array_equal(
         y_train["event"].astype(np.uint32),
-        y_true["event"].values.astype(np.uint32),
+        y_true["event"].to_numpy(dtype=np.uint32),
     )
-    assert_array_almost_equal(y_train["time"], y_true["time"].values)
+    assert_array_almost_equal(y_train["time"], y_true["time"].to_numpy())
 
 
 class LoadArffFilesCases(FixtureParameterFactory):

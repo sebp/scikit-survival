@@ -105,11 +105,11 @@ class ConcatCasesAxes0(ConcatCasesFactory):
                 "col_A",
                 pd.Series(
                     pd.Categorical.from_codes(
-                        np.r_[a.col_A.cat.codes.values, b.col_A.cat.codes.values], ["C1", "C2", "C3"]
+                        np.r_[a.col_A.cat.codes.to_numpy(), b.col_A.cat.codes.to_numpy()], ["C1", "C2", "C3"]
                     )
                 ),
             ),
-            ("col_B", np.r_[a.col_B.values, b.col_B.values]),
+            ("col_B", np.r_[a.col_B.to_numpy(), b.col_B.to_numpy()]),
         ]
         expected_df = self.to_data_frame(expected)
         expected_df.index = pd.Index(a.index.tolist() + b.index.tolist())
@@ -359,7 +359,7 @@ class SurvDataFrameCases(SurvCases):
         data, _ = self.get_surv_data_frame()
 
         err = pytest.raises(TypeError, match=r"expected pandas.DataFrame, but got <class 'numpy.ndarray'>")
-        inputs = ("event", "time", data.values)
+        inputs = ("event", "time", data.to_numpy())
         return inputs, None, err
 
 

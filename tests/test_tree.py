@@ -157,7 +157,7 @@ class LogrankTreeBuilder:
 
 def test_tree_one_split(veterans):
     X, y = veterans
-    X = X.loc[:, "Karnofsky_score"].values[:, np.newaxis]
+    X = X.loc[:, "Karnofsky_score"].to_numpy()[:, np.newaxis]
 
     tree = SurvivalTree(max_depth=1)
     tree.fit(X, y)
@@ -165,9 +165,9 @@ def test_tree_one_split(veterans):
     stats = LogrankTreeBuilder(max_depth=1).build(X, y)
 
     assert tree.tree_.capacity == stats.shape[0]
-    assert_array_equal(tree.tree_.feature, stats.loc[:, "feature"].values)
-    assert_array_equal(tree.tree_.n_node_samples, stats.loc[:, "n_node_samples"].values)
-    assert_array_almost_equal(tree.tree_.threshold, stats.loc[:, "threshold"].values)
+    assert_array_equal(tree.tree_.feature, stats.loc[:, "feature"].to_numpy())
+    assert_array_equal(tree.tree_.n_node_samples, stats.loc[:, "n_node_samples"].to_numpy())
+    assert_array_almost_equal(tree.tree_.threshold, stats.loc[:, "threshold"].to_numpy())
 
     expected_time = np.array(
         [
@@ -306,7 +306,7 @@ def test_tree_one_split(veterans):
 
 def test_tree_two_split(veterans):
     X, y = veterans
-    X = X.loc[:, "Karnofsky_score"].values[:, np.newaxis]
+    X = X.loc[:, "Karnofsky_score"].to_numpy()[:, np.newaxis]
 
     tree = SurvivalTree(max_depth=2, max_features=1)
     tree.fit(X, y)
@@ -346,7 +346,7 @@ def test_tree_two_split(veterans):
 
 def test_tree_split_all_censored(veterans):
     X, y = veterans
-    X = X.loc[:, "Karnofsky_score"].values[:, np.newaxis]
+    X = X.loc[:, "Karnofsky_score"].to_numpy()[:, np.newaxis]
     y["Status"][X[:, 0] > 45.0] = False
 
     tree = SurvivalTree(max_depth=2, max_features=1)
@@ -367,9 +367,9 @@ def test_toy_data(toy_data):
     stats = LogrankTreeBuilder(max_depth=4, min_leaf=20).build(X, y)
 
     assert tree.tree_.capacity == stats.shape[0]
-    assert_array_equal(tree.tree_.feature, stats.loc[:, "feature"].values)
-    assert_array_equal(tree.tree_.n_node_samples, stats.loc[:, "n_node_samples"].values)
-    assert_array_almost_equal(tree.tree_.threshold, stats.loc[:, "threshold"].values, 5)
+    assert_array_equal(tree.tree_.feature, stats.loc[:, "feature"].to_numpy())
+    assert_array_equal(tree.tree_.n_node_samples, stats.loc[:, "n_node_samples"].to_numpy())
+    assert_array_almost_equal(tree.tree_.threshold, stats.loc[:, "threshold"].to_numpy(), 5)
 
 
 def test_breast_cancer_1(breast_cancer):
@@ -383,7 +383,7 @@ def test_breast_cancer_1(breast_cancer):
         min_samples_leaf=0.03,
         random_state=6,
     )
-    tree.fit(X.values, y)
+    tree.fit(X.to_numpy(), y)
 
     assert tree.tree_.capacity == 19
     assert_array_equal(
@@ -473,7 +473,7 @@ def test_breast_cancer_2(breast_cancer):
     tree = SurvivalTree(
         max_features="log2", splitter="random", max_depth=5, min_samples_split=30, min_samples_leaf=15, random_state=6
     )
-    tree.fit(X.values, y)
+    tree.fit(X.to_numpy(), y)
 
     assert tree.tree_.capacity == 11
     assert_array_equal(
@@ -606,12 +606,12 @@ def test_predict_step_function(breast_cancer, func):
 @pytest.mark.parametrize("func", ["predict_survival_function", "predict_cumulative_hazard_function"])
 def test_pipeline_predict(breast_cancer, func):
     X_num, y = breast_cancer
-    X_num = X_num.loc[:, ["er", "grade"]].values
+    X_num = X_num.loc[:, ["er", "grade"]].to_numpy()
 
     tree = SurvivalTree().fit(X_num[10:], y[10:])
 
     X_str, _ = load_breast_cancer()
-    X_str = X_str.loc[:, ["er", "grade"]].values
+    X_str = X_str.loc[:, ["er", "grade"]].to_numpy()
 
     pipe = make_pipeline(OrdinalEncoder(), SurvivalTree())
     pipe.fit(X_str[10:], y[10:])
@@ -733,7 +733,7 @@ def test_max_leaf_nodes_too_small(fake_data, val):
 
 def test_apply(veterans):
     X, y = veterans
-    X = X.loc[:, "Karnofsky_score"].values[:, np.newaxis].astype(np.float32)
+    X = X.loc[:, "Karnofsky_score"].to_numpy(dtype=np.float32)[:, np.newaxis]
 
     tree = SurvivalTree(max_depth=2, max_features=1)
     tree.fit(X, y)
@@ -755,7 +755,7 @@ def test_apply(veterans):
 
 def test_apply_sparse(veterans):
     X, y = veterans
-    X = X.loc[:, "Karnofsky_score"].values[:, np.newaxis].astype(np.float32)
+    X = X.loc[:, "Karnofsky_score"].to_numpy(dtype=np.float32)[:, np.newaxis]
     X_sparse = sparse.csr_matrix(X)
     tree = SurvivalTree(max_depth=2, max_features=1)
     tree.fit(X_sparse, y)
@@ -811,7 +811,7 @@ def test_predict_sparse(make_whas500):
 
 def test_missing_values_best_splitter_to_max_samples(veterans):
     X, y = veterans
-    X = X.loc[:, "Karnofsky_score"].values[:, np.newaxis].astype(np.float32)
+    X = X.loc[:, "Karnofsky_score"].to_numpy(copy=np.float32)[:, np.newaxis]
 
     tree = SurvivalTree(max_depth=1)
     tree.fit(X, y)

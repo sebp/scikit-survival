@@ -651,10 +651,10 @@ class TestCoxPH:
     @staticmethod
     def test_likelihood_breslow(rossi, coef_rossi_coxph_breslow):
         cph = CoxPHOptimizer(
-            rossi.x.values, rossi.y["arrest"], rossi.y["week"], alpha=np.zeros(rossi.x.shape[1]), ties="breslow"
+            rossi.x.to_numpy(), rossi.y["arrest"], rossi.y["week"], alpha=np.zeros(rossi.x.shape[1]), ties="breslow"
         )
 
-        w = coef_rossi_coxph_breslow.loc[rossi.x.columns].values
+        w = coef_rossi_coxph_breslow.loc[rossi.x.columns].to_numpy()
 
         actual_loss = cph.nlog_likelihood(w)
 
@@ -663,7 +663,7 @@ class TestCoxPH:
     @staticmethod
     def test_gradient_breslow(rossi):
         cph = CoxPHOptimizer(
-            rossi.x.values, rossi.y["arrest"], rossi.y["week"], alpha=np.zeros(rossi.x.shape[1]), ties="breslow"
+            rossi.x.to_numpy(), rossi.y["arrest"], rossi.y["week"], alpha=np.zeros(rossi.x.shape[1]), ties="breslow"
         )
 
         assert_gradient_correctness(cph)
@@ -671,18 +671,20 @@ class TestCoxPH:
     @staticmethod
     def test_fit_breslow(rossi, coef_rossi_coxph_breslow):
         cph = CoxPHSurvivalAnalysis()
-        cph.fit(rossi.x.values, rossi.y)
+        cph.fit(rossi.x.to_numpy(), rossi.y)
 
         actual = pd.Series(cph.coef_, index=rossi.x.columns)
-        assert_array_almost_equal(coef_rossi_coxph_breslow.values, actual.loc[coef_rossi_coxph_breslow.index].values)
+        assert_array_almost_equal(
+            coef_rossi_coxph_breslow.to_numpy(), actual.loc[coef_rossi_coxph_breslow.index].to_numpy()
+        )
 
     @staticmethod
     def test_likelihood_efron(rossi, coef_rossi_coxph_efron):
         cph = CoxPHOptimizer(
-            rossi.x.values, rossi.y["arrest"], rossi.y["week"], alpha=np.zeros(rossi.x.shape[1]), ties="efron"
+            rossi.x.to_numpy(), rossi.y["arrest"], rossi.y["week"], alpha=np.zeros(rossi.x.shape[1]), ties="efron"
         )
 
-        w = coef_rossi_coxph_efron.loc[rossi.x.columns].values
+        w = coef_rossi_coxph_efron.loc[rossi.x.columns].to_numpy()
 
         actual_loss = cph.nlog_likelihood(w)
 
@@ -691,7 +693,7 @@ class TestCoxPH:
     @staticmethod
     def test_gradient_efron(rossi):
         cph = CoxPHOptimizer(
-            rossi.x.values.astype(float),
+            rossi.x.to_numpy(dtype=float),
             rossi.y["arrest"],
             rossi.y["week"],
             alpha=np.zeros(rossi.x.shape[1]),
@@ -703,16 +705,18 @@ class TestCoxPH:
     @staticmethod
     def test_fit_efron(rossi, coef_rossi_coxph_efron):
         cph = CoxPHSurvivalAnalysis(ties="efron")
-        cph.fit(rossi.x.values, rossi.y)
+        cph.fit(rossi.x.to_numpy(), rossi.y)
 
         actual = pd.Series(cph.coef_, index=rossi.x.columns)
-        assert_array_almost_equal(coef_rossi_coxph_efron.values, actual.loc[coef_rossi_coxph_efron.index].values)
+        assert_array_almost_equal(
+            coef_rossi_coxph_efron.to_numpy(), actual.loc[coef_rossi_coxph_efron.index].to_numpy()
+        )
 
     @staticmethod
     def test_predict(rossi):
         cph = CoxPHSurvivalAnalysis()
         xc = standardize(rossi.x, with_std=False)
-        cph.fit(xc.values, rossi.y)
+        cph.fit(xc.to_numpy(), rossi.y)
 
         expected = np.array(
             [
@@ -736,7 +740,7 @@ class TestCoxPH:
 
         idx = np.array([15, 77, 79, 90, 113, 122, 134, 172, 213, 219, 257, 313, 364, 395, 409])
 
-        pred = cph.predict(xc.iloc[idx, :].values)
+        pred = cph.predict(xc.iloc[idx, :].to_numpy())
 
         assert_array_almost_equal(expected, pred)
 
@@ -745,7 +749,7 @@ class TestCoxPH:
         # coxph(Surv(week, arrest) ~ ridge(fin, age, race, wexp, mar, paro, prio,
         #     theta=1, scale=FALSE), data=rossi, ties="breslow")
         cph = CoxPHSurvivalAnalysis(alpha=1.0)
-        cph.fit(rossi.x.values, rossi.y)
+        cph.fit(rossi.x.to_numpy(), rossi.y)
 
         expected = pd.Series(
             {
@@ -760,14 +764,14 @@ class TestCoxPH:
         )
 
         actual = pd.Series(cph.coef_, index=rossi.x.columns)
-        assert_array_almost_equal(expected.values, actual.loc[expected.index].values)
+        assert_array_almost_equal(expected.to_numpy(), actual.loc[expected.index].to_numpy())
 
     @staticmethod
     def test_fit_ridge_2(rossi):
         # coxph(Surv(week, arrest) ~ ridge(fin, age, race, wexp, mar, paro, prio,
         #     theta=19.67, scale=FALSE), data=rossi, ties="breslow")
         cph = CoxPHSurvivalAnalysis(alpha=19.67)
-        cph.fit(rossi.x.values, rossi.y)
+        cph.fit(rossi.x.to_numpy(), rossi.y)
 
         expected = pd.Series(
             {
@@ -782,14 +786,14 @@ class TestCoxPH:
         )
 
         actual = pd.Series(cph.coef_, index=rossi.x.columns)
-        assert_array_almost_equal(expected.values, actual.loc[expected.index].values)
+        assert_array_almost_equal(expected.to_numpy(), actual.loc[expected.index].to_numpy())
 
     @staticmethod
     def test_fit_unpenalized():
         X, y = load_breast_cancer()
         included = X["grade"] != "unkown"
         X = X.loc[included, :]
-        y = y[included.values]
+        y = y[included.to_numpy()]
 
         X = X.astype(
             {"grade": pd.CategoricalDtype(categories=["intermediate", "poorly differentiated", "well differentiated"])}
@@ -906,20 +910,20 @@ class TestCoxPH:
         )
 
         with pytest.raises(ValueError, match=msg):
-            cph.fit(rossi.x.values, rossi.y)
+            cph.fit(rossi.x.to_numpy(), rossi.y)
 
     @staticmethod
     def test_alpha_array(rossi):
         cph = CoxPHSurvivalAnalysis(alpha=np.array([], dtype=float))
 
         with pytest.raises(ValueError, match=r"Length alphas \(0\) must match number of features \(7\)"):
-            cph.fit(rossi.x.values, rossi.y)
+            cph.fit(rossi.x.to_numpy(), rossi.y)
 
         alphas = np.empty(rossi.x.shape[1], dtype=str)
         alphas[:] = "failure"
         cph.set_params(alpha=alphas)
         with pytest.raises(ValueError, match="dtype='numeric' is not compatible with arrays of bytes/strings"):
-            cph.fit(rossi.x.values, rossi.y)
+            cph.fit(rossi.x.to_numpy(), rossi.y)
 
         rng = np.random.default_rng()
         alphas = rng.standard_normal((rossi.x.shape[1], 3, 4))
@@ -929,17 +933,17 @@ class TestCoxPH:
             match=r"Found array with dim 3(\. CoxPHSurvivalAnalysis expected <= 2"
             r"|, while dim <= 2 is required by CoxPHSurvivalAnalysis)\.",
         ):
-            cph.fit(rossi.x.values, rossi.y)
+            cph.fit(rossi.x.to_numpy(), rossi.y)
 
         alphas = np.ones(rossi.x.shape[1])
         alphas[-2] = -1e-4
         cph.set_params(alpha=alphas)
         with pytest.raises(ValueError, match=r"alpha must be positive, but was"):
-            cph.fit(rossi.x.values, rossi.y)
+            cph.fit(rossi.x.to_numpy(), rossi.y)
 
         cph.set_params(alpha=alphas[:-2])
         with pytest.raises(ValueError, match=r"Length alphas \(5\) must match number of features \(7\)"):
-            cph.fit(rossi.x.values, rossi.y)
+            cph.fit(rossi.x.to_numpy(), rossi.y)
 
     @staticmethod
     def test_ties(rossi):
@@ -948,7 +952,7 @@ class TestCoxPH:
         msg = r"The 'ties' parameter of CoxPHSurvivalAnalysis must be a str among {.+}\. Got 'xyz' instead\."
 
         with pytest.raises(ValueError, match=msg):
-            cph.fit(rossi.x.values, rossi.y)
+            cph.fit(rossi.x.to_numpy(), rossi.y)
 
     @staticmethod
     @pytest.mark.parametrize("n_iter", [0, -1, 10.0])
@@ -962,7 +966,7 @@ class TestCoxPH:
         )
 
         with pytest.raises(ValueError, match=msg):
-            cph.fit(rossi.x.values, rossi.y)
+            cph.fit(rossi.x.to_numpy(), rossi.y)
 
     @staticmethod
     def test_convergence(rossi):
@@ -971,22 +975,22 @@ class TestCoxPH:
         with pytest.warns(
             ConvergenceWarning, match="Optimization did not converge: Maximum number of iterations has been exceeded."
         ):
-            cph.fit(rossi.x.values, rossi.y)
+            cph.fit(rossi.x.to_numpy(), rossi.y)
 
     @staticmethod
     def test_verbose(rossi):
         cph = CoxPHSurvivalAnalysis(verbose=99)
-        cph.fit(rossi.x.values, rossi.y)
+        cph.fit(rossi.x.to_numpy(), rossi.y)
 
         cph.set_params(n_iter=1)
         with warnings.catch_warnings(record=True):
             warnings.simplefilter("ignore")
-            cph.fit(rossi.x.values, rossi.y)
+            cph.fit(rossi.x.to_numpy(), rossi.y)
 
     @staticmethod
     def test_cum_baseline_hazard(rossi):
         cph = CoxPHSurvivalAnalysis()
-        cph.fit(rossi.x.values, rossi.y)
+        cph.fit(rossi.x.to_numpy(), rossi.y)
 
         expected_x = np.array(
             [
@@ -1112,10 +1116,10 @@ class TestCoxPH:
 
         cph = CoxPHSurvivalAnalysis()
         xc = standardize(rossi.x, with_std=False)
-        cph.fit(xc.values, rossi.y)
+        cph.fit(xc.to_numpy(), rossi.y)
 
         test_idx = [9, 3, 313, 122, 431]
-        f = getattr(cph, fname)(xc.values[test_idx, :])
+        f = getattr(cph, fname)(xc.to_numpy()[test_idx, :])
         assert len(f) == len(test_idx)
 
         assert_array_almost_equal(f[0].x, expected_x)
@@ -1126,8 +1130,8 @@ class TestCoxPH:
             assert_array_almost_equal(actual_y, expected_y[i, :])
 
         pipe = make_pipeline(StandardScaler(with_std=False), CoxPHSurvivalAnalysis())
-        pipe.fit(rossi.x.values, rossi.y)
-        f = getattr(pipe, fname)(rossi.x.values[test_idx, :])
+        pipe.fit(rossi.x.to_numpy(), rossi.y)
+        f = getattr(pipe, fname)(rossi.x.to_numpy()[test_idx, :])
         assert len(f) == len(test_idx)
 
         for i, ff in enumerate(f):

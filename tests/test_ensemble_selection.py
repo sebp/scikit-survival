@@ -129,7 +129,7 @@ class TestEnsembleSelectionSurvivalAnalysis:
         meta = EnsembleSelection(base_estimators, n_estimators=0.5, scorer=score_cindex, cv=cv)
 
         meta.fit(whas500.x_data_frame, whas500.y)
-        feature_names = whas500.x_data_frame.columns.values
+        feature_names = whas500.x_data_frame.columns.to_numpy()
         assert meta.n_features_in_ == len(feature_names)
         assert_array_equal(meta.feature_names_in_, feature_names)
 
@@ -290,7 +290,7 @@ class TestEnsembleSelectionRegressor:
         assert len(meta) == 5
         assert meta.scores_.shape[0] == 9
 
-        feature_names = whas500.x_data_frame.columns.values
+        feature_names = whas500.x_data_frame.columns.to_numpy()
         assert meta.n_features_in_ == len(feature_names)
         assert_array_equal(meta.feature_names_in_, feature_names)
 

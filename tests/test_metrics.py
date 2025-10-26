@@ -985,7 +985,7 @@ def nottingham_prognostic_index():
                     fn = StepFunction(t, s)
                     survs[i] = fn(ts)
 
-            preds[:, j] = NPI.map(survs).values
+            preds[:, j] = NPI.map(survs).to_numpy()
 
         return preds, y
 

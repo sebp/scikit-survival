@@ -46,7 +46,7 @@ def make_whas500():
         if to_numeric:
             x = categorical_to_numeric(x)
         names = ["(Intercept)"] + x.columns.tolist()
-        return DataSetWithNames(x=x.values, y=y, names=names, x_data_frame=x)
+        return DataSetWithNames(x=x.to_numpy(), y=y, names=names, x_data_frame=x)
 
     return _make_whas500
 

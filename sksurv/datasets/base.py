@@ -36,10 +36,10 @@ def _get_x_y_survival(dataset, col_event, col_time, val_outcome, competing_risks
         event_type = np.int64 if competing_risks else bool
         y = np.empty(dtype=[(col_event, event_type), (col_time, np.float64)], shape=dataset.shape[0])
         if competing_risks:
-            y[col_event] = dataset[col_event].values
+            y[col_event] = dataset[col_event].to_numpy()
         else:
-            y[col_event] = (dataset[col_event] == val_outcome).values
-        y[col_time] = dataset[col_time].values
+            y[col_event] = (dataset[col_event] == val_outcome).to_numpy()
+        y[col_time] = dataset[col_time].to_numpy()
 
         x_frame = dataset.drop([col_event, col_time], axis=1)
 

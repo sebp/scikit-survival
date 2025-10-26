@@ -192,4 +192,4 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         check_is_fitted(self, "encoded_columns_")
         input_features = _check_feature_names_in(self, input_features)
 
-        return self.encoded_columns_.values.copy()
+        return self.encoded_columns_.to_numpy(copy=True)

@@ -67,7 +67,7 @@ class TestGradientBoosting:
     def data(self):
         x, y = load_whas500()
         x = categorical_to_numeric(standardize(x, with_std=False))
-        return x.values, y
+        return x.to_numpy(), y
 
     def assert_fit_and_predict(self, expected_cindex, mask_test=None, **kwargs):
         X, y = self.data
@@ -460,7 +460,7 @@ class TestSparseGradientBoosting:
         assert model.train_score_.shape == (100,)
 
         sparse_predict = model.predict(data.x_sparse)
-        dense_predict = model.predict(data.x_dense.values)
+        dense_predict = model.predict(data.x_dense.to_numpy())
 
         assert_array_almost_equal(sparse_predict, dense_predict)
 
@@ -515,7 +515,7 @@ class TestComponentwiseGradientBoosting:
         expected_coef.loc["sho"] = 0.429904
         expected_coef.loc["chf"] = 0.508211
 
-        assert_array_almost_equal(expected_coef.values, model.coef_)
+        assert_array_almost_equal(expected_coef.to_numpy(), model.coef_)
 
         assert (100,) == model.train_score_.shape
 
@@ -546,7 +546,7 @@ class TestComponentwiseGradientBoosting:
         expected_coef.loc["sho"] = 0.433685
         expected_coef.loc["chf"] = 0.510277
 
-        assert_array_almost_equal(expected_coef.values, model.coef_)
+        assert_array_almost_equal(expected_coef.to_numpy(), model.coef_)
 
         assert (100,) == model.train_score_.shape
         assert (100,) == model.oob_improvement_.shape
@@ -581,7 +581,7 @@ class TestComponentwiseGradientBoosting:
         expected_coef.loc["chf"] = 3.552457
         expected_coef.loc["mitype"] = -0.074266
 
-        assert_array_almost_equal(expected_coef.values, model.coef_)
+        assert_array_almost_equal(expected_coef.to_numpy(), model.coef_)
 
     @staticmethod
     @pytest.mark.parametrize(

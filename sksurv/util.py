@@ -142,7 +142,7 @@ class Surv:
             raise TypeError(f"expected pandas.DataFrame, but got {type(data)!r}")
 
         return Surv.from_arrays(
-            data.loc[:, event].values, data.loc[:, time].values, name_event=str(event), name_time=str(time)
+            data.loc[:, event].to_numpy(), data.loc[:, time].to_numpy(), name_event=str(event), name_time=str(time)
         )
 
 

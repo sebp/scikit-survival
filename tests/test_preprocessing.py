@@ -120,7 +120,7 @@ class TestOneHotEncoder:
             t.fit(data)
 
             out_names = t.get_feature_names_out()
-            assert_array_equal(out_names, expected_data.columns.values)
+            assert_array_equal(out_names, expected_data.columns.to_numpy())
 
     @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
     @staticmethod
