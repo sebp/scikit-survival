@@ -20,7 +20,7 @@ cnp.import_array()
 @cython.wraparound(False)
 @cython.cdivision(True)
 @cython.boundscheck(False)
-cdef void _get_min_and_max(cnp.npy_double[:] x, cnp.npy_double * min_out, cnp.npy_double * max_out) noexcept nogil:
+cdef void _get_min_and_max(const cnp.npy_double[:] x, cnp.npy_double * min_out, cnp.npy_double * max_out) noexcept nogil:
     cdef cnp.npy_double amin = x[0]
     cdef cnp.npy_double amax = x[0]
     cdef int i
@@ -38,9 +38,9 @@ cdef void _get_min_and_max(cnp.npy_double[:] x, cnp.npy_double * min_out, cnp.np
 @cython.wraparound(False)
 @cython.cdivision(True)
 @cython.boundscheck(False)
-def continuous_ordinal_kernel_with_ranges(cnp.npy_double[:, :] x,
-                                          cnp.npy_double[:, :] y,
-                                          cnp.npy_double[:] ranges,
+def continuous_ordinal_kernel_with_ranges(const cnp.npy_double[:, :] x,
+                                          const cnp.npy_double[:, :] y,
+                                          const cnp.npy_double[:] ranges,
                                           cnp.npy_double[:, :] out):
     cdef cnp.npy_intp n_samples_x = x.shape[0]
     cdef cnp.npy_intp n_samples_y = y.shape[0]
@@ -62,8 +62,8 @@ def continuous_ordinal_kernel_with_ranges(cnp.npy_double[:, :] x,
 @cython.wraparound(False)
 @cython.cdivision(True)
 @cython.boundscheck(False)
-def continuous_ordinal_kernel(cnp.npy_double[:, :] x,
-                              cnp.npy_double[:, :] y,
+def continuous_ordinal_kernel(const cnp.npy_double[:, :] x,
+                              const cnp.npy_double[:, :] y,
                               cnp.npy_double[:, :] out):
     cdef cnp.npy_intp n_samples_x = x.shape[0]
     cdef cnp.npy_intp n_features = x.shape[1]
@@ -82,8 +82,8 @@ def continuous_ordinal_kernel(cnp.npy_double[:, :] x,
 @cython.wraparound(False)
 @cython.cdivision(True)
 @cython.boundscheck(False)
-def pairwise_continuous_ordinal_kernel(cnp.npy_double[:] x,
-                                       cnp.npy_double[:] y,
+def pairwise_continuous_ordinal_kernel(const cnp.npy_double[:] x,
+                                       const cnp.npy_double[:] y,
                                        cnp.npy_double[:] ranges):
     cdef cnp.npy_double out = 0
     cdef int k
@@ -98,8 +98,8 @@ def pairwise_continuous_ordinal_kernel(cnp.npy_double[:] x,
 @cython.wraparound(False)
 @cython.cdivision(True)
 @cython.boundscheck(False)
-def pairwise_nominal_kernel(cnp.npy_int8[:] x,
-                            cnp.npy_int8[:] y):
+def pairwise_nominal_kernel(const cnp.npy_int8[:] x,
+                            const cnp.npy_int8[:] y):
     cdef cnp.npy_double out = 0
     cdef int k
 
