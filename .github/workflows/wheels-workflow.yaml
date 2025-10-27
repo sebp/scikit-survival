@@ -52,7 +52,7 @@ jobs:
           CIBW_TEST_REQUIRES: pytest
           # Skip trying to test arm64 builds on Intel Macs, and vice versa
           CIBW_TEST_SKIP: "*-macosx_${{ runner.arch == 'ARM64' && 'x86_64' || 'arm64' }} *-macosx_universal2"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
@@ -73,7 +73,7 @@ jobs:
       - name: Check README rendering for PyPI
         run: pipx run twine check dist/*
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: cibw-sdist
           path: dist/*.tar.gz
