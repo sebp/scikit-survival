@@ -42,23 +42,23 @@ class StandardizeCase(FixtureParameterFactory):
             }
         )
 
-        data["q3"] = data.loc[:, "q3"].astype("category")
+        data = data.astype({"q3": "category"})
         return data
 
     def data_numeric(self):
         return self.numeric_data, self.expected
 
     def data_float_numpy_array(self):
-        return self.numeric_data.values, self.expected
+        return self.numeric_data.to_numpy(), self.expected
 
     def data_int_numpy_array(self):
-        return self.numeric_data.values.astype(int), self.expected
+        return self.numeric_data.to_numpy(dtype=int), self.expected
 
     def data_non_numeric(self):
         return self.non_numeric_data, self.non_numeric_data
 
     def data_non_numeric_numpy_array(self):
-        data = self.non_numeric_data.values
+        data = self.non_numeric_data.to_numpy()
         return data, pd.DataFrame(data)
 
     def data_mixed(self):
@@ -68,7 +68,7 @@ class StandardizeCase(FixtureParameterFactory):
 
     def data_mixed_numpy_array(self):
         data, _ = self.data_mixed()
-        data = data.values
+        data = data.to_numpy()
         return data, pd.DataFrame(data)
 
 
@@ -86,7 +86,7 @@ def test_standardize(in_data, expected):
     if isinstance(result, np.ndarray):
         result = pd.DataFrame(result, columns=expected.columns)
 
-    tm.assert_frame_equal(pd.isnull(result), pd.isnull(expected))
+    tm.assert_frame_equal(pd.isna(result), pd.isna(expected))
     tm.assert_frame_equal(result, expected)
 
 
@@ -157,7 +157,7 @@ class EncodeCategoricalCases(CategoricalCases):
                 "a_category=small": a_small,
                 "a_category=tiny": a_tiny,
                 "a_binary=yes": eb,
-                "a_number": input_df.loc[:, "a_number"].values.copy(),
+                "a_number": input_df.loc[:, "a_number"].to_numpy(copy=True),
             }
         )
 
@@ -182,7 +182,7 @@ class EncodeCategoricalCases(CategoricalCases):
         # medium
         expected_df.iloc[-3:, 0] = 1
 
-        expected_df.loc[:, "a_number"] = input_df.loc[:, "a_number"].values.copy()
+        expected_df.loc[:, "a_number"] = input_df.loc[:, "a_number"].to_numpy(copy=True)
 
         return input_df, {}, expected_df
 
@@ -295,7 +295,7 @@ class CategoricalToNumeric(CategoricalCases):
         b_num = np.r_[np.repeat([1], 8), np.repeat([0], 23)].astype(np.int64)
 
         expected = pd.DataFrame.from_dict({"a_category": a_num, "a_binary": b_num})
-        expected.loc[:, "a_number"] = input_df.loc[:, "a_number"].values.copy()
+        expected.loc[:, "a_number"] = input_df.loc[:, "a_number"].to_numpy(copy=True)
 
         return input_df, expected
 

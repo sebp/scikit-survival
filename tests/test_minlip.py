@@ -59,7 +59,7 @@ def toy_test_data():
 def gbsg2():
     x, y = load_gbsg2()
     x = encode_categorical(x)
-    return x.values, y
+    return x.to_numpy(), y
 
 
 class DifferenceMatrixToyDataCases(FixtureParameterFactory):

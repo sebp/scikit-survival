@@ -967,10 +967,10 @@ def nottingham_prognostic_index():
         X, y = load_gbsg2()
 
         grade = X.loc[:, "tgrade"].map({"I": 1, "II": 2, "III": 3}).astype(int)
-        NPI = 0.2 * X.loc[:, "tsize"] / 10 + 1 + grade
-        NPI[NPI < 3.4] = 1.0
-        NPI[(NPI >= 3.4) & (NPI <= 5.4)] = 2.0
-        NPI[NPI > 5.4] = 3.0
+        NPI = 0.2 * X["tsize"] / 10 + 1 + grade
+        NPI.loc[NPI < 3.4] = 1.0
+        NPI.loc[(NPI >= 3.4) & (NPI <= 5.4)] = 2.0
+        NPI.loc[NPI > 5.4] = 3.0
 
         preds = np.empty((X.shape[0], len(times)), dtype=float)
         for j, ts in enumerate(times):
@@ -985,7 +985,7 @@ def nottingham_prognostic_index():
                     fn = StepFunction(t, s)
                     survs[i] = fn(ts)
 
-            preds[:, j] = NPI.map(survs).values
+            preds[:, j] = NPI.map(survs).to_numpy()
 
         return preds, y
 
@@ -1065,7 +1065,7 @@ def test_brier_wrong_estimate_shape(nottingham_prognostic_index):
 
 def test_brier_coxph():
     X, y = load_gbsg2()
-    X["tgrade"] = X.loc[:, "tgrade"].map(len).astype(int)
+    X = X.assign(tgrade=X["tgrade"].map(len).astype(int))
 
     Xt = OneHotEncoder().fit_transform(X)
 

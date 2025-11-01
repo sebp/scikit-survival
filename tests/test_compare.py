@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 import numpy as np
 from numpy.testing import assert_almost_equal
 import pandas as pd
@@ -11,7 +13,7 @@ from sksurv.util import Surv
 
 
 def assert_stats_frame_equal(computed_stats, expected_stats):
-    expected_stats["statistic"] = expected_stats["observed"] - expected_stats["expected"]
+    expected_stats.loc[:, "statistic"] = expected_stats["observed"] - expected_stats["expected"]
     assert_frame_equal(computed_stats, expected_stats)
 
 
@@ -43,13 +45,14 @@ def test_logrank_veterans():
 
     chisq, pval, stats, covar = compare_survival(y, X.loc[:, "Celltype"], return_stats=True)
 
-    expected_stats = pd.DataFrame(
-        columns=["counts", "observed", "expected", "statistic"],
-        index=pd.Index(["adeno", "large", "smallcell", "squamous"], name="group"),
-    )
+    expected_stats = OrderedDict()
     expected_stats["counts"] = np.array([27, 27, 48, 35], dtype=np.intp)
     expected_stats["observed"] = np.array([26, 26, 45, 31], dtype=int)
     expected_stats["expected"] = [15.6937646143605, 34.5494783863493, 30.1020793268148, 47.6546776724754]
+    expected_stats = pd.DataFrame(
+        expected_stats,
+        index=pd.Index(["adeno", "large", "smallcell", "squamous"], name="group"),
+    )
     assert_stats_frame_equal(stats, expected_stats)
 
     expected_var = np.array(

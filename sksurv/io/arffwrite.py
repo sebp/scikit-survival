@@ -168,7 +168,7 @@ def _write_data(data, fp):
     fp.write("@data\n")
 
     def to_str(x):
-        if pd.isnull(x):
+        if pd.isna(x):
             return "?"
         return str(x)
 
