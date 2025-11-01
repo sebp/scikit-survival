@@ -36,10 +36,10 @@ def _get_x_y_survival(dataset, col_event, col_time, val_outcome, competing_risks
         event_type = np.int64 if competing_risks else bool
         y = np.empty(dtype=[(col_event, event_type), (col_time, np.float64)], shape=dataset.shape[0])
         if competing_risks:
-            y[col_event] = dataset[col_event].values
+            y[col_event] = dataset[col_event].to_numpy()
         else:
-            y[col_event] = (dataset[col_event] == val_outcome).values
-        y[col_time] = dataset[col_time].values
+            y[col_event] = (dataset[col_event] == val_outcome).to_numpy()
+        y[col_time] = dataset[col_time].to_numpy()
 
         x_frame = dataset.drop([col_event, col_time], axis=1)
 
@@ -116,7 +116,7 @@ def _loadarff_with_index(filename):
         if isinstance(dataset["index"].dtype, CategoricalDtype):
             # concatenating categorical index may raise TypeError
             # see https://github.com/pandas-dev/pandas/issues/14586
-            dataset["index"] = dataset["index"].astype("str")
+            dataset = dataset.astype({"index": "str"})
         dataset.set_index("index", inplace=True)
     return dataset
 
@@ -512,7 +512,7 @@ def load_bmt():
     """
     full_path = _get_data_path("bmt.arff")
     data = loadarff(full_path)
-    data["ftime"] = data["ftime"].astype(int)
+    data = data.astype({"ftime": int})
     return get_x_y(data, attr_labels=["status", "ftime"], competing_risks=True)
 
 
@@ -603,8 +603,8 @@ def load_cgvhd():
     """
     full_path = _get_data_path("cgvhd.arff")
     data = loadarff(full_path)
-    data["ftime"] = data[["survtime", "reltime", "cgvhtime"]].min(axis=1)
-    data["status"] = (
+    data.loc[:, "ftime"] = data[["survtime", "reltime", "cgvhtime"]].min(axis=1)
+    data.loc[:, "status"] = (
         ((data["ftime"] == data["cgvhtime"]) & (data["cgvh"] == "1")).astype(int)
         + 2 * ((data["ftime"] == data["reltime"]) & (data["rcens"] == "1")).astype(int)
         + 3 * ((data["ftime"] == data["survtime"]) & (data["stat"] == "1")).astype(int)

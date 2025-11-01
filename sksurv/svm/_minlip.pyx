@@ -25,7 +25,7 @@ cnp.import_array()
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-def create_difference_matrix(cnp.npy_uint8[:] event,
+def create_difference_matrix(const cnp.npy_uint8[:] event,
                              cnp.ndarray[cnp.npy_double, ndim=1] time,
                              object kind):
     cdef cnp.ndarray[cnp.npy_intp, ndim=1] order
@@ -101,8 +101,8 @@ cdef inline void set_entries(cnp.npy_intp[:] columns,
 @cython.wraparound(False)
 @cython.cdivision(True)
 @cython.boundscheck(False)
-cdef cnp.npy_intp create_difference_matrix_direct_neighbor(cnp.npy_uint8[:] event,
-                                              cnp.npy_intp[:] o,
+cdef cnp.npy_intp create_difference_matrix_direct_neighbor(const cnp.npy_uint8[:] event,
+                                              const cnp.npy_intp[:] o,
                                               cnp.npy_int8[:] values,
                                               cnp.npy_intp[:] columns) noexcept nogil:
     """Only compare against direct nearest neighbor according to time"""
@@ -126,8 +126,8 @@ cdef cnp.npy_intp create_difference_matrix_direct_neighbor(cnp.npy_uint8[:] even
 @cython.wraparound(False)
 @cython.cdivision(True)
 @cython.boundscheck(False)
-cdef cnp.npy_intp create_difference_matrix_nearest_neighbor(cnp.npy_uint8[:] event,
-                                               cnp.npy_intp[:] o,
+cdef cnp.npy_intp create_difference_matrix_nearest_neighbor(const cnp.npy_uint8[:] event,
+                                               const cnp.npy_intp[:] o,
                                                cnp.npy_int8[:] values,
                                                cnp.npy_intp[:] columns) noexcept nogil:
     """Only considers comparable pairs (i, j) where j is uncensored sample
@@ -151,8 +151,8 @@ cdef cnp.npy_intp create_difference_matrix_nearest_neighbor(cnp.npy_uint8[:] eve
 @cython.wraparound(False)
 @cython.cdivision(True)
 @cython.boundscheck(False)
-cdef cnp.npy_intp create_difference_matrix_full(cnp.npy_uint8[:] event,
-                                   cnp.npy_intp[:] o,
+cdef cnp.npy_intp create_difference_matrix_full(const cnp.npy_uint8[:] event,
+                                   const cnp.npy_intp[:] o,
                                    cnp.npy_int8[:] values,
                                    cnp.npy_intp[:] columns) noexcept nogil:
     """Considers all possible comparable pairs"""

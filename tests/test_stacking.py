@@ -185,7 +185,7 @@ class TestStackingClassifier:
         assert meta.n_features_in_ == len(data["feature_names"])
         assert_array_equal(meta.feature_names_in_, data["feature_names"])
 
-        meta.fit(x.values, y)
+        meta.fit(x.to_numpy(), y)
         assert meta.n_features_in_ == len(data["feature_names"])
         with pytest.raises(AttributeError, match="'Stacking' object has no attribute 'feature_names_in_'"):
             meta.feature_names_in_  # pylint: disable=pointless-statement
@@ -312,7 +312,7 @@ class TestStackingSurvivalAnalysis:
             probabilities=False,
         )
         meta.fit(whas500.x_data_frame, whas500.y)
-        names = whas500.x_data_frame.columns.values
+        names = whas500.x_data_frame.columns.to_numpy()
         assert meta.n_features_in_ == len(names)
         assert_array_equal(meta.feature_names_in_, names)
 

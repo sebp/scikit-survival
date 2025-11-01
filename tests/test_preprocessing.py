@@ -66,9 +66,7 @@ def create_string_data():
             )
         )
 
-        data_cat = data.copy()
-        for col in data.columns:
-            data_cat[col] = data_cat[col].astype("category")
+        data_cat = data.astype(dict.fromkeys(data.columns, "category"))
         return data, _encoded_data(data_cat)
 
     return _create_data
@@ -122,7 +120,7 @@ class TestOneHotEncoder:
             t.fit(data)
 
             out_names = t.get_feature_names_out()
-            assert_array_equal(out_names, expected_data.columns.values)
+            assert_array_equal(out_names, expected_data.columns.to_numpy())
 
     @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
     @staticmethod

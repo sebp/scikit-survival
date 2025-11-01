@@ -41,7 +41,7 @@ def _get_continuous_and_ordinal_array(x):
     ordinal_columns = pd.Index([v for v in nominal_columns if x[v].cat.ordered])
     continuous_columns = x.select_dtypes(include=[np.number]).columns
 
-    x_num = x.loc[:, continuous_columns].astype(np.float64).values
+    x_num = x.loc[:, continuous_columns].to_numpy(dtype=np.float64)
     if len(ordinal_columns) > 0:
         x = _ordinal_as_numeric(x, ordinal_columns)
 
@@ -123,7 +123,7 @@ def clinical_kernel(x, y=None):
         y_numeric = x_numeric
 
     continuous_ordinal_kernel(x_numeric, y_numeric, mat)
-    _nominal_kernel(x.loc[:, nominal_columns].values, y.loc[:, nominal_columns].values, mat)
+    _nominal_kernel(x.loc[:, nominal_columns].to_numpy(), y.loc[:, nominal_columns].to_numpy(), mat)
     mat /= x.shape[1]
     return mat
 
@@ -210,7 +210,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
             else:
                 raise TypeError(f"unsupported dtype: {dt!r}")
 
-            fit_data[:, i] = col.values
+            fit_data[:, i] = col.to_numpy()
 
         self._numeric_columns = np.asarray(numeric_columns)
         self._nominal_columns = np.asarray(nominal_columns)

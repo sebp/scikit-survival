@@ -13,7 +13,7 @@ def test_pandas_inputs(estimator_cls):
     X = X.iloc[:50]
     y = y[:50]
     X_df = X.loc[:, ["age", "bmi", "chf", "gender"]].astype(float)
-    X_np = X_df.values
+    X_np = X_df.to_numpy()
 
     estimator = estimator_cls()
     if "kernel" in estimator.get_params():

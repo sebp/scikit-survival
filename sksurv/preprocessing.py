@@ -139,12 +139,14 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         x_dummy = self._encode(X, columns_to_encode)
 
         self.feature_names_ = columns_to_encode
-        X_cat = X[columns_to_encode].copy()
-        for col in columns_to_encode:
-            if not isinstance(X_cat[col].dtype, CategoricalDtype):
-                X_cat[col] = X_cat[col].astype("category")
-        self.categories_ = {k: X_cat[k].cat.categories for k in columns_to_encode}
-        self.encoded_columns_ = x_dummy.columns
+        cat_cols = {}
+        for col_name in columns_to_encode:
+            col = X[col_name]
+            if not isinstance(col.dtype, CategoricalDtype):
+                col = col.astype("category")
+            cat_cols[col_name] = col.cat.categories
+        self.categories_ = cat_cols
+        self.encoded_columns_ = x_dummy.columns.copy()
         return x_dummy
 
     def transform(self, X):
@@ -164,12 +166,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         _check_n_features(self, X, reset=False)
         check_columns_exist(X.columns, self.feature_names_)
 
-        Xt = X.copy()
-        for col, cat in self.categories_.items():
-            if not isinstance(Xt[col].dtype, CategoricalDtype):
-                Xt[col] = Xt[col].astype(CategoricalDtype(cat))
-            else:
-                Xt[col] = Xt[col].cat.set_categories(cat)
+        Xt = X.astype({col: CategoricalDtype(cat) for col, cat in self.categories_.items()})
 
         new_data = self._encode(Xt, self.feature_names_)
         return new_data.loc[:, self.encoded_columns_]
@@ -195,4 +192,4 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         check_is_fitted(self, "encoded_columns_")
         input_features = _check_feature_names_in(self, input_features)
 
-        return self.encoded_columns_.values.copy()
+        return self.encoded_columns_.to_numpy(copy=True)

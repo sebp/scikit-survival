@@ -18,7 +18,7 @@ import sys
 from packaging.version import Version
 from setuptools import Command, Extension, setup
 
-CYTHON_MIN_VERSION = Version("0.29")
+CYTHON_MIN_VERSION = Version("3.0.10")
 
 
 # adapted from bottleneck's setup.py
@@ -94,7 +94,7 @@ def get_module_from_sources(sources):
 
 def _check_cython_version():
     message = (
-        f"Please install Cython with a version >= {CYTHON_MIN_VERSION} in order to build a scikit-learn from source."
+        f"Please install Cython with a version >= {CYTHON_MIN_VERSION} in order to build a scikit-survival from source."
     )
     try:
         import Cython

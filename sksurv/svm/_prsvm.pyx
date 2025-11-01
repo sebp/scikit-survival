@@ -25,7 +25,7 @@ cnp.import_array()
 @cython.wraparound(False)
 @cython.cdivision(True)
 @cython.boundscheck(False)
-def survival_constraints_simple(cnp.npy_uint8[:] y):
+def survival_constraints_simple(const cnp.npy_uint8[:] y):
     cdef int i
     cdef int j
     cdef int k = 0
@@ -59,8 +59,8 @@ def survival_constraints_simple(cnp.npy_uint8[:] y):
 @cython.wraparound(False)
 @cython.cdivision(True)
 @cython.boundscheck(False)
-def survival_constraints_with_support_vectors(cnp.npy_uint8[:] y,
-                                              cnp.npy_double[:] xw):
+def survival_constraints_with_support_vectors(const cnp.npy_uint8[:] y,
+                                              const cnp.npy_double[:] xw):
     cdef int i
     cdef int j
     cdef cnp.npy_double vi
