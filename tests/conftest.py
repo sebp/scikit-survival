@@ -3,6 +3,7 @@ from pathlib import Path
 import tempfile
 
 import numpy as np
+from packaging.version import Version
 import pandas as pd
 import pytest
 from scipy.sparse import coo_matrix
@@ -14,6 +15,9 @@ from sksurv.util import Surv
 DataSet = namedtuple("DataSet", ["x", "y"])
 DataSetWithNames = namedtuple("DataSetWithNames", ["x", "y", "names", "x_data_frame"])
 SparseDataSet = namedtuple("SparseDataSet", ["x_dense", "x_sparse", "y"])
+
+if Version(pd.__version__) >= Version("2.3.0"):
+    pd.set_option("mode.copy_on_write", True)
 
 
 def pytest_configure(config):
