@@ -86,7 +86,7 @@ def test_standardize(in_data, expected):
     if isinstance(result, np.ndarray):
         result = pd.DataFrame(result, columns=expected.columns)
 
-    tm.assert_frame_equal(pd.isnull(result), pd.isnull(expected))
+    tm.assert_frame_equal(pd.isna(result), pd.isna(expected))
     tm.assert_frame_equal(result, expected)
 
 
