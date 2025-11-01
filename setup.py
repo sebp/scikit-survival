@@ -80,7 +80,7 @@ EXTENSIONS = {
         "sources": ["sksurv/linear_model/_coxnet.pyx"],
         "language": "c++",
         "include_dirs": ["sksurv/linear_model/src", "sksurv/linear_model/src/eigen"],
-        "extra_compile_args": ["-std=c++14"],
+        "extra_compile_args": ["-std=c++17"],
     },
 }
 
