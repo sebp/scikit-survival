@@ -44,7 +44,6 @@ jobs:
         env:
           CIBW_ARCHS: auto64
           CIBW_BUILD: cp${{ matrix.python }}-${{ steps.platform.outputs.build_platform }}*
-          CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
           CIBW_BUILD_VERBOSITY: 1
           CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=${{ runner.arch == 'ARM64' && '11.0' || '10.13' }}
           CIBW_TEST_COMMAND: pytest --strict-markers -m 'not slow' -k 'not test_fit_and_predict_linear_regression' {project}/tests
