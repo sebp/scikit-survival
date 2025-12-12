@@ -84,7 +84,7 @@ docs = [
 
 test = [
     "coverage",
-    "pytest",
+    "pytest >=9",
 ]
 
 test-nb = [
@@ -123,11 +123,11 @@ line-length = 120
 extend-exclude = "sksurv/linear_model/src/eigen"
 target-version = ["py310"]
 
-[tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "--strict-markers"
-doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
-norecursedirs = ".* *.egg build dist venv {arch} eigen"
+[tool.pytest]
+minversion = "9.0"
+addopts = ["--strict-markers"]
+doctest_optionflags = ["NORMALIZE_WHITESPACE", "ELLIPSIS"]
+norecursedirs = [".*", "*.egg", "build", "dist", "venv", "{arch}", "eigen"]
 testpaths = ["tests"]
 filterwarnings = [
     # Treat all warnings as errors other than the ignored ones
