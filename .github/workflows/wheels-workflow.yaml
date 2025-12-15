@@ -97,7 +97,7 @@ jobs:
 
     steps:
       - name: Download packages
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           pattern: cibw-*
           path: dist
@@ -136,7 +136,7 @@ jobs:
 
     steps:
       - name: Download packages
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           pattern: cibw-*
           path: dist
