@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # scikit-survival documentation build configuration file
 #
@@ -286,7 +285,7 @@ def linkcode_resolve(domain, info):
         elif "dev" in release:
             branch = "master"
         else:
-            branch = "v{}".format(release)
+            branch = f"v{release}"
         return "https://github.com/sebp/scikit-survival/blob/{branch}/{filename}{linespec}".format(
             branch=branch, filename=fn, linespec=linespec
         )
@@ -314,7 +313,7 @@ class RTDUrlPreprocessor(Preprocessor):
 
                 rel_url = "/".join(path)
                 filename = match.group(2)
-                replace.append((match.group(0), "({}/{}.rst)".format(rel_url, filename)))
+                replace.append((match.group(0), f"({rel_url}/{filename}.rst)"))
 
             for s, r in replace:
                 text = text.replace(s, r)
