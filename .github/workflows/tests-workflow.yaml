@@ -15,6 +15,7 @@ jobs:
           - py311
           - py312
           - py313
+          - py314
         runner:
           - ubuntu-latest
           - macos-latest
@@ -99,7 +100,7 @@ jobs:
       - name: Set dependencies
         id: dependencies
         env:
-          DEPS_CONFIG: py312
+          DEPS_CONFIG: py313
         run: |
           source ci/deps/${DEPS_CONFIG}.sh
           echo "CI_PYTHON_VERSION=${CI_PYTHON_VERSION}" >> $GITHUB_ENV
