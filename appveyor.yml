@@ -8,6 +8,7 @@ environment:
     - CONDA_PY: "311"
     - CONDA_PY: "312"
     - CONDA_PY: "313"
+    - CONDA_PY: "314"
 
 
 # We always use a 64-bit machine.
