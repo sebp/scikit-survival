@@ -90,7 +90,7 @@ test = [
 test-nb = [
     "ipykernel",
     "ipython!=8.7.0",
-    "matplotlib~=3.9.0",
+    "matplotlib~=3.10.0",
     "nbformat",
     "nbval>=0.10.0",
     "seaborn~=0.13.2",
