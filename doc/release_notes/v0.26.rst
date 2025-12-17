@@ -1,0 +1,44 @@
+.. _release_notes_0_26:
+
+What's new in 0.26
+==================
+
+scikit-survival 0.26.0 (2025-12-17)
+-----------------------------------
+
+This is a maintainance release that adds support for Python 3.14
+and updates the minimum supported version of dependencies:
+
+   +--------------+-----------------+
+   | Package      | Minimum Version |
+   +==============+=================+
+   | Python       | 3.11            |
+   +--------------+-----------------+
+   | pandas       | 2.0.0           |
+   +--------------+-----------------+
+   | osqp         | 1.0.2           |
+   +--------------+-----------------+
+
+Enhancements
+^^^^^^^^^^^^
+
+- Port from numpy's legacy :class:`numpy.random.RandomState`
+  to :class:`numpy.random.Generator` (:issue:`554`).
+- Add object dtype support to :class:`sksurv.preprocessing.OneHotEncoder` (:issue:`556`).
+- Add support for :external+pandas:ref:`pandas string dtype <string_migration_guide>` (:issue:`558`).
+- Add support for osqp 1.0.0 (:issue:`562`).
+- Upgrade Eigen to 3.4.1.
+- Add support for :external+pandas:ref:`copy-on-write <copy_on_write>` for pandas 2.3.0 and later (:issue:`556`).
+
+Documentation
+^^^^^^^^^^^^^
+
+- Corrected typo -- changed non-singular to singular --
+  in :ref:`penalized Cox models user guide </user_guide/coxnet.ipynb>` (:issue:`552`).
+
+Backwards incompatible changes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Require at least for Python 3.11.
+- Require at least pandas 2.0.0.
+- Require at least osqp 1.0.

@@ -4,6 +4,7 @@ Release Notes
 .. toctree::
   :maxdepth: 2
 
+  release_notes/v0.26
   release_notes/v0.25
   release_notes/v0.24
   release_notes/v0.23
