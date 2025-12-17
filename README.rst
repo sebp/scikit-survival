@@ -1,6 +1,6 @@
 |License| |Docs| |DOI|
 
-|build-tests| |build-windows| |Codecov| |Codacy|
+|build-tests| |Codecov| |Codacy|
 
 ***************
 scikit-survival
@@ -137,9 +137,5 @@ Please cite the following paper if you are using **scikit-survival**.
 .. |build-tests| image:: https://github.com/sebp/scikit-survival/actions/workflows/tests-workflow.yaml/badge.svg?branch=master
   :target: https://github.com/sebp/scikit-survival/actions?query=workflow%3Atests+branch%3Amaster
   :alt: GitHub Actions Tests Status
-
-.. |build-windows| image:: https://ci.appveyor.com/api/projects/status/github/sebp/scikit-survival?branch=master&svg=true
-   :target: https://ci.appveyor.com/project/sebp/scikit-survival
-   :alt: Windows Build Status on AppVeyor
 
 .. _survival analysis: https://en.wikipedia.org/wiki/Survival_analysis

@@ -7,7 +7,7 @@ on:
 
 jobs:
   pytest:
-    name: Build and check
+    name: Build and check (Linux, macOS)
     strategy:
       fail-fast: false
       matrix:
@@ -36,15 +36,14 @@ jobs:
           echo "CI_SKLEARN_VERSION=${CI_SKLEARN_VERSION}" >> $GITHUB_ENV
           echo "CI_NO_SLOW=${CI_NO_SLOW}" >> $GITHUB_ENV
           echo "CONDA_PKGS_DIRS=${{ runner.temp }}/conda_pkgs_dir" >> $GITHUB_ENV
-          echo "py_version=$(cut -d'.' -f 1-2 <<< ${CI_PYTHON_VERSION})" >> $GITHUB_OUTPUT
           echo "requirements=ci/deps/${{ matrix.config }}.sh" >> $GITHUB_OUTPUT
       - name: Cache downloaded packages
         uses: actions/cache@v5
         with:
           path: ${{ env.CONDA_PKGS_DIRS }}
-          key: ${{ runner.os }}-${{ runner.arch }}-conda-${{ steps.dependencies.outputs.py_version }}-${{ hashFiles(steps.dependencies.outputs.requirements, 'pyproject.toml', 'ci/deps/requirements.yaml.tmpl') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-conda-${{ matrix.config }}-${{ hashFiles(steps.dependencies.outputs.requirements, 'pyproject.toml', 'ci/deps/requirements.yaml.tmpl') }}
           restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-conda-${{ steps.dependencies.outputs.py_version }}-
+            ${{ runner.os }}-${{ runner.arch }}-conda-${{ matrix.config }}-
       - name: Create Conda Environment
         run: |
           source ci/setup_conda.sh "${{ runner.os }}" "${{ runner.arch }}" "${{ env.CONDA_PKGS_DIRS }}"
@@ -58,7 +57,7 @@ jobs:
           source activate sksurv-test
           python -m build .
           pip install --exists-action=w --pre --no-index --find-links dist/ scikit-survival
-          rm -fr build dist sksurv
+          rm -fr dist sksurv
       - name: Run Tests
         run: |
           source activate sksurv-test
@@ -87,6 +86,56 @@ jobs:
           coverage-reports: coverage.xml
         if: ${{ steps.coverage.outputs.do == 'true' && github.event_name != 'pull_request' }}
 
+  pytest-win:
+    name: Build and check (Windows)
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - py311
+          - py312
+          - py313
+          - py314
+    env:
+      CONDA_INSTALL_LOCN: ${{ github.workspace }}\Miniforge3
+      PYTHONWARNINGS: default
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: Set dependencies
+        id: dependencies
+        # CONDA_PKGS_DIRS defines the directory in which packages are located.
+        # https://docs.conda.io/projects/conda/en/latest/user-guide/configuration/settings.html#pkgs-dirs-specify-package-directories
+        run: |
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "requirements=.\ci\deps\windows\${{ matrix.config }}.ps1"
+          Add-Content -Path $env:GITHUB_ENV -Value "CONDA_PKGS_DIRS=${{ runner.temp }}\conda_pkgs_dir"
+      - name: Cache downloaded packages
+        uses: actions/cache@v5
+        with:
+          path: ${{ env.CONDA_PKGS_DIRS }}
+          key: ${{ runner.os }}-${{ runner.arch }}-conda-${{ matrix.config }}-${{ hashFiles(steps.dependencies.outputs.requirements, 'pyproject.toml', 'ci/deps/requirements.yaml.tmpl') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-conda-${{ matrix.config }}-
+      - name: Create Conda Environment
+        run: |
+          ci\setup_conda.ps1 -InstallationDirectory "${{ env.CONDA_INSTALL_LOCN }}" -CondaPkgsDir "${{ env.CONDA_PKGS_DIRS }}"
+          $envScript=".\ci\deps\windows\${{ matrix.config }}.ps1"
+          & $envScript
+          python "ci\render-requirements.py" "ci\deps\requirements.yaml.tmpl" > environment.yaml
+          mamba env create -n sksurv-test --file environment.yaml
+          mamba list -n sksurv-test
+      - name: Build package
+        run: |
+          mamba run -n sksurv-test python -m build .
+          mamba run -n sksurv-test pip install --exists-action=w --pre --no-index --find-links dist/ scikit-survival
+          Remove-Item -Path dist, sksurv -Recurse -Force
+      - name: Run Tests
+        run: |
+          mamba run -n sksurv-test pytest -m "not slow"
 
   nbval:
     runs-on: ubuntu-latest
@@ -109,13 +158,12 @@ jobs:
           echo "CI_SKLEARN_VERSION=${CI_SKLEARN_VERSION}" >> $GITHUB_ENV
           echo "CI_NO_SLOW=${CI_NO_SLOW}" >> $GITHUB_ENV
           echo "CONDA_PKGS_DIRS=${{ runner.temp }}/conda_pkgs_dir" >> $GITHUB_ENV
-          echo "py_version=$(cut -d'.' -f 1-2 <<< ${CI_PYTHON_VERSION})" >> $GITHUB_OUTPUT
           echo "requirements=ci/deps/${DEPS_CONFIG}.sh" >> $GITHUB_OUTPUT
       - name: Cache downloaded packages
         uses: actions/cache@v5
         with:
           path: ${{ env.CONDA_PKGS_DIRS }}
-          key: ${{ runner.os }}-${{ runner.arch }}-conda-${{ steps.dependencies.outputs.py_version }}-${{ hashFiles(steps.dependencies.outputs.requirements, 'pyproject.toml', 'ci/deps/requirements.yaml.tmpl') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-conda-${{ matrix.config }}-${{ hashFiles(steps.dependencies.outputs.requirements, 'pyproject.toml', 'ci/deps/requirements.yaml.tmpl') }}
       - name: Create Conda Environment
         run: |
           source ci/setup_conda.sh "${{ runner.os }}" "${{ runner.arch }}" "${{ env.CONDA_PKGS_DIRS }}"
