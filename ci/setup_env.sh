@@ -1,6 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
+echo "::group::✨ Create conda environment..."
 python ci/render-requirements.py ci/deps/requirements.yaml.tmpl > environment.yaml
 
 mamba env create -n sksurv-test --file environment.yaml
@@ -14,3 +15,4 @@ echo "scikit-learn ${CI_SKLEARN_VERSION:?}" >> "${MINIFORGE:?}/envs/sksurv-test/
 mamba run -n sksurv-test pip uninstall --yes scikit-survival || true
 
 mamba list -n sksurv-test
+echo "::endgroup::"

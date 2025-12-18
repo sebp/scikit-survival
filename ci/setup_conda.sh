@@ -29,18 +29,21 @@ if [[ -z "${MINIFORGE:-}" ]]; then
 
     export MINIFORGE="${GITHUB_WORKSPACE}/miniforge"
 
-    echo "🔽 Downloading Miniforge installer..."
+    echo "::group::🔽 Downloading Miniforge installer..."
     mkdir -p "${MINIFORGE}"
     curl --fail -L \
         "https://github.com/conda-forge/miniforge/releases/download/${MINIFORGE_VERSION}/Miniforge3-${MINIFORGE_FILENAME}.sh" \
         -o "${MINIFORGE}/miniforge.sh"
+    echo "::endgroup::"
 
-    echo "🧐 Verifying installer hash..."
+    echo "::group::🧐 Verifying installer hash..."
     run_check_sha "${MINIFORGE_HASH}  ${MINIFORGE}/miniforge.sh"
+    echo "::endgroup::"
 
-    echo "🏗️ Installing Miniforge to ${MINIFORGE}..."
+    echo "::group::🏗️ Installing Miniforge to ${MINIFORGE}..."
     bash "${MINIFORGE}/miniforge.sh" -b -u -p "${MINIFORGE}"
     rm -rf "${MINIFORGE}/miniforge.sh"
+    echo "::endgroup::"
 
     echo "MINIFORGE=${MINIFORGE}" >> "${GITHUB_ENV}"
 fi
@@ -63,7 +66,8 @@ echo "🌐 Updating Path environment variable..."
 export PATH="${MINIFORGE}/bin:${PATH}"
 echo "${MINIFORGE}/bin" >> "${GITHUB_PATH}"
 
-echo "🎉 Conda installation and configuration complete."
+echo "::group::🎉 Conda installation and configuration complete."
 "${MINIFORGE}/bin/conda" config --show-sources
 # Useful for debugging any issues with conda
 "${MINIFORGE}/bin/mamba" info
+echo "::endgroup::"
