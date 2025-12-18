@@ -1,16 +1,5 @@
 #!/bin/bash
-set -xe
-
-OS="$1"
-
-if [ "x${OS}" = "xLinux" ]; then
-  COMPILER=()
-elif [ "x${OS}" = "xmacOS" ]; then
-  COMPILER=(clang_osx-arm64 clangxx_osx-arm64)
-else
-  echo "OS '${OS}' is unsupported."
-  exit 1
-fi
+set -euo pipefail
 
 python ci/render-requirements.py ci/deps/requirements.yaml.tmpl > environment.yaml
 
@@ -20,13 +9,8 @@ echo "numpy ${CI_NUMPY_VERSION:?}" > "${MINIFORGE:?}/envs/sksurv-test/conda-meta
 echo "pandas ${CI_PANDAS_VERSION:?}" >> "${MINIFORGE:?}/envs/sksurv-test/conda-meta/pinned"
 echo "scikit-learn ${CI_SKLEARN_VERSION:?}" >> "${MINIFORGE:?}/envs/sksurv-test/conda-meta/pinned"
 
-# Useful for debugging any issues with conda
-conda info -a
-
-# shellcheck disable=SC1091
-source activate sksurv-test
-
-# delete any version that is already installed
-pip uninstall --yes scikit-survival || exit 0
+# delete any version that is already installed.
+# use '|| true' to ensure script continues even if package is not found.
+mamba run -n sksurv-test pip uninstall --yes scikit-survival || true
 
 mamba list -n sksurv-test

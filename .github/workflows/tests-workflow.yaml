@@ -47,7 +47,7 @@ jobs:
       - name: Create Conda Environment
         run: |
           source ci/setup_conda.sh "${{ runner.os }}" "${{ runner.arch }}" "${{ env.CONDA_PKGS_DIRS }}"
-          ci/setup_env.sh "${{ runner.os }}"
+          ci/setup_env.sh
       - name: Configure Xcode
         run: |
           sudo xcode-select -s "/Applications/Xcode_16.4.0.app"
@@ -167,7 +167,7 @@ jobs:
       - name: Create Conda Environment
         run: |
           source ci/setup_conda.sh "${{ runner.os }}" "${{ runner.arch }}" "${{ env.CONDA_PKGS_DIRS }}"
-          ci/setup_env.sh "${{ runner.os }}"
+          ci/setup_env.sh
       - name: Configure matplotlib
         run: |
           mkdir -p ${XDG_CONFIG_HOME}/matplotlib

@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+set -euo pipefail
 
 RUNNER_OS="${1}"
 RUNNER_ARCH="${2}"
@@ -9,7 +9,7 @@ run_check_sha() {
     echo "${1}" | shasum -a 256 --check --strict -
 }
 
-if [[ "${MINIFORGE:-}" = "" ]]; then
+if [[ -z "${MINIFORGE:-}" ]]; then
     # download and install conda
     MINIFORGE_VERSION="25.3.1-0"
 
@@ -29,33 +29,41 @@ if [[ "${MINIFORGE:-}" = "" ]]; then
 
     export MINIFORGE="${GITHUB_WORKSPACE}/miniforge"
 
-    mkdir -p "${MINIFORGE}" && \
-    curl --fail -L "https://github.com/conda-forge/miniforge/releases/download/${MINIFORGE_VERSION}/Miniforge3-${MINIFORGE_FILENAME}.sh" -o "${MINIFORGE}/miniforge.sh" && \
-    run_check_sha "${MINIFORGE_HASH}  ${MINIFORGE}/miniforge.sh" && \
-    bash "${MINIFORGE}/miniforge.sh" -b -u -p "${MINIFORGE}" && \
-    rm -rf "${MINIFORGE}/miniforge.sh" || exit 1
+    echo "🔽 Downloading Miniforge installer..."
+    mkdir -p "${MINIFORGE}"
+    curl --fail -L \
+        "https://github.com/conda-forge/miniforge/releases/download/${MINIFORGE_VERSION}/Miniforge3-${MINIFORGE_FILENAME}.sh" \
+        -o "${MINIFORGE}/miniforge.sh"
+
+    echo "🧐 Verifying installer hash..."
+    run_check_sha "${MINIFORGE_HASH}  ${MINIFORGE}/miniforge.sh"
+
+    echo "🏗️ Installing Miniforge to ${MINIFORGE}..."
+    bash "${MINIFORGE}/miniforge.sh" -b -u -p "${MINIFORGE}"
+    rm -rf "${MINIFORGE}/miniforge.sh"
 
     echo "MINIFORGE=${MINIFORGE}" >> "${GITHUB_ENV}"
 fi
 
-"${MINIFORGE}/bin/conda" config --set always_yes yes && \
-"${MINIFORGE}/bin/conda" config --set changeps1 no && \
-"${MINIFORGE}/bin/conda" config --set auto_update_conda false && \
-"${MINIFORGE}/bin/conda" config --set show_channel_urls true || \
-exit 1
-
-"${MINIFORGE}/bin/conda" config --show-sources
-
 # The directory in which packages are located.
 # https://docs.conda.io/projects/conda/en/latest/user-guide/configuration/settings.html#pkgs-dirs-specify-package-directories
+# Note: sudo chown is unnecessary in GitHub Actions environments as the runner user has permissions.
 if [[ ! -d "${CONDA_PKGS_DIR}" ]]; then
-    mkdir -p "${CONDA_PKGS_DIR}" || exit 1
+    mkdir -p "${CONDA_PKGS_DIR}"
 fi
-sudo chown -R "${USER}" "${CONDA_PKGS_DIR}" || \
-exit 1
 
-sudo chown -R "${USER}" "${MINIFORGE}" || \
-exit 1
+# Configure conda
+echo "🔧 Configuring conda..."
+"${MINIFORGE}/bin/conda" config --set always_yes yes
+"${MINIFORGE}/bin/conda" config --set changeps1 no
+"${MINIFORGE}/bin/conda" config --set auto_update_conda false
+"${MINIFORGE}/bin/conda" config --set show_channel_urls true
 
+echo "🌐 Updating Path environment variable..."
 export PATH="${MINIFORGE}/bin:${PATH}"
 echo "${MINIFORGE}/bin" >> "${GITHUB_PATH}"
+
+echo "🎉 Conda installation and configuration complete."
+"${MINIFORGE}/bin/conda" config --show-sources
+# Useful for debugging any issues with conda
+"${MINIFORGE}/bin/mamba" info -a
