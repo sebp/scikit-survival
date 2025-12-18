@@ -66,4 +66,4 @@ echo "${MINIFORGE}/bin" >> "${GITHUB_PATH}"
 echo "🎉 Conda installation and configuration complete."
 "${MINIFORGE}/bin/conda" config --show-sources
 # Useful for debugging any issues with conda
-"${MINIFORGE}/bin/mamba" info -a
+"${MINIFORGE}/bin/mamba" info

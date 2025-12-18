@@ -57,4 +57,4 @@ conda config --set auto_update_conda false
 conda config --set notify_outdated_conda false
 
 Write-Host "🎉 Conda installation and configuration complete."
-conda info -a
+mamba info
