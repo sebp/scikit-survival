@@ -12,6 +12,7 @@ jobs:
           submodules: true
       - name: Install third-party tools
         run: |
+          sudo apt-get update
           sudo apt-get install cmake libenchant-2-dev
           eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
           brew install pandoc
