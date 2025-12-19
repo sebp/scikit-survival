@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Installs and configures Miniforge.
 .DESCRIPTION
@@ -23,7 +23,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-function Check-ExitCode {
+function Test-ExitCode {
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Command failed with exit code $LASTEXITCODE"
         exit 1
@@ -34,17 +34,17 @@ $installerUrl = "https://github.com/conda-forge/miniforge/releases/download/25.3
 $installerPath = "Miniforge.exe"
 $expectedHash = "b7706a307b005fc397b70a244de19129100906928abccd5592580eb8296fb240"
 
-Write-Host "🔽 Downloading Miniforge installer..."
+Write-Verbose "🔽 Downloading Miniforge installer..."
 Invoke-WebRequest -Uri $installerUrl -OutFile $installerPath
 
-Write-Host "🧐 Verifying installer hash..."
+Write-Verbose "🧐 Verifying installer hash..."
 $actualHash = (Get-FileHash -Algorithm SHA256 $installerPath).Hash
 if ($actualHash -ne $expectedHash) {
     Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "💥 Hash mismatch! Expected: $expectedHash, Actual: $actualHash"
     exit 1
 }
 
-Write-Host "::group::🏗️ Installing Miniforge to $InstallationDirectory..."
+Write-Verbose "::group::🏗️ Installing Miniforge to $InstallationDirectory..."
 $installProcess = Start-Process $installerPath -Wait -PassThru -ArgumentList @(
     "/S",
     "/InstallationType=JustMe",
@@ -59,29 +59,29 @@ Remove-Item -Path $installerPath
 if ($CondaPkgsDir -and -not (Test-Path -Path $CondaPkgsDir)) {
     New-Item -ItemType Directory -Path $CondaPkgsDir -ErrorAction Stop
 }
-Write-Host "::endgroup::"
+Write-Verbose "::endgroup::"
 
-Write-Host "🌐 Updating Path environment variable..."
+Write-Verbose "🌐 Updating Path environment variable..."
 $env:Path += ";$InstallationDirectory\Scripts;$InstallationDirectory\Library\bin"
 Add-Content -Path $env:GITHUB_PATH -Value "$InstallationDirectory\Scripts"
 Add-Content -Path $env:GITHUB_PATH -Value "$InstallationDirectory\Library\bin"
 
-Write-Host "🔧 Configuring conda..."
+Write-Verbose "🔧 Configuring conda..."
 conda config --set always_yes yes
-Check-ExitCode
+Test-ExitCode
 conda config --set changeps1 no
-Check-ExitCode
+Test-ExitCode
 conda config --set auto_update_conda false
-Check-ExitCode
+Test-ExitCode
 conda config --set notify_outdated_conda false
-Check-ExitCode
+Test-ExitCode
 
-Write-Host "::group::🎉 Conda installation and configuration complete."
+Write-Verbose "::group::🎉 Conda installation and configuration complete."
 mamba info
-Check-ExitCode
-Write-Host "::endgroup::"
+Test-ExitCode
+Write-Verbose "::endgroup::"
 
-Write-Host "::group::✨ Create conda environment..."
+Write-Verbose "::group::✨ Create conda environment..."
 $envScript=".\ci\deps\windows\$DepsVersion.ps1"
 & $envScript
 python "ci\render-requirements.py" "ci\deps\requirements.yaml.tmpl" > environment.yaml
@@ -93,4 +93,4 @@ Add-Content -Path "$InstallationDirectory/envs/sksurv-test/conda-meta/pinned" -V
 Add-Content -Path "$InstallationDirectory/envs/sksurv-test/conda-meta/pinned" -Value "scikit-learn $env:CI_SKLEARN_VERSION"
 
 mamba list -n sksurv-test
-Write-Host "::endgroup::"
+Write-Verbose "::endgroup::"
