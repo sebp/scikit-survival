@@ -63,9 +63,12 @@ echo "🔧 Configuring conda..."
 "${MINIFORGE}/bin/conda" config --set auto_update_conda false
 "${MINIFORGE}/bin/conda" config --set show_channel_urls true
 
+# check whether the script is executed on GitHub Actions
+if [[ -n "${CI:-}" ]]; then
 echo "🌐 Updating Path environment variable..."
 export PATH="${MINIFORGE}/bin:${PATH}"
 echo "${MINIFORGE}/bin" >> "${GITHUB_PATH}"
+fi
 
 echo "::group::🎉 Conda installation and configuration complete."
 "${MINIFORGE}/bin/conda" config --show-sources
@@ -74,7 +77,7 @@ echo "::group::🎉 Conda installation and configuration complete."
 echo "::endgroup::"
 
 echo "::group::✨ Create conda environment..."
-source ci/deps/${DEPS_VERSION:?}.sh
+source "ci/deps/${DEPS_VERSION:?}.sh"
 python ci/render-requirements.py ci/deps/requirements.yaml.tmpl > environment.yaml
 
 mamba env create -n sksurv-test --file environment.yaml
