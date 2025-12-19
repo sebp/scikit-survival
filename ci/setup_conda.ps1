@@ -34,17 +34,17 @@ $installerUrl = "https://github.com/conda-forge/miniforge/releases/download/25.3
 $installerPath = "Miniforge.exe"
 $expectedHash = "b7706a307b005fc397b70a244de19129100906928abccd5592580eb8296fb240"
 
-Write-Verbose "🔽 Downloading Miniforge installer..."
+Write-Output "🔽 Downloading Miniforge installer..."
 Invoke-WebRequest -Uri $installerUrl -OutFile $installerPath
 
-Write-Verbose "🧐 Verifying installer hash..."
+Write-Output "🧐 Verifying installer hash..."
 $actualHash = (Get-FileHash -Algorithm SHA256 $installerPath).Hash
 if ($actualHash -ne $expectedHash) {
     Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "💥 Hash mismatch! Expected: $expectedHash, Actual: $actualHash"
     exit 1
 }
 
-Write-Verbose "::group::🏗️ Installing Miniforge to $InstallationDirectory..."
+Write-Output "::group::🏗️ Installing Miniforge to $InstallationDirectory..."
 $installProcess = Start-Process $installerPath -Wait -PassThru -ArgumentList @(
     "/S",
     "/InstallationType=JustMe",
@@ -59,14 +59,14 @@ Remove-Item -Path $installerPath
 if ($CondaPkgsDir -and -not (Test-Path -Path $CondaPkgsDir)) {
     New-Item -ItemType Directory -Path $CondaPkgsDir -ErrorAction Stop
 }
-Write-Verbose "::endgroup::"
+Write-Output "::endgroup::"
 
-Write-Verbose "🌐 Updating Path environment variable..."
+Write-Output "🌐 Updating Path environment variable..."
 $env:Path += ";$InstallationDirectory\Scripts;$InstallationDirectory\Library\bin"
 Add-Content -Path $env:GITHUB_PATH -Value "$InstallationDirectory\Scripts"
 Add-Content -Path $env:GITHUB_PATH -Value "$InstallationDirectory\Library\bin"
 
-Write-Verbose "🔧 Configuring conda..."
+Write-Output "🔧 Configuring conda..."
 conda config --set always_yes yes
 Test-ExitCode
 conda config --set changeps1 no
@@ -76,12 +76,12 @@ Test-ExitCode
 conda config --set notify_outdated_conda false
 Test-ExitCode
 
-Write-Verbose "::group::🎉 Conda installation and configuration complete."
+Write-Output "::group::🎉 Conda installation and configuration complete."
 mamba info
 Test-ExitCode
-Write-Verbose "::endgroup::"
+Write-Output "::endgroup::"
 
-Write-Verbose "::group::✨ Create conda environment..."
+Write-Output "::group::✨ Create conda environment..."
 $envScript=".\ci\deps\windows\$DepsVersion.ps1"
 & $envScript
 python "ci\render-requirements.py" "ci\deps\requirements.yaml.tmpl" > environment.yaml
@@ -93,4 +93,4 @@ Add-Content -Path "$InstallationDirectory/envs/sksurv-test/conda-meta/pinned" -V
 Add-Content -Path "$InstallationDirectory/envs/sksurv-test/conda-meta/pinned" -Value "scikit-learn $env:CI_SKLEARN_VERSION"
 
 mamba list -n sksurv-test
-Write-Verbose "::endgroup::"
+Write-Output "::endgroup::"
