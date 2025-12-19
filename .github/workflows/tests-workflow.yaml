@@ -29,12 +29,6 @@ jobs:
       - name: Set dependencies
         id: dependencies
         run: |
-          source ci/deps/${{ matrix.config }}.sh
-          echo "CI_PYTHON_VERSION=${CI_PYTHON_VERSION}" >> $GITHUB_ENV
-          echo "CI_PANDAS_VERSION=${CI_PANDAS_VERSION}" >> $GITHUB_ENV
-          echo "CI_NUMPY_VERSION=${CI_NUMPY_VERSION}" >> $GITHUB_ENV
-          echo "CI_SKLEARN_VERSION=${CI_SKLEARN_VERSION}" >> $GITHUB_ENV
-          echo "CI_NO_SLOW=${CI_NO_SLOW}" >> $GITHUB_ENV
           echo "CONDA_PKGS_DIRS=${{ runner.temp }}/conda_pkgs_dir" >> $GITHUB_ENV
           echo "requirements=ci/deps/${{ matrix.config }}.sh" >> $GITHUB_OUTPUT
       - name: Cache downloaded packages
@@ -46,8 +40,7 @@ jobs:
             ${{ runner.os }}-${{ runner.arch }}-conda-${{ matrix.config }}-
       - name: Create Conda Environment
         run: |
-          source ci/setup_conda.sh "${{ runner.os }}" "${{ runner.arch }}" "${{ env.CONDA_PKGS_DIRS }}"
-          ci/setup_env.sh
+          source ci/setup_conda.sh "${{ matrix.config }}" "${{ runner.os }}" "${{ runner.arch }}" "${{ env.CONDA_PKGS_DIRS }}"
       - name: Configure Xcode
         run: |
           sudo xcode-select -s "/Applications/Xcode_16.4.0.app"
@@ -122,12 +115,7 @@ jobs:
             ${{ runner.os }}-${{ runner.arch }}-conda-${{ matrix.config }}-
       - name: Create Conda Environment
         run: |
-          ci\setup_conda.ps1 -InstallationDirectory "${{ env.CONDA_INSTALL_LOCN }}" -CondaPkgsDir "${{ env.CONDA_PKGS_DIRS }}"
-          $envScript=".\ci\deps\windows\${{ matrix.config }}.ps1"
-          & $envScript
-          python "ci\render-requirements.py" "ci\deps\requirements.yaml.tmpl" > environment.yaml
-          mamba env create -n sksurv-test --file environment.yaml
-          mamba list -n sksurv-test
+          ci\setup_conda.ps1 -DepsVersion "${{ matrix.config }}" -InstallationDirectory "${{ env.CONDA_INSTALL_LOCN }}" -CondaPkgsDir "${{ env.CONDA_PKGS_DIRS }}"
       - name: Build package
         run: |
           mamba run -n sksurv-test python -m build .
@@ -140,6 +128,8 @@ jobs:
   nbval:
     runs-on: ubuntu-latest
     name: Build and check notebooks
+    env:
+      DEPS_CONFIG: py313
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -148,26 +138,17 @@ jobs:
           submodules: true
       - name: Set dependencies
         id: dependencies
-        env:
-          DEPS_CONFIG: py313
         run: |
-          source ci/deps/${DEPS_CONFIG}.sh
-          echo "CI_PYTHON_VERSION=${CI_PYTHON_VERSION}" >> $GITHUB_ENV
-          echo "CI_PANDAS_VERSION=${CI_PANDAS_VERSION}" >> $GITHUB_ENV
-          echo "CI_NUMPY_VERSION=${CI_NUMPY_VERSION}" >> $GITHUB_ENV
-          echo "CI_SKLEARN_VERSION=${CI_SKLEARN_VERSION}" >> $GITHUB_ENV
-          echo "CI_NO_SLOW=${CI_NO_SLOW}" >> $GITHUB_ENV
           echo "CONDA_PKGS_DIRS=${{ runner.temp }}/conda_pkgs_dir" >> $GITHUB_ENV
           echo "requirements=ci/deps/${DEPS_CONFIG}.sh" >> $GITHUB_OUTPUT
       - name: Cache downloaded packages
         uses: actions/cache@v5
         with:
           path: ${{ env.CONDA_PKGS_DIRS }}
-          key: ${{ runner.os }}-${{ runner.arch }}-conda-${{ matrix.config }}-${{ hashFiles(steps.dependencies.outputs.requirements, 'pyproject.toml', 'ci/deps/requirements.yaml.tmpl') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-conda-${{ env.DEPS_CONFIG }}-${{ hashFiles(steps.dependencies.outputs.requirements, 'pyproject.toml', 'ci/deps/requirements.yaml.tmpl') }}
       - name: Create Conda Environment
         run: |
-          source ci/setup_conda.sh "${{ runner.os }}" "${{ runner.arch }}" "${{ env.CONDA_PKGS_DIRS }}"
-          ci/setup_env.sh
+          source ci/setup_conda.sh "${{ env.DEPS_CONFIG }}" "${{ runner.os }}" "${{ runner.arch }}" "${{ env.CONDA_PKGS_DIRS }}"
       - name: Configure matplotlib
         run: |
           mkdir -p ${XDG_CONFIG_HOME}/matplotlib

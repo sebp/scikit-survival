@@ -5,13 +5,19 @@
     This script downloads the Miniforge installer, verifies its integrity,
     and installs it to the specified location. It also initializes conda
     for PowerShell and applies a default configuration.
+.PARAMETER DepsVersion
+    The version of the dependencies to install.
 .PARAMETER InstallationDirectory
     The directory where Miniforge should be installed.
 .PARAMETER CondaPkgsDir
     The directory where conda packages should be cached.
 #>
+[CmdletBinding()]
 param(
+    [string]$DepsVersion,
+    [ValidateNotNullOrEmpty()]
     [string]$InstallationDirectory = "$env:USERPROFILE\Miniforge3",
+    [ValidateNotNullOrEmpty()]
     [string]$CondaPkgsDir = $env:CONDA_PKGS_DIR
 )
 
@@ -73,4 +79,18 @@ Check-ExitCode
 Write-Host "::group::🎉 Conda installation and configuration complete."
 mamba info
 Check-ExitCode
+Write-Host "::endgroup::"
+
+Write-Host "::group::✨ Create conda environment..."
+$envScript=".\ci\deps\windows\$DepsVersion.ps1"
+& $envScript
+python "ci\render-requirements.py" "ci\deps\requirements.yaml.tmpl" > environment.yaml
+
+mamba env create -n sksurv-test --file environment.yaml
+
+Add-Content -Path "$InstallationDirectory/envs/sksurv-test/conda-meta/pinned" -Value "numpy $env:CI_NUMPY_VERSION"
+Add-Content -Path "$InstallationDirectory/envs/sksurv-test/conda-meta/pinned" -Value "pandas $env:CI_PANDAS_VERSION"
+Add-Content -Path "$InstallationDirectory/envs/sksurv-test/conda-meta/pinned" -Value "scikit-learn $env:CI_SKLEARN_VERSION"
+
+mamba list -n sksurv-test
 Write-Host "::endgroup::"

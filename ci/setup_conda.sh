@@ -1,9 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
-RUNNER_OS="${1}"
-RUNNER_ARCH="${2}"
-CONDA_PKGS_DIR="${3}"
+DEPS_VERSION="${1}"
+RUNNER_OS="${2}"
+RUNNER_ARCH="${3}"
+CONDA_PKGS_DIR="${4}"
 
 run_check_sha() {
     echo "${1}" | shasum -a 256 --check --strict -
@@ -70,4 +71,21 @@ echo "::group::🎉 Conda installation and configuration complete."
 "${MINIFORGE}/bin/conda" config --show-sources
 # Useful for debugging any issues with conda
 "${MINIFORGE}/bin/mamba" info
+echo "::endgroup::"
+
+echo "::group::✨ Create conda environment..."
+source ci/deps/${DEPS_VERSION:?}.sh
+python ci/render-requirements.py ci/deps/requirements.yaml.tmpl > environment.yaml
+
+mamba env create -n sksurv-test --file environment.yaml
+
+echo "numpy ${CI_NUMPY_VERSION:?}" > "${MINIFORGE:?}/envs/sksurv-test/conda-meta/pinned"
+echo "pandas ${CI_PANDAS_VERSION:?}" >> "${MINIFORGE:?}/envs/sksurv-test/conda-meta/pinned"
+echo "scikit-learn ${CI_SKLEARN_VERSION:?}" >> "${MINIFORGE:?}/envs/sksurv-test/conda-meta/pinned"
+
+# delete any version that is already installed.
+# use '|| true' to ensure script continues even if package is not found.
+mamba run -n sksurv-test pip uninstall --yes scikit-survival || true
+
+mamba list -n sksurv-test
 echo "::endgroup::"
