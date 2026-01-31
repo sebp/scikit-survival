@@ -16,7 +16,7 @@ DataSet = namedtuple("DataSet", ["x", "y"])
 DataSetWithNames = namedtuple("DataSetWithNames", ["x", "y", "names", "x_data_frame"])
 SparseDataSet = namedtuple("SparseDataSet", ["x_dense", "x_sparse", "y"])
 
-if Version(pd.__version__) >= Version("2.3.0"):
+if Version("2.3.0") <= Version(pd.__version__) < Version("3.0.0"):
     pd.set_option("mode.copy_on_write", True)
 
 
