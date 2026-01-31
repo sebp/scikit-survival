@@ -188,7 +188,6 @@ target-version = "py311"
 
 [tool.ruff.lint]
 ignore = ["A005", "C408"]
-ignore-init-module-imports = true
 select = [
     # pycodestyle
     "E",
