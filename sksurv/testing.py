@@ -119,7 +119,7 @@ class FixtureParameterFactory:
         return cases
 
 
-def check_module_minimum_version(module, version_str):
+def check_module_minimum_version(module, min_version_str, max_version_str=None):
     """
     Check whether a module of a specified minimum version is available.
 
@@ -127,8 +127,10 @@ def check_module_minimum_version(module, version_str):
     ----------
     module : str
         Name of the module.
-    version_str : str
+    min_version_str : str
         Minimum version of the module.
+    max_version_str : str, optional
+        Maximum version of the module (excluding).
 
     Returns
     -------
@@ -137,14 +139,17 @@ def check_module_minimum_version(module, version_str):
     """
     try:
         module_version = parse(version(module))
-        required_version = parse(version_str)
-        return module_version >= required_version
+        required_min_version = parse(min_version_str)
+        if max_version_str is None:
+            return module_version >= required_min_version
+        required_max_version = parse(max_version_str)
+        return required_min_version <= module_version < required_max_version
     except PackageNotFoundError:  # pragma: no cover
         return False
 
 
 def get_pandas_infer_string_context():
-    if check_module_minimum_version("pandas", "2.3.0"):
+    if check_module_minimum_version("pandas", "2.3.0", "3.0.0"):
         return (
             pytest.param(pd.option_context("future.infer_string", False), id="infer_string=False"),
             pytest.param(pd.option_context("future.infer_string", True), id="infer_string=True"),
