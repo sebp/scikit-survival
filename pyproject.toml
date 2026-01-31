@@ -48,7 +48,7 @@ dependencies = [
     "numexpr",
     "numpy >=2.0.0",
     "osqp >=1.0.2",
-    "pandas >=2.0.0",
+    "pandas >=2.1.0",
     "scipy >=1.3.2",
     "scikit-learn >=1.6.1,<1.8",
 ]
@@ -132,13 +132,7 @@ testpaths = ["tests"]
 filterwarnings = [
     # Treat all warnings as errors other than the ignored ones
     "error",
-    # distutils is deprecated in 3.10, scheduled for removal in 3.12
-    "ignore:The distutils package is deprecated:DeprecationWarning",
-    "ignore:Setuptools is replacing distutils",
-    "ignore:distutils Version classes are deprecated.*:DeprecationWarning",
     "ignore:Jupyter is migrating its paths to use standard platformdirs:DeprecationWarning",
-    # added with pandas 2.1
-    "ignore:DataFrame.applymap has been deprecated:FutureWarning",
     # deprecated since Pandas 2.2.0
     "ignore:\\nPyarrow will become a required dependency of pandas in the next major release of pandas.*:DeprecationWarning",
     # deprecated since Python 3.12
