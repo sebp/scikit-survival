@@ -41,7 +41,7 @@ def test_fit_predict(make_whas500, forest_cls, expected_c):
 
 
 @pytest.mark.parametrize(
-    "forest_cls,expected_cindex", [(ExtraSurvivalTrees, 0.7680596047942987), (RandomSurvivalForest, 0.7586653709102689)]
+    "forest_cls,expected_cindex", [(ExtraSurvivalTrees, 0.7644962747003563), (RandomSurvivalForest, 0.7638483965014577)]
 )
 def test_fit_missing_values(make_whas500, forest_cls, expected_cindex):
     whas500 = make_whas500(to_numeric=True)

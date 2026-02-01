@@ -826,9 +826,52 @@ def test_missing_values_best_splitter_to_max_samples(veterans):
     assert_array_almost_equal(y_pred, y_expected)
 
 
-def test_missing_values_best_splitter_to_right():
-    X = np.array([[np.nan] * 8 + list(range(7))], dtype=np.float32).T
-    y = Surv.from_arrays(time=np.concatenate((np.arange(8) + 10, np.arange(6, 13))), event=np.ones(15, dtype=bool))
+def test_missing_values_best_splitter_to_right_depth1():
+    # 5 samples with X=0, long survival
+    # 5 samples with X=10, short survival
+    # 10 samples with X=NaN, short survival
+    X = np.empty((20, 1), dtype=float)
+    X[:5, 0] = 0
+    X[5:10, 0] = 10
+    X[10:, 0] = np.nan
+
+    time = np.empty(20, dtype=float)
+    time[:5] = 100
+    time[5:10] = 10
+    time[10:] = 10
+    event = np.ones(20, dtype=bool)
+    y = Surv.from_arrays(time=time, event=event)
+
+    tree = SurvivalTree(max_depth=1, random_state=0)
+    tree.fit(X, y)
+
+    # Missing values should go to the left
+    # Node 0: Root
+    # Node 1: Left
+    # Node 2: Right
+
+    # Left node should have 5 samples
+    assert tree.tree_.n_node_samples[1] == 5
+    # Right node should have 15 samples (5 + 10)
+    assert tree.tree_.n_node_samples[2] == 15
+
+    y_pred_chf = tree.predict_cumulative_hazard_function([[np.nan]], return_array=True)
+    y_pred_surv = tree.predict_survival_function([[np.nan]], return_array=True)
+    y_pred = np.column_stack((y_pred_chf[0], y_pred_surv[0]))
+
+    y_expected = tree.tree_.value[2]
+    assert_array_almost_equal(y_pred, y_expected)
+
+
+def test_missing_values_best_splitter_to_right_depth2():
+    X = np.empty((15, 1), dtype=float)
+    X[:8, 0] = np.nan
+    X[8:, 0] = np.arange(7)
+
+    time = np.empty(15, dtype=float)
+    time[:8] = np.arange(10, 18)
+    time[8:] = np.arange(6, 13)
+    y = Surv.from_arrays(time=time, event=np.ones(15, dtype=bool))
 
     tree = SurvivalTree(max_depth=2)
     tree.fit(X, y)
@@ -838,5 +881,54 @@ def test_missing_values_best_splitter_to_right():
     y_pred = np.column_stack((y_pred_chf[0], y_pred_surv[0]))
 
     # missing values go to the right
+    #       ┌──────┐
+    #       │  N0  │
+    #       └──┬───┘
+    #    ┌─────┴─────┐
+    # ┌──┴───┐    ┌──┴───┐
+    # │  N1  │    │  N2  │
+    # └──────┘    └──┬───┘
+    #           ┌────┴────┐
+    #        ┌──┴───┐  ┌──┴───┐
+    #        │  N3  │  │  N4  │
+    #        └──────┘  └──────┘
+    assert tree.tree_.n_node_samples[4] == 8
+
     y_expected = tree.tree_.value[4]
+    assert_array_almost_equal(y_pred, y_expected)
+
+
+def test_missing_values_best_splitter_to_left():
+    # 5 samples with X=0, long survival
+    # 5 samples with X=10, short survival
+    # 10 samples with X=NaN, long survival
+    X = np.empty((20, 1), dtype=float)
+    X[:5, :] = 0
+    X[5:10, :] = 10
+    X[10:, :] = np.nan
+
+    time = np.empty(20, dtype=float)
+    time[:5] = 100
+    time[5:10] = 10
+    time[10:] = 100
+    y = Surv.from_arrays(time=time, event=np.ones(20, dtype=bool))
+
+    tree = SurvivalTree(max_depth=1)
+    tree.fit(X, y)
+
+    # Missing values should go to the left
+    # Node 0: Root
+    # Node 1: Left
+    # Node 2: Right
+
+    # Left node should have 15 samples (5 + 10)
+    assert tree.tree_.n_node_samples[1] == 15
+    # Right node should have 5 samples
+    assert tree.tree_.n_node_samples[2] == 5
+
+    y_pred_chf = tree.predict_cumulative_hazard_function([[np.nan]], return_array=True)
+    y_pred_surv = tree.predict_survival_function([[np.nan]], return_array=True)
+    y_pred = np.column_stack((y_pred_chf[0], y_pred_surv[0]))
+
+    y_expected = tree.tree_.value[1]
     assert_array_almost_equal(y_pred, y_expected)

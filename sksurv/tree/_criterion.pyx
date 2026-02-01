@@ -144,8 +144,12 @@ cdef class LogrankCriterion(Criterion):
         intp_t n_unique_times
         intp_t nbytes
         RisksetCounter riskset_total
+        RisksetCounter riskset_missing
         float64_t * weighted_n_events_left
         float64_t * weighted_delta_n_at_risk_left
+        float64_t * weighted_n_events_missing
+        float64_t * weighted_delta_n_at_risk_missing
+        float64_t weighted_n_missing
         intp_t * samples_time_idx
 
     def __cinit__(self, intp_t n_outputs, intp_t n_samples, const float64_t[::1] unique_times, const cnp.npy_bool[::1] is_event_time):
@@ -164,16 +168,22 @@ cdef class LogrankCriterion(Criterion):
         self.weighted_n_node_samples = 0.0
         self.weighted_n_left = 0.0
         self.weighted_n_right = 0.0
+        self.weighted_n_missing = 0.0
 
         self.riskset_total = RisksetCounter(unique_times)
+        self.riskset_missing = RisksetCounter(unique_times)
         self.weighted_delta_n_at_risk_left = <float64_t *> malloc(self.nbytes)
         self.weighted_n_events_left = <float64_t *> malloc(self.nbytes)
+        self.weighted_delta_n_at_risk_missing = <float64_t *> malloc(self.nbytes)
+        self.weighted_n_events_missing = <float64_t *> malloc(self.nbytes)
         self.samples_time_idx = <intp_t *> malloc(n_samples * sizeof(intp_t))
 
     def __dealloc__(self):
         """Destructor."""
         free(self.weighted_delta_n_at_risk_left)
         free(self.weighted_n_events_left)
+        free(self.weighted_delta_n_at_risk_missing)
+        free(self.weighted_n_events_missing)
         free(self.samples_time_idx)
 
     def __reduce__(self):
@@ -238,6 +248,38 @@ cdef class LogrankCriterion(Criterion):
         self.pos = self.end
         return 0
 
+    cdef void init_missing(self, intp_t n_missing) noexcept nogil:
+        """Initialize the criterion for the missing samples."""
+        cdef:
+            intp_t i
+            intp_t idx
+            float64_t event
+            intp_t time_idx
+            float64_t w = 1.0
+            const float64_t[:] sample_weight = self.sample_weight
+            const intp_t[:] samples = self.sample_indices
+            const float64_t[:, ::1] y = self.y
+
+        self.n_missing = n_missing
+        self.weighted_n_missing = 0.0
+        memset(self.weighted_delta_n_at_risk_missing, 0, self.nbytes)
+        memset(self.weighted_n_events_missing, 0, self.nbytes)
+
+        if n_missing > 0:
+            for i in range(self.end - n_missing, self.end):
+                idx = samples[i]
+                event = y[idx, 1]
+                time_idx = self.samples_time_idx[idx]
+
+                if sample_weight is not None:
+                    w = sample_weight[idx]
+
+                self.weighted_delta_n_at_risk_missing[time_idx] += w
+                if event != 0.0:
+                    self.weighted_n_events_missing[time_idx] += w
+
+                self.weighted_n_missing += w
+
     cdef int update(self, intp_t new_pos) except -1 nogil:
         """Updated statistics by moving samples[pos:new_pos] to the left."""
         cdef:
@@ -292,15 +334,25 @@ cdef class LogrankCriterion(Criterion):
             intp_t i
             float64_t weighted_at_risk = self.weighted_n_left
             float64_t events
+            float64_t delta_at_risk
             float64_t total_at_risk
             float64_t total_events
             float64_t ratio
             float64_t v
             float64_t denom = 0.0
             float64_t numer = 0.0
+            int missing_go_to_left = self.missing_go_to_left
+
+        if missing_go_to_left:
+            weighted_at_risk += self.weighted_n_missing
 
         for i in range(self.n_unique_times):
             events = self.weighted_n_events_left[i]
+            delta_at_risk = self.weighted_delta_n_at_risk_left[i]
+            if missing_go_to_left:
+                events += self.weighted_n_events_missing[i]
+                delta_at_risk += self.weighted_delta_n_at_risk_missing[i]
+
             self.riskset_total.at(i, &total_at_risk, &total_events)
 
             if total_at_risk == 0:
@@ -312,7 +364,7 @@ cdef class LogrankCriterion(Criterion):
                 denom += ratio * (1.0 - ratio) * v
 
             # Update number of samples at risk for next bigger timepoint
-            weighted_at_risk -= self.weighted_delta_n_at_risk_left[i]
+            weighted_at_risk -= delta_at_risk
 
         if denom != 0.0:
             # absolute value is the measure of node separation
