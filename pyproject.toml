@@ -46,10 +46,10 @@ dependencies = [
     "ecos",
     "joblib",
     "numexpr",
-    "numpy",
+    "numpy >=2.0.0",
     "osqp >=1.0.2",
-    "pandas >=2.0.0",
-    "scipy >=1.3.2",
+    "pandas >=2.2.0",
+    "scipy >=1.13.0",
     "scikit-learn >=1.6.1,<1.8",
 ]
 dynamic = ["version"]
@@ -132,25 +132,17 @@ testpaths = ["tests"]
 filterwarnings = [
     # Treat all warnings as errors other than the ignored ones
     "error",
-    # distutils is deprecated in 3.10, scheduled for removal in 3.12
-    "ignore:The distutils package is deprecated:DeprecationWarning",
-    "ignore:Setuptools is replacing distutils",
-    "ignore:distutils Version classes are deprecated.*:DeprecationWarning",
     "ignore:Jupyter is migrating its paths to use standard platformdirs:DeprecationWarning",
-    # added with pandas 2.1
-    "ignore:DataFrame.applymap has been deprecated:FutureWarning",
     # deprecated since Pandas 2.2.0
     "ignore:\\nPyarrow will become a required dependency of pandas in the next major release of pandas.*:DeprecationWarning",
     # deprecated since Python 3.12
     "ignore:datetime\\.datetime\\.utcfromtimestamp\\(\\) is deprecated and scheduled for removal in a future version.*:DeprecationWarning",
     "ignore:ast\\.Num is deprecated and will be removed in Python 3\\.14.*:DeprecationWarning",
     "ignore:Attribute n is deprecated and will be removed in Python 3\\.14.*:DeprecationWarning",
-    # deprecated since NumPy 1.25
-    "ignore:np\\.find_common_type is deprecated.  Please use `np\\.result_type` or `np\\.promote_types`:DeprecationWarning",
-    # deprecated since NumPy 2.0
-    "ignore:`trapz` is deprecated\\. Use `trapezoid` instead.*:DeprecationWarning",
     # deprecated since scipy 1.16.0, scheduled for removal in 1.18
     "ignore:scipy\\.optimize. The `disp` and `iprint` options of the L-BFGS-B solver are deprecated.*:DeprecationWarning",
+    # deprecated since pandas 3.0.0
+    "ignore:The copy keyword is deprecated and will be removed in a future version.*:DeprecationWarning",
 ]
 
 [tool.coverage.run]
@@ -196,7 +188,6 @@ target-version = "py311"
 
 [tool.ruff.lint]
 ignore = ["A005", "C408"]
-ignore-init-module-imports = true
 select = [
     # pycodestyle
     "E",

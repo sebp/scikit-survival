@@ -64,11 +64,13 @@ def create_difference_matrix(const cnp.npy_uint8[:] event,
     new_dim.ptr = &k
     new_dim.len = 1
 
-    ret = cnp.PyArray_Resize(values, &new_dim, 1, cnp.NPY_CORDER)
+    # disable refcheck, we are certain the array is not referenced by other arrays
+    cdef int refcheck = 0
+    ret = cnp.PyArray_Resize(values, &new_dim, refcheck, cnp.NPY_CORDER)
     if ret is not None:  # returns NULL on error
         return
 
-    ret = cnp.PyArray_Resize(columns, &new_dim, 1, cnp.NPY_CORDER)
+    ret = cnp.PyArray_Resize(columns, &new_dim, refcheck, cnp.NPY_CORDER)
     if ret is not None:  # returns NULL on error
         return
 

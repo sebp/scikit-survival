@@ -510,7 +510,7 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
             # to make sure that the curve starts at (0, 0)
             tp_no_ties = np.r_[0, tp_no_ties]
             fp_no_ties = np.r_[0, fp_no_ties]
-            scores[i] = np.trapz(tp_no_ties, fp_no_ties)
+            scores[i] = np.trapezoid(tp_no_ties, fp_no_ties)
 
     if n_times == 1:
         mean_auc = scores[0]
@@ -780,7 +780,7 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
         raise ValueError("At least two time points must be given")
 
     # Computing the IBS
-    ibs_value = np.trapz(brier_scores, times) / (times[-1] - times[0])
+    ibs_value = np.trapezoid(brier_scores, times) / (times[-1] - times[0])
 
     return ibs_value
 
