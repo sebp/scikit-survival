@@ -18,7 +18,7 @@ import sys
 from packaging.version import Version
 from setuptools import Command, Extension, setup
 
-CYTHON_MIN_VERSION = Version("3.0.10")
+CYTHON_MIN_VERSION = Version("3.1.4")
 
 
 # adapted from bottleneck's setup.py
