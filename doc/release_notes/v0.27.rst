@@ -3,7 +3,7 @@
 What's new in 0.27
 ==================
 
-scikit-survival 0.27.0 (2026-02-01)
+scikit-survival 0.27.0 (2026-01-02)
 -----------------------------------
 
 This release adds support for scikit-learn 1.8 and pandas 3.0.
