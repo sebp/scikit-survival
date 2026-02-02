@@ -217,7 +217,7 @@ extlinks = {
 }
 
 intersphinx_mapping = {
-    "sklearn": ("https://scikit-learn.org/1.7", None),
+    "sklearn": ("https://scikit-learn.org/1.8", None),
     "cython": ("https://cython.readthedocs.io/en/latest/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/", None),

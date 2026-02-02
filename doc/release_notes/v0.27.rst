@@ -1,0 +1,47 @@
+.. _release_notes_0_27:
+
+What's new in 0.27
+==================
+
+scikit-survival 0.27.0 (2026-02-01)
+-----------------------------------
+
+This release adds support for scikit-learn 1.8 and pandas 3.0.
+The updated minimum supported version of dependencies are:
+
+   +--------------+-----------------+
+   | Package      | Minimum Version |
+   +==============+=================+
+   +--------------+-----------------+
+   | scikit-learn | 1.8.0           |
+   +--------------+-----------------+
+   | pandas       | 2.2.0           |
+   +--------------+-----------------+
+   | scipy        | 1.13.0          |
+   +--------------+-----------------+
+   | numpy        | 2.0.0           |
+   +--------------+-----------------+
+
+Enhancements
+^^^^^^^^^^^^
+
+- Add support for :external+sklearn:ref:`scikit-learn 1.8 <release_notes_1_8>` (:issue:`580`).
+- Add support for :external+pandas:ref:`pandas 3.0 <whatsnew_300>` (:issue:`579`).
+- Add support for numpy 2.4 (:issue:`579`).
+
+Bug Fixes
+^^^^^^^^^
+
+- Fix splitting logic in :class:`sksurv.tree.SurvivalTree` and :class:`sksurv.ensemble.RandomSurvivalForest`
+  to correctly handle missing values when using the log-rank criterion. This ensures consistency
+  with scikit-learn 1.8.
+- Fix "cannot resize array" error in Cython extension of :class:`sksurv.svm.MinlipSurvivalAnalysis`
+  by disabling refcheck.
+
+Backwards incompatible changes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Require at least scikit-learn 1.8.0.
+- Require at least pandas 2.2.0.
+- Require at least scipy 1.13.0.
+- Require at least numpy 2.0.0.
