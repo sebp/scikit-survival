@@ -862,6 +862,14 @@ def test_missing_values_best_splitter_to_right_depth1():
     y_expected = tree.tree_.value[2]
     assert_array_almost_equal(y_pred, y_expected)
 
+    X[10:, :] = 10
+    stats = LogrankTreeBuilder(max_depth=1, min_leaf=3).build(X, y)
+
+    assert tree.tree_.capacity == stats.shape[0]
+    assert_array_equal(tree.tree_.feature, stats.loc[:, "feature"].to_numpy())
+    assert_array_equal(tree.tree_.n_node_samples, stats.loc[:, "n_node_samples"].to_numpy())
+    assert_array_almost_equal(tree.tree_.threshold, stats.loc[:, "threshold"].to_numpy())
+
 
 def test_missing_values_best_splitter_to_right_depth2():
     X = np.empty((15, 1), dtype=float)
@@ -932,3 +940,11 @@ def test_missing_values_best_splitter_to_left():
 
     y_expected = tree.tree_.value[1]
     assert_array_almost_equal(y_pred, y_expected)
+
+    X[10:, :] = 0
+    stats = LogrankTreeBuilder(max_depth=1, min_leaf=3).build(X, y)
+
+    assert tree.tree_.capacity == stats.shape[0]
+    assert_array_equal(tree.tree_.feature, stats.loc[:, "feature"].to_numpy())
+    assert_array_equal(tree.tree_.n_node_samples, stats.loc[:, "n_node_samples"].to_numpy())
+    assert_array_almost_equal(tree.tree_.threshold, stats.loc[:, "threshold"].to_numpy())
