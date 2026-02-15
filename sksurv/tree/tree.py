@@ -8,7 +8,6 @@ from sklearn.tree import _tree
 from sklearn.tree._classes import DENSE_SPLITTERS, SPARSE_SPLITTERS
 from sklearn.tree._splitter import Splitter
 from sklearn.tree._tree import BestFirstTreeBuilder, DepthFirstTreeBuilder, Tree
-from sklearn.tree._utils import _any_isnan_axis0
 from sklearn.utils._param_validation import Interval, RealNotInt, StrOptions
 from sklearn.utils.validation import (
     _assert_all_finite_element_wise,
@@ -248,7 +247,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         if not np.isnan(overall_sum):
             return None
 
-        missing_values_in_feature_mask = _any_isnan_axis0(X)
+        missing_values_in_feature_mask = np.isnan(np.sum(X, axis=0))
         return missing_values_in_feature_mask
 
     def fit(self, X, y, sample_weight=None, check_input=True):
