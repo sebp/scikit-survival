@@ -73,7 +73,7 @@ jobs:
           disable_file_fixes: true
         if: steps.coverage.outputs.do == 'true'
       - name: Submit Coverage to Codacy
-        uses: codacy/codacy-coverage-reporter-action@master
+        uses: codacy/codacy-coverage-reporter-action@v1.3.0
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           coverage-reports: coverage.xml
