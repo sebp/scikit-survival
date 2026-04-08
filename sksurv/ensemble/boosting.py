@@ -664,13 +664,6 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         and an increase in bias.
         Values must be in the range `(0.0, 1.0]`.
 
-    criterion : {'friedman_mse', 'squared_error'}, optional, default: 'friedman_mse'
-        The function to measure the quality of a split. Supported criteria are
-        'friedman_mse' for the mean squared error with improvement score by
-        Friedman, 'squared_error' for mean squared error. The default value of
-        'friedman_mse' is generally the best as it can provide a better
-        approximation in some cases.
-
     min_samples_split : int or float, optional, default: 2
         The minimum number of samples required to split an internal node:
 
@@ -878,7 +871,6 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         learning_rate=0.1,
         n_estimators=100,
         subsample=1.0,
-        criterion="friedman_mse",
         min_samples_split=2,
         min_samples_leaf=1,
         min_weight_fraction_leaf=0.0,
@@ -899,7 +891,6 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
             loss=loss,
             learning_rate=learning_rate,
             n_estimators=n_estimators,
-            criterion=criterion,
             min_samples_split=min_samples_split,
             min_samples_leaf=min_samples_leaf,
             min_weight_fraction_leaf=min_weight_fraction_leaf,
@@ -997,7 +988,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         for k in range(self.n_trees_per_iteration_):
             # induce regression tree on the negative gradient
             tree = DecisionTreeRegressor(
-                criterion=self.criterion,
+                criterion="squared_error",
                 splitter="best",
                 max_depth=self.max_depth,
                 min_samples_split=self.min_samples_split,
