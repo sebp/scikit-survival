@@ -319,6 +319,25 @@ Feature names unseen at fit time:
             t.prepare(data)
 
     @staticmethod
+    def test_bool_column_treated_as_numeric():
+        df_bool = pd.DataFrame(
+            {
+                "age": [20.0, 23.0, 26.0, 54.0, 100.0],
+                "event": [True, False, True, True, False],
+            }
+        )
+        df_uint = df_bool.assign(event=df_bool["event"].astype(np.uint8))
+
+        assert_array_almost_equal(clinical_kernel(df_bool), clinical_kernel(df_uint))
+
+        t_bool = ClinicalKernelTransform().fit(df_bool)
+        t_uint = ClinicalKernelTransform().fit(df_uint)
+        assert_array_almost_equal(t_bool._numeric_ranges, t_uint._numeric_ranges)
+        assert_array_almost_equal(t_bool.X_fit_, t_uint.X_fit_)
+        assert list(t_bool._numeric_columns) == [0, 1]
+        assert list(t_bool._nominal_columns) == []
+
+    @staticmethod
     def test_feature_mismatch(make_data):
         data, _ = make_data()
         x = data.iloc[:, :2]
