@@ -294,8 +294,6 @@ class TestSafeConcatAxisValidation:
     def test_invalid_axis_pandas_raises(bad_axis):
         import pandas as pd
 
-        from sksurv.util import safe_concat
-
         with pytest.raises(ValueError, match="axis must be 0 or 1"):
             safe_concat([pd.DataFrame({"x": [1]}), pd.DataFrame({"x": [2]})], axis=bad_axis)
 

@@ -338,8 +338,6 @@ class TestNominalNullParity:
 
     @staticmethod
     def _frames_with_null():
-        import pandas as pd
-
         df_pd = pd.DataFrame(
             {
                 "age": [40.0, 50.0, 60.0],

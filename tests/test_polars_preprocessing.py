@@ -135,7 +135,6 @@ class TestOneHotEncoderUnseenAndCrossDataframeLibrary:
     def _make_fit_test_pair():
         fit = ["red", "green", "blue", "red"]
         test = ["red", "yellow", "blue"]
-        import pandas as pd
 
         df_fit_pd = pd.DataFrame({"color": pd.Categorical(fit)})
         df_test_pd = pd.DataFrame({"color": pd.Categorical(test)})
