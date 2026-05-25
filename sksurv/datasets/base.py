@@ -1,9 +1,15 @@
 import warnings
 
+import narwhals.stable.v2 as nw
 import numpy as np
-import pandas as pd
 from pandas.api.types import CategoricalDtype
 
+from .._dataframe import (
+    collect_lazy_dataframe,
+    is_supported_dataframe,
+    to_narwhals_dataframe,
+    unsupported_dataframe_error,
+)
 from ..column import categorical_to_numeric, standardize
 from ..io import loadarff
 from ..util import safe_concat
@@ -30,30 +36,40 @@ def _get_data_path(name):
 
 def _get_x_y_survival(dataset, col_event, col_time, val_outcome, competing_risks=False):
     if col_event is None or col_time is None:
-        y = None
-        x_frame = dataset
+        return collect_lazy_dataframe(dataset), None
+
+    nw_data = to_narwhals_dataframe(dataset)
+
+    event_type = np.int64 if competing_risks else bool
+    n_samples = nw_data.shape[0]
+    y = np.empty(dtype=[(col_event, event_type), (col_time, np.float64)], shape=n_samples)
+    event_arr = nw_data.get_column(col_event).to_numpy()
+    time_arr = nw_data.get_column(col_time).to_numpy()
+    if competing_risks:
+        y[col_event] = event_arr
     else:
-        event_type = np.int64 if competing_risks else bool
-        y = np.empty(dtype=[(col_event, event_type), (col_time, np.float64)], shape=dataset.shape[0])
-        if competing_risks:
-            y[col_event] = dataset[col_event].to_numpy()
-        else:
-            y[col_event] = (dataset[col_event] == val_outcome).to_numpy()
-        y[col_time] = dataset[col_time].to_numpy()
+        y[col_event] = event_arr == val_outcome
+    y[col_time] = time_arr
 
-        x_frame = dataset.drop([col_event, col_time], axis=1)
-
+    x_frame = nw_data.drop([col_event, col_time]).to_native()
     return x_frame, y
 
 
 def _get_x_y_other(dataset, col_label):
     if col_label is None:
-        y = None
-        x_frame = dataset
-    else:
-        y = dataset.loc[:, col_label]
-        x_frame = dataset.drop(col_label, axis=1)
+        return collect_lazy_dataframe(dataset), None
 
+    nw_data = to_narwhals_dataframe(dataset)
+
+    if isinstance(col_label, str):
+        # String label returns Series, matching historical pandas dataset.loc[:, "col"];
+        # polars also returns polars.Series for symmetry).
+        y = nw_data.get_column(col_label).to_native()
+        x_frame = nw_data.drop([col_label]).to_native()
+    else:
+        col_label_list = list(col_label)
+        y = nw_data.select(col_label_list).to_native()
+        x_frame = nw_data.drop(col_label_list).to_native()
     return x_frame, y
 
 
@@ -62,8 +78,9 @@ def get_x_y(data_frame, attr_labels, pos_label=None, survival=True, competing_ri
 
     Parameters
     ----------
-    data_frame : pandas.DataFrame, shape = (n_samples, n_columns)
-        A data frame.
+    data_frame : pandas.DataFrame, polars.DataFrame, or polars.LazyFrame, shape = (n_samples, n_columns)
+        A data frame. ``polars.LazyFrame`` inputs are collected internally before
+        the columns are extracted.
 
     attr_labels : sequence of str or None
         A list of one or more columns that are considered the label.
@@ -86,20 +103,24 @@ def get_x_y(data_frame, attr_labels, pos_label=None, survival=True, competing_ri
 
     Returns
     -------
-    X : pandas.DataFrame, shape = (n_samples, n_columns - len(attr_labels))
-        Data frame containing features.
+    X : pandas.DataFrame or polars.DataFrame, shape = (n_samples, n_columns - len(attr_labels))
+        Data frame containing features. The output dataframe library matches the input.
 
-    y : structured array, shape = (n_samples,), or pandas.DataFrame, shape = (n_samples, len(attr_labels)), or None
-        If `survival` is `True`, a structured array with two fields.
+    y : structured array, or pandas/polars DataFrame, or None
+        If `survival` is `True`, a structured array of shape ``(n_samples,)`` with
+        two fields.
         The first field is a boolean where ``True`` indicates an event and ``False``
         indicates right-censoring. The second field is a float with the time of
         event or time of censoring.
 
-        If `survival` is `False` and `attr_labels` not `None`, a :class:`pandas.DataFrame`
-        with columns specified by `attr_labels`.
+        If `survival` is `False` and `attr_labels` not `None`, a DataFrame in the
+        input dataframe library with columns specified by `attr_labels`.
 
         If `survival` is `False` and `attr_labels` is `None`, `y` is set to `None`.
     """
+    if not is_supported_dataframe(data_frame):
+        raise unsupported_dataframe_error(data_frame)
+
     if survival:
         if len(attr_labels) != 2:
             raise ValueError(f"expected sequence of length two for attr_labels, but got {len(attr_labels)}")
@@ -110,8 +131,14 @@ def get_x_y(data_frame, attr_labels, pos_label=None, survival=True, competing_ri
     return _get_x_y_other(data_frame, attr_labels)
 
 
-def _loadarff_with_index(filename):
-    dataset = loadarff(filename)
+def _loadarff_with_index(filename, output_type="pandas"):
+    dataset = loadarff(filename, output_type=output_type)
+    if output_type == "polars":
+        # polars has no row-index; drop the ARFF "index" column so the column
+        # set matches the pandas branch (which absorbs it as the row index).
+        if "index" in dataset.columns:
+            dataset = nw.from_native(dataset).drop("index").to_native()
+        return dataset
     if "index" in dataset.columns:
         if isinstance(dataset["index"].dtype, CategoricalDtype):
             # concatenating categorical index may raise TypeError
@@ -119,6 +146,11 @@ def _loadarff_with_index(filename):
             dataset = dataset.astype({"index": "str"})
         dataset.set_index("index", inplace=True)
     return dataset
+
+
+def _validate_output_type(output_type):
+    if output_type not in ("pandas", "polars"):
+        raise ValueError(f"output_type must be 'pandas' or 'polars', got {output_type!r}")
 
 
 def load_arff_files_standardized(
@@ -129,6 +161,8 @@ def load_arff_files_standardized(
     survival=True,
     standardize_numeric=True,
     to_numeric=True,
+    *,
+    output_type="pandas",
 ):
     """Load dataset in ARFF format.
 
@@ -163,12 +197,18 @@ def load_arff_files_standardized(
         Whether to convert categorical variables to numeric values.
         See :func:`sksurv.column.categorical_to_numeric`.
 
+    output_type : {"pandas", "polars"}, default="pandas"
+        Dataframe library used for the returned ``x_train`` / ``x_test``.
+        All derivations (concatenation, standardization, numeric conversion)
+        run through narwhals in the requested dataframe library; there is no
+        intermediate pandas conversion when ``output_type="polars"``.
+
     Returns
     -------
-    x_train : pandas.DataFrame, shape = (n_train, n_features)
+    x_train : pandas.DataFrame or polars.DataFrame, shape = (n_train, n_features)
         Training data.
 
-    y_train : structured array, shape = (n_train,), or pandas.DataFrame, shape = (n_train, len(attr_labels))
+    y_train : structured array of shape (n_train,), or pandas / polars DataFrame of shape (n_train, len(attr_labels))
         Dependent variables of training data.
 
         If `survival` is `True`, a structured array with two fields.
@@ -176,13 +216,13 @@ def load_arff_files_standardized(
         indicates right-censoring. The second field is a float with the time of
         event or time of censoring.
 
-        If `survival` is `False` and `attr_labels` not `None`, a :class:`pandas.DataFrame`
-        with columns specified by `attr_labels`.
+        If `survival` is `False` and `attr_labels` not `None`, a DataFrame in the
+        ``output_type`` dataframe library with columns specified by `attr_labels`.
 
         If `survival` is `False` and `attr_labels` is `None`, `y_train` is set to `None`.
 
-    x_test : None or pandas.DataFrame, shape = (n_test, n_features)
-        Testing data if `path_testing` was provided.
+    x_test : None, or pandas.DataFrame / polars.DataFrame of shape (n_test, n_features)
+        Testing data if `path_testing` was provided. Dataframe library matches ``output_type``.
 
     y_test : None or structured array, shape = (n_test,)
         Dependent variables of testing data if `path_testing` was provided.
@@ -192,27 +232,30 @@ def load_arff_files_standardized(
         indicates right-censoring. The second field is a float with the time of
         event or time of censoring.
 
-        If `survival` is `False` and `attr_labels` not `None`, a :class:`pandas.DataFrame`
-        with columns specified by `attr_labels`.
+        If `survival` is `False` and `attr_labels` not `None`, a DataFrame in the
+        ``output_type`` dataframe library with columns specified by `attr_labels`.
 
         If `survival` is `False` and `attr_labels` is `None`, `y_test` is set to `None`.
     """
-    dataset = _loadarff_with_index(path_training)
+    _validate_output_type(output_type)
+    dataset = _loadarff_with_index(path_training, output_type=output_type)
 
     x_train, y_train = get_x_y(dataset, attr_labels, pos_label, survival)
 
     if path_testing is not None:
-        x_test, y_test = _load_arff_testing(path_testing, attr_labels, pos_label, survival)
+        x_test, y_test = _load_arff_testing(path_testing, attr_labels, pos_label, survival, output_type=output_type)
 
-        if len(x_train.columns.symmetric_difference(x_test.columns)) > 0:
+        train_cols = list(nw.from_native(x_train).columns)
+        test_cols = list(nw.from_native(x_test).columns)
+        if set(train_cols) != set(test_cols):
             warnings.warn("Restricting columns to intersection between training and testing data", stacklevel=2)
 
-            cols = x_train.columns.intersection(x_test.columns)
-            if len(cols) == 0:
+            cols = [c for c in train_cols if c in set(test_cols)]
+            if not cols:
                 raise ValueError("columns of training and test data do not intersect")
 
-            x_train = x_train.loc[:, cols]
-            x_test = x_test.loc[:, cols]
+            x_train = nw.from_native(x_train).select(cols).to_native()
+            x_test = nw.from_native(x_test).select(cols).to_native()
 
         x = safe_concat((x_train, x_test), axis=0)
         if standardize_numeric:
@@ -220,9 +263,10 @@ def load_arff_files_standardized(
         if to_numeric:
             x = categorical_to_numeric(x)
 
-        n_train = x_train.shape[0]
-        x_train = x.iloc[:n_train, :]
-        x_test = x.iloc[n_train:, :]
+        n_train = nw.from_native(x_train).shape[0]
+        nw_x = nw.from_native(x)
+        x_train = nw_x.head(n_train).to_native()
+        x_test = nw_x.tail(nw_x.shape[0] - n_train).to_native()
     else:
         if standardize_numeric:
             x_train = standardize(x_train)
@@ -235,10 +279,11 @@ def load_arff_files_standardized(
     return x_train, y_train, x_test, y_test
 
 
-def _load_arff_testing(path_testing, attr_labels, pos_label, survival):
-    test_dataset = _loadarff_with_index(path_testing)
+def _load_arff_testing(path_testing, attr_labels, pos_label, survival, output_type="pandas"):
+    test_dataset = _loadarff_with_index(path_testing, output_type=output_type)
 
-    has_labels = pd.Index(attr_labels).isin(test_dataset.columns).all()
+    test_columns = set(nw.from_native(test_dataset).columns)
+    has_labels = attr_labels is not None and all(lbl in test_columns for lbl in attr_labels)
     if not has_labels:
         if survival:
             attr_labels = [None, None]
@@ -247,7 +292,7 @@ def _load_arff_testing(path_testing, attr_labels, pos_label, survival):
     return get_x_y(test_dataset, attr_labels, pos_label, survival)
 
 
-def load_whas500():
+def load_whas500(*, output_type="pandas"):
     """Load and return the Worcester Heart Attack Study dataset
 
     The dataset has 500 samples and 14 features.
@@ -255,9 +300,14 @@ def load_whas500():
 
     See [1]_, [2]_ for further description.
 
+    Parameters
+    ----------
+    output_type : {"pandas", "polars"}, default="pandas"
+        Dataframe library used for the returned features.
+
     Returns
     -------
-    x : pandas.DataFrame
+    x : pandas.DataFrame or polars.DataFrame
         The measurements for each patient.
 
     y : structured array with 2 fields
@@ -275,11 +325,12 @@ def load_whas500():
         "Applied Survival Analysis: Regression Modeling of Time to Event Data."
         John Wiley & Sons, Inc. (2008)
     """
+    _validate_output_type(output_type)
     fn = _get_data_path("whas500.arff")
-    return get_x_y(loadarff(fn), attr_labels=["fstat", "lenfol"], pos_label="1")
+    return get_x_y(loadarff(fn, output_type=output_type), attr_labels=["fstat", "lenfol"], pos_label="1")
 
 
-def load_gbsg2():
+def load_gbsg2(*, output_type="pandas"):
     """Load and return the German Breast Cancer Study Group 2 dataset
 
     The dataset has 686 samples and 8 features.
@@ -287,9 +338,14 @@ def load_gbsg2():
 
     See [1]_, [2]_ for further description.
 
+    Parameters
+    ----------
+    output_type : {"pandas", "polars"}, default="pandas"
+        Dataframe library used for the returned features.
+
     Returns
     -------
-    x : pandas.DataFrame
+    x : pandas.DataFrame or polars.DataFrame
         The measurements for each patient.
 
     y : structured array with 2 fields
@@ -307,11 +363,12 @@ def load_gbsg2():
         in node-positive breast cancer patients."
         Journal of Clinical Oncology 12, 2086–2093. (1994)
     """
+    _validate_output_type(output_type)
     fn = _get_data_path("GBSG2.arff")
-    return get_x_y(loadarff(fn), attr_labels=["cens", "time"], pos_label="1")
+    return get_x_y(loadarff(fn, output_type=output_type), attr_labels=["cens", "time"], pos_label="1")
 
 
-def load_veterans_lung_cancer():
+def load_veterans_lung_cancer(*, output_type="pandas"):
     """Load and return data from the Veterans' Administration
     Lung Cancer Trial
 
@@ -320,9 +377,14 @@ def load_veterans_lung_cancer():
 
     See [1]_ for further description.
 
+    Parameters
+    ----------
+    output_type : {"pandas", "polars"}, default="pandas"
+        Dataframe library used for the returned features.
+
     Returns
     -------
-    x : pandas.DataFrame
+    x : pandas.DataFrame or polars.DataFrame
         The measurements for each patient.
 
     y : structured array with 2 fields
@@ -336,11 +398,16 @@ def load_veterans_lung_cancer():
     .. [1] Kalbfleisch, J.D., Prentice, R.L.:
         "The Statistical Analysis of Failure Time Data." John Wiley & Sons, Inc. (2002)
     """
+    _validate_output_type(output_type)
     fn = _get_data_path("veteran.arff")
-    return get_x_y(loadarff(fn), attr_labels=["Status", "Survival_in_days"], pos_label="dead")
+    return get_x_y(
+        loadarff(fn, output_type=output_type),
+        attr_labels=["Status", "Survival_in_days"],
+        pos_label="dead",
+    )
 
 
-def load_aids(endpoint="aids"):
+def load_aids(endpoint="aids", *, output_type="pandas"):
     """Load and return the AIDS Clinical Trial dataset
 
     The dataset has 1,151 samples and 11 features.
@@ -355,10 +422,12 @@ def load_aids(endpoint="aids"):
     ----------
     endpoint : {'aids', 'death'}, default: 'aids'
         The endpoint.
+    output_type : {"pandas", "polars"}, default="pandas"
+        Dataframe library used for the returned features.
 
     Returns
     -------
-    x : pandas.DataFrame
+    x : pandas.DataFrame or polars.DataFrame
         The measurements for each patient.
 
     y : structured array with 2 fields
@@ -377,6 +446,7 @@ def load_aids(endpoint="aids"):
         "Applied Survival Analysis: Regression Modeling of Time to Event Data."
         John Wiley & Sons, Inc. (2008)
     """
+    _validate_output_type(output_type)
     labels_aids = ["censor", "time"]
     labels_death = ["censor_d", "time_d"]
     if endpoint == "aids":
@@ -389,12 +459,12 @@ def load_aids(endpoint="aids"):
         raise ValueError("endpoint must be 'aids' or 'death'")
 
     fn = _get_data_path("actg320.arff")
-    x, y = get_x_y(loadarff(fn), attr_labels=attr_labels, pos_label="1")
-    x.drop(drop_columns, axis=1, inplace=True)
+    x, y = get_x_y(loadarff(fn, output_type=output_type), attr_labels=attr_labels, pos_label="1")
+    x = nw.from_native(x).drop(drop_columns).to_native()
     return x, y
 
 
-def load_breast_cancer():
+def load_breast_cancer(*, output_type="pandas"):
     """Load and return the breast cancer dataset
 
     The dataset has 198 samples and 80 features.
@@ -402,9 +472,14 @@ def load_breast_cancer():
 
     See [1]_, [2]_ for further description.
 
+    Parameters
+    ----------
+    output_type : {"pandas", "polars"}, default="pandas"
+        Dataframe library used for the returned features.
+
     Returns
     -------
-    x : pandas.DataFrame
+    x : pandas.DataFrame or polars.DataFrame
         The measurements for each patient.
 
     y : structured array with 2 fields
@@ -422,11 +497,16 @@ def load_breast_cancer():
         Patients in the TRANSBIG Multicenter Independent Validation Series."
         Clin. Cancer Res. 13(11), 3207–14 (2007)
     """
+    _validate_output_type(output_type)
     fn = _get_data_path("breast_cancer_GSE7390-metastasis.arff")
-    return get_x_y(loadarff(fn), attr_labels=["e.tdm", "t.tdm"], pos_label="1")
+    return get_x_y(
+        loadarff(fn, output_type=output_type),
+        attr_labels=["e.tdm", "t.tdm"],
+        pos_label="1",
+    )
 
 
-def load_flchain():
+def load_flchain(*, output_type="pandas"):
     """Load and return assay of serum free light chain for 7874 subjects.
 
     The dataset has 7874 samples and 9 features:
@@ -446,9 +526,14 @@ def load_flchain():
 
     See [1]_, [2]_ for further description.
 
+    Parameters
+    ----------
+    output_type : {"pandas", "polars"}, default="pandas"
+        Dataframe library used for the returned features.
+
     Returns
     -------
-    x : pandas.DataFrame
+    x : pandas.DataFrame or polars.DataFrame
         The measurements for each patient.
 
     y : structured array with 2 fields
@@ -466,11 +551,16 @@ def load_flchain():
            Use of nonclonal serum immunoglobulin free light chains to predict overall survival in
            the general population, Mayo Clinic Proceedings 87:512-523. (2012)
     """
+    _validate_output_type(output_type)
     fn = _get_data_path("flchain.arff")
-    return get_x_y(loadarff(fn), attr_labels=["death", "futime"], pos_label="dead")
+    return get_x_y(
+        loadarff(fn, output_type=output_type),
+        attr_labels=["death", "futime"],
+        pos_label="dead",
+    )
 
 
-def load_bmt():
+def load_bmt(*, output_type="pandas"):
     """Load and return response to hematopoietic stem cell transplantation (HSCT) for acute leukemia patients.
 
     The dataset has 35 samples and 1 feature "dis" indicating the type of leukemia::
@@ -492,9 +582,14 @@ def load_bmt():
 
     See [1]_ for further description and [2]_ for the dataset.
 
+    Parameters
+    ----------
+    output_type : {"pandas", "polars"}, default="pandas"
+        Dataframe library used for the returned features.
+
     Returns
     -------
-    x : pandas.DataFrame
+    x : pandas.DataFrame or polars.DataFrame
         The measurements for each patient.
 
     y : structured array with 2 fields
@@ -510,13 +605,14 @@ def load_bmt():
 
     .. [2] https://luca-scr.github.io/R/bmt.csv
     """
+    _validate_output_type(output_type)
     full_path = _get_data_path("bmt.arff")
-    data = loadarff(full_path)
-    data = data.astype({"ftime": int})
+    data = loadarff(full_path, output_type=output_type)
+    data = nw.from_native(data).with_columns(nw.col("ftime").cast(nw.Int64)).to_native()
     return get_x_y(data, attr_labels=["status", "ftime"], competing_risks=True)
 
 
-def load_cgvhd():
+def load_cgvhd(*, output_type="pandas"):
     r"""Load and return data from multicentre randomized clinical trial
     initiated for patients with a myeloid malignancy who were to
     undergo an allogeneic bone marrow transplant.
@@ -585,9 +681,18 @@ def load_cgvhd():
 
     The dataset has been obtained from [1]_.
 
+    Parameters
+    ----------
+    output_type : {"pandas", "polars"}, default="pandas"
+        Dataframe library used for the returned features. The derivations
+        (horizontal min over the time columns, the boolean-sum encoding of
+        the status column) run through narwhals in the requested dataframe library;
+        no intermediate pandas conversion is performed when
+        ``output_type="polars"``.
+
     Returns
     -------
-    x : pandas.DataFrame
+    x : pandas.DataFrame or polars.DataFrame
         The measurements for each patient.
 
     y : structured array with 2 fields
@@ -601,14 +706,19 @@ def load_cgvhd():
 
     .. [2] Melania Pintilie: "Competing Risks: A Practical Perspective". John Wiley & Sons, 2006
     """
+    _validate_output_type(output_type)
     full_path = _get_data_path("cgvhd.arff")
-    data = loadarff(full_path)
-    data.loc[:, "ftime"] = data[["survtime", "reltime", "cgvhtime"]].min(axis=1)
-    data.loc[:, "status"] = (
-        ((data["ftime"] == data["cgvhtime"]) & (data["cgvh"] == "1")).astype(int)
-        + 2 * ((data["ftime"] == data["reltime"]) & (data["rcens"] == "1")).astype(int)
-        + 3 * ((data["ftime"] == data["survtime"]) & (data["stat"] == "1")).astype(int)
+    data = loadarff(full_path, output_type=output_type)
+    nw_data = nw.from_native(data)
+    nw_data = nw_data.with_columns(
+        nw.min_horizontal("survtime", "reltime", "cgvhtime").alias("ftime"),
     )
-    data = data[["ftime", "status", "dx", "tx", "extent", "age"]]
-
+    nw_data = nw_data.with_columns(
+        (
+            ((nw.col("ftime") == nw.col("cgvhtime")) & (nw.col("cgvh") == "1")).cast(nw.Int64)
+            + 2 * ((nw.col("ftime") == nw.col("reltime")) & (nw.col("rcens") == "1")).cast(nw.Int64)
+            + 3 * ((nw.col("ftime") == nw.col("survtime")) & (nw.col("stat") == "1")).cast(nw.Int64)
+        ).alias("status"),
+    )
+    data = nw_data.select(["ftime", "status", "dx", "tx", "extent", "age"]).to_native()
     return get_x_y(data, attr_labels=["status", "ftime"], competing_risks=True)
