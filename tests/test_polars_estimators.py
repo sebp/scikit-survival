@@ -312,7 +312,11 @@ class TestEstimatorPredictionApiPolarsParity:
         assert len(arr_pd) == len(arr_pl)
         for a, b in zip(arr_pd, arr_pl):
             np.testing.assert_array_equal(a.x, b.x)
-            np.testing.assert_array_equal(a.y, b.y)
+            # The pandas and Narwhals code paths reach the survival-function
+            # kernel through different intermediate dtype handling, which can
+            # produce machine-epsilon-scale differences in cumulative products.
+            # Allow a tight tolerance rather than bit-exact equality.
+            np.testing.assert_allclose(a.y, b.y, rtol=1e-12, atol=0)
 
     @staticmethod
     def test_cox_predict_survival_function(whas500_encoded_small):
