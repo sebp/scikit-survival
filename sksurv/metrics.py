@@ -612,6 +612,9 @@ def brier_score(survival_train, survival_test, estimate, times):
     Load and prepare data.
 
     >>> X, y = load_gbsg2()
+    >>> # ``.map(len)`` converts the roman-numeral tumor grade to an integer
+    >>> # ordinal. Polars equivalent::
+    >>> #     X = X.with_columns(pl.col('tgrade').cast(pl.String).str.len_chars().cast(pl.Int64))
     >>> X["tgrade"] = X.loc[:, "tgrade"].map(len).astype(int)
     >>> Xt = OneHotEncoder().fit_transform(X)
 
@@ -737,6 +740,9 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
     Load and prepare data.
 
     >>> X, y = load_gbsg2()
+    >>> # ``.map(len)`` converts the roman-numeral tumor grade to an integer
+    >>> # ordinal. Polars equivalent::
+    >>> #     X = X.with_columns(pl.col('tgrade').cast(pl.String).str.len_chars().cast(pl.Int64))
     >>> X["tgrade"] = X.loc[:, "tgrade"].map(len).astype(int)
     >>> Xt = OneHotEncoder().fit_transform(X)
 
