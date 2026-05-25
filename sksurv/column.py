@@ -16,6 +16,16 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import CategoricalDtype, is_string_dtype
 
+from ._dataframe import (
+    is_narwhals_dataframe,
+    is_narwhals_dataframe_or_series,
+)
+from ._dataframe._column_impl import (
+    categorical_to_numeric_narwhals,
+    encode_categorical_narwhals,
+    standardize_narwhals_dataframe,
+)
+
 __all__ = ["categorical_to_numeric", "encode_categorical", "standardize"]
 
 
@@ -47,14 +57,15 @@ def standardize(table, with_std=True):
     This function performs Z-Normalization on each numeric column of the given
     table.
 
-    If `table` is a :class:`pandas.DataFrame`, only numeric columns are modified;
-    all other columns remain unchanged. If `table` is a :class:`numpy.ndarray`,
-    it is only modified if it has a numeric dtype, in which case the returned
-    array will have a floating-point dtype.
+    If `table` is a :class:`pandas.DataFrame` or :class:`polars.DataFrame`,
+    only numeric columns are modified; all other columns remain unchanged.
+    :class:`polars.LazyFrame` inputs are collected internally. If `table`
+    is a :class:`numpy.ndarray`, it is only modified if it has a numeric
+    dtype, in which case the returned array will have a floating-point dtype.
 
     Parameters
     ----------
-    table : pandas.DataFrame or numpy.ndarray
+    table : pandas.DataFrame, polars.DataFrame, polars.LazyFrame, or numpy.ndarray
         Data to standardize.
     with_std : bool, optional, default: True
         If ``False``, data is only centered (mean removed) and not scaled to
@@ -62,12 +73,13 @@ def standardize(table, with_std=True):
 
     Returns
     -------
-    normalized : pandas.DataFrame or numpy.ndarray
-        The standardized data. The output type will be the same as the input type.
+    normalized : pandas.DataFrame, polars.DataFrame, or numpy.ndarray
+        The standardized data. The output dataframe library matches the input
+        (``polars.LazyFrame`` collapses to :class:`polars.DataFrame`).
     """
-    new_frame = _apply_along_column(table, standardize_column, with_std=with_std)
-
-    return new_frame
+    if is_narwhals_dataframe(table):
+        return standardize_narwhals_dataframe(table, with_std=with_std)
+    return _apply_along_column(table, standardize_column, with_std=with_std)
 
 
 def _encode_categorical_series(series, allow_drop=True):
@@ -100,23 +112,27 @@ def encode_categorical(table, columns=None, **kwargs):
 
     Parameters
     ----------
-    table : pandas.DataFrame or pandas.Series
+    table : pandas.DataFrame, pandas.Series, polars.DataFrame, polars.LazyFrame, or polars.Series
         Data with categorical columns to encode.
     columns : list-like, optional, default: None
         Column names in the DataFrame to be encoded.
         If `columns` is `None`, all columns with `object` or `category`
         dtype will be converted. This parameter is ignored if `table` is a
-        pandas.Series.
+        Series.
     allow_drop : bool, optional, default: True
         Whether to allow dropping categorical columns that only consist
         of a single category.
 
     Returns
     -------
-    encoded : pandas.DataFrame
+    encoded : pandas.DataFrame, pandas.Series, polars.DataFrame, or polars.Series
         The transformed data with categorical columns encoded as numeric.
-        Numeric columns in the input table remain unchanged.
+        Numeric columns in the input table remain unchanged. The output
+        dataframe library matches the input.
     """
+    if is_narwhals_dataframe_or_series(table):
+        return encode_categorical_narwhals(table, columns=columns, **kwargs)
+
     if isinstance(table, pd.Series):
         if not isinstance(table.dtype, CategoricalDtype) and not is_string_dtype(table.dtype):
             raise TypeError(f"series must be of categorical dtype, but was {table.dtype}")
@@ -174,15 +190,17 @@ def categorical_to_numeric(table):
 
     Parameters
     ----------
-    table : pandas.DataFrame or pandas.Series
+    table : pandas.DataFrame, pandas.Series, polars.DataFrame, polars.LazyFrame, or polars.Series
         Data with categorical columns to encode.
 
     Returns
     -------
-    encoded : pandas.DataFrame or pandas.Series
+    encoded : pandas.DataFrame, pandas.Series, or polars.DataFrame / polars.Series
         The transformed data with categorical columns encoded as integers.
-        The output type will be the same as the input type.
+        The output dataframe library matches the input.
     """
+    if is_narwhals_dataframe_or_series(table):
+        return categorical_to_numeric_narwhals(table)
 
     def transform(column):
         if isinstance(column.dtype, CategoricalDtype):

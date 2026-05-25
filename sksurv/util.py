@@ -11,9 +11,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
-import pandas as pd
-from pandas.api.types import CategoricalDtype
 from sklearn.utils.validation import check_array, check_consistent_length
+
+from ._dataframe import is_supported_dataframe, to_narwhals_dataframe, unsupported_dataframe_error
+from ._dataframe._concat import concat_dataframes_preserving_categories
 
 __all__ = ["check_array_survival", "check_y_survival", "safe_concat", "Surv"]
 
@@ -95,7 +96,7 @@ class Surv:
 
     @staticmethod
     def from_dataframe(event, time, data):
-        """Create structured array from columns in a pandas DataFrame.
+        """Create structured array from columns in a DataFrame.
 
         Parameters
         ----------
@@ -107,8 +108,9 @@ class Surv:
         time : str
             Name of the column in ``data`` containing the observed time
             (time to event or time of censoring).
-        data : pandas.DataFrame
-            A DataFrame with columns for event and time.
+        data : pandas.DataFrame, polars.DataFrame, or polars.LazyFrame
+            A DataFrame with columns for event and time. polars ``LazyFrame``
+            inputs are collected internally before the columns are extracted.
 
         Returns
         -------
@@ -120,6 +122,8 @@ class Surv:
 
         Examples
         --------
+        From a pandas DataFrame:
+
         >>> import pandas as pd
         >>> from sksurv.util import Surv
         >>>
@@ -137,12 +141,25 @@ class Surv:
         array([ True, False,  True])
         >>> y['followup_time']
         array([10., 25., 15.])
+
+        Polars input produces the same structured array:
+
+        >>> import polars as pl
+        >>> df_pl = pl.DataFrame({'status': [True, False, True], 'followup_time': [10, 25, 15]})
+        >>> y_pl = Surv.from_dataframe(event='status', time='followup_time', data=df_pl)
+        >>> (y == y_pl).all()
+        np.True_
         """
-        if not isinstance(data, pd.DataFrame):
-            raise TypeError(f"expected pandas.DataFrame, but got {type(data)!r}")
+        if not is_supported_dataframe(data):
+            raise unsupported_dataframe_error(data)
+
+        nw_data = to_narwhals_dataframe(data)
 
         return Surv.from_arrays(
-            data.loc[:, event].to_numpy(), data.loc[:, time].to_numpy(), name_event=str(event), name_time=str(time)
+            nw_data.get_column(event).to_numpy(),
+            nw_data.get_column(time).to_numpy(),
+            name_event=str(event),
+            name_time=str(time),
         )
 
 
@@ -285,75 +302,38 @@ def check_array_survival(X, y, **kwargs):
 
 
 def safe_concat(objs, *args, **kwargs):
-    """Alternative to :func:`pandas.concat` that preserves categorical variables.
+    """Alternative to :func:`pandas.concat` / :func:`polars.concat` that preserves categorical variables.
 
     Parameters
     ----------
-    objs : a sequence or mapping of Series, DataFrame, or Panel objects
-        If a dict is passed, the sorted keys will be used as the `keys`
-        argument, unless it is passed, in which case the values will be
-        selected (see below). Any None objects will be dropped silently unless
-        they are all None in which case a ValueError will be raised
-    axis : {0, 1, ...}, default 0
-        The axis to concatenate along
-    join : {'inner', 'outer'}, default 'outer'
-        How to handle indexes on other axis(es)
-    join_axes : list of Index objects
-        Specific indexes to use for the other n - 1 axes instead of performing
-        inner/outer set logic
-    verify_integrity : boolean, default False
-        Check whether the new concatenated axis contains duplicates. This can
-        be very expensive relative to the actual data concatenation
-    keys : sequence, default None
-        If multiple levels passed, should contain tuples. Construct
-        hierarchical index using the passed keys as the outermost level
-    levels : list of sequences, default None
-        Specific levels (unique values) to use for constructing a
-        MultiIndex. Otherwise they will be inferred from the keys
-    names : list, default None
-        Names for the levels in the resulting hierarchical index
-    ignore_index : boolean, default False
-        If True, do not use the index values along the concatenation axis. The
-        resulting axis will be labeled 0, ..., n - 1. This is useful if you are
-        concatenating objects where the concatenation axis does not have
-        meaningful indexing information. Note that the index values on the other
-        axes are still respected in the join.
-    copy : boolean, default True
-        If False, do not copy data unnecessarily
-
-    Notes
-    -----
-    The keys, levels, and names arguments are all optional
+    objs : sequence of pandas or polars Series/DataFrame objects
+        All elements must share the same dataframe library.
+    axis : {0, 1, "index", "columns"}, default 0
+        Concatenation axis. ``axis=0`` / ``"index"`` stacks rows,
+        ``axis=1`` / ``"columns"`` stacks columns.
 
     Returns
     -------
-    concatenated : type of objects
+    concatenated : pandas or polars DataFrame
+        The output dataframe library matches the inputs.
+
+    Raises
+    ------
+    ValueError
+        If ``objs`` is empty, if ``axis`` is not one of ``0``, ``1``,
+        ``"index"``, ``"columns"``, if a categorical column appears in
+        multiple inputs with mismatched categories (``axis=0``), or if a
+        categorical column name appears in more than one input (``axis=1``).
+    TypeError
+        If the inputs mix pandas and polars objects, or if polars inputs are
+        paired with pandas-only positional / keyword arguments.
+
+    Notes
+    -----
+    Extra pandas concat arguments are forwarded only for pandas input. For
+    polars input, only ``axis`` is honoured.
     """
-    axis = kwargs.pop("axis", 0)
-    categories = {}
-    for df in objs:
-        if isinstance(df, pd.Series):
-            if isinstance(df.dtype, CategoricalDtype):
-                categories[df.name] = {"categories": df.cat.categories, "ordered": df.cat.ordered}
-        else:
-            dfc = df.select_dtypes(include=["category"])
-            new_dtypes = {}
-            for name, s in dfc.items():
-                if name in categories:
-                    if axis == 1:
-                        raise ValueError(f"duplicate columns {name}")
-                    if not categories[name]["categories"].equals(s.cat.categories):
-                        raise ValueError(f"categories for column {name} do not match")
-                else:
-                    categories[name] = {"categories": s.cat.categories, "ordered": s.cat.ordered}
-                new_dtypes[name] = "str"
-            df = df.astype(new_dtypes)
-
-    concatenated = pd.concat(objs, *args, axis=axis, **kwargs)
-
-    concatenated = concatenated.astype({name: pd.CategoricalDtype(**params) for name, params in categories.items()})
-
-    return concatenated
+    return concat_dataframes_preserving_categories(objs, *args, **kwargs)
 
 
 class _PropertyAvailableIfDescriptor:
