@@ -18,8 +18,9 @@ from scipy.linalg import solve
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.utils._param_validation import Interval, StrOptions
-from sklearn.utils.validation import check_array, check_is_fitted, validate_data
+from sklearn.utils.validation import check_array, check_is_fitted
 
+from .._dataframe import validate_data_with_eager_dataframe
 from ..base import SurvivalAnalysisMixin
 from ..docstrings import append_cumulative_hazard_example, append_survival_function_example
 from ..functions import StepFunction
@@ -456,7 +457,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         """
         self._validate_params()
 
-        X = validate_data(self, X, ensure_min_samples=2, dtype=np.float64)
+        X = validate_data_with_eager_dataframe(self, X, ensure_min_samples=2, dtype=np.float64)
         event, time = check_array_survival(X, y)
 
         if isinstance(self.alpha, numbers.Real | numbers.Integral):
@@ -542,7 +543,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         """
         check_is_fitted(self, "coef_")
 
-        X = validate_data(self, X, reset=False)
+        X = validate_data_with_eager_dataframe(self, X, reset=False)
 
         return np.dot(X, self.coef_)
 
