@@ -79,9 +79,11 @@ def _promote_to_ordinal_semantics(semantics):
 def _extract_numeric_kernel_array(x, ordinal_columns=None):
     if is_narwhals_dataframe(x):
         return _extract_numeric_kernel_array_dataframe(x, ordinal_columns=ordinal_columns)
-    # Pass "str" explicitly alongside "object" so pandas 4 doesn't emit a
-    # ``Pandas4Warning`` about the implicit ``str``-via-``object`` inclusion.
-    nominal_columns = x.select_dtypes(include=["object", "str", "category"]).columns
+    # pandas 4 deprecates the implicit ``str``-via-``object`` inclusion here,
+    # but explicitly listing ``"str"`` raises ``TypeError`` on pandas <= 3.x.
+    # Keep the cross-version-safe form and silence the deprecation via
+    # the ``filterwarnings`` entry in ``pyproject.toml``.
+    nominal_columns = x.select_dtypes(include=["object", "category"]).columns
     pd_ordinal_columns = pd.Index(
         [v for v in nominal_columns if isinstance(x[v].dtype, CategoricalDtype) and x[v].cat.ordered]
     )

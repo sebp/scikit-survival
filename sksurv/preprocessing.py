@@ -59,6 +59,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
     - pandas: ``category`` or ``object``
     - polars: :class:`polars.Categorical`, :class:`polars.Enum`, or
       :class:`polars.String`
+
     The features are encoded using a one-hot (or dummy) encoding scheme, which
     creates a binary column for each category. By default, one category per feature
     is dropped: a column with ``M`` categories is encoded as ``M - 1`` integer columns
