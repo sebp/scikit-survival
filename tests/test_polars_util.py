@@ -301,16 +301,12 @@ class TestSafeConcatAxisValidation:
     def test_string_axis_index_accepted():
         import pandas as pd
 
-        from sksurv.util import safe_concat
-
         result = safe_concat([pd.DataFrame({"x": [1]}), pd.DataFrame({"x": [2]})], axis="index")
         assert result.shape == (2, 1)
 
     @staticmethod
     def test_string_axis_columns_accepted():
         import pandas as pd
-
-        from sksurv.util import safe_concat
 
         result = safe_concat([pd.DataFrame({"x": [1]}), pd.DataFrame({"x": [2]})], axis="columns")
         assert result.shape == (1, 2)

@@ -384,8 +384,6 @@ class TestNominalNullParity:
 
     @staticmethod
     def test_object_null_parity():
-        import pandas as pd
-
         df_pd = pd.DataFrame({"age": [40.0, 50.0, 60.0], "grade": ["I", None, "II"]})
         df_pl = pl.DataFrame({"age": [40.0, 50.0, 60.0], "grade": ["I", None, "II"]})
         K_pd = clinical_kernel(df_pd)
@@ -399,8 +397,6 @@ class TestClinicalKernelTransformReplay:
 
     @staticmethod
     def _frame_pair():
-        import pandas as pd
-
         df_pd = pd.DataFrame(
             {
                 "age": [40.0, 50.0, 60.0],
@@ -455,8 +451,6 @@ class TestClinicalKernelTransformReplay:
 class TestClinicalKernelEdgeCases:
     @staticmethod
     def test_empty_polars_frame_fit_matches_pandas():
-        import pandas as pd
-
         df_pl = pl.DataFrame({"num": pl.Series([], dtype=pl.Float64)})
         df_pd = pd.DataFrame({"num": pd.Series([], dtype=np.float64)})
         t_pl = ClinicalKernelTransform().fit(df_pl)
@@ -466,8 +460,6 @@ class TestClinicalKernelEdgeCases:
 
     @staticmethod
     def test_mixed_backend_inputs_raise_typeerror():
-        import pandas as pd
-
         x_pd = pd.DataFrame({"num": [1.0, 2.0], "cat": pd.Categorical(["A", "B"])})
         x_pl = pl.DataFrame({"num": [1.0, 2.0], "cat": pl.Series(["A", "B"], dtype=pl.Categorical)})
 

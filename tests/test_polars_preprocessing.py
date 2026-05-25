@@ -158,8 +158,6 @@ class TestOneHotEncoderUnseenAndCrossDataframeLibrary:
             enc.transform(df_test_pl)
 
     def test_fit_polars_transform_pandas_raises(self):
-        import pandas as pd
-
         _, _, df_fit_pl, _ = self._make_fit_test_pair()
         df_test_pd = pd.DataFrame({"color": pd.Categorical(["red", "blue"])})
         enc = OneHotEncoder().fit(df_fit_pl)
