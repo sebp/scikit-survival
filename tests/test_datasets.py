@@ -346,7 +346,7 @@ class TestLoadDatasetsPolars:
     def test_load_bmt_polars():
         import polars as pl
 
-        x, y = sdata.load_bmt(output_type="polars")
+        x, _ = sdata.load_bmt(output_type="polars")
         assert isinstance(x, pl.DataFrame)
         assert x.shape == (35, 1)
         assert x["dis"].dtype == pl.Enum(["0", "1"])
@@ -355,7 +355,7 @@ class TestLoadDatasetsPolars:
     def test_load_cgvhd_polars():
         import polars as pl
 
-        x, y = sdata.load_cgvhd(output_type="polars")
+        x, _ = sdata.load_cgvhd(output_type="polars")
         assert isinstance(x, pl.DataFrame)
         assert x.shape == (100, 4)
         assert list(x.columns) == ["dx", "tx", "extent", "age"]

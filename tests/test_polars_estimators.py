@@ -86,7 +86,6 @@ def _make_survival_estimator_constructors():
         FastSurvivalSVM,
         HingeLossSurvivalSVM,
         MinlipSurvivalAnalysis,
-        NaiveSurvivalSVM,
     )
     from sksurv.tree import SurvivalTree
 
@@ -172,7 +171,7 @@ class TestSklearnPipelinePolars:
 
         from sksurv.linear_model import CoxPHSurvivalAnalysis
 
-        X_pd, X_pl, y = whas500_pl_pd_small
+        _X_pd, X_pl, y = whas500_pl_pd_small
         X_pl_enc = OneHotEncoder().fit_transform(X_pl)
         import warnings
 

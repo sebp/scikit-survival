@@ -272,8 +272,6 @@ class TestOrdinalColumnsOptIn:
 
     @staticmethod
     def _make_pd_ordered():
-        import pandas as pd
-
         return pd.DataFrame(
             {
                 "age": [40.0, 50.0, 60.0, 70.0, 80.0],

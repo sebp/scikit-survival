@@ -309,8 +309,6 @@ class TestPolarsCategoricalGlobalPoolBug:
 
     @staticmethod
     def test_encode_categorical_isolates_categories_per_column():
-        from sksurv import column as _sksurv_column
-
         df = pl.DataFrame(
             {
                 "size": pl.Series(["medium", "small", "large", "xlarge", "small"], dtype=pl.Categorical),

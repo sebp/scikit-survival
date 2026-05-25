@@ -11,18 +11,12 @@ from sksurv.preprocessing import OneHotEncoder
 class TestOneHotEncoderAllDroppedParity:
     @staticmethod
     def test_all_dropped_polars_raises():
-        from sksurv.preprocessing import OneHotEncoder
-
         df = pl.DataFrame({"cat": pl.Series(["x", "x"], dtype=pl.Categorical)})
         with pytest.raises(ValueError, match="No objects to concatenate"):
             OneHotEncoder().fit_transform(df)
 
     @staticmethod
     def test_all_dropped_pandas_raises():
-        import pandas as pd
-
-        from sksurv.preprocessing import OneHotEncoder
-
         df = pd.DataFrame({"cat": pd.Categorical(["x", "x"])})
         with pytest.raises(ValueError, match="No objects to concatenate"):
             OneHotEncoder().fit_transform(df)

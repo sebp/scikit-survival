@@ -286,8 +286,6 @@ class TestSafeConcatAxisValidation:
     @staticmethod
     @pytest.mark.parametrize("bad_axis", [2, -1, 3])
     def test_invalid_axis_polars_raises(bad_axis):
-        from sksurv.util import safe_concat
-
         with pytest.raises(ValueError, match="axis must be 0 or 1"):
             safe_concat([pl.DataFrame({"x": [1]}), pl.DataFrame({"x": [2]})], axis=bad_axis)
 
