@@ -288,6 +288,15 @@ Feature names unseen at fit time:
         assert_array_almost_equal(expected[:4, :], mat, 4)
 
     @staticmethod
+    def test_fit_once_fit_dataframe_raises(make_data):
+        data, _ = make_data()
+        t = ClinicalKernelTransform(fit_once=True)
+        t.prepare(data)
+
+        with pytest.raises(TypeError, match="fit_once=True expects a numeric array in fit"):
+            t.fit(data)
+
+    @staticmethod
     def test_prepare_error_fit_once(make_data):
         data = make_data()
         t = ClinicalKernelTransform(fit_once=False)
@@ -299,7 +308,7 @@ Feature names unseen at fit time:
     def test_prepare_error_type():
         t = ClinicalKernelTransform(fit_once=True)
 
-        with pytest.raises(TypeError, match="X must be a pandas DataFrame"):
+        with pytest.raises(TypeError, match=r"X must be a pandas DataFrame or supported Narwhals dataframe input"):
             t.prepare([[0, 1], [1, 2], [4, 3], [6, 5]])
 
     @staticmethod

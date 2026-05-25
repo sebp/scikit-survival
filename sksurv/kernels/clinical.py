@@ -10,12 +10,31 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import narwhals.stable.v2 as nw
 import numpy as np
 import pandas as pd
-from pandas.api.types import CategoricalDtype, is_bool_dtype, is_numeric_dtype
+from pandas.api.types import CategoricalDtype, is_numeric_dtype
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import _check_feature_names, _check_n_features, check_is_fitted
 
+from .._dataframe import (
+    ColumnSemantics,
+    collect_lazy_dataframe,
+    column_to_category_codes,
+    is_narwhals_dataframe,
+    to_narwhals_dataframe,
+)
+from ._clinical_dataframe import (
+    _append_kernel_column,
+    _check_clinical_kernel_inputs,
+    _encode_dataframe_kernel_column,
+    _extract_nominal_kernel_arrays,
+    _extract_numeric_kernel_array,
+    _make_categorical_kernel_column,
+    _make_numeric_kernel_column,
+    _normalize_ordinal_columns,
+    _validate_ordinal_columns_against_schema,
+)
 from ._clinical_kernel import (
     continuous_ordinal_kernel,
     continuous_ordinal_kernel_with_ranges,
@@ -27,7 +46,6 @@ __all__ = ["clinical_kernel", "ClinicalKernelTransform"]
 
 
 def _nominal_kernel(x, y, out):
-    """Number of features that match exactly"""
     for i in range(x.shape[0]):
         for j in range(y.shape[0]):
             out[i, j] += (x[i, :] == y[j, :]).sum()
@@ -35,33 +53,7 @@ def _nominal_kernel(x, y, out):
     return out
 
 
-def _get_continuous_and_ordinal_array(x):
-    """Convert array from continuous and ordered categorical columns"""
-    nominal_columns = x.select_dtypes(include=["object", "category"]).columns
-    ordinal_columns = pd.Index([v for v in nominal_columns if x[v].cat.ordered])
-    continuous_columns = x.select_dtypes(include=[np.number, "bool"]).columns
-
-    x_num = x.loc[:, continuous_columns].to_numpy(dtype=np.float64)
-    if len(ordinal_columns) > 0:
-        x = _ordinal_as_numeric(x, ordinal_columns)
-
-        nominal_columns = nominal_columns.difference(ordinal_columns)
-        x_out = np.column_stack((x_num, x))
-    else:
-        x_out = x_num
-
-    return x_out, nominal_columns
-
-
-def _ordinal_as_numeric(x, ordinal_columns):
-    x_numeric = np.empty((x.shape[0], len(ordinal_columns)), dtype=np.float64)
-
-    for i, c in enumerate(ordinal_columns):
-        x_numeric[:, i] = x[c].cat.codes
-    return x_numeric
-
-
-def clinical_kernel(x, y=None):
+def clinical_kernel(x, y=None, *, ordinal_columns=None):
     """Computes clinical kernel.
 
     The clinical kernel distinguishes between continuous
@@ -72,11 +64,16 @@ def clinical_kernel(x, y=None):
 
     Parameters
     ----------
-    x : pandas.DataFrame, shape = (n_samples_x, n_features)
-        Training data
+    x : pandas.DataFrame, polars.DataFrame, or polars.LazyFrame, shape = (n_samples_x, n_features)
+        Training data. Polars and pandas inputs must not be mixed between
+        ``x`` and ``y``. ``polars.LazyFrame`` is collected internally.
 
-    y : pandas.DataFrame, shape = (n_samples_y, n_features)
-        Testing data
+    y : pandas.DataFrame, polars.DataFrame, or polars.LazyFrame, shape = (n_samples_y, n_features)
+        Testing data. Must use the same dataframe library as ``x``.
+
+    ordinal_columns : iterable of str, optional
+        Promote listed ``pl.Enum`` columns to ordinal (using declared category
+        order). Polars only; pandas uses ``pd.Categorical(ordered=True)``.
 
     Returns
     -------
@@ -91,6 +88,9 @@ def clinical_kernel(x, y=None):
 
     Examples
     --------
+    Pandas input. Ordinal columns use the category order from
+    ``pd.Categorical(ordered=True)``.
+
     >>> import pandas as pd
     >>> from sksurv.kernels import clinical_kernel
     >>>
@@ -105,25 +105,41 @@ def clinical_kernel(x, y=None):
     [[1.         0.33333333 0.5       ]
      [0.33333333 1.         0.16666667]
      [0.5        0.16666667 1.        ]]
+
+    Polars input: ``pl.Enum`` columns default to nominal; pass
+    ``ordinal_columns=`` to promote them (polars analogue of pandas
+    ``ordered=True``):
+
+    >>> import polars as pl
+    >>> data_pl = pl.DataFrame({
+    ...     'feature_num': [1.0, 2.0, 3.0],
+    ...     'feature_ord': pl.Series(['low', 'medium', 'high'], dtype=pl.Enum(['high', 'low', 'medium'])),
+    ...     'feature_nom': pl.Series(['A', 'B', 'A'], dtype=pl.Categorical),
+    ... })
+    >>> kernel_matrix_pl = clinical_kernel(data_pl, ordinal_columns=['feature_ord'])
+    >>> import numpy as np
+    >>> np.array_equal(kernel_matrix, kernel_matrix_pl)
+    True
     """
+    x_is_narwhals_dataframe = is_narwhals_dataframe(x)
+    x = collect_lazy_dataframe(x)
     if y is not None:
-        if x.shape[1] != y.shape[1]:
-            raise ValueError("x and y have different number of features")
-        if not x.columns.equals(y.columns):
-            raise ValueError("columns do not match")
+        y = collect_lazy_dataframe(y)
+        _check_clinical_kernel_inputs(x, y, x_is_narwhals_dataframe)
     else:
         y = x
 
     mat = np.zeros((x.shape[0], y.shape[0]), dtype=float)
 
-    x_numeric, nominal_columns = _get_continuous_and_ordinal_array(x)
+    x_numeric, nominal_columns = _extract_numeric_kernel_array(x, ordinal_columns=ordinal_columns)
     if id(x) != id(y):
-        y_numeric, _ = _get_continuous_and_ordinal_array(y)
+        y_numeric, _ = _extract_numeric_kernel_array(y, ordinal_columns=ordinal_columns)
     else:
         y_numeric = x_numeric
 
     continuous_ordinal_kernel(x_numeric, y_numeric, mat)
-    _nominal_kernel(x.loc[:, nominal_columns].to_numpy(), y.loc[:, nominal_columns].to_numpy(), mat)
+    x_nominal, y_nominal = _extract_nominal_kernel_arrays(x, y, nominal_columns, x_is_narwhals_dataframe)
+    _nominal_kernel(x_nominal, y_nominal, mat)
     mat /= x.shape[1]
     return mat
 
@@ -136,6 +152,10 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
     See [1]_ for further description.
 
+    ``fit`` and ``transform`` must be called with the same dataframe library.
+    Passing a pandas input to one and a polars input to the other raises
+    :class:`TypeError`.
+
     Parameters
     ----------
     fit_once : bool, optional
@@ -143,6 +163,10 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         its internal state. You should call prepare() once before calling transform().
         If set to ``False``, it behaves like a regular estimator, i.e., you need to
         call fit() before transform().
+
+    ordinal_columns : iterable of str, optional
+        Promote listed ``pl.Enum`` columns to ordinal (using declared category
+        order). Polars only; pandas uses ``pd.Categorical(ordered=True)``.
 
     Attributes
     ----------
@@ -160,8 +184,17 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
            Annual International Conference of the IEEE Engineering in Medicine and Biology Society, 5913-7, 2009
     """
 
-    def __init__(self, *, fit_once=False, _numeric_ranges=None, _numeric_columns=None, _nominal_columns=None):
+    def __init__(
+        self,
+        *,
+        fit_once=False,
+        ordinal_columns=None,
+        _numeric_ranges=None,
+        _numeric_columns=None,
+        _nominal_columns=None,
+    ):
         self.fit_once = fit_once
+        self.ordinal_columns = ordinal_columns
 
         self._numeric_ranges = _numeric_ranges
         self._numeric_columns = _numeric_columns
@@ -175,49 +208,103 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X: pandas.DataFrame, shape = (n_samples, n_features)
-            Data to estimate parameters from.
+        X: pandas.DataFrame, polars.DataFrame, or polars.LazyFrame, shape = (n_samples, n_features)
+            Data to estimate parameters from. ``polars.LazyFrame`` is collected
+            internally.
         """
         if not self.fit_once:
             raise ValueError("prepare can only be used if fit_once parameter is set to True")
 
-        self._prepare_by_column_dtype(X)
+        self._fit_kernel_columns(X)
 
-    def _prepare_by_column_dtype(self, X):
-        """Get distance functions for each column's dtype"""
+    def _fit_kernel_columns(self, X):
+        self._fit_is_narwhals_dataframe = is_narwhals_dataframe(X)
+        if self._fit_is_narwhals_dataframe:
+            return self._fit_dataframe_kernel_columns(X)
         if not isinstance(X, pd.DataFrame):
-            raise TypeError("X must be a pandas DataFrame")
+            raise TypeError("X must be a pandas DataFrame or supported Narwhals dataframe input")
 
         numeric_columns = []
         nominal_columns = []
         numeric_ranges = []
+        per_col_semantics = []
 
         fit_data = np.empty(X.shape, dtype=np.float64)
 
         for i, dt in enumerate(X.dtypes):
             col = X.iloc[:, i]
             if isinstance(dt, CategoricalDtype):
+                codes = col.cat.codes.to_numpy().astype(np.float64)
+                # cat.codes returns -1 for null; convert to NaN so the nominal kernel
+                # rejects null-vs-null (NaN != NaN).
+                null_mask = codes == -1
+                codes[null_mask] = np.nan
+                categories = tuple(dt.categories.tolist())
                 if col.cat.ordered:
-                    numeric_ranges.append(col.cat.codes.max() - col.cat.codes.min())
-                    numeric_columns.append(i)
+                    semantics = ColumnSemantics(name=str(col.name), kind="ordinal", categories=categories, ordered=True)
                 else:
-                    nominal_columns.append(i)
-
-                col = col.cat.codes
+                    semantics = ColumnSemantics(
+                        name=str(col.name), kind="nominal", categories=categories, ordered=False
+                    )
+                prepared = _make_categorical_kernel_column(semantics, codes)
             elif is_numeric_dtype(dt):
-                if is_bool_dtype(dt):
-                    col = col.astype(np.uint8)
-                numeric_ranges.append(col.max() - col.min())
-                numeric_columns.append(i)
+                arr = col.to_numpy().astype(np.float64)
+                prepared = _make_numeric_kernel_column(arr)
             else:
                 raise TypeError(f"unsupported dtype: {dt!r}")
+            _append_kernel_column(
+                i,
+                prepared,
+                fit_data,
+                numeric_columns,
+                nominal_columns,
+                numeric_ranges,
+                per_col_semantics,
+            )
 
-            fit_data[:, i] = col.to_numpy()
-
-        self._numeric_columns = np.asarray(numeric_columns)
-        self._nominal_columns = np.asarray(nominal_columns)
+        self._numeric_columns = np.asarray(numeric_columns, dtype=int)
+        self._nominal_columns = np.asarray(nominal_columns, dtype=int)
         self._numeric_ranges = np.asarray(numeric_ranges, dtype=float)
         self.X_fit_ = fit_data
+        self._fitted_categorical_semantics = per_col_semantics
+
+    def _fit_dataframe_kernel_columns(self, X):
+        ordinal_set = _normalize_ordinal_columns(self.ordinal_columns)
+        nw_X = to_narwhals_dataframe(X)
+
+        schema = nw_X.schema
+        _validate_ordinal_columns_against_schema(ordinal_set, schema)
+
+        n_samples, n_features = nw_X.shape
+        fit_data = np.empty((n_samples, n_features), dtype=np.float64)
+
+        numeric_columns = []
+        nominal_columns = []
+        numeric_ranges = []
+        per_col_semantics = []
+
+        for i, col_name in enumerate(nw_X.columns):
+            col = nw_X.get_column(col_name)
+            prepared = _encode_dataframe_kernel_column(
+                col_name,
+                col,
+                ordinal_set,
+            )
+            _append_kernel_column(
+                i,
+                prepared,
+                fit_data,
+                numeric_columns,
+                nominal_columns,
+                numeric_ranges,
+                per_col_semantics,
+            )
+
+        self._numeric_columns = np.asarray(numeric_columns, dtype=int)
+        self._nominal_columns = np.asarray(nominal_columns, dtype=int)
+        self._numeric_ranges = np.asarray(numeric_ranges, dtype=float)
+        self.X_fit_ = fit_data
+        self._fitted_categorical_semantics = per_col_semantics
 
     def fit(self, X, y=None, **kwargs):  # pylint: disable=unused-argument
         """Determine transformation parameters from data in X.
@@ -230,8 +317,9 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X: pandas.DataFrame, shape = (n_samples, n_features)
-            Data to estimate parameters from.
+        X: pandas.DataFrame, polars.DataFrame, or polars.LazyFrame, shape = (n_samples, n_features)
+            Data to estimate parameters from. ``polars.LazyFrame`` is collected
+            internally.
 
         y : None
             Ignored. This parameter exists only for compatibility with
@@ -246,18 +334,49 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         self : object
             Returns the instance itself.
         """
-        if X.ndim != 2:
-            raise ValueError(f"expected 2d array, but got {X.ndim}")
+        if is_narwhals_dataframe(X):
+            ndim = 2  # supported dataframe inputs are always 2D
+        else:
+            ndim = getattr(X, "ndim", 2)
+        if ndim != 2:
+            raise ValueError(f"expected 2d array, but got {ndim}")
 
+        X = collect_lazy_dataframe(X)
         _check_feature_names(self, X, reset=True)
         _check_n_features(self, X, reset=True)
 
         if self.fit_once:
+            if is_narwhals_dataframe(X) or isinstance(X, pd.DataFrame):
+                raise TypeError(
+                    "fit_once=True expects a numeric array in fit(); call prepare(X) first, "
+                    "then pass the prepared numeric array."
+                )
             self.X_fit_ = X
         else:
-            self._prepare_by_column_dtype(X)
+            self._fit_kernel_columns(X)
 
         return self
+
+    def _encode_dataframe_for_transform(self, Y):
+        nw_Y = to_narwhals_dataframe(Y)
+        n_samples = nw_Y.shape[0]
+        n_features = self.n_features_in_
+        out = np.empty((n_samples, n_features), dtype=np.float64)
+        for i, col_name in enumerate(nw_Y.columns):
+            col = nw_Y.get_column(col_name)
+            kind, semantics = self._fitted_categorical_semantics[i]
+            col_dtype = col.dtype
+            if col_dtype.is_numeric() or isinstance(col_dtype, nw.Boolean):
+                out[:, i] = col.to_numpy().astype(np.float64)
+                continue
+            if kind == "numeric":
+                out[:, i] = col.to_numpy().astype(np.float64)
+            else:
+                codes = column_to_category_codes(col, semantics).astype(np.float64)
+                null_mask = col.is_null().to_numpy()
+                codes[null_mask] = np.nan
+                out[:, i] = codes
+        return out
 
     def transform(self, Y):
         r"""Compute all pairwise distances between `self.X_fit_` and `Y`.
@@ -273,26 +392,39 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         """
         check_is_fitted(self, "X_fit_")
 
+        Y = collect_lazy_dataframe(Y)
+
         _check_feature_names(self, Y, reset=False)
         _check_n_features(self, Y, reset=False)
 
+        transform_is_narwhals = is_narwhals_dataframe(Y)
+        y_is_dataframe = transform_is_narwhals or isinstance(Y, pd.DataFrame)
+        fit_is_narwhals = getattr(self, "_fit_is_narwhals_dataframe", None)
+        if y_is_dataframe and fit_is_narwhals is not None and transform_is_narwhals != fit_is_narwhals:
+            raise TypeError("fit and transform must use the same dataframe library")
+
         n_samples_x = self.X_fit_.shape[0]
 
-        Y = np.asarray(Y)
+        # Replay fit-time semantics if recorded; otherwise pass through
+        # (fit_once / prepare paths, or pre-encoded numeric input).
+        if getattr(self, "_fitted_categorical_semantics", None) is not None and y_is_dataframe:
+            Y_arr = self._encode_dataframe_for_transform(Y)
+        else:
+            Y_arr = np.asarray(Y)
 
-        n_samples_y = Y.shape[0]
+        n_samples_y = Y_arr.shape[0]
 
         mat = np.zeros((n_samples_y, n_samples_x), dtype=float)
 
         continuous_ordinal_kernel_with_ranges(
-            Y[:, self._numeric_columns].astype(np.float64),
+            Y_arr[:, self._numeric_columns].astype(np.float64),
             self.X_fit_[:, self._numeric_columns].astype(np.float64),
             self._numeric_ranges,
             mat,
         )
 
         if len(self._nominal_columns) > 0:
-            _nominal_kernel(Y[:, self._nominal_columns], self.X_fit_[:, self._nominal_columns], mat)
+            _nominal_kernel(Y_arr[:, self._nominal_columns], self.X_fit_[:, self._nominal_columns], mat)
 
         mat /= self.n_features_in_
 
@@ -303,11 +435,11 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        x : pandas.DataFrame, shape = (n_samples_x, n_features)
-            Training data
+        x : pandas.DataFrame, polars.DataFrame, or polars.LazyFrame, shape = (n_samples_x, n_features)
+            Training data.
 
-        y : pandas.DataFrame, shape = (n_samples_y, n_features)
-            Testing data
+        y : pandas.DataFrame, polars.DataFrame, or polars.LazyFrame, shape = (n_samples_y, n_features)
+            Testing data. Must use the same dataframe library as ``x``.
 
         Returns
         -------
