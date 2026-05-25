@@ -81,6 +81,8 @@ class TestOneHotEncoder:
 
             t = OneHotEncoder().fit(data)
 
+            assert isinstance(t.feature_names_, pd.Index)
+            assert isinstance(t.encoded_columns_, pd.Index)
             assert t.feature_names_.tolist() == ["binary_1", "binary_2", "trinary", "many"]
             assert set(t.encoded_columns_) == set(expected_data.columns)
 
