@@ -12,7 +12,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import pandas as pd
-from pandas.api.types import CategoricalDtype, is_numeric_dtype
+from pandas.api.types import CategoricalDtype, is_bool_dtype, is_numeric_dtype
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import _check_feature_names, _check_n_features, check_is_fitted
 
@@ -39,7 +39,7 @@ def _get_continuous_and_ordinal_array(x):
     """Convert array from continuous and ordered categorical columns"""
     nominal_columns = x.select_dtypes(include=["object", "category"]).columns
     ordinal_columns = pd.Index([v for v in nominal_columns if x[v].cat.ordered])
-    continuous_columns = x.select_dtypes(include=[np.number]).columns
+    continuous_columns = x.select_dtypes(include=[np.number, "bool"]).columns
 
     x_num = x.loc[:, continuous_columns].to_numpy(dtype=np.float64)
     if len(ordinal_columns) > 0:
@@ -205,6 +205,8 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
                 col = col.cat.codes
             elif is_numeric_dtype(dt):
+                if is_bool_dtype(dt):
+                    col = col.astype(np.uint8)
                 numeric_ranges.append(col.max() - col.min())
                 numeric_columns.append(i)
             else:
