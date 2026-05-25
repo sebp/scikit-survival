@@ -1,17 +1,26 @@
 """Tests for the internal dataframe boundary helpers."""
 
+import numpy as np
 import pandas as pd
 import polars as pl
+import pytest
 
 from sksurv._dataframe import (
+    ColumnSemantics,
     collect_lazy_dataframe,
+    column_to_category_codes,
+    column_to_one_hot_matrix,
+    expand_dataframe_with_one_hot_columns,
     get_dataframe_library,
+    get_semantic_categories,
+    infer_column_semantics,
     is_narwhals_dataframe,
     is_narwhals_dataframe_or_series,
     is_supported_dataframe,
     is_supported_dataframe_or_series,
     polars_inputs,
     to_narwhals_dataframe,
+    unsupported_dataframe_error,
 )
 
 
@@ -93,3 +102,95 @@ def test_supported_input_predicates_are_explicit_to_sksurv():
     assert is_supported_dataframe_or_series(pd_frame)
     assert is_supported_dataframe_or_series(pd_series)
     assert not is_supported_dataframe_or_series([[1], [2]])
+
+
+def test_unsupported_dataframe_error_names_supported_inputs():
+    err = unsupported_dataframe_error([[1], [2]])
+    assert isinstance(err, TypeError)
+    assert "pandas.DataFrame" in str(err)
+    assert "polars.DataFrame" in str(err)
+    assert "polars.LazyFrame" in str(err)
+
+
+def test_column_to_category_codes_numeric_semantics():
+    semantics = ColumnSemantics(name="x", kind="numeric", categories=None, ordered=False)
+    codes = column_to_category_codes(pl.Series("x", [1, 2, 3]), semantics)
+    np.testing.assert_array_equal(codes, np.array([1.0, 2.0, 3.0]))
+
+
+def test_column_to_one_hot_matrix_handles_unknown_and_empty_categories():
+    semantics = ColumnSemantics(name="grade", kind="nominal", categories=("A", "B"), ordered=False)
+    encoded = column_to_one_hot_matrix(pl.Series("grade", ["A", "C", None]), semantics, drop_first=False)
+    np.testing.assert_array_equal(encoded[0], np.array([1.0, 0.0]))
+    np.testing.assert_array_equal(np.isnan(encoded[1:]), np.ones((2, 2), dtype=bool))
+
+    empty_semantics = ColumnSemantics(name="empty", kind="nominal", categories=(), ordered=False)
+    empty = column_to_one_hot_matrix(pl.Series("empty", ["x", None]), empty_semantics)
+    assert empty.shape == (2, 0)
+
+
+def test_get_one_hot_column_names_without_dropping_first_category():
+    from sksurv._dataframe import get_one_hot_column_names
+
+    semantics = ColumnSemantics(name="grade", kind="nominal", categories=("A", "B"), ordered=False)
+    assert get_one_hot_column_names(semantics, drop_first=False) == ("grade=A", "grade=B")
+
+
+def test_expand_dataframe_with_one_hot_columns_empty_frame_policy():
+    nw_frame = to_narwhals_dataframe(pl.DataFrame())
+    result = expand_dataframe_with_one_hot_columns(
+        nw_frame,
+        columns_to_encode={},
+        allow_drop=True,
+        implementation=nw_frame.implementation,
+        on_empty="empty_frame",
+    )
+    assert result.shape == (0, 0)
+
+
+def test_expand_dataframe_with_one_hot_columns_empty_policy_errors():
+    nw_frame = to_narwhals_dataframe(pl.DataFrame())
+
+    with pytest.raises(ValueError, match="No objects to concatenate"):
+        expand_dataframe_with_one_hot_columns(
+            nw_frame,
+            columns_to_encode={},
+            allow_drop=True,
+            implementation=nw_frame.implementation,
+            on_empty="raise",
+        )
+
+    with pytest.raises(ValueError, match="on_empty must be"):
+        expand_dataframe_with_one_hot_columns(
+            nw_frame,
+            columns_to_encode={},
+            allow_drop=True,
+            implementation=nw_frame.implementation,
+            on_empty="bad",
+        )
+
+
+def test_expand_dataframe_with_one_hot_columns_preserves_single_category_when_requested():
+    df = pl.DataFrame({"grade": pl.Series(["A", "A"], dtype=pl.Enum(["A"]))})
+    nw_frame = to_narwhals_dataframe(df)
+    col = nw_frame.get_column("grade")
+    semantics = infer_column_semantics(col)
+
+    result = expand_dataframe_with_one_hot_columns(
+        nw_frame,
+        columns_to_encode={"grade": (col, semantics)},
+        allow_drop=False,
+        implementation=nw_frame.implementation,
+    )
+
+    assert result.to_dict(as_series=False) == {"grade": ["A", "A"]}
+
+
+def test_semantic_category_helpers_reject_unsupported_dtype():
+    series = pl.Series("value", [1.0, 2.0])
+    with pytest.raises(TypeError, match="get_semantic_categories"):
+        get_semantic_categories(series)
+
+    list_series = pl.Series("items", [[1], [2]])
+    with pytest.raises(TypeError, match="unsupported dtype"):
+        infer_column_semantics(list_series)

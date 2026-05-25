@@ -29,6 +29,20 @@ class TestStandardizeEmptyParity:
         assert categorical_to_numeric(pl.DataFrame()).shape == (0, 0)
         assert categorical_to_numeric(pd.DataFrame()).shape == (0, 0)
 
+    @staticmethod
+    def test_standardize_without_std_and_mixed_columns():
+        from sksurv.column import standardize
+
+        df = pl.DataFrame(
+            {
+                "x": [1.0, 2.0, 3.0],
+                "label": pl.Series(["A", "B", "A"], dtype=pl.Enum(["A", "B"])),
+            }
+        )
+        out = standardize(df, with_std=False)
+        np.testing.assert_allclose(out["x"].to_numpy(), np.array([-1.0, 0.0, 1.0]))
+        assert out["label"].to_list() == ["A", "B", "A"]
+
 
 class TestCategoricalToNumericPandasParity:
     @staticmethod
@@ -244,6 +258,40 @@ def test_encode_categorical_polars_series_numeric_rejected():
     s = pl.Series("a_series", [0.5, 0.1, 10.0, 25.0, 3.8, 11.0])
     with pytest.raises(TypeError):
         _sksurv_column.encode_categorical(s)
+
+
+def test_encode_categorical_polars_dataframe_drop_emits_warning(caplog):
+    df = pl.DataFrame({"single": pl.Series(["only", "only"], dtype=pl.Enum(["only"]))})
+    result = _sksurv_column.encode_categorical(df)
+    assert result.shape == (0, 0)
+    assert "dropped categorical variable 'single'" in caplog.text
+
+
+def test_encode_categorical_polars_single_category_series_drop_policy():
+    s = pl.Series("a_series", ["only", "only"], dtype=pl.Enum(["only"]))
+
+    dropped = _sksurv_column.encode_categorical(s)
+    assert dropped.shape == (0, 0)
+
+    preserved = _sksurv_column.encode_categorical(s, allow_drop=False)
+    assert preserved.to_list() == ["only", "only"]
+
+
+def test_categorical_to_numeric_polars_bool_series():
+    result = _sksurv_column.categorical_to_numeric(pl.Series("flag", [True, False, True]))
+    assert result.to_list() == [1, 0, 1]
+    assert result.dtype == pl.Int64
+
+
+def test_categorical_to_numeric_polars_unsupported_column_passes_through():
+    df = pl.DataFrame({"items": [[1], [2]]})
+    result = _sksurv_column.categorical_to_numeric(df)
+    assert result.to_dict(as_series=False) == {"items": [[1], [2]]}
+
+
+def test_categorical_to_numeric_polars_numeric_string_series():
+    result = _sksurv_column.categorical_to_numeric(pl.Series("digits", ["1", "2", "10"]))
+    assert result.to_list() == [1, 2, 10]
 
 
 class CategoricalToNumericPolarsCases(FixtureParameterFactory):

@@ -251,6 +251,27 @@ def test_loadarff_polars_numeric_columns_preserved():
     assert df_pl["age"].to_list() == [45.0, 60.0, 72.0, 55.0, 68.0, 50.0, 40.0, 70.0]
 
 
+def test_loadarff_polars_string_attribute_decodes_missing_values():
+    from sksurv.io.arffread import _to_polars_dataframe
+
+    # SciPy's public loadarff rejects string attributes, but the converter still
+    # needs to handle the record-array shape SciPy uses for non-nominal fields.
+    class Meta:
+        @staticmethod
+        def names():
+            return ["note"]
+
+        def __getitem__(self, key):
+            assert key == "note"
+            return "string", None
+
+    data = np.array([(b"hello",), (b"?",), (b"world",)], dtype=[("note", "S5")])
+    df_pl = _to_polars_dataframe(data, Meta())
+
+    assert df_pl["note"].dtype == pl.String
+    assert df_pl["note"].to_list() == ["hello", None, "world"]
+
+
 def test_loadarff_invalid_output_type():
     with StringIO(ARFF_WITH_UNSEEN_NOMINAL) as fp:
         with pytest.raises(ValueError, match=r"output_type must be 'pandas' or 'polars'"):

@@ -282,6 +282,28 @@ def test_safe_concat_polars_enum_mismatch_raises():
         safe_concat([df1, df2], axis=0)
 
 
+def test_safe_concat_polars_rejects_extra_concat_arguments():
+    df1 = pl.DataFrame({"x": [1]})
+    df2 = pl.DataFrame({"x": [2]})
+
+    with pytest.raises(TypeError, match="does not accept"):
+        safe_concat([df1, df2], "extra")
+    with pytest.raises(TypeError, match="does not accept"):
+        safe_concat([df1, df2], ignore_index=True)
+
+
+def test_safe_concat_polars_series_vertical():
+    left = pl.Series("x", [1, 2])
+    right = pl.Series("x", [3])
+    result = safe_concat([left, right], axis=0)
+    assert result.to_dict(as_series=False) == {"x": [1, 2, 3]}
+
+
+def test_safe_concat_unsupported_input_type():
+    with pytest.raises(TypeError, match="unsupported input type"):
+        safe_concat([[1], [2]], axis=0)
+
+
 class TestSafeConcatAxisValidation:
     @staticmethod
     @pytest.mark.parametrize("bad_axis", [2, -1, 3])

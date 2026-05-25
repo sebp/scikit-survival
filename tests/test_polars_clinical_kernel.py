@@ -147,6 +147,24 @@ class TestClinicalKernelPolars:
         assert_array_almost_equal(expected, mat, 4)
 
     @staticmethod
+    def test_clinical_kernel_multiple_nominal_columns():
+        df = pl.DataFrame(
+            {
+                "grade": pl.Series(["I", "II", "I"], dtype=pl.Categorical),
+                "site": pl.Series(["A", "A", "B"], dtype=pl.Categorical),
+            }
+        )
+        mat = clinical_kernel(df)
+        expected = np.array(
+            [
+                [1.0, 0.5, 0.5],
+                [0.5, 1.0, 0.0],
+                [0.5, 0.0, 1.0],
+            ]
+        )
+        np.testing.assert_allclose(mat, expected)
+
+    @staticmethod
     def test_clinical_kernel_boolean_treated_as_numeric():
         age = [20, 23, 26, 54, 100]
         event_bool = [True, False, True, True, False]
@@ -447,6 +465,23 @@ class TestClinicalKernelTransformReplay:
         K_sub = t.transform(df_pl.head(2))
         assert K_sub.shape == (2, 3)
 
+    @staticmethod
+    def test_polars_transform_recasts_numeric_column_from_string():
+        fit = pl.DataFrame({"score": [1.0, 2.0, 3.0]})
+        transform = pl.DataFrame({"score": ["1.0", "2.0"]})
+        t = ClinicalKernelTransform().fit(fit)
+        K = t.transform(transform)
+        assert K.shape == (2, 3)
+        np.testing.assert_allclose(K, clinical_kernel(fit, fit.head(2)).T)
+
+    @staticmethod
+    def test_polars_transform_all_numeric_no_nominal_columns():
+        df = pl.DataFrame({"age": [40.0, 50.0, 60.0], "score": [1.0, 3.0, 5.0]})
+        t = ClinicalKernelTransform().fit(df)
+        K = t.transform(df.head(2))
+        assert K.shape == (2, 3)
+        np.testing.assert_allclose(K, clinical_kernel(df, df.head(2)).T)
+
 
 class TestClinicalKernelEdgeCases:
     @staticmethod
@@ -467,3 +502,54 @@ class TestClinicalKernelEdgeCases:
             clinical_kernel(x_pd, x_pl)
         with pytest.raises(TypeError, match="must use the same dataframe library"):
             clinical_kernel(x_pl, x_pd)
+
+    @staticmethod
+    def test_invalid_ordinal_columns_raise():
+        df = pl.DataFrame(
+            {
+                "num": [1.0, 2.0],
+                "grade": pl.Series(["A", "B"], dtype=pl.Enum(["A", "B"])),
+            }
+        )
+
+        with pytest.raises(TypeError, match="must be an iterable"):
+            clinical_kernel(df, ordinal_columns=1)
+        with pytest.raises(TypeError, match="entries must be strings"):
+            clinical_kernel(df, ordinal_columns=[1])
+        with pytest.raises(ValueError, match="unknown column names"):
+            clinical_kernel(df, ordinal_columns=["unknown"])
+        with pytest.raises(ValueError, match="requires a categorical dtype"):
+            clinical_kernel(df, ordinal_columns=["num"])
+
+    @staticmethod
+    def test_unsupported_polars_dtype_raises():
+        df = pl.DataFrame({"items": [[1], [2]]})
+        with pytest.raises(TypeError, match="unsupported dtype"):
+            clinical_kernel(df)
+
+    @staticmethod
+    def test_polars_column_mismatch_raises():
+        x = pl.DataFrame({"a": [1.0, 2.0], "b": [3.0, 4.0]})
+        y = pl.DataFrame({"a": [1.0, 2.0], "c": [3.0, 4.0]})
+        with pytest.raises(ValueError, match="columns do not match"):
+            clinical_kernel(x, y)
+
+    @staticmethod
+    def test_polars_feature_count_mismatch_raises():
+        x = pl.DataFrame({"a": [1.0, 2.0], "b": [3.0, 4.0]})
+        y = pl.DataFrame({"a": [1.0, 2.0]})
+        with pytest.raises(ValueError, match="different number of features"):
+            clinical_kernel(x, y)
+
+    @staticmethod
+    def test_pairwise_kernel_polars_fit_with_nominal_column():
+        df = pl.DataFrame(
+            {
+                "age": [40.0, 50.0],
+                "grade": pl.Series(["I", "II"], dtype=pl.Categorical),
+            }
+        )
+        transform = ClinicalKernelTransform().fit(df)
+        value = transform.pairwise_kernel(transform.X_fit_[0], transform.X_fit_[1])
+        expected = clinical_kernel(df)[0, 1]
+        np.testing.assert_allclose(value, expected, atol=1e-12)
