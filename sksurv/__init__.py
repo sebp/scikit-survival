@@ -95,7 +95,7 @@ def predict_cumulative_hazard_function(self, X, **kwargs):
     >>> from sksurv.preprocessing import OneHotEncoder
     >>> from sklearn.pipeline import Pipeline
     >>>
-    >>> X, y = load_whas500()  # or load_whas500(output_type="polars")
+    >>> X, y = load_whas500()
     >>> pipe = Pipeline([('encode', OneHotEncoder()),
     ...                  ('cox', CoxPHSurvivalAnalysis())])
     >>> pipe.fit(X, y)
@@ -152,7 +152,7 @@ def predict_survival_function(self, X, **kwargs):
     ...                  ('cox', CoxPHSurvivalAnalysis())])
     >>> pipe.fit(X, y)
     Pipeline(...)
-    >>> surv_fn = pipe.predict_survival_function(X.iloc[:5])  # polars: X.head(5)
+    >>> surv_fn = pipe.predict_survival_function(X.iloc[:5])
     >>> for fn in surv_fn:
     ...     print(fn.x, fn.y)
     [...]

@@ -1,6 +1,8 @@
 """Polars / LazyFrame input tests owned by sksurv survival estimators."""
 
+from dataframe_test_utils import to_polars_via_interchange
 import numpy as np
+import pandas as pd
 import polars as pl
 import pytest
 
@@ -19,12 +21,11 @@ def survival_smoke_data():
         event = rng.binomial(1, 0.5, n).astype(bool)
         time = rng.exponential(10, n)
         y = Surv.from_arrays(event, time)
+        X_pd = pd.DataFrame(data)
         if dataframe_library == "pandas":
-            import pandas as pd
-
-            X = pd.DataFrame(data)
+            X = X_pd
         elif dataframe_library == "polars":
-            X = pl.DataFrame(data)
+            X = to_polars_via_interchange(X_pd)
         else:
             raise ValueError(dataframe_library)
         return X, y

@@ -1,5 +1,6 @@
 """Tests for ``sksurv.preprocessing.OneHotEncoder`` with polars input."""
 
+from dataframe_test_utils import make_one_hot_categorical_data, to_polars_via_interchange
 import numpy as np
 import pandas as pd
 import polars as pl
@@ -10,60 +11,22 @@ from sksurv.preprocessing import OneHotEncoder
 
 class TestOneHotEncoderAllDroppedParity:
     @staticmethod
-    def test_all_dropped_polars_raises():
-        df = pl.DataFrame({"cat": pl.Series(["x", "x"], dtype=pl.Categorical)})
-        with pytest.raises(ValueError, match="No objects to concatenate"):
-            OneHotEncoder().fit_transform(df)
-
-    @staticmethod
-    def test_all_dropped_pandas_raises():
+    @pytest.mark.parametrize("dataframe_library", ["pandas", "polars"])
+    def test_all_dropped_raises(dataframe_library):
         df = pd.DataFrame({"cat": pd.Categorical(["x", "x"])})
+        if dataframe_library == "polars":
+            df = to_polars_via_interchange(df)
         with pytest.raises(ValueError, match="No objects to concatenate"):
             OneHotEncoder().fit_transform(df)
-
-
-class _OneHotEncoderPolarsFactory:
-    def _create(self, n_samples=117):
-        rnd = np.random.default_rng(51365192)
-        numeric = {f"N{i}": rnd.random(n_samples) for i in range(5)}
-
-        binary_1 = pl.Series(
-            "binary_1",
-            np.array(["Yes", "No"])[rnd.binomial(1, 0.6, n_samples)],
-            dtype=pl.Enum(["Yes", "No"]),
-        )
-        binary_2 = pl.Series(
-            "binary_2",
-            np.array(["East", "West"])[rnd.binomial(1, 0.376, n_samples)],
-            dtype=pl.Enum(["East", "West"]),
-        )
-        trinary = pl.Series(
-            "trinary",
-            np.array(["Green", "Blue", "Red"])[rnd.binomial(2, 0.76, n_samples)],
-            dtype=pl.Enum(["Green", "Blue", "Red"]),
-        )
-        many = pl.Series(
-            "many",
-            np.array(["One", "Two", "Three", "Four", "Five", "Six"])[rnd.binomial(5, 0.47, n_samples)],
-            dtype=pl.Enum(["One", "Two", "Three", "Four", "Five", "Six"]),
-        )
-
-        data = pl.DataFrame(numeric).with_columns([binary_1, binary_2, trinary, many])
-
-        expected_cols = {}
-        for n in [f"N{i}" for i in range(5)]:
-            expected_cols[n] = data.get_column(n)
-        for nam, series in [("binary_1", binary_1), ("binary_2", binary_2), ("trinary", trinary), ("many", many)]:
-            cats = series.dtype.categories
-            for cat in list(cats)[1:]:
-                expected_cols[f"{nam}={cat}"] = (series == cat).cast(pl.Float64).to_numpy()
-        expected = pl.DataFrame(expected_cols)
-        return data, expected
 
 
 @pytest.fixture()
 def polars_categorical_data():
-    return _OneHotEncoderPolarsFactory()._create
+    def _create(n_samples=117):
+        data, expected = make_one_hot_categorical_data(n_samples)
+        return to_polars_via_interchange(data), to_polars_via_interchange(expected)
+
+    return _create
 
 
 class TestOneHotEncoderPolars:
@@ -138,8 +101,8 @@ class TestOneHotEncoderUnseenAndCrossDataframeLibrary:
 
         df_fit_pd = pd.DataFrame({"color": pd.Categorical(fit)})
         df_test_pd = pd.DataFrame({"color": pd.Categorical(test)})
-        df_fit_pl = pl.DataFrame({"color": pl.Series(fit, dtype=pl.Categorical)})
-        df_test_pl = pl.DataFrame({"color": pl.Series(test, dtype=pl.Categorical)})
+        df_fit_pl = pl.DataFrame({"color": pl.Series(df_fit_pd["color"].astype(str).to_list(), dtype=pl.Categorical)})
+        df_test_pl = pl.DataFrame({"color": pl.Series(df_test_pd["color"].astype(str).to_list(), dtype=pl.Categorical)})
         return df_fit_pd, df_test_pd, df_fit_pl, df_test_pl
 
     def test_unseen_label_emits_nan_in_both_backends(self):

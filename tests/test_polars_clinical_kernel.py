@@ -1,5 +1,6 @@
 """Tests for ``sksurv.kernels.clinical`` with polars input."""
 
+from dataframe_test_utils import make_clinical_kernel_pandas_data
 import numpy as np
 from numpy.testing import assert_array_almost_equal
 import pandas as pd
@@ -10,85 +11,30 @@ from sksurv.kernels import ClinicalKernelTransform, clinical_kernel
 from sksurv.preprocessing import OneHotEncoder
 
 
-def _expected_clinical_kernel_matrix(with_ordinal=True, with_nominal=True, with_continuous=True):
-    mat_age = np.array(
-        [
-            [1.0, 0.9625, 0.925, 0.575, 0.0],
-            [0.9625, 1.0, 0.9625, 0.6125, 0.0375],
-            [0.925, 0.9625, 1.0, 0.6500, 0.075],
-            [0.575, 0.6125, 0.6500, 1.0, 0.425],
-            [0.0, 0.0375, 0.075, 0.425, 1.0],
-        ]
-    )
-    mat_node_size = np.array(
-        [
-            [1.0, 2 / 3, 2 / 3, 1 / 3, 2 / 3],
-            [2 / 3, 1.0, 1 / 3, 0.0, 1.0],
-            [2 / 3, 1 / 3, 1.0, 2 / 3, 1 / 3],
-            [1 / 3, 0.0, 2 / 3, 1.0, 0.0],
-            [2 / 3, 1.0, 1 / 3, 0.0, 1.0],
-        ]
-    )
-    mat_node_spread = np.array(
-        [
-            [1.0, 0.0, 1.0, 0.5, 0.0],
-            [0.0, 1.0, 0.0, 0.5, 1.0],
-            [1.0, 0.0, 1.0, 0.5, 0.0],
-            [0.5, 0.5, 0.5, 1.0, 0.5],
-            [0.0, 1.0, 0.0, 0.5, 1.0],
-        ]
-    )
-    mat_metastasis = np.array(
-        [
-            [1, 0, 1, 1, 0],
-            [0, 1, 0, 0, 1],
-            [1, 0, 1, 1, 0],
-            [1, 0, 1, 1, 0],
-            [0, 1, 0, 0, 1],
-        ],
-        dtype=float,
-    )
-
-    included = []
-    if with_continuous:
-        included.append(mat_age)
-    if with_ordinal:
-        included.append(mat_node_size)
-        included.append(mat_node_spread)
-    if with_nominal:
-        included.append(mat_metastasis)
-    expected = included[0]
-    for i in range(1, len(included)):
-        expected += included[i]
-    expected /= len(included)
-    return expected
+def _clinical_polars_from_pandas(data):
+    cols = {}
+    if "age" in data:
+        cols["age"] = pl.Series("age", data["age"].to_numpy(), dtype=pl.Float64)
+    if "lymph node size" in data:
+        categories = [str(cat) for cat in data["lymph node size"].cat.categories]
+        values = [str(value) for value in data["lymph node size"].to_numpy()]
+        cols["lymph node size"] = pl.Series("lymph node size", values, dtype=pl.Enum(categories))
+    if "lymph node spread" in data:
+        categories = list(data["lymph node spread"].cat.categories)
+        values = data["lymph node spread"].astype(str).to_numpy()
+        cols["lymph node spread"] = pl.Series("lymph node spread", values, dtype=pl.Enum(categories))
+    if "metastasis" in data:
+        cols["metastasis"] = pl.Series("metastasis", data["metastasis"].astype(str).to_numpy(), dtype=pl.Categorical)
+    return pl.DataFrame(cols)
 
 
 @pytest.fixture()
 def make_polars_clinical_data():
-    age = [20, 23, 26, 54, 100]
-    node_size = [2, 1, 3, 4, 1]
-    node_spread = ["distant", "none", "distant", "close", "none"]
-    metastasis = ["yes", "no", "yes", "yes", "no"]
-
     def _make(with_ordinal=True, with_nominal=True, with_continuous=True):
-        cols = {}
-        if with_continuous:
-            cols["age"] = pl.Series("age", age, dtype=pl.Float64)
-        if with_ordinal:
-            cols["lymph node size"] = pl.Series(
-                "lymph node size", [str(v) for v in node_size], dtype=pl.Enum(["1", "2", "3", "4"])
-            )
-            cols["lymph node spread"] = pl.Series(
-                "lymph node spread", node_spread, dtype=pl.Enum(["none", "close", "distant"])
-            )
-        if with_nominal:
-            cols["metastasis"] = pl.Series("metastasis", metastasis, dtype=pl.Categorical)
-        df = pl.DataFrame(cols)
-        expected = _expected_clinical_kernel_matrix(
+        data, expected = make_clinical_kernel_pandas_data(
             with_ordinal=with_ordinal, with_nominal=with_nominal, with_continuous=with_continuous
         )
-        return df, expected
+        return _clinical_polars_from_pandas(data), expected
 
     return _make
 

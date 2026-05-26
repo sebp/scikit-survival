@@ -1,5 +1,4 @@
-from collections import OrderedDict
-
+from dataframe_test_utils import expected_one_hot_data, make_one_hot_categorical_data
 import numpy as np
 from numpy.testing import assert_array_equal
 import pandas as pd
@@ -11,45 +10,12 @@ from sksurv.testing import get_pandas_infer_string_context
 
 
 def _encoded_data(data):
-    expected = []
-    for nam, col in data.items():
-        if hasattr(col, "cat"):
-            for cat in col.cat.categories[1:]:
-                name = f"{nam}={cat}"
-                s = pd.Series(col == cat, dtype=np.float64)
-                expected.append((name, s))
-        else:
-            expected.append((nam, col))
-
-    expected_data = pd.DataFrame.from_dict(OrderedDict(expected))
-    return expected_data
+    return expected_one_hot_data(data)
 
 
 @pytest.fixture()
 def create_categorical_data():
-    def _create_data(n_samples=117):
-        rnd = np.random.default_rng(51365192)
-        data_num = pd.DataFrame(rnd.random((n_samples, 5)), columns=[f"N{i}" for i in range(5)])
-
-        dat_cat = pd.DataFrame(
-            OrderedDict(
-                [
-                    ("binary_1", pd.Categorical.from_codes(rnd.binomial(1, 0.6, n_samples), ["Yes", "No"])),
-                    ("binary_2", pd.Categorical.from_codes(rnd.binomial(1, 0.376, n_samples), ["East", "West"])),
-                    ("trinary", pd.Categorical.from_codes(rnd.binomial(2, 0.76, n_samples), ["Green", "Blue", "Red"])),
-                    (
-                        "many",
-                        pd.Categorical.from_codes(
-                            rnd.binomial(5, 0.47, n_samples), ["One", "Two", "Three", "Four", "Five", "Six"]
-                        ),
-                    ),
-                ]
-            )
-        )
-        data = pd.concat((data_num, dat_cat), axis=1)
-        return data, _encoded_data(data)
-
-    return _create_data
+    return make_one_hot_categorical_data
 
 
 @pytest.fixture()
@@ -57,13 +23,11 @@ def create_string_data():
     def _create_data(n_samples=97):
         rnd = np.random.default_rng(882)
         data = pd.DataFrame(
-            OrderedDict(
-                [
-                    ("answer", np.array(["Yes", "No"])[rnd.binomial(1, 0.6, n_samples)]),
-                    ("direction", np.array(["East", "North", "West", "South"])[rnd.integers(4, size=n_samples)]),
-                    ("color", np.array(["Green", "Blue", "Red"])[rnd.integers(3, size=n_samples)]),
-                ]
-            )
+            {
+                "answer": np.array(["Yes", "No"])[rnd.binomial(1, 0.6, n_samples)],
+                "direction": np.array(["East", "North", "West", "South"])[rnd.integers(4, size=n_samples)],
+                "color": np.array(["Green", "Blue", "Red"])[rnd.integers(3, size=n_samples)],
+            }
         )
 
         data_cat = data.astype(dict.fromkeys(data.columns, "category"))

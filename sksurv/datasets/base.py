@@ -2,6 +2,7 @@ import warnings
 
 import narwhals.stable.v2 as nw
 import numpy as np
+import pandas as pd
 from pandas.api.types import CategoricalDtype
 
 from .._dataframe import (
@@ -12,7 +13,6 @@ from .._dataframe import (
 )
 from ..column import categorical_to_numeric, standardize
 from ..io import loadarff
-from ..util import safe_concat
 
 __all__ = [
     "get_x_y",
@@ -153,6 +153,15 @@ def _validate_output_type(output_type):
         raise ValueError(f"output_type must be 'pandas' or 'polars', got {output_type!r}")
 
 
+def _concat_rows(frames):
+    frames = list(frames)
+    if not frames:
+        raise ValueError("No objects to concatenate")
+    if nw.dependencies.is_pandas_dataframe(frames[0]):
+        return pd.concat(frames, axis=0)
+    return nw.concat([to_narwhals_dataframe(frame) for frame in frames], how="vertical").to_native()
+
+
 def load_arff_files_standardized(
     path_training,
     attr_labels,
@@ -257,7 +266,7 @@ def load_arff_files_standardized(
             x_train = nw.from_native(x_train).select(cols).to_native()
             x_test = nw.from_native(x_test).select(cols).to_native()
 
-        x = safe_concat((x_train, x_test), axis=0)
+        x = _concat_rows((x_train, x_test))
         if standardize_numeric:
             x = standardize(x)
         if to_numeric:

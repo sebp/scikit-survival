@@ -23,9 +23,10 @@ from sklearn.utils.validation import (
     check_is_fitted,
     check_non_negative,
     column_or_1d,
+    validate_data,
 )
 
-from .._dataframe import validate_data_with_eager_dataframe
+from .._dataframe import collect_lazy_dataframe
 from ..base import SurvivalAnalysisMixin
 from ..util import check_array_survival
 from ._coxnet import call_fit_coxnet
@@ -200,7 +201,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         self._baseline_models = None
 
     def _pre_fit(self, X, y):
-        X = validate_data_with_eager_dataframe(self, X, ensure_min_samples=2, dtype=np.float64, copy=self.copy_X)
+        X = validate_data(self, collect_lazy_dataframe(X), ensure_min_samples=2, dtype=np.float64, copy=self.copy_X)
         event, time = check_array_survival(X, y)
         # center feature matrix
         X_offset = np.average(X, axis=0)
@@ -387,7 +388,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         risk_score : array, shape = (n_samples,)
             Predicted risk scores.
         """
-        X = validate_data_with_eager_dataframe(self, X, reset=False)
+        X = validate_data(self, collect_lazy_dataframe(X), reset=False)
         coef, offset = self._get_coef(alpha)
         return np.dot(X, coef) - offset
 

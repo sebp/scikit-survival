@@ -18,7 +18,6 @@ from ._input import (
     is_supported_dataframe_or_series,
     to_narwhals_dataframe,
     unsupported_dataframe_error,
-    validate_data_with_eager_dataframe,
 )
 
 __all__ = [
@@ -39,5 +38,4 @@ __all__ = [
     "unsupported_dataframe_error",
     "is_narwhals_dataframe_or_series",
     "is_narwhals_dataframe",
-    "validate_data_with_eager_dataframe",
 ]

@@ -375,7 +375,7 @@ class TestLoadDatasetsPolars:
         ``index`` to the row index (so it is excluded from features), but
         the earlier polars branch left it as a regular column, silently
         feeding downstream ``standardize`` / ``categorical_to_numeric`` /
-        ``safe_concat`` with an extra (and possibly string-typed) feature.
+        row concatenation with an extra (and possibly string-typed) feature.
         """
         import polars as pl
 

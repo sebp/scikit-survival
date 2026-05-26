@@ -13,7 +13,6 @@
 """Dataframe input normalization helpers."""
 
 import narwhals.stable.v2 as nw
-from sklearn.utils.validation import validate_data as _sklearn_validate_data
 
 from . import _polars
 
@@ -27,7 +26,6 @@ __all__ = [
     "unsupported_dataframe_error",
     "is_narwhals_dataframe_or_series",
     "is_narwhals_dataframe",
-    "validate_data_with_eager_dataframe",
 ]
 
 EXTERNAL_DATAFRAME_LIBRARIES = (_polars.LIBRARY,)
@@ -102,7 +100,3 @@ def to_narwhals_dataframe(obj):
     if isinstance(nw_obj, nw.LazyFrame):
         nw_obj = nw_obj.collect()
     return nw_obj
-
-
-def validate_data_with_eager_dataframe(estimator, X, *args, **kwargs):
-    return _sklearn_validate_data(estimator, collect_lazy_dataframe(X), *args, **kwargs)

@@ -29,7 +29,7 @@ _PRED_SURV_FN_EXAMPLE_DOC = """
 
             Estimate the survival function for the first 10 samples.
 
-            >>> surv_funcs = estimator.predict_survival_function(Xt.iloc[:10])  # polars: Xt.head(10)
+            >>> surv_funcs = estimator.predict_survival_function(Xt.iloc[:10])
 
             Plot the estimated survival functions.
 
@@ -61,7 +61,7 @@ _PRED_CUMHAZ_FN_EXAMPLE_DOC = """
 
             Estimate the cumulative hazard function for the first 10 samples.
 
-            >>> chf_funcs = estimator.predict_cumulative_hazard_function(Xt.iloc[:10])  # polars: Xt.head(10)
+            >>> chf_funcs = estimator.predict_cumulative_hazard_function(Xt.iloc[:10])
 
             Plot the estimated cumulative hazard functions.
 

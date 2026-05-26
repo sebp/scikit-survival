@@ -2,6 +2,7 @@
 
 from contextlib import nullcontext as does_not_raise
 
+from dataframe_test_utils import to_polars_via_interchange
 import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 import polars as pl
@@ -63,7 +64,9 @@ class GetXyPolarsCases(FixtureParameterFactory):
 
     def _make_polars_eager(self, data_arrays, columns):
         data = np.column_stack(data_arrays) if isinstance(data_arrays, tuple | list) else data_arrays
-        return pl.DataFrame(data, schema=columns)
+        import pandas as pd
+
+        return to_polars_via_interchange(pd.DataFrame(data, columns=columns))
 
     def _make_polars_lazy(self, data_arrays, columns):
         return self._make_polars_eager(data_arrays, columns).lazy()

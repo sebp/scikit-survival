@@ -106,20 +106,6 @@ def clinical_kernel(x, y=None, *, ordinal_columns=None):
      [0.33333333 1.         0.16666667]
      [0.5        0.16666667 1.        ]]
 
-    Polars input: ``pl.Enum`` columns default to nominal; pass
-    ``ordinal_columns=`` to promote them (polars analogue of pandas
-    ``ordered=True``):
-
-    >>> import polars as pl
-    >>> data_pl = pl.DataFrame({
-    ...     'feature_num': [1.0, 2.0, 3.0],
-    ...     'feature_ord': pl.Series(['low', 'medium', 'high'], dtype=pl.Enum(['high', 'low', 'medium'])),
-    ...     'feature_nom': pl.Series(['A', 'B', 'A'], dtype=pl.Categorical),
-    ... })
-    >>> kernel_matrix_pl = clinical_kernel(data_pl, ordinal_columns=['feature_ord'])
-    >>> import numpy as np
-    >>> np.array_equal(kernel_matrix, kernel_matrix_pl)
-    True
     """
     x_is_narwhals_dataframe = is_narwhals_dataframe(x)
     x = collect_lazy_dataframe(x)

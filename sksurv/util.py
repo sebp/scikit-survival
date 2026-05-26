@@ -10,22 +10,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import narwhals.stable.v2 as nw
 import numpy as np
-import pandas as pd
-from pandas.api.types import CategoricalDtype
 from sklearn.utils.validation import check_array, check_consistent_length
 
 from ._dataframe import (
-    SUPPORTED_DATAFRAME_INPUT_TYPES,
-    get_dataframe_library,
     is_supported_dataframe,
     to_narwhals_dataframe,
     unsupported_dataframe_error,
 )
-from ._dataframe._concat import concat_narwhals_preserving_categories
 
-__all__ = ["check_array_survival", "check_y_survival", "safe_concat", "Surv"]
+__all__ = ["check_array_survival", "check_y_survival", "Surv"]
 
 
 class Surv:
@@ -308,108 +302,6 @@ def check_array_survival(X, y, **kwargs):
     event, time = check_y_survival(y, **kwargs)
     check_consistent_length(X, event, time)
     return event, time
-
-
-def safe_concat(objs, *args, **kwargs):
-    """Alternative to :func:`pandas.concat` / :func:`polars.concat` that preserves categorical variables.
-
-    Parameters
-    ----------
-    objs : sequence of pandas or polars Series/DataFrame objects
-        All elements must share the same dataframe library.
-    axis : {0, 1, "index", "columns"}, default 0
-        Concatenation axis. ``axis=0`` / ``"index"`` stacks rows,
-        ``axis=1`` / ``"columns"`` stacks columns.
-
-    Returns
-    -------
-    concatenated : pandas or polars DataFrame
-        The output dataframe library matches the inputs.
-
-    Raises
-    ------
-    ValueError
-        If ``objs`` is empty, if ``axis`` is not one of ``0``, ``1``,
-        ``"index"``, ``"columns"``, if a categorical column appears in
-        multiple inputs with mismatched categories (``axis=0``), or if a
-        categorical column name appears in more than one input (``axis=1``).
-    TypeError
-        If the inputs mix pandas and polars objects, or if polars inputs are
-        paired with pandas-only positional / keyword arguments.
-
-    Notes
-    -----
-    Extra pandas concat arguments are forwarded only for pandas input. For
-    polars input, only ``axis`` is honoured.
-    """
-    axis = _normalize_safe_concat_axis(kwargs.pop("axis", 0))
-    objs = list(objs)
-    if not objs:
-        raise ValueError("No objects to concatenate")
-
-    first = objs[0]
-    if _is_pandas_concat_input(first):
-        for obj in objs[1:]:
-            if not _is_pandas_concat_input(obj):
-                raise TypeError(f"mixed backends; all inputs must be pandas, but found {type(obj)!r}")
-        return _safe_concat_pandas(objs, *args, axis=axis, **kwargs)
-
-    library = get_dataframe_library(first, allow_series=True)
-    if library is not None:
-        for obj in objs[1:]:
-            obj_library = get_dataframe_library(obj, allow_series=True)
-            if obj_library is None or obj_library.name != library.name:
-                raise TypeError(f"mixed backends; all inputs must be {library.name}, but found {type(obj)!r}")
-        if args or kwargs:
-            unsupported = list(kwargs.keys())
-            if args:
-                unsupported = ["<positional>"] * len(args) + unsupported
-            raise TypeError(
-                f"safe_concat {library.name} path does not accept {unsupported!r}; "
-                f"only ``axis`` is honoured for {library.name} input"
-            )
-        return concat_narwhals_preserving_categories(objs, axis=axis)
-
-    raise TypeError(f"safe_concat: unsupported input type {type(first)!r}; expected {SUPPORTED_DATAFRAME_INPUT_TYPES}")
-
-
-def _normalize_safe_concat_axis(axis):
-    if axis == "index":
-        return 0
-    if axis == "columns":
-        return 1
-    if axis in (0, 1):
-        return axis
-    raise ValueError(f"axis must be 0 or 1, got {axis!r}")
-
-
-def _is_pandas_concat_input(obj):
-    return nw.dependencies.is_pandas_dataframe(obj) or nw.dependencies.is_pandas_series(obj)
-
-
-def _safe_concat_pandas(objs, *args, axis=0, **kwargs):
-    categories = {}
-    for df in objs:
-        if isinstance(df, pd.Series):
-            if isinstance(df.dtype, CategoricalDtype):
-                categories[df.name] = {"categories": df.cat.categories, "ordered": df.cat.ordered}
-        else:
-            dfc = df.select_dtypes(include=["category"])
-            new_dtypes = {}
-            for name, s in dfc.items():
-                if name in categories:
-                    if axis == 1:
-                        raise ValueError(f"duplicate columns {name}")
-                    if not categories[name]["categories"].equals(s.cat.categories):
-                        raise ValueError(f"categories for column {name} do not match")
-                else:
-                    categories[name] = {"categories": s.cat.categories, "ordered": s.cat.ordered}
-                new_dtypes[name] = "str"
-            df = df.astype(new_dtypes)
-
-    concatenated = pd.concat(objs, *args, axis=axis, **kwargs)
-    concatenated = concatenated.astype({name: pd.CategoricalDtype(**params) for name, params in categories.items()})
-    return concatenated
 
 
 class _PropertyAvailableIfDescriptor:
