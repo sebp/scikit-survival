@@ -18,6 +18,7 @@ repos:
     -   id: destroyed-symlinks
     -   id: name-tests-test
         args: ["--pytest-test-first"]
+        exclude: ^tests/dataframe_test_utils\.py$
 -   repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
