@@ -108,7 +108,7 @@ For a pull request to be accepted, your changes must meet the below requirements
    Tests will also be executed automatically once you submit a pull request.
 
 5. The contributed code will be licensed under the
-   `GNU General Public License v3.0 <https://github.com/sebp/scikit-survival/blob/master/COPYING>`_.
+   `GNU General Public License v3.0 <https://github.com/sebp/scikit-survival/blob/main/COPYING>`_.
    If you did not write the code yourself, you must ensure the existing license
    is compatible and include the license information in the contributed files,
    or obtain a permission from the original author to relicense the contributed code.

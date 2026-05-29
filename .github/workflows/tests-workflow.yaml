@@ -31,6 +31,8 @@ jobs:
         run: |
           echo "CONDA_PKGS_DIRS=${{ runner.temp }}/conda_pkgs_dir" >> $GITHUB_ENV
           echo "requirements=ci/deps/${{ matrix.config }}.sh" >> $GITHUB_OUTPUT
+          source ci/deps/${{ matrix.config }}.sh
+          echo "CI_NO_SLOW=${CI_NO_SLOW}" >> $GITHUB_ENV
       - name: Cache downloaded packages
         uses: actions/cache@v5
         with:
@@ -64,7 +66,7 @@ jobs:
             echo "do=false" >> $GITHUB_OUTPUT
           fi
       - name: Submit Coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
@@ -73,7 +75,7 @@ jobs:
           disable_file_fixes: true
         if: steps.coverage.outputs.do == 'true'
       - name: Submit Coverage to Codacy
-        uses: codacy/codacy-coverage-reporter-action@master
+        uses: codacy/codacy-coverage-reporter-action@v1.3.0
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           coverage-reports: coverage.xml

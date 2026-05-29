@@ -148,7 +148,7 @@ nbsphinx_execute = "never"
 nbsphinx_prolog = r"""
 {% set docname = "doc/" + env.doc2path(env.docname, base=None)|string %}
 {% set notebook = env.doc2path(env.docname, base=None)|replace("user_guide/", "notebooks/") %}
-{% set branch = 'master' if 'dev' in env.config.release else 'v{}'.format(env.config.release) %}
+{% set branch = 'main' if 'dev' in env.config.release else 'v{}'.format(env.config.release) %}
 
 .. raw:: html
 
@@ -283,7 +283,7 @@ def linkcode_resolve(domain, info):
         if m:
             branch = m.group(1)
         elif "dev" in release:
-            branch = "master"
+            branch = "main"
         else:
             branch = f"v{release}"
         return "https://github.com/sebp/scikit-survival/blob/{branch}/{filename}{linespec}".format(

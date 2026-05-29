@@ -237,7 +237,7 @@ deps = [
 description = "Run linters"
 skip_install = true
 deps = [
-    "ruff~=0.14.0",
+    "ruff~=0.15.5",
 ]
 commands = [["ruff", "check", "sksurv/", "tests/", "setup.py"]]
 pass_env = ["RUFF_*"]
