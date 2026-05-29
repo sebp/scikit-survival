@@ -20,7 +20,6 @@ from sklearn.ensemble._gb import BaseGradientBoosting, VerboseReporter
 from sklearn.ensemble._gradient_boosting import _random_sample_mask
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeRegressor
-from sklearn.tree._tree import DTYPE
 from sklearn.utils._param_validation import Interval, StrOptions
 from sklearn.utils.extmath import squared_norm
 from sklearn.utils.validation import (
@@ -1213,7 +1212,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
             ensure_min_samples=2,
             order="C",
             accept_sparse=["csr", "csc", "coo"],
-            dtype=DTYPE,
+            dtype=np.float32,
         )
         event, time = check_array_survival(X, y)
 
@@ -1292,7 +1291,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
             # matrices. Finite values have already been checked in validate_data.
             X_train = check_array(
                 X_train,
-                dtype=DTYPE,
+                dtype=np.float32,
                 order="C",
                 accept_sparse="csr",
                 ensure_all_finite=False,
@@ -1364,7 +1363,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         return raw_predictions
 
     def _dropout_staged_raw_predict(self, X):
-        X = validate_data(self, X, dtype=DTYPE, order="C", accept_sparse="csr")
+        X = validate_data(self, X, dtype=np.float32, order="C", accept_sparse="csr")
         raw_predictions = self._raw_predict_init(X)
 
         n_estimators, K = self.estimators_.shape
@@ -1412,7 +1411,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         """
         check_is_fitted(self, "estimators_")
 
-        X = validate_data(self, X, reset=False, order="C", accept_sparse="csr", dtype=DTYPE)
+        X = validate_data(self, X, reset=False, order="C", accept_sparse="csr", dtype=np.float32)
         return self._predict(X)
 
     def staged_predict(self, X):
