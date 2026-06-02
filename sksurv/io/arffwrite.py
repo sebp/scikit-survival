@@ -61,8 +61,8 @@ def writearff(data, filename, relation_name=None, index=True):
         Name of relation in ARFF file.
 
     index : boolean, optional, default: True
-        Write row names (index). Ignored for polars input (polars has no
-        row-index concept).
+        Write row names (index). Only relevant for pandas input; other
+        dataframe libraries have no row-index concept, so the value is ignored.
 
     See Also
     --------
@@ -83,12 +83,10 @@ def writearff(data, filename, relation_name=None, index=True):
     ...     'class': ['A', 'B', 'C']
     ... }, index=['One', 'Two', 'Three'])
     >>>
-    >>> # Write to ARFF file (use a temporary path so the CWD stays clean)
-    >>> out_path = Path(tempfile.mkdtemp()) / 'out.arff'
-    >>> writearff(data, str(out_path), relation_name='test_data')
-    >>>
-    >>> # Read contents of ARFF file
-    >>> print(out_path.read_text())
+    >>> # Write to a temporary ARFF file so the CWD stays clean.
+    >>> with tempfile.NamedTemporaryFile(suffix=".arff") as tmp:
+    ...     writearff(data, tmp.name, relation_name='test_data')
+    ...     print(Path(tmp.name).read_text())
     @relation test_data
     <BLANKLINE>
     @attribute index        {One,Three,Two}
@@ -110,10 +108,11 @@ def writearff(data, filename, relation_name=None, index=True):
     ...     'feature1': [1.0, 3.0, 5.0],
     ...     'class': pl.Series(['A', 'B', 'C'], dtype=pl.Enum(['A', 'B', 'C'])),
     ... })
-    >>> writearff(data_pl, str(out_path), relation_name='test_data')
+    >>> with tempfile.NamedTemporaryFile(suffix=".arff") as tmp:
+    ...     writearff(data_pl, tmp.name, relation_name='test_data')
     """
     data = ensure_eager_dataframe(data)
-    if polars_inputs.is_dataframe(data):
+    if polars_inputs.LIBRARY.is_dataframe(data):
         data = _prepare_polars_for_arff_write(data)
         # Polars frames have no meaningful row index; suppress it so the
         # output does not gain a spurious ``index`` attribute.

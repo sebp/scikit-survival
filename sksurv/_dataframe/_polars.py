@@ -8,15 +8,7 @@ after values enter Narwhals.
 
 import narwhals.stable.v2 as nw
 
-__all__ = ["LIBRARY", "PolarsDataFrameLibrary", "is_dataframe", "is_series"]
-
-
-def is_dataframe(obj):
-    return nw.dependencies.is_polars_dataframe(obj)
-
-
-def is_series(obj):
-    return nw.dependencies.is_polars_series(obj)
+__all__ = ["LIBRARY", "PolarsDataFrameLibrary"]
 
 
 class PolarsDataFrameLibrary:
@@ -31,11 +23,11 @@ class PolarsDataFrameLibrary:
 
     @staticmethod
     def is_dataframe(obj):
-        return is_dataframe(obj)
+        return nw.dependencies.is_polars_dataframe(obj)
 
     @staticmethod
     def is_series(obj):
-        return is_series(obj)
+        return nw.dependencies.is_polars_series(obj)
 
     @staticmethod
     def is_non_numeric_cast_error(exc):

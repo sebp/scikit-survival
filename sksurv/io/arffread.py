@@ -39,14 +39,13 @@ def _to_pandas_dataframe(data, meta):
             p = pd.Series(arr, dtype=dtype)
             data_dict[name] = p
 
-    # currently, this step converts all pandas.Categorial columns back to pandas.Series
+    # This step converts any pandas.Categorical columns back to pandas.Series.
     return pd.DataFrame.from_dict(data_dict)
 
 
 def _decode_nominal_value(b):
-    if b == b"?":
-        return None
-    return b.decode()
+    if b != b"?":
+        return b.decode()
 
 
 def _to_polars_dataframe(data, meta):
@@ -55,8 +54,8 @@ def _to_polars_dataframe(data, meta):
     # the header that may include labels absent from the data, and
     # ``pl.Enum(list(attr_format))`` is the canonical way to preserve
     # that declared list verbatim. Routing the same construction through
-    # ``nw.new_series(..., dtype=nw.Enum(...))`` does not currently
-    # guarantee that declared-but-unseen labels survive the round-trip,
+    # ``nw.new_series(..., dtype=nw.Enum(...))`` does not guarantee that
+    # declared-but-unseen labels survive the round-trip,
     # which would corrupt ARFF write-back. Keeping the polars import
     # localized here also prevents the dataframe boundary modules in
     # ``sksurv._dataframe`` from acquiring backend-specific dependencies.

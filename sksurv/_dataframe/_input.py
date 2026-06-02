@@ -47,7 +47,6 @@ def get_dataframe_library(obj, *, allow_series=False):
     for library in EXTERNAL_DATAFRAME_LIBRARIES:
         if library.is_dataframe(obj) or (allow_series and library.is_series(obj)):
             return library
-    return None
 
 
 def is_supported_dataframe(obj):

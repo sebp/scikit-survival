@@ -169,8 +169,9 @@ def _continuous_range(values):
 
 
 def _ordinal_range(codes):
-    valid = ~np.isnan(codes)
-    return (codes[valid].max() - codes[valid].min()) if np.any(valid) else 0.0
+    if np.all(np.isnan(codes)):
+        return 0.0
+    return np.nanmax(codes) - np.nanmin(codes)
 
 
 def _make_numeric_kernel_column(values):
@@ -244,7 +245,9 @@ def _check_clinical_kernel_inputs(x, y, x_is_narwhals_dataframe):
 def _normalize_nominal_nulls_for_kernel(arr):
     if arr.dtype != object:
         return arr
-    mask = np.frompyfunc(lambda v: v is None, 1, 1)(arr).astype(bool)
+    # Element-wise ``is None`` over an object array; ``== None`` matches only
+    # Python ``None`` (not ``NaN``), which is exactly what we normalize here.
+    mask = arr == None  # noqa: E711
     if not mask.any():
         return arr
     out = arr.copy()

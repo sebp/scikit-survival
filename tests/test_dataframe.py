@@ -29,12 +29,12 @@ def test_polars_inputs_predicates_separate_frames_and_series():
     lazy = frame.lazy()
     series = frame["x"]
 
-    assert polars_inputs.is_dataframe(frame)
-    assert not polars_inputs.is_dataframe(lazy)
-    assert not polars_inputs.is_dataframe(series)
+    assert polars_inputs.LIBRARY.is_dataframe(frame)
+    assert not polars_inputs.LIBRARY.is_dataframe(lazy)
+    assert not polars_inputs.LIBRARY.is_dataframe(series)
 
-    assert polars_inputs.is_series(series)
-    assert not polars_inputs.is_series(frame)
+    assert polars_inputs.LIBRARY.is_series(series)
+    assert not polars_inputs.LIBRARY.is_series(frame)
 
 
 def test_external_dataframe_library_lookup():
