@@ -19,7 +19,7 @@ from scipy.special import comb
 from sklearn.svm import LinearSVC
 from sklearn.utils.validation import _get_feature_names, check_random_state, validate_data
 
-from .._dataframe import collect_lazy_dataframe, is_narwhals_dataframe, to_narwhals_dataframe
+from .._dataframe import ensure_eager_dataframe, is_narwhals_dataframe, to_narwhals_dataframe
 from ..base import SurvivalAnalysisMixin
 from ..exceptions import NoComparablePairException
 from ..util import check_array_survival
@@ -166,7 +166,7 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
         NoComparablePairException
             If no comparable pairs can be formed from the input data.
         """
-        X = collect_lazy_dataframe(X)
+        X = ensure_eager_dataframe(X)
         feature_names = _get_feature_names(X)
         input_implementation = to_narwhals_dataframe(X).implementation if is_narwhals_dataframe(X) else None
 
@@ -253,4 +253,4 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
         y : ndarray, shape = (n_samples,), dtype = float
             Predicted risk scores.
         """
-        return -self.decision_function(collect_lazy_dataframe(X))
+        return -self.decision_function(ensure_eager_dataframe(X))

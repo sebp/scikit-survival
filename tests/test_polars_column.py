@@ -162,12 +162,6 @@ class StandardizePolarsCases(FixtureParameterFactory):
         expected = self._to_polars(self.expected_numeric, cols)
         return df, expected, does_not_raise()
 
-    def data_polars_lazy_numeric(self):
-        cols = [f"V{i}" for i in range(5)]
-        df = self._to_polars(self.numeric_data, cols).lazy()
-        expected = self._to_polars(self.expected_numeric, cols)
-        return df, expected, does_not_raise()
-
     def data_polars_mixed(self):
         cols = [f"V{i}" for i in range(5)]
         numeric = self._to_polars(self.numeric_data, cols)
@@ -226,10 +220,6 @@ class EncodeCategoricalPolarsCases(FixtureParameterFactory):
             }
         )
         return df, {}, expected
-
-    def data_polars_lazy_mixed(self):
-        df, kwargs, expected = self.data_polars_mixed()
-        return df.lazy(), kwargs, expected
 
 
 @pytest.mark.parametrize("inputs,kwargs,expected", EncodeCategoricalPolarsCases().get_cases())
@@ -324,10 +314,6 @@ class CategoricalToNumericPolarsCases(FixtureParameterFactory):
             }
         )
         return df, expected
-
-    def data_polars_lazy_mixed(self):
-        df, expected = self.data_polars_mixed()
-        return df.lazy(), expected
 
 
 @pytest.mark.parametrize("inputs,expected", CategoricalToNumericPolarsCases().get_cases())
@@ -486,24 +472,28 @@ class TestLazyFramePaths:
         return df, df.lazy()
 
     @staticmethod
-    def test_categorical_to_numeric_lazyframe():
-        from sksurv.column import categorical_to_numeric
+    def test_standardize_lazyframe_rejected():
+        from sksurv.column import standardize
 
-        df, df_lazy = TestLazyFramePaths._eager_lazy_pair()
-        out_eager = categorical_to_numeric(df)
-        out_lazy = categorical_to_numeric(df_lazy)
-        out_lazy_arr = out_lazy.collect().to_numpy() if isinstance(out_lazy, pl.LazyFrame) else out_lazy.to_numpy()
-        np.testing.assert_array_equal(out_eager.to_numpy(), out_lazy_arr)
+        _, df_lazy = TestLazyFramePaths._eager_lazy_pair()
+        with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
+            standardize(df_lazy)
 
     @staticmethod
-    def test_encode_categorical_lazyframe():
+    def test_categorical_to_numeric_lazyframe_rejected():
+        from sksurv.column import categorical_to_numeric
+
+        _, df_lazy = TestLazyFramePaths._eager_lazy_pair()
+        with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
+            categorical_to_numeric(df_lazy)
+
+    @staticmethod
+    def test_encode_categorical_lazyframe_rejected():
         from sksurv.column import encode_categorical
 
-        df, df_lazy = TestLazyFramePaths._eager_lazy_pair()
-        out_eager = encode_categorical(df)
-        out_lazy = encode_categorical(df_lazy)
-        out_lazy_arr = out_lazy.collect().to_numpy() if isinstance(out_lazy, pl.LazyFrame) else out_lazy.to_numpy()
-        np.testing.assert_array_equal(out_eager.to_numpy(), out_lazy_arr)
+        _, df_lazy = TestLazyFramePaths._eager_lazy_pair()
+        with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
+            encode_categorical(df_lazy)
 
     @staticmethod
     def test_encode_categorical_polars_series():

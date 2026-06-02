@@ -6,7 +6,7 @@ import pandas as pd
 from pandas.api.types import CategoricalDtype
 
 from .._dataframe import (
-    collect_lazy_dataframe,
+    ensure_eager_dataframe,
     is_supported_dataframe,
     to_narwhals_dataframe,
     unsupported_dataframe_error,
@@ -36,7 +36,7 @@ def _get_data_path(name):
 
 def _get_x_y_survival(dataset, col_event, col_time, val_outcome, competing_risks=False):
     if col_event is None or col_time is None:
-        return collect_lazy_dataframe(dataset), None
+        return ensure_eager_dataframe(dataset), None
 
     nw_data = to_narwhals_dataframe(dataset)
 
@@ -57,7 +57,7 @@ def _get_x_y_survival(dataset, col_event, col_time, val_outcome, competing_risks
 
 def _get_x_y_other(dataset, col_label):
     if col_label is None:
-        return collect_lazy_dataframe(dataset), None
+        return ensure_eager_dataframe(dataset), None
 
     nw_data = to_narwhals_dataframe(dataset)
 
@@ -78,9 +78,8 @@ def get_x_y(data_frame, attr_labels, pos_label=None, survival=True, competing_ri
 
     Parameters
     ----------
-    data_frame : pandas.DataFrame, polars.DataFrame, or polars.LazyFrame, shape = (n_samples, n_columns)
-        A data frame. ``polars.LazyFrame`` inputs are collected internally before
-        the columns are extracted.
+    data_frame : pandas.DataFrame or polars.DataFrame, shape = (n_samples, n_columns)
+        A data frame.
 
     attr_labels : sequence of str or None
         A list of one or more columns that are considered the label.

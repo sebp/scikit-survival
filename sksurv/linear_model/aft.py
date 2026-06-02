@@ -13,7 +13,7 @@
 import numpy as np
 from sklearn.linear_model import Ridge
 
-from .._dataframe import collect_lazy_dataframe
+from .._dataframe import ensure_eager_dataframe
 from ..base import SurvivalAnalysisMixin
 from ..nonparametric import ipc_weights
 from ..util import check_array_survival
@@ -183,7 +183,7 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
         -------
         self
         """
-        X = collect_lazy_dataframe(X)
+        X = ensure_eager_dataframe(X)
         event, time = check_array_survival(X, y)
 
         weights = ipc_weights(event, time)
@@ -204,11 +204,11 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
         y_pred : array, shape = (n_samples,)
             Returns predicted values on original scale (NOT log scale).
         """
-        X = collect_lazy_dataframe(X)
+        X = ensure_eager_dataframe(X)
         return np.exp(super().predict(X))
 
     def score(self, X, y, sample_weight=None):
-        X = collect_lazy_dataframe(X)
+        X = ensure_eager_dataframe(X)
         return SurvivalAnalysisMixin.score(self, X, y)
 
 

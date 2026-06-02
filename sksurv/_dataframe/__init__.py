@@ -10,7 +10,7 @@ from ._categorical_encoding import (
 from ._categorical_semantics import ColumnSemantics, get_semantic_categories, infer_column_semantics
 from ._input import (
     SUPPORTED_DATAFRAME_INPUT_TYPES,
-    collect_lazy_dataframe,
+    ensure_eager_dataframe,
     get_dataframe_library,
     is_narwhals_dataframe,
     is_narwhals_dataframe_or_series,
@@ -27,7 +27,7 @@ __all__ = [
     "column_to_category_codes",
     "column_to_one_hot_matrix",
     "expand_dataframe_with_one_hot_columns",
-    "collect_lazy_dataframe",
+    "ensure_eager_dataframe",
     "get_dataframe_library",
     "infer_column_semantics",
     "is_supported_dataframe",

@@ -18,7 +18,7 @@ from . import _polars
 
 __all__ = [
     "to_narwhals_dataframe",
-    "collect_lazy_dataframe",
+    "ensure_eager_dataframe",
     "get_dataframe_library",
     "is_non_numeric_cast_error",
     "is_supported_dataframe",
@@ -88,15 +88,29 @@ def is_narwhals_dataframe_or_series(obj):
     return get_dataframe_library(obj, allow_series=True) is not None
 
 
-def collect_lazy_dataframe(obj):
-    library = get_dataframe_library(obj)
-    if library is None:
-        return obj
-    return library.collect_lazy(obj)
+_LAZYFRAME_NOT_SUPPORTED_MSG = (
+    "polars.LazyFrame is not supported; call .collect() before passing to scikit-survival."
+)
+
+
+def _reject_polars_lazyframe(obj):
+    if nw.dependencies.is_polars_lazyframe(obj):
+        raise TypeError(_LAZYFRAME_NOT_SUPPORTED_MSG)
+
+
+def ensure_eager_dataframe(obj):
+    """Reject a polars ``LazyFrame`` input; return any other object unchanged.
+
+    scikit-survival does not support lazy frames. scikit-learn's input
+    validation requires eager dataframes, so a ``LazyFrame`` would have to be
+    collected before anything useful could happen. Rather than collecting
+    implicitly, callers are asked to materialize the frame explicitly via
+    ``.collect()``.
+    """
+    _reject_polars_lazyframe(obj)
+    return obj
 
 
 def to_narwhals_dataframe(obj):
-    nw_obj = nw.from_native(obj)
-    if isinstance(nw_obj, nw.LazyFrame):
-        nw_obj = nw_obj.collect()
-    return nw_obj
+    _reject_polars_lazyframe(obj)
+    return nw.from_native(obj)

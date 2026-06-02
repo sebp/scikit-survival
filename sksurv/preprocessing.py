@@ -18,7 +18,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import _check_feature_names, _check_feature_names_in, _check_n_features, check_is_fitted
 
 from ._dataframe import (
-    collect_lazy_dataframe,
+    ensure_eager_dataframe,
     expand_dataframe_with_one_hot_columns,
     infer_column_semantics,
     is_narwhals_dataframe,
@@ -52,9 +52,8 @@ def check_columns_exist(actual, expected):
 class OneHotEncoder(BaseEstimator, TransformerMixin):
     """Encode categorical features using a one-hot scheme.
 
-    Accepts :class:`pandas.DataFrame`, :class:`polars.DataFrame`, and
-    :class:`polars.LazyFrame` inputs. The following column dtypes are
-    treated as categorical features:
+    Accepts :class:`pandas.DataFrame` and :class:`polars.DataFrame` inputs.
+    The following column dtypes are treated as categorical features:
 
     - pandas: ``category`` or ``object``
     - polars: :class:`polars.Categorical`, :class:`polars.Enum`, or
@@ -66,8 +65,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
     according to the one-hot scheme.
 
     The order of non-categorical columns is preserved. Encoded columns are inserted
-    in place of the original column. The output dataframe library matches the input
-    (``polars.LazyFrame`` is collected to :class:`polars.DataFrame`).
+    in place of the original column. The output dataframe library matches the input.
 
     ``fit`` and ``transform`` must be called with the same dataframe library.
     Passing a pandas input to one and a polars input to the other raises
@@ -107,7 +105,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : pandas.DataFrame, polars.DataFrame, or polars.LazyFrame
+        X : pandas.DataFrame or polars.DataFrame
             The data to determine categorical features from.
         y : None
             Ignored. This parameter exists only for compatibility with
@@ -133,7 +131,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : pandas.DataFrame, polars.DataFrame, or polars.LazyFrame
+        X : pandas.DataFrame or polars.DataFrame
             The data to fit and transform.
         y : None, optional
             Ignored. This parameter exists only for compatibility with
@@ -147,7 +145,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         Xt : pandas.DataFrame or polars.DataFrame
             The transformed data. The output dataframe library matches the input.
         """
-        X = collect_lazy_dataframe(X)
+        X = ensure_eager_dataframe(X)
         _check_feature_names(self, X, reset=True)
         _check_n_features(self, X, reset=True)
 
@@ -179,7 +177,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : pandas.DataFrame, polars.DataFrame, or polars.LazyFrame
+        X : pandas.DataFrame or polars.DataFrame
             The data to transform.
 
         Returns
@@ -188,7 +186,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
             The transformed data. The output dataframe library matches the input.
         """
         check_is_fitted(self, "encoded_columns_")
-        X = collect_lazy_dataframe(X)
+        X = ensure_eager_dataframe(X)
         _check_n_features(self, X, reset=False)
 
         if is_narwhals_dataframe(X) != self._fit_is_narwhals_dataframe:

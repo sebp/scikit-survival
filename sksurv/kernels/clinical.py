@@ -19,8 +19,8 @@ from sklearn.utils.validation import _check_feature_names, _check_n_features, ch
 
 from .._dataframe import (
     ColumnSemantics,
-    collect_lazy_dataframe,
     column_to_category_codes,
+    ensure_eager_dataframe,
     is_narwhals_dataframe,
     to_narwhals_dataframe,
 )
@@ -64,11 +64,11 @@ def clinical_kernel(x, y=None, *, ordinal_columns=None):
 
     Parameters
     ----------
-    x : pandas.DataFrame, polars.DataFrame, or polars.LazyFrame, shape = (n_samples_x, n_features)
+    x : pandas.DataFrame or polars.DataFrame, shape = (n_samples_x, n_features)
         Training data. Polars and pandas inputs must not be mixed between
-        ``x`` and ``y``. ``polars.LazyFrame`` is collected internally.
+        ``x`` and ``y``.
 
-    y : pandas.DataFrame, polars.DataFrame, or polars.LazyFrame, shape = (n_samples_y, n_features)
+    y : pandas.DataFrame or polars.DataFrame, shape = (n_samples_y, n_features)
         Testing data. Must use the same dataframe library as ``x``.
 
     ordinal_columns : iterable of str, optional
@@ -108,9 +108,9 @@ def clinical_kernel(x, y=None, *, ordinal_columns=None):
 
     """
     x_is_narwhals_dataframe = is_narwhals_dataframe(x)
-    x = collect_lazy_dataframe(x)
+    x = ensure_eager_dataframe(x)
     if y is not None:
-        y = collect_lazy_dataframe(y)
+        y = ensure_eager_dataframe(y)
         _check_clinical_kernel_inputs(x, y, x_is_narwhals_dataframe)
     else:
         y = x
@@ -194,9 +194,8 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X: pandas.DataFrame, polars.DataFrame, or polars.LazyFrame, shape = (n_samples, n_features)
-            Data to estimate parameters from. ``polars.LazyFrame`` is collected
-            internally.
+        X: pandas.DataFrame or polars.DataFrame, shape = (n_samples, n_features)
+            Data to estimate parameters from.
         """
         if not self.fit_once:
             raise ValueError("prepare can only be used if fit_once parameter is set to True")
@@ -303,9 +302,8 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X: pandas.DataFrame, polars.DataFrame, or polars.LazyFrame, shape = (n_samples, n_features)
-            Data to estimate parameters from. ``polars.LazyFrame`` is collected
-            internally.
+        X: pandas.DataFrame or polars.DataFrame, shape = (n_samples, n_features)
+            Data to estimate parameters from.
 
         y : None
             Ignored. This parameter exists only for compatibility with
@@ -327,7 +325,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         if ndim != 2:
             raise ValueError(f"expected 2d array, but got {ndim}")
 
-        X = collect_lazy_dataframe(X)
+        X = ensure_eager_dataframe(X)
         _check_feature_names(self, X, reset=True)
         _check_n_features(self, X, reset=True)
 
@@ -378,7 +376,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         """
         check_is_fitted(self, "X_fit_")
 
-        Y = collect_lazy_dataframe(Y)
+        Y = ensure_eager_dataframe(Y)
 
         _check_feature_names(self, Y, reset=False)
         _check_n_features(self, Y, reset=False)
@@ -421,10 +419,10 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        x : pandas.DataFrame, polars.DataFrame, or polars.LazyFrame, shape = (n_samples_x, n_features)
+        x : pandas.DataFrame or polars.DataFrame, shape = (n_samples_x, n_features)
             Training data.
 
-        y : pandas.DataFrame, polars.DataFrame, or polars.LazyFrame, shape = (n_samples_y, n_features)
+        y : pandas.DataFrame or polars.DataFrame, shape = (n_samples_y, n_features)
             Testing data. Must use the same dataframe library as ``x``.
 
         Returns

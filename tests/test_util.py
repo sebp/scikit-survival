@@ -210,7 +210,7 @@ class SurvDataFrameCases(SurvCases):
 
         err = pytest.raises(
             TypeError,
-            match=r"expected pandas\.DataFrame, polars\.DataFrame, or polars\.LazyFrame, but got <class 'dict'>",
+            match=r"expected pandas\.DataFrame or polars\.DataFrame, but got <class 'dict'>",
         )
         inputs = ("event", "time", data.to_dict())
         return inputs, None, err
@@ -220,10 +220,7 @@ class SurvDataFrameCases(SurvCases):
 
         err = pytest.raises(
             TypeError,
-            match=(
-                r"expected pandas\.DataFrame, polars\.DataFrame, or polars\.LazyFrame, "
-                r"but got <class 'numpy.ndarray'>"
-            ),
+            match=(r"expected pandas\.DataFrame or polars\.DataFrame, " r"but got <class 'numpy.ndarray'>"),
         )
         inputs = ("event", "time", data.to_numpy())
         return inputs, None, err

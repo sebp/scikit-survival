@@ -68,20 +68,10 @@ class GetXyPolarsCases(FixtureParameterFactory):
 
         return to_polars_via_interchange(pd.DataFrame(data, columns=columns))
 
-    def _make_polars_lazy(self, data_arrays, columns):
-        return self._make_polars_eager(data_arrays, columns).lazy()
-
     def data_polars_eager_survival(self):
         x, event, time = _make_survival_data(self.n_samples, self.n_features, 0)
         df = self._make_polars_eager((x, event, time), self.columns + self.attr_labels)
         args = (df, self.attr_labels)
-        kwargs = {"pos_label": 1, "survival": True}
-        return args, kwargs, x, (event, time), does_not_raise()
-
-    def data_polars_lazy_survival(self):
-        x, event, time = _make_survival_data(self.n_samples, self.n_features, 0)
-        lf = self._make_polars_lazy((x, event, time), self.columns + self.attr_labels)
-        args = (lf, self.attr_labels)
         kwargs = {"pos_label": 1, "survival": True}
         return args, kwargs, x, (event, time), does_not_raise()
 
@@ -99,24 +89,10 @@ class GetXyPolarsCases(FixtureParameterFactory):
         kwargs = {"competing_risks": True, "survival": True}
         return args, kwargs, x, (event, time), does_not_raise()
 
-    def data_polars_lazy_competing_risks(self):
-        x, event, time = _make_competing_risks_data(self.n_samples, self.n_features, 0)
-        lf = self._make_polars_lazy((x, event, time), self.columns + self.attr_labels)
-        args = (lf, self.attr_labels)
-        kwargs = {"competing_risks": True, "survival": True}
-        return args, kwargs, x, (event, time), does_not_raise()
-
     def data_polars_eager_classification(self):
         x, label = _make_classification_data(self.n_samples, self.n_features, 6, 0)
         df = self._make_polars_eager((x, label), self.columns + ["class_label"])
         args = (df, ["class_label"])
-        kwargs = {"survival": False}
-        return args, kwargs, x, label, does_not_raise()
-
-    def data_polars_lazy_classification(self):
-        x, label = _make_classification_data(self.n_samples, self.n_features, 6, 0)
-        lf = self._make_polars_lazy((x, label), self.columns + ["class_label"])
-        args = (lf, ["class_label"])
         kwargs = {"survival": False}
         return args, kwargs, x, label, does_not_raise()
 
@@ -133,7 +109,7 @@ class GetXyPolarsCases(FixtureParameterFactory):
         kwargs = {"pos_label": 1, "survival": True}
         err = pytest.raises(
             TypeError,
-            match=r"expected pandas\.DataFrame, polars\.DataFrame, or polars\.LazyFrame",
+            match=r"expected pandas\.DataFrame or polars\.DataFrame",
         )
         return args, kwargs, _Skip(), _Skip(), err
 
@@ -143,7 +119,7 @@ class GetXyPolarsCases(FixtureParameterFactory):
         kwargs = {"pos_label": 1, "survival": True}
         err = pytest.raises(
             TypeError,
-            match=r"expected pandas\.DataFrame, polars\.DataFrame, or polars\.LazyFrame",
+            match=r"expected pandas\.DataFrame or polars\.DataFrame",
         )
         return args, kwargs, _Skip(), _Skip(), err
 
@@ -171,33 +147,18 @@ def test_get_xy_polars(args, kwargs, x_expected, y_expected, error_expected):
             assert_array_equal(y_test.to_numpy().ravel(), y_expected)
 
 
-class TestGetXYLazyFrameNoLeak:
-    """``get_x_y(LazyFrame, ...)`` must always return an eager DataFrame as
-    ``x``, even in early-return paths.
+class TestGetXYLazyFrameRejected:
+    """``get_x_y(LazyFrame, ...)`` must reject the lazy frame with a
+    ``TypeError`` (LazyFrame is no longer a supported input).
     """
 
     @staticmethod
-    def test_get_x_y_lazyframe_survival_false_none_collects():
+    def test_get_x_y_lazyframe_rejected():
         from sksurv.datasets import get_x_y
 
         lf = pl.LazyFrame({"e": [True, False], "t": [1.0, 2.0], "x": [1, 2]})
-        x, y = get_x_y(lf, None, survival=False)
-        assert isinstance(x, pl.DataFrame), f"expected eager DataFrame, got {type(x).__name__}"
-        assert y is None
-
-    @staticmethod
-    def test_get_x_y_lazyframe_survival_none_labels_collects():
-        """survival=True with both event/time None must also collect the
-        LazyFrame (was previously leaked through ``_get_x_y_survival`` early
-        return).
-        """
-        from sksurv.datasets import get_x_y
-
-        lf = pl.LazyFrame({"e": [True, False], "t": [1.0, 2.0], "x": [1, 2]})
-        x, _ = get_x_y(lf, [None, None], survival=True, competing_risks=True)
-        assert isinstance(x, pl.DataFrame)
-        x2, _ = get_x_y(lf, [None, "t"], survival=True, pos_label=1)
-        assert isinstance(x2, pl.DataFrame)
+        with pytest.raises(TypeError, match=r"expected pandas\.DataFrame or polars\.DataFrame"):
+            get_x_y(lf, None, survival=False)
 
     @staticmethod
     def test_get_x_y_string_label_returns_series_pandas():

@@ -68,22 +68,10 @@ class TestClinicalKernelPolars:
         assert_array_almost_equal(expected, mat, 4)
 
     @staticmethod
-    def test_clinical_kernel_lazy(make_polars_clinical_data):
-        data, expected = make_polars_clinical_data()
-        mat = clinical_kernel(data.lazy(), ordinal_columns=ORDINAL_COLS_POLARS)
-        assert_array_almost_equal(expected, mat, 4)
-
-    @staticmethod
-    def test_clinical_kernel_lazy_matches_eager():
-        df = pl.DataFrame(
-            {
-                "age": [40.0, 50.0, 60.0, 70.0],
-                "grade": pl.Series(["I", "II", "III", "I"], dtype=pl.Enum(["I", "II", "III", "IV"])),
-            }
-        )
-        K_eager = clinical_kernel(df)
-        K_lazy = clinical_kernel(df.lazy())
-        np.testing.assert_allclose(K_eager, K_lazy)
+    def test_clinical_kernel_lazyframe_rejected(make_polars_clinical_data):
+        data, _ = make_polars_clinical_data()
+        with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
+            clinical_kernel(data.lazy(), ordinal_columns=ORDINAL_COLS_POLARS)
 
     @staticmethod
     def test_clinical_kernel_x_and_y(make_polars_clinical_data):
@@ -205,23 +193,16 @@ class TestClinicalKernelTransformPolars:
             t.transform(df_pd)
 
     @staticmethod
-    def test_call_lazyframe_matches_eager():
-        """Regression: ``ClinicalKernelTransform.__call__(X, Y)`` with a
-        LazyFrame Y must collect before accessing row count.
-        """
-        import warnings
-
+    def test_lazyframe_rejected():
+        """``ClinicalKernelTransform.fit`` must reject a polars LazyFrame."""
         df = pl.DataFrame(
             {
                 "age": [40.0, 50.0, 60.0, 70.0],
                 "grade": pl.Series(["I", "II", "III", "I"], dtype=pl.Enum(["I", "II", "III", "IV"])),
             }
         )
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            K_eager = ClinicalKernelTransform().fit(df)(df, df)
-            K_lazy = ClinicalKernelTransform().fit(df.lazy())(df.lazy(), df.lazy())
-        np.testing.assert_allclose(K_eager, K_lazy)
+        with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
+            ClinicalKernelTransform().fit(df.lazy())
 
 
 class TestOrdinalColumnsOptIn:

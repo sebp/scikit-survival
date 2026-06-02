@@ -7,9 +7,9 @@ import pytest
 
 from sksurv._dataframe import (
     ColumnSemantics,
-    collect_lazy_dataframe,
     column_to_category_codes,
     column_to_one_hot_matrix,
+    ensure_eager_dataframe,
     expand_dataframe_with_one_hot_columns,
     get_dataframe_library,
     get_semantic_categories,
@@ -30,7 +30,7 @@ def test_polars_inputs_predicates_separate_frames_and_series():
     series = frame["x"]
 
     assert polars_inputs.is_dataframe(frame)
-    assert polars_inputs.is_dataframe(lazy)
+    assert not polars_inputs.is_dataframe(lazy)
     assert not polars_inputs.is_dataframe(series)
 
     assert polars_inputs.is_series(series)
@@ -43,7 +43,7 @@ def test_external_dataframe_library_lookup():
 
     frame_library = get_dataframe_library(frame)
     assert frame_library.name == "polars"
-    assert frame_library.dataframe_display_name == "polars.DataFrame or polars.LazyFrame"
+    assert frame_library.dataframe_display_name == "polars.DataFrame"
     assert get_dataframe_library(series) is None
 
     series_library = get_dataframe_library(series, allow_series=True)
@@ -56,35 +56,39 @@ def test_narwhals_predicates_route_backend_inputs():
     frame = pl.DataFrame({"x": [1, 2]})
 
     assert is_narwhals_dataframe(frame)
-    assert is_narwhals_dataframe(frame.lazy())
+    assert not is_narwhals_dataframe(frame.lazy())
     assert not is_narwhals_dataframe(frame["x"])
     assert not is_narwhals_dataframe([[1], [2]])
 
     assert is_narwhals_dataframe_or_series(frame)
-    assert is_narwhals_dataframe_or_series(frame.lazy())
+    assert not is_narwhals_dataframe_or_series(frame.lazy())
     assert is_narwhals_dataframe_or_series(frame["x"])
     assert not is_narwhals_dataframe_or_series([[1], [2]])
 
 
-def test_collect_lazy_dataframe_collects_lazyframe_and_passes_others_through():
+def test_ensure_eager_dataframe_rejects_lazyframe_and_passes_others_through():
     frame = pl.DataFrame({"x": [1, 2]})
-    lazy = frame.lazy()
     series = frame["x"]
 
-    eager = collect_lazy_dataframe(lazy)
-    assert isinstance(eager, pl.DataFrame)
-    assert eager.to_dict(as_series=False) == frame.to_dict(as_series=False)
-    assert collect_lazy_dataframe(frame) is frame
-    assert collect_lazy_dataframe(series) is series
+    with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
+        ensure_eager_dataframe(frame.lazy())
+
+    assert ensure_eager_dataframe(frame) is frame
+    assert ensure_eager_dataframe(series) is series
+    arr = np.arange(3)
+    assert ensure_eager_dataframe(arr) is arr
 
 
 def test_to_narwhals_dataframe_returns_eager_dataframe_wrapper():
     frame = pl.DataFrame({"x": [1, 2]})
 
-    nw_frame = to_narwhals_dataframe(frame.lazy())
+    nw_frame = to_narwhals_dataframe(frame)
     assert nw_frame.columns == ["x"]
     assert nw_frame.shape == (2, 1)
     assert isinstance(nw_frame.to_native(), pl.DataFrame)
+
+    with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
+        to_narwhals_dataframe(frame.lazy())
 
 
 def test_supported_input_predicates_are_explicit_to_sksurv():
@@ -94,7 +98,7 @@ def test_supported_input_predicates_are_explicit_to_sksurv():
     pd_series = pd_frame["x"]
 
     assert is_supported_dataframe(frame)
-    assert is_supported_dataframe(frame.lazy())
+    assert not is_supported_dataframe(frame.lazy())
     assert is_supported_dataframe(pd_frame)
     assert not is_supported_dataframe(series)
     assert is_supported_dataframe_or_series(frame)
@@ -109,7 +113,6 @@ def test_unsupported_dataframe_error_names_supported_inputs():
     assert isinstance(err, TypeError)
     assert "pandas.DataFrame" in str(err)
     assert "polars.DataFrame" in str(err)
-    assert "polars.LazyFrame" in str(err)
 
 
 def test_column_to_category_codes_numeric_semantics():

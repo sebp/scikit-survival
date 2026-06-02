@@ -299,15 +299,13 @@ def test_writearff_polars_round_trip(temp_file):
     assert df_pl_round["grade"].to_list() == df_pl["grade"].to_list()
 
 
-def test_writearff_polars_lazyframe(temp_file):
-    """writearff also accepts polars LazyFrame (collected internally)."""
+def test_writearff_polars_lazyframe_rejected(temp_file):
+    """writearff rejects a polars LazyFrame with a TypeError."""
     with StringIO(ARFF_WITH_UNSEEN_NOMINAL) as fp:
         df_pl = loadarff(fp, output_type="polars")
 
-    writearff(df_pl.lazy(), temp_file, relation_name="lazy_round", index=False)
-    temp_file.close()
-    df_pl_round = loadarff(temp_file.name, output_type="polars")
-    assert df_pl_round["grade"].dtype == pl.Enum(["I", "II", "III", "IV"])
+    with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
+        writearff(df_pl.lazy(), temp_file, relation_name="lazy_round", index=False)
 
 
 def test_writearff_polars_pure_categorical(temp_file):

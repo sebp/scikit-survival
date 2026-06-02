@@ -71,42 +71,6 @@ class SurvDataFramePolarsCases(FixtureParameterFactory):
         err = pytest.raises(ColumnNotFoundError, match="unknown")
         return ("event", "unknown", df), None, err
 
-    def data_polars_lazy_bool(self):
-        event, time = self.event_and_time
-        lf = self._make_eager(event.astype(bool), time).lazy()
-        return ("event", "time", lf), self._expected(event, time), does_not_raise()
-
-    def data_polars_lazy_int(self):
-        event, time = self.event_and_time
-        lf = self._make_eager(event.astype(np.int64), time).lazy()
-        return ("event", "time", lf), self._expected(event, time), does_not_raise()
-
-    def data_polars_lazy_float(self):
-        event, time = self.event_and_time
-        lf = self._make_eager(event.astype(float), time).lazy()
-        return ("event", "time", lf), self._expected(event, time), does_not_raise()
-
-    def data_polars_lazy_column_names(self):
-        event, time = self.event_and_time
-        lf = self._make_eager(event.astype(bool), time, event_name="death", time_name="time_to_death").lazy()
-        return (
-            ("death", "time_to_death", lf),
-            self._expected(event, time, event_name="death", time_name="time_to_death"),
-            does_not_raise(),
-        )
-
-    def data_polars_lazy_no_such_column_event(self):
-        event, time = self.event_and_time
-        lf = self._make_eager(event.astype(bool), time).lazy()
-        err = pytest.raises(ColumnNotFoundError, match="unknown")
-        return ("unknown", "time", lf), None, err
-
-    def data_polars_lazy_no_such_column_time(self):
-        event, time = self.event_and_time
-        lf = self._make_eager(event.astype(bool), time).lazy()
-        err = pytest.raises(ColumnNotFoundError, match="unknown")
-        return ("event", "unknown", lf), None, err
-
     def data_polars_series_input(self):
         s = pl.Series("event", [True, False, True])
         err = pytest.raises(TypeError)
@@ -120,3 +84,12 @@ def test_from_dataframe_polars(args, expected, expected_error):
 
     if expected is not None:
         assert_array_equal(y, expected)
+
+
+def test_from_dataframe_polars_lazyframe_rejected():
+    rng = np.random.default_rng(0)
+    event = rng.binomial(1, 0.5, size=100).astype(bool)
+    time = np.exp(rng.standard_normal(100))
+    lf = to_polars_via_interchange(pd.DataFrame({"event": event, "time": time})).lazy()
+    with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
+        Surv.from_dataframe("event", "time", lf)

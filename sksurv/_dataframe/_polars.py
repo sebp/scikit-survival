@@ -12,7 +12,7 @@ __all__ = ["LIBRARY", "PolarsDataFrameLibrary", "is_dataframe", "is_series"]
 
 
 def is_dataframe(obj):
-    return nw.dependencies.is_polars_dataframe(obj) or nw.dependencies.is_polars_lazyframe(obj)
+    return nw.dependencies.is_polars_dataframe(obj)
 
 
 def is_series(obj):
@@ -24,7 +24,7 @@ class PolarsDataFrameLibrary:
     # Each native dataframe / series type is listed separately so that the
     # routing layer can build a single Oxford-formatted "supported input
     # types" string across libraries.
-    dataframe_display_names = ("polars.DataFrame", "polars.LazyFrame")
+    dataframe_display_names = ("polars.DataFrame",)
     series_display_names = ("polars.Series",)
     dataframe_display_name = " or ".join(dataframe_display_names)
     series_display_name = " or ".join(series_display_names)
@@ -36,13 +36,6 @@ class PolarsDataFrameLibrary:
     @staticmethod
     def is_series(obj):
         return is_series(obj)
-
-    @staticmethod
-    def collect_lazy(obj):
-        nw_obj = nw.from_native(obj)
-        if isinstance(nw_obj, nw.LazyFrame):
-            return nw_obj.collect().to_native()
-        return obj
 
     @staticmethod
     def is_non_numeric_cast_error(exc):

@@ -18,13 +18,13 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import CategoricalDtype, is_string_dtype
 
-from .._dataframe import polars_inputs, to_narwhals_dataframe
+from .._dataframe import ensure_eager_dataframe, polars_inputs, to_narwhals_dataframe
 
 _ILLEGAL_CHARACTER_PAT = re.compile(r"[^-_=\w\d\(\)<>\.]")
 
 
 def _prepare_polars_for_arff_write(data):
-    """Convert polars DataFrame/LazyFrame to pandas, preserving ``pl.Enum``
+    """Convert a polars DataFrame to pandas, preserving ``pl.Enum``
     declared categories. Column-by-column to avoid an undeclared ``pyarrow``
     dependency (``nw_df.to_pandas()`` would dispatch Categorical/Enum through Arrow).
     """
@@ -49,7 +49,7 @@ def writearff(data, filename, relation_name=None, index=True):
 
     Parameters
     ----------
-    data : :class:`pandas.DataFrame`, :class:`polars.DataFrame`, or :class:`polars.LazyFrame`
+    data : :class:`pandas.DataFrame` or :class:`polars.DataFrame`
         Polars input is converted to pandas internally; ``pl.Enum`` columns
         keep their declared categories (incl. unseen labels) in the ARFF header.
 
@@ -112,6 +112,7 @@ def writearff(data, filename, relation_name=None, index=True):
     ... })
     >>> writearff(data_pl, str(out_path), relation_name='test_data')
     """
+    data = ensure_eager_dataframe(data)
     if polars_inputs.is_dataframe(data):
         data = _prepare_polars_for_arff_write(data)
         # Polars frames have no meaningful row index; suppress it so the

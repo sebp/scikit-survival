@@ -485,24 +485,23 @@ class TestSurvivalEstimatorLazyFrame:
 
     @staticmethod
     @pytest.mark.parametrize("name,ctor", ESTIMATORS, ids=[t[0] for t in ESTIMATORS])
-    def test_estimator_lazyframe_matches_eager_polars(name, ctor, whas500_encoded_small):
+    def test_estimator_lazyframe_rejected_polars(name, ctor, whas500_encoded_small):
         import warnings
 
         _X_pd, X_pl, y = whas500_encoded_small
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            est_eager = ctor()
-            est_eager.fit(X_pl, y)
-            pred_eager = np.asarray(est_eager.predict(X_pl), dtype=float)
+            # fit must reject a LazyFrame
+            with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
+                ctor().fit(X_pl.lazy(), y)
 
-            est_lazy = ctor()
-            est_lazy.fit(X_pl.lazy(), y)
-            pred_lazy = np.asarray(est_lazy.predict(X_pl.lazy()), dtype=float)
-
-        np.testing.assert_array_equal(pred_eager, pred_lazy)
+            # predict must also reject a LazyFrame (fit on eager first)
+            est = ctor().fit(X_pl, y)
+            with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
+                est.predict(X_pl.lazy())
 
     @staticmethod
-    def test_gb_staged_predict_lazyframe(whas500_encoded_small):
+    def test_gb_staged_predict_lazyframe_rejected(whas500_encoded_small):
         import warnings
 
         from sksurv.ensemble import GradientBoostingSurvivalAnalysis
@@ -511,8 +510,5 @@ class TestSurvivalEstimatorLazyFrame:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             gb = GradientBoostingSurvivalAnalysis(n_estimators=3, random_state=0).fit(X_pl, y)
-            staged_eager = [np.asarray(p, dtype=float) for p in gb.staged_predict(X_pl)]
-            staged_lazy = [np.asarray(p, dtype=float) for p in gb.staged_predict(X_pl.lazy())]
-        assert len(staged_eager) == len(staged_lazy) == 3
-        for a, b in zip(staged_eager, staged_lazy):
-            np.testing.assert_array_equal(a, b)
+            with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
+                list(gb.staged_predict(X_pl.lazy()))

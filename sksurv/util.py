@@ -14,6 +14,7 @@ import numpy as np
 from sklearn.utils.validation import check_array, check_consistent_length
 
 from ._dataframe import (
+    ensure_eager_dataframe,
     is_supported_dataframe,
     to_narwhals_dataframe,
     unsupported_dataframe_error,
@@ -111,9 +112,8 @@ class Surv:
         time : str
             Name of the column in ``data`` containing the observed time
             (time to event or time of censoring).
-        data : pandas.DataFrame, polars.DataFrame, or polars.LazyFrame
-            A DataFrame with columns for event and time. polars ``LazyFrame``
-            inputs are collected internally before the columns are extracted.
+        data : pandas.DataFrame or polars.DataFrame
+            A DataFrame with columns for event and time.
 
         Returns
         -------
@@ -153,6 +153,7 @@ class Surv:
         >>> (y == y_pl).all()
         np.True_
         """
+        data = ensure_eager_dataframe(data)
         if not is_supported_dataframe(data):
             raise unsupported_dataframe_error(data)
 

@@ -53,16 +53,13 @@ class TestOneHotEncoderPolars:
         pt.assert_frame_equal(actual, expected, check_exact=False, abs_tol=1e-9)
 
     @staticmethod
-    def test_fit_transform_lazy(polars_categorical_data):
-        import polars.testing as pt
-
-        data, expected = polars_categorical_data()
-        actual = OneHotEncoder().fit_transform(data.lazy())
-        assert isinstance(actual, pl.DataFrame)
-        pt.assert_frame_equal(actual, expected, check_exact=False, abs_tol=1e-9)
+    def test_fit_transform_lazyframe_rejected(polars_categorical_data):
+        data, _ = polars_categorical_data()
+        with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
+            OneHotEncoder().fit_transform(data.lazy())
 
     @staticmethod
-    def test_transform_lazy_after_fit():
+    def test_transform_lazyframe_rejected():
         data = pl.DataFrame(
             {
                 "age": [40.0, 50.0, 60.0, 70.0],
@@ -70,9 +67,8 @@ class TestOneHotEncoderPolars:
             }
         )
         enc = OneHotEncoder().fit(data)
-        out_eager = enc.transform(data)
-        out_lazy = enc.transform(data.lazy())
-        np.testing.assert_array_equal(out_eager.to_numpy(), out_lazy.to_numpy())
+        with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
+            enc.transform(data.lazy())
 
     @staticmethod
     def test_transform(polars_categorical_data):
