@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from functools import partial
+from numbers import Integral
 import threading
 import warnings
 
@@ -13,6 +14,7 @@ from sklearn.ensemble._forest import (
     _get_n_samples_bootstrap,
     _parallel_build_trees,
 )
+from sklearn.utils._param_validation import Interval, RealNotInt
 from sklearn.utils._tags import get_tags
 from sklearn.utils.validation import _check_sample_weight, check_is_fitted, check_random_state, validate_data
 
@@ -27,6 +29,11 @@ from ..util import check_array_survival
 __all__ = ["RandomSurvivalForest", "ExtraSurvivalTrees"]
 
 MAX_INT = np.iinfo(np.int32).max
+MAX_SAMPLES_CONSTRAINTS = [
+    None,
+    Interval(RealNotInt, 0.0, 1.0, closed="right"),
+    Interval(Integral, 1, None, closed="left"),
+]
 
 
 def _sklearn_tags_patch(self):
@@ -43,6 +50,11 @@ def _sklearn_tags_patch(self):
 
 
 BaseForest.__sklearn_tags__ = _sklearn_tags_patch
+
+
+def _check_max_samples(max_samples, n_samples):
+    if isinstance(max_samples, Integral) and max_samples > n_samples:
+        raise ValueError(f"`max_samples` must be <= n_samples={n_samples} but got value {max_samples}")
 
 
 class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
@@ -144,6 +156,7 @@ class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
                 "`max_sample=None`."
             )
         elif self.bootstrap:
+            _check_max_samples(self.max_samples, X.shape[0])
             n_samples_bootstrap = _get_n_samples_bootstrap(
                 n_samples=X.shape[0],
                 max_samples=self.max_samples,
@@ -494,6 +507,7 @@ class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
     _parameter_constraints = {
         **BaseForest._parameter_constraints,
         **SurvivalTree._parameter_constraints,
+        "max_samples": MAX_SAMPLES_CONSTRAINTS,
     }
     _parameter_constraints.pop("splitter")
 
@@ -779,6 +793,7 @@ class ExtraSurvivalTrees(SurvivalAnalysisMixin, _BaseSurvivalForest):
     _parameter_constraints = {
         **BaseForest._parameter_constraints,
         **SurvivalTree._parameter_constraints,
+        "max_samples": MAX_SAMPLES_CONSTRAINTS,
     }
     _parameter_constraints.pop("splitter")
 
