@@ -147,6 +147,19 @@ def test_oob_score(make_whas500, forest_cls, expected_oob_score):
 
 
 @pytest.mark.parametrize("forest_cls", FORESTS)
+def test_fit_with_sample_weight(make_whas500, forest_cls):
+    whas500 = make_whas500(to_numeric=True)
+    sample_weight = np.linspace(0.1, 1.0, whas500.x.shape[0])
+
+    forest = forest_cls(oob_score=True, random_state=2)
+    forest.fit(whas500.x, whas500.y, sample_weight=sample_weight)
+
+    assert_array_equal(forest._sample_weight, sample_weight)
+    assert forest.oob_prediction_.shape == (whas500.x.shape[0],)
+    assert np.isfinite(forest.oob_score_)
+
+
+@pytest.mark.parametrize("forest_cls", FORESTS)
 @pytest.mark.parametrize("func", ["predict_survival_function", "predict_cumulative_hazard_function"])
 def test_predict_step_function(make_whas500, forest_cls, func):
     whas500 = make_whas500(to_numeric=True)
