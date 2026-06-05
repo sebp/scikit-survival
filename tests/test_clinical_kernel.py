@@ -246,7 +246,7 @@ Feature names unseen at fit time:
             }
         )
 
-        with pytest.raises(TypeError, match=r"unsupported dtype: dtype\(.+\)"):
+        with pytest.raises(TypeError, match=r"unsupported dtype: Datetime"):
             t.prepare(data)
 
     @staticmethod
@@ -267,6 +267,24 @@ Feature names unseen at fit time:
         assert_array_almost_equal(t_bool.X_fit_, t_uint.X_fit_)
         assert list(t_bool._numeric_columns) == [0, 1]
         assert list(t_bool._nominal_columns) == []
+
+    @staticmethod
+    def test_object_column_treated_as_nominal():
+        df_object = pd.DataFrame(
+            {
+                "age": [20.0, 23.0, 54.0, 100.0],
+                "stage": pd.Series([1, 2, 1, 2], dtype=object),
+            }
+        )
+        df_categorical = df_object.assign(stage=pd.Categorical(df_object["stage"], categories=[1, 2]))
+
+        assert_array_almost_equal(clinical_kernel(df_object), clinical_kernel(df_categorical))
+
+        t_object = ClinicalKernelTransform().fit(df_object)
+        t_categorical = ClinicalKernelTransform().fit(df_categorical)
+        assert_array_almost_equal(t_object.transform(df_object), t_categorical.transform(df_categorical))
+        assert list(t_object._numeric_columns) == [0]
+        assert list(t_object._nominal_columns) == [1]
 
     @staticmethod
     def test_feature_mismatch(make_data):

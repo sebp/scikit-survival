@@ -1,16 +1,27 @@
 from collections import OrderedDict
-import warnings
 
 import numpy as np
 import pandas as pd
+from pandas.api.types import CategoricalDtype
 
 
-def to_polars_via_interchange(df):
+def to_polars_dataframe(df):
+    """Convert pandas test data to polars without using ``__dataframe__``.
+
+    The explicit column-wise conversion preserves pandas categorical category
+    declarations as ``pl.Enum`` and avoids polars' deprecated dataframe
+    interchange protocol path.
+    """
     import polars as pl
 
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", message="The Dataframe Interchange Protocol is deprecated")
-        return pl.from_dataframe(df.__dataframe__())
+    columns = {}
+    for name, col in df.items():
+        values = col.astype(object).where(pd.notna(col), None).tolist()
+        if isinstance(col.dtype, CategoricalDtype) and all(isinstance(cat, str) for cat in col.cat.categories):
+            columns[name] = pl.Series(name, values, dtype=pl.Enum(col.cat.categories.tolist()))
+        else:
+            columns[name] = values
+    return pl.DataFrame(columns)
 
 
 def expected_one_hot_data(data):

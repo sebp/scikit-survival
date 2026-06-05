@@ -11,9 +11,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import narwhals.stable.v2 as nw
-import numpy as np
 import pandas as pd
-from pandas.api.types import CategoricalDtype, is_string_dtype
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import _check_feature_names, _check_feature_names_in, _check_n_features, check_is_fitted
 
@@ -21,10 +19,8 @@ from ._dataframe import (
     ensure_eager_dataframe,
     expand_dataframe_with_one_hot_columns,
     infer_column_semantics,
-    is_narwhals_dataframe,
     to_narwhals_dataframe,
 )
-from .column import encode_categorical
 
 __all__ = ["OneHotEncoder"]
 
@@ -119,9 +115,6 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         self.fit_transform(X)
         return self
 
-    def _encode(self, X, columns_to_encode):
-        return encode_categorical(X, columns=columns_to_encode, allow_drop=self.allow_drop)
-
     def fit_transform(self, X, y=None, **fit_params):  # pylint: disable=unused-argument
         """Fit to data, then transform it.
 
@@ -149,28 +142,8 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         _check_feature_names(self, X, reset=True)
         _check_n_features(self, X, reset=True)
 
-        self._fit_is_narwhals_dataframe = is_narwhals_dataframe(X)
-        if self._fit_is_narwhals_dataframe:
-            return self._fit_transform_dataframe(X)
-
-        def is_string_or_categorical_dtype(dtype):
-            return is_string_dtype(dtype) or isinstance(dtype, CategoricalDtype)
-
-        columns_to_encode = pd.Index(
-            [name for name, dtype in X.dtypes.items() if is_string_or_categorical_dtype(dtype)]
-        )
-        x_dummy = self._encode(X, columns_to_encode)
-
-        self.feature_names_ = columns_to_encode
-        cat_cols = {}
-        for col_name in columns_to_encode:
-            col = X[col_name]
-            if not isinstance(col.dtype, CategoricalDtype):
-                col = col.astype("category")
-            cat_cols[col_name] = col.cat.categories
-        self.categories_ = cat_cols
-        self.encoded_columns_ = x_dummy.columns.copy()
-        return x_dummy
+        self._fit_implementation_ = to_narwhals_dataframe(X).implementation
+        return self._fit_transform_dataframe(X)
 
     def transform(self, X):
         """Transform ``X`` by one-hot encoding categorical features.
@@ -189,33 +162,19 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         X = ensure_eager_dataframe(X)
         _check_n_features(self, X, reset=False)
 
-        if is_narwhals_dataframe(X) != self._fit_is_narwhals_dataframe:
+        if to_narwhals_dataframe(X).implementation != self._fit_implementation_:
             raise TypeError("fit and transform must use the same dataframe library")
 
-        if self._fit_is_narwhals_dataframe:
-            return self._transform_dataframe(X)
-
-        check_columns_exist(X.columns, self.feature_names_)
-        # Mask unseen values before constructing categoricals to preserve the
-        # historical NaN-for-unseen behavior without pandas 4 warnings.
-        new_columns = {}
-        for col, cat in self.categories_.items():
-            series = X[col]
-            values = series.astype(object).to_numpy(copy=True)
-            in_categories = series.isin(cat).to_numpy()
-            values[~in_categories] = np.nan
-            new_columns[col] = pd.Categorical(values, categories=cat)
-        Xt = X.assign(**new_columns)
-
-        new_data = self._encode(Xt, self.feature_names_)
-        return new_data.loc[:, self.encoded_columns_]
+        return self._transform_dataframe(X)
 
     def _fit_transform_dataframe(self, X):
         nw_X = to_narwhals_dataframe(X)
         implementation = nw_X.implementation
 
         columns_to_encode_list = [
-            name for name, dtype in nw_X.schema.items() if isinstance(dtype, (nw.Categorical, nw.Enum, nw.String))
+            name
+            for name, dtype in nw_X.schema.items()
+            if isinstance(dtype, (nw.Categorical, nw.Enum, nw.String, nw.Object))
         ]
 
         self._categorical_semantics_ = {

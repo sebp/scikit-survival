@@ -1,3 +1,15 @@
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """Polars input predicates for the dataframe boundary.
 
 This module only decides whether a native object is a polars frame or
@@ -13,9 +25,6 @@ __all__ = ["LIBRARY", "PolarsDataFrameLibrary"]
 
 class PolarsDataFrameLibrary:
     name = "polars"
-    # Each native dataframe / series type is listed separately so that the
-    # routing layer can build a single Oxford-formatted "supported input
-    # types" string across libraries.
     dataframe_display_names = ("polars.DataFrame",)
     series_display_names = ("polars.Series",)
     dataframe_display_name = " or ".join(dataframe_display_names)
@@ -39,6 +48,16 @@ class PolarsDataFrameLibrary:
         and stays importable when polars isn't installed.
         """
         return exc.__class__.__name__ == "InvalidOperationError" and exc.__class__.__module__.startswith("polars.")
+
+    @staticmethod
+    def ordinal_categories(native):
+        """No auto-detected ordinal columns for polars.
+
+        polars ``Enum``/``Categorical`` carry no statistical-ordinality flag
+        (``Enum`` is also used for nominal closed category sets, e.g. ARFF), so
+        ordinal columns must be declared explicitly via ``ordinal_categories=``.
+        """
+        return {}
 
 
 LIBRARY = PolarsDataFrameLibrary()

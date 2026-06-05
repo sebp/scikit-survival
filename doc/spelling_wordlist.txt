@@ -35,6 +35,7 @@ numpy
 overfitting
 params
 parameterized
+polars
 precomputed
 Pre-Processing
 reStructuredText

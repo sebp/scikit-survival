@@ -2,7 +2,7 @@
 
 from contextlib import nullcontext as does_not_raise
 
-from dataframe_test_utils import to_polars_via_interchange
+from dataframe_test_utils import to_polars_dataframe
 import numpy as np
 import polars as pl
 import pytest
@@ -55,7 +55,7 @@ class TestCategoricalToNumericPandasParity:
         values = ["1", "2", "10"]
         pd_df = pd.DataFrame({"x": values})
         pd_out = categorical_to_numeric(pd_df)["x"].tolist()
-        pl_out = categorical_to_numeric(to_polars_via_interchange(pd_df))["x"].to_list()
+        pl_out = categorical_to_numeric(to_polars_dataframe(pd_df))["x"].to_list()
         assert pd_out == pl_out == [1, 2, 10]
 
     @staticmethod
@@ -67,7 +67,7 @@ class TestCategoricalToNumericPandasParity:
         values = ["a", "b", "a"]
         pd_df = pd.DataFrame({"x": values})
         pd_out = categorical_to_numeric(pd_df)["x"].tolist()
-        pl_out = categorical_to_numeric(to_polars_via_interchange(pd_df))["x"].to_list()
+        pl_out = categorical_to_numeric(to_polars_dataframe(pd_df))["x"].to_list()
         assert pd_out == pl_out
 
     @staticmethod
@@ -79,7 +79,7 @@ class TestCategoricalToNumericPandasParity:
         values = ["b", None, "a"]
         pd_df = pd.DataFrame({"x": values})
         pd_out = categorical_to_numeric(pd_df)["x"].to_numpy()
-        pl_out = categorical_to_numeric(to_polars_via_interchange(pd_df))["x"].to_numpy()
+        pl_out = categorical_to_numeric(to_polars_dataframe(pd_df))["x"].to_numpy()
         np.testing.assert_allclose(pd_out, pl_out, equal_nan=True)
 
     @staticmethod
@@ -99,7 +99,7 @@ class TestEncodeCategoricalExplicitColumnsParity:
         from sksurv.column import encode_categorical
 
         pd_df = pd.DataFrame({"x": [1, 2, 1], "z": [10, 20, 30]})
-        pl_df = to_polars_via_interchange(pd_df)
+        pl_df = to_polars_dataframe(pd_df)
         pd_out = encode_categorical(pd_df, columns=["x"])
         pl_out = encode_categorical(pl_df, columns=["x"])
         assert list(pd_out.columns) == list(pl_out.columns)
@@ -112,7 +112,7 @@ class TestEncodeCategoricalExplicitColumnsParity:
         from sksurv.column import encode_categorical
 
         pd_df = pd.DataFrame({"b": [True, False, True, False, True]})
-        pl_df = to_polars_via_interchange(pd_df)
+        pl_df = to_polars_dataframe(pd_df)
         pd_out = encode_categorical(pd_df, columns=["b"])
         pl_out = encode_categorical(pl_df, columns=["b"])
         assert list(pd_out.columns) == list(pl_out.columns) == ["b=True"]
@@ -126,7 +126,7 @@ class TestEncodeCategoricalExplicitColumnsParity:
 
         pd_df = pd.DataFrame({"x": [1, 2, 10, 1]})
         pd_out = encode_categorical(pd_df, columns=["x"])
-        pl_out = encode_categorical(to_polars_via_interchange(pd_df), columns=["x"])
+        pl_out = encode_categorical(to_polars_dataframe(pd_df), columns=["x"])
         assert list(pd_out.columns) == list(pl_out.columns) == ["x=2", "x=10"]
         np.testing.assert_array_equal(pd_out.to_numpy().astype(float), pl_out.to_numpy().astype(float))
 

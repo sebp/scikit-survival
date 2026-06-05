@@ -16,11 +16,55 @@ import narwhals.stable.v2 as nw
 import numpy as np
 
 __all__ = [
+    "capture_pandas_index",
     "column_to_category_codes",
     "column_to_one_hot_matrix",
+    "detach_pandas_index",
     "expand_dataframe_with_one_hot_columns",
     "get_one_hot_column_names",
+    "reattach_pandas_index",
 ]
+
+
+def capture_pandas_index(nw_obj):
+    """Return the pandas row index of a frame/series, or ``None`` for index-less backends.
+
+    Narwhals rebuilds columns positionally, so values reconstructed from numpy
+    lose the caller's pandas index. Capture it here and restore it afterwards
+    with :func:`reattach_pandas_index` so the returned pandas frame keeps the
+    caller's original row labels. No-op for index-less backends (e.g. polars),
+    which yield ``None``.
+    """
+    if nw_obj.implementation.is_pandas_like():
+        return nw_obj.to_native().index
+    return None
+
+
+def detach_pandas_index(nw_frame):
+    """Detach a pandas frame's row index so rebuilt columns concat positionally.
+
+    Narwhals concatenates pandas frames by index *label*, but columns rebuilt
+    from numpy (one-hot blocks, standardized columns, integer codes) carry a
+    fresh ``RangeIndex``. Mixing those with index-preserving passthrough columns
+    makes a horizontal concat realign by label, which corrupts rows when the
+    source index is non-default or non-unique. Resetting the source index up
+    front forces positional alignment; restore it afterwards with
+    :func:`reattach_pandas_index`. No-op for index-less backends (e.g. polars).
+
+    Returns a ``(frame, original_index)`` pair; ``original_index`` is ``None``
+    for non-pandas backends.
+    """
+    original_index = capture_pandas_index(nw_frame)
+    if original_index is not None:
+        return nw.from_native(nw_frame.to_native().reset_index(drop=True)), original_index
+    return nw_frame, None
+
+
+def reattach_pandas_index(result_native, original_index):
+    """Restore an index captured by :func:`detach_pandas_index` (no-op if ``None``)."""
+    if original_index is not None:
+        result_native.index = original_index
+    return result_native
 
 
 def column_to_category_codes(column, semantics, unknown_value=-1):
@@ -70,6 +114,7 @@ def expand_dataframe_with_one_hot_columns(
     on_empty="raise",
     logger=None,
 ):
+    nw_X, original_index = detach_pandas_index(nw_X)
     output_frames = []
     for col_name in nw_X.columns:
         if col_name not in columns_to_encode:
@@ -88,8 +133,6 @@ def expand_dataframe_with_one_hot_columns(
 
         encoded = column_to_one_hot_matrix(col, semantics, drop_first=True)
         new_names = get_one_hot_column_names(semantics, drop_first=True)
-        # Build the one-hot block in a single backend call so polars stays on
-        # its zero-copy numpy path instead of round-tripping through Python lists.
         encoded_frame = nw.from_numpy(encoded, schema=list(new_names), backend=implementation)
         output_frames.append(encoded_frame)
 
@@ -100,4 +143,5 @@ def expand_dataframe_with_one_hot_columns(
             return nw.from_dict({}, backend=implementation).to_native()
         raise ValueError(f"on_empty must be 'raise' or 'empty_frame', got {on_empty!r}")
 
-    return nw.concat(output_frames, how="horizontal").to_native()
+    result = nw.concat(output_frames, how="horizontal").to_native()
+    return reattach_pandas_index(result, original_index)

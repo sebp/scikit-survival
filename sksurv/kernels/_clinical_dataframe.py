@@ -17,18 +17,17 @@ DataFrame/Narwhals dtype dispatch and categorical semantics separate from
 the public clinical-kernel API and the low-level kernel computations.
 """
 
+from collections.abc import Mapping
 from typing import NamedTuple
 
 import narwhals.stable.v2 as nw
 import numpy as np
-import pandas as pd
-from pandas.api.types import CategoricalDtype
 
 from .._dataframe import (
     ColumnSemantics,
     column_to_category_codes,
+    get_dataframe_library,
     infer_column_semantics,
-    is_narwhals_dataframe,
     to_narwhals_dataframe,
 )
 
@@ -40,90 +39,86 @@ class _PreparedClinicalColumn(NamedTuple):
     semantics_entry: tuple[str, ColumnSemantics | None]
 
 
-def _normalize_ordinal_columns(ordinal_columns):
-    if ordinal_columns is None:
-        return frozenset()
-    try:
-        names = list(ordinal_columns)
-    except TypeError as exc:
+def _normalize_ordinal_categories(ordinal_categories):
+    """Validate the public ``ordinal_categories`` mapping into ``{name: (cats...)}``."""
+    if ordinal_categories is None:
+        return {}
+    if not isinstance(ordinal_categories, Mapping):
         raise TypeError(
-            f"ordinal_columns must be an iterable of column names, got {type(ordinal_columns).__name__}"
-        ) from exc
-    for n in names:
-        if not isinstance(n, str):
-            raise TypeError(f"ordinal_columns entries must be strings, got {type(n).__name__}: {n!r}")
-    return frozenset(names)
+            "ordinal_categories must be a mapping of column name to ordered categories, "
+            f"got {type(ordinal_categories).__name__}"
+        )
+    normalized = {}
+    for name, cats in ordinal_categories.items():
+        if not isinstance(name, str):
+            raise TypeError(f"ordinal_categories keys must be strings, got {type(name).__name__}: {name!r}")
+        try:
+            cat_tuple = tuple(cats)
+        except TypeError as exc:
+            raise TypeError(f"ordinal_categories[{name!r}] must be an iterable of category labels") from exc
+        if len(cat_tuple) == 0:
+            raise ValueError(f"ordinal_categories[{name!r}] must list at least one category")
+        if len(set(cat_tuple)) != len(cat_tuple):
+            raise ValueError(f"ordinal_categories[{name!r}] has duplicate categories: {cat_tuple!r}")
+        normalized[name] = cat_tuple
+    return normalized
 
 
-def _validate_ordinal_columns_against_schema(ordinal_set, schema):
-    unknown = ordinal_set - set(schema)
+def _resolve_ordinal_categories(table, ordinal_categories):
+    """Merge user-declared ordinal categories with backend auto-detected ones.
+
+    Explicit ``ordinal_categories`` win. In addition, pandas ``Categorical``
+    columns declared with ``ordered=True`` are auto-detected as ordinal using
+    their declared order. Other backends (e.g. polars) contribute nothing
+    automatically.
+    """
+    resolved = dict(_normalize_ordinal_categories(ordinal_categories))
+    library = get_dataframe_library(table)
+    if library is not None:
+        for name, cats in library.ordinal_categories(table).items():
+            resolved.setdefault(name, tuple(cats))
+    return resolved
+
+
+def _validate_ordinal_categories_against_schema(ordinal_categories, schema):
+    unknown = set(ordinal_categories) - set(schema)
     if unknown:
-        raise ValueError(f"ordinal_columns contains unknown column names: {sorted(unknown)!r}")
-    for name in ordinal_set:
-        if not isinstance(schema[name], nw.Enum):
+        raise ValueError(f"ordinal_categories contains unknown column names: {sorted(unknown)!r}")
+    for name in ordinal_categories:
+        dtype = schema[name]
+        if not isinstance(dtype, (nw.Categorical, nw.Enum, nw.String, nw.Object)):
             raise ValueError(
-                f"ordinal_columns={name!r} requires a categorical dtype with declared category order; "
-                f"got {schema[name]!r}"
+                f"ordinal_categories={name!r} requires a categorical, string, or object column; got {dtype!r}"
             )
 
 
-def _promote_to_ordinal_semantics(semantics):
-    return ColumnSemantics(
-        name=semantics.name,
-        kind="ordinal",
-        categories=semantics.categories,
-        ordered=True,
-    )
+def _extract_numeric_kernel_array(x, ordinal_categories=None):
+    return _extract_numeric_kernel_array_dataframe(x, ordinal_categories=ordinal_categories)
 
 
-def _extract_numeric_kernel_array(x, ordinal_columns=None):
-    if is_narwhals_dataframe(x):
-        return _extract_numeric_kernel_array_dataframe(x, ordinal_columns=ordinal_columns)
-    # pandas 4 deprecates the implicit ``str``-via-``object`` inclusion here,
-    # but explicitly listing ``"str"`` raises ``TypeError`` on pandas <= 3.x.
-    # Keep the cross-version-safe form and silence the deprecation via
-    # the ``filterwarnings`` entry in ``pyproject.toml``.
-    nominal_columns = x.select_dtypes(include=["object", "category"]).columns
-    pd_ordinal_columns = pd.Index(
-        [v for v in nominal_columns if isinstance(x[v].dtype, CategoricalDtype) and x[v].cat.ordered]
-    )
-    # Include "bool": numpy treats ``bool_`` as a sibling of ``number`` rather
-    # than a subclass, so a plain ``include=[np.number]`` would silently drop
-    # Boolean columns (see PR #590).
-    continuous_columns = x.select_dtypes(include=[np.number, "bool"]).columns
-
-    x_num = x.loc[:, continuous_columns].to_numpy(dtype=np.float64)
-    if len(pd_ordinal_columns) > 0:
-        x = _ordinal_as_numeric(x, pd_ordinal_columns)
-
-        nominal_columns = nominal_columns.difference(pd_ordinal_columns)
-        x_out = np.column_stack((x_num, x))
-    else:
-        x_out = x_num
-
-    return x_out, nominal_columns
-
-
-def _classify_kernel_column(col_name, dtype, col, ordinal_set):
+def _classify_kernel_column(col_name, dtype, col, ordinal_categories):
     if dtype.is_numeric() or isinstance(dtype, nw.Boolean):
         return "continuous", col.to_numpy().astype(np.float64)
-    if not isinstance(dtype, (nw.Categorical, nw.Enum, nw.String)):
+    if not isinstance(dtype, (nw.Categorical, nw.Enum, nw.String, nw.Object)):
         raise TypeError(f"unsupported dtype: {dtype!r}")
-    semantics = infer_column_semantics(col)
-    if col_name in ordinal_set:
-        semantics = _promote_to_ordinal_semantics(semantics)
-    if semantics.kind == "ordinal":
-        codes = column_to_category_codes(col, semantics).astype(np.float64)
+    if col_name in ordinal_categories:
+        semantics = ColumnSemantics(
+            name=col_name,
+            kind="ordinal",
+            categories=tuple(ordinal_categories[col_name]),
+            ordered=True,
+        )
+        codes = _column_to_kernel_codes(col, semantics)
         return "ordinal", codes
     return "nominal", None
 
 
-def _extract_numeric_kernel_array_dataframe(x, ordinal_columns=None):
-    ordinal_set = _normalize_ordinal_columns(ordinal_columns)
+def _extract_numeric_kernel_array_dataframe(x, ordinal_categories=None):
+    resolved = _resolve_ordinal_categories(x, ordinal_categories)
     nw_x = to_narwhals_dataframe(x)
 
     schema = nw_x.schema
-    _validate_ordinal_columns_against_schema(ordinal_set, schema)
+    _validate_ordinal_categories_against_schema(resolved, schema)
 
     n_rows = nw_x.shape[0]
     continuous_arrays = []
@@ -132,7 +127,7 @@ def _extract_numeric_kernel_array_dataframe(x, ordinal_columns=None):
 
     for col_name, dtype in schema.items():
         col = nw_x.get_column(col_name)
-        kind, payload = _classify_kernel_column(col_name, dtype, col, ordinal_set)
+        kind, payload = _classify_kernel_column(col_name, dtype, col, resolved)
         if kind == "continuous":
             continuous_arrays.append(payload)
         elif kind == "ordinal":
@@ -154,14 +149,6 @@ def _extract_numeric_kernel_array_dataframe(x, ordinal_columns=None):
         x_out = x_num
 
     return x_out, nominal_names
-
-
-def _ordinal_as_numeric(x, ordinal_columns):
-    x_numeric = np.empty((x.shape[0], len(ordinal_columns)), dtype=np.float64)
-
-    for i, c in enumerate(ordinal_columns):
-        x_numeric[:, i] = x[c].cat.codes
-    return x_numeric
 
 
 def _continuous_range(values):
@@ -193,19 +180,33 @@ def _make_categorical_kernel_column(semantics, codes):
     )
 
 
-def _encode_dataframe_kernel_column(col_name, col, ordinal_set):
+def _column_to_kernel_codes(col, semantics):
+    codes = column_to_category_codes(col, semantics).astype(np.float64)
+    invalid_mask = codes < 0
+    null_mask = col.is_null().to_numpy()
+    missing_mask = invalid_mask | null_mask
+    if np.any(missing_mask):
+        codes[missing_mask] = np.nan
+    return codes
+
+
+def _encode_dataframe_kernel_column(col_name, col, ordinal_categories):
     dtype = col.dtype
     if dtype.is_numeric() or isinstance(dtype, nw.Boolean):
         arr = col.to_numpy().astype(np.float64)
         return _make_numeric_kernel_column(arr)
-    if not isinstance(dtype, (nw.Categorical, nw.Enum, nw.String)):
+    if not isinstance(dtype, (nw.Categorical, nw.Enum, nw.String, nw.Object)):
         raise TypeError(f"unsupported dtype: {dtype!r}")
-    semantics = infer_column_semantics(col)
-    if col_name in ordinal_set:
-        semantics = _promote_to_ordinal_semantics(semantics)
-    codes = column_to_category_codes(col, semantics).astype(np.float64)
-    null_mask = col.is_null().to_numpy()
-    codes[null_mask] = np.nan
+    if col_name in ordinal_categories:
+        semantics = ColumnSemantics(
+            name=col_name,
+            kind="ordinal",
+            categories=tuple(ordinal_categories[col_name]),
+            ordered=True,
+        )
+    else:
+        semantics = infer_column_semantics(col)
+    codes = _column_to_kernel_codes(col, semantics)
     return _make_categorical_kernel_column(semantics, codes)
 
 
@@ -227,19 +228,13 @@ def _append_kernel_column(
         nominal_columns.append(i)
 
 
-def _check_clinical_kernel_inputs(x, y, x_is_narwhals_dataframe):
+def _check_clinical_kernel_inputs(x, y):
     if x.shape[1] != y.shape[1]:
         raise ValueError("x and y have different number of features")
-    if x_is_narwhals_dataframe:
-        if not is_narwhals_dataframe(y):
-            raise TypeError("x and y must use the same dataframe library")
-        if list(nw.from_native(x).columns) != list(nw.from_native(y).columns):
-            raise ValueError("columns do not match")
-    else:
-        if is_narwhals_dataframe(y):
-            raise TypeError("x and y must use the same dataframe library")
-        if not x.columns.equals(y.columns):
-            raise ValueError("columns do not match")
+    if get_dataframe_library(x) is not get_dataframe_library(y):
+        raise TypeError("x and y must use the same dataframe library")
+    if list(to_narwhals_dataframe(x).columns) != list(to_narwhals_dataframe(y).columns):
+        raise ValueError("columns do not match")
 
 
 def _normalize_nominal_nulls_for_kernel(arr):
@@ -267,14 +262,10 @@ def _extract_nominal_dataframe_array(nw_frame, nominal_columns):
     return _normalize_nominal_nulls_for_kernel(arr)
 
 
-def _extract_nominal_kernel_arrays(x, y, nominal_columns, x_is_narwhals_dataframe):
-    if x_is_narwhals_dataframe:
-        nw_x = to_narwhals_dataframe(x)
-        nw_y = to_narwhals_dataframe(y)
-        return _extract_nominal_dataframe_array(nw_x, nominal_columns), _extract_nominal_dataframe_array(
-            nw_y, nominal_columns
-        )
+def _extract_nominal_kernel_arrays(x, y, nominal_columns):
+    nw_x = to_narwhals_dataframe(x)
+    nw_y = to_narwhals_dataframe(y)
     return (
-        _normalize_nominal_nulls_for_kernel(x.loc[:, nominal_columns].to_numpy()),
-        _normalize_nominal_nulls_for_kernel(y.loc[:, nominal_columns].to_numpy()),
+        _extract_nominal_dataframe_array(nw_x, nominal_columns),
+        _extract_nominal_dataframe_array(nw_y, nominal_columns),
     )

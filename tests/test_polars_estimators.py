@@ -1,6 +1,6 @@
 """Polars / LazyFrame input tests owned by sksurv survival estimators."""
 
-from dataframe_test_utils import to_polars_via_interchange
+from dataframe_test_utils import to_polars_dataframe
 import numpy as np
 import pandas as pd
 import polars as pl
@@ -25,7 +25,7 @@ def survival_smoke_data():
         if dataframe_library == "pandas":
             X = X_pd
         elif dataframe_library == "polars":
-            X = to_polars_via_interchange(X_pd)
+            X = to_polars_dataframe(X_pd)
         else:
             raise ValueError(dataframe_library)
         return X, y

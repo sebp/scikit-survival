@@ -83,10 +83,11 @@ def writearff(data, filename, relation_name=None, index=True):
     ...     'class': ['A', 'B', 'C']
     ... }, index=['One', 'Two', 'Three'])
     >>>
-    >>> # Write to a temporary ARFF file so the CWD stays clean.
-    >>> with tempfile.NamedTemporaryFile(suffix=".arff") as tmp:
-    ...     writearff(data, tmp.name, relation_name='test_data')
-    ...     print(Path(tmp.name).read_text())
+    >>> # Write to a temporary directory so the CWD stays clean.
+    >>> with tempfile.TemporaryDirectory() as tmpdir:
+    ...     path = Path(tmpdir) / "data.arff"
+    ...     writearff(data, str(path), relation_name='test_data')
+    ...     print(path.read_text())
     @relation test_data
     <BLANKLINE>
     @attribute index        {One,Three,Two}
@@ -108,8 +109,9 @@ def writearff(data, filename, relation_name=None, index=True):
     ...     'feature1': [1.0, 3.0, 5.0],
     ...     'class': pl.Series(['A', 'B', 'C'], dtype=pl.Enum(['A', 'B', 'C'])),
     ... })
-    >>> with tempfile.NamedTemporaryFile(suffix=".arff") as tmp:
-    ...     writearff(data_pl, tmp.name, relation_name='test_data')
+    >>> with tempfile.TemporaryDirectory() as tmpdir:
+    ...     path = Path(tmpdir) / "data.arff"
+    ...     writearff(data_pl, str(path), relation_name='test_data')
     """
     data = ensure_eager_dataframe(data)
     if polars_inputs.LIBRARY.is_dataframe(data):

@@ -2,7 +2,7 @@
 
 from contextlib import nullcontext as does_not_raise
 
-from dataframe_test_utils import to_polars_via_interchange
+from dataframe_test_utils import to_polars_dataframe
 import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 import polars as pl
@@ -66,7 +66,7 @@ class GetXyPolarsCases(FixtureParameterFactory):
         data = np.column_stack(data_arrays) if isinstance(data_arrays, tuple | list) else data_arrays
         import pandas as pd
 
-        return to_polars_via_interchange(pd.DataFrame(data, columns=columns))
+        return to_polars_dataframe(pd.DataFrame(data, columns=columns))
 
     def data_polars_eager_survival(self):
         x, event, time = _make_survival_data(self.n_samples, self.n_features, 0)

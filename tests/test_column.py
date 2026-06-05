@@ -257,10 +257,19 @@ def test_encode_categorical(make_data_fn, infer_string_context):
         tm.assert_frame_equal(actual_df, expected_df, check_exact=True)
 
 
+def test_encode_categorical_series_preserves_index():
+    input_series = pd.Series(["a", "b", "a"], name="letter", index=["r0", "r0", "r2"])
+    expected = pd.DataFrame({"letter=b": [0.0, 1.0, 0.0]}, index=input_series.index)
+
+    actual = column.encode_categorical(input_series)
+
+    tm.assert_frame_equal(actual, expected, check_exact=True)
+
+
 def test_series_numeric():
     input_series = pd.Series([0.5, 0.1, 10, 25, 3.8, 11, 2256, -1, -0.2, 3.14], name="a_series")
 
-    with pytest.raises(TypeError, match="series must be of categorical dtype, but was float"):
+    with pytest.raises(TypeError, match="series must be of categorical dtype"):
         column.encode_categorical(input_series)
 
 
@@ -288,6 +297,11 @@ class CategoricalToNumeric(CategoricalCases):
         )
         return input_series, expected
 
+    def data_object_numeric_series_to_numeric(self):
+        input_series = pd.Series([1, 2, 1], name="x", dtype=object)
+        expected = pd.Series([1, 2, 1], name="x", dtype=np.int64)
+        return input_series, expected
+
     def data_frame_to_numeric(self):
         input_df = self.mixed_data_frame
 
@@ -297,6 +311,11 @@ class CategoricalToNumeric(CategoricalCases):
         expected = pd.DataFrame.from_dict({"a_category": a_num, "a_binary": b_num})
         expected.loc[:, "a_number"] = input_df.loc[:, "a_number"].to_numpy(copy=True)
 
+        return input_df, expected
+
+    def data_object_numeric_frame_to_numeric(self):
+        input_df = pd.DataFrame({"x": pd.Series([1, 2, 1], dtype=object)})
+        expected = pd.DataFrame({"x": pd.Series([1, 2, 1], dtype=np.int64)})
         return input_df, expected
 
 

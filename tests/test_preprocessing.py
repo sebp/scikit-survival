@@ -50,7 +50,11 @@ class TestOneHotEncoder:
             assert t.feature_names_.tolist() == ["binary_1", "binary_2", "trinary", "many"]
             assert set(t.encoded_columns_) == set(expected_data.columns)
 
-            assert t.categories_ == {k: data[k].cat.categories for k in ["binary_1", "binary_2", "trinary", "many"]}
+            expected_categories = {k: data[k].cat.categories for k in ["binary_1", "binary_2", "trinary", "many"]}
+            assert set(t.categories_) == set(expected_categories)
+            for key, expected_index in expected_categories.items():
+                assert isinstance(t.categories_[key], pd.Index)
+                assert t.categories_[key].tolist() == expected_index.tolist()
 
     @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
     @staticmethod
@@ -135,8 +139,7 @@ class TestOneHotEncoder:
                 t.transform(data_renamed)
 
             data_dropped = data.drop("trinary", axis=1)
-            error_msg = "X has 8 features, but OneHotEncoder is expecting 9 features as input"
-            with pytest.raises(ValueError, match=error_msg):
+            with pytest.raises(ValueError, match=r"1 features are missing from data: \['trinary'\]"):
                 t.transform(data_dropped)
 
             data_renamed = data.rename(columns={"binary_1": "renamed_1", "many": "too_many"})

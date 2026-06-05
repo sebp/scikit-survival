@@ -15,7 +15,7 @@
 The non-obvious policy is that ``nw.Enum`` is nominal, not ordinal. Its
 declared category order is used for ARFF/category fidelity only; callers
 that need statistical ordinality must opt in explicitly, for example via
-``ordinal_columns=``.
+``ordinal_categories=``.
 """
 
 from dataclasses import dataclass
@@ -33,17 +33,23 @@ __all__ = [
 def get_semantic_categories(series):
     """Return deterministic categories for Narwhals-backed categorical columns.
 
-    Explicit category orders are preserved for ``Enum``. For inferred
-    categoricals and strings, observed non-null values are sorted to avoid
-    backend-specific discovery order and polars' global categorical string pool.
+    Declared category orders are preserved for ``Enum`` (both backends) and for
+    pandas ``Categorical``, whose declared order is a user-meaningful choice.
+    For polars ``Categorical``, for
+    ``String``, and for ``Object`` columns (pandas ``object`` dtype) there is no
+    meaningful declared order (polars' categorical pool is appearance-based), so
+    observed non-null values are sorted to stay deterministic and to match
+    pandas' inferred (sorted) categories across backends.
     """
     s = nw.from_native(series, series_only=True)
     dt = s.dtype
     if isinstance(dt, nw.Enum):
         return tuple(s.cat.get_categories().to_list())
-    if isinstance(dt, (nw.Categorical, nw.String)):
+    if isinstance(dt, nw.Categorical) and s.implementation.is_pandas_like():
+        return tuple(s.cat.get_categories().to_list())
+    if isinstance(dt, (nw.Categorical, nw.String, nw.Object)):
         return tuple(sorted(s.drop_nulls().unique().to_list()))
-    raise TypeError(f"get_semantic_categories: unsupported dtype {dt!r}; expected Enum, Categorical, or String")
+    raise TypeError(f"get_semantic_categories: unsupported dtype {dt!r}; expected Enum, Categorical, String, or Object")
 
 
 @dataclass(frozen=True)
@@ -64,7 +70,7 @@ def infer_column_semantics(column):
     if dt.is_numeric() or isinstance(dt, nw.Boolean):
         return ColumnSemantics(name=s.name, kind="numeric", categories=None, ordered=False)
 
-    if isinstance(dt, (nw.Enum, nw.Categorical, nw.String)):
+    if isinstance(dt, (nw.Enum, nw.Categorical, nw.String, nw.Object)):
         return ColumnSemantics(
             name=s.name,
             kind="nominal",

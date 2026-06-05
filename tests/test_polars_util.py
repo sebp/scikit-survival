@@ -2,7 +2,7 @@
 
 from contextlib import nullcontext as does_not_raise
 
-from dataframe_test_utils import to_polars_via_interchange
+from dataframe_test_utils import to_polars_dataframe
 import numpy as np
 from numpy.testing import assert_array_equal
 import pandas as pd
@@ -30,7 +30,7 @@ class SurvDataFramePolarsCases(FixtureParameterFactory):
 
     def _make_eager(self, event, time, event_name="event", time_name="time", event_dtype=None):
         data = {event_name: event, time_name: time}
-        df = to_polars_via_interchange(pd.DataFrame(data))
+        df = to_polars_dataframe(pd.DataFrame(data))
         if event_dtype is not None:
             df = df.with_columns(pl.col(event_name).cast(event_dtype))
         return df
@@ -90,6 +90,6 @@ def test_from_dataframe_polars_lazyframe_rejected():
     rng = np.random.default_rng(0)
     event = rng.binomial(1, 0.5, size=100).astype(bool)
     time = np.exp(rng.standard_normal(100))
-    lf = to_polars_via_interchange(pd.DataFrame({"event": event, "time": time})).lazy()
+    lf = to_polars_dataframe(pd.DataFrame({"event": event, "time": time})).lazy()
     with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
         Surv.from_dataframe("event", "time", lf)

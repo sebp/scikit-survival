@@ -1,6 +1,6 @@
 """Tests for ``sksurv.preprocessing.OneHotEncoder`` with polars input."""
 
-from dataframe_test_utils import make_one_hot_categorical_data, to_polars_via_interchange
+from dataframe_test_utils import make_one_hot_categorical_data, to_polars_dataframe
 import numpy as np
 import pandas as pd
 import polars as pl
@@ -15,7 +15,7 @@ class TestOneHotEncoderAllDroppedParity:
     def test_all_dropped_raises(dataframe_library):
         df = pd.DataFrame({"cat": pd.Categorical(["x", "x"])})
         if dataframe_library == "polars":
-            df = to_polars_via_interchange(df)
+            df = to_polars_dataframe(df)
         with pytest.raises(ValueError, match="No objects to concatenate"):
             OneHotEncoder().fit_transform(df)
 
@@ -24,7 +24,7 @@ class TestOneHotEncoderAllDroppedParity:
 def polars_categorical_data():
     def _create(n_samples=117):
         data, expected = make_one_hot_categorical_data(n_samples)
-        return to_polars_via_interchange(data), to_polars_via_interchange(expected)
+        return to_polars_dataframe(data), to_polars_dataframe(expected)
 
     return _create
 

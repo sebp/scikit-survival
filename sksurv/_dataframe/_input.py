@@ -14,7 +14,7 @@
 
 import narwhals.stable.v2 as nw
 
-from . import _polars
+from . import _pandas, _polars
 
 __all__ = [
     "to_narwhals_dataframe",
@@ -23,12 +23,13 @@ __all__ = [
     "is_non_numeric_cast_error",
     "is_supported_dataframe",
     "is_supported_dataframe_or_series",
+    "is_supported_series",
     "unsupported_dataframe_error",
     "is_narwhals_dataframe_or_series",
     "is_narwhals_dataframe",
 ]
 
-EXTERNAL_DATAFRAME_LIBRARIES = (_polars.LIBRARY,)
+DATAFRAME_LIBRARIES = (_pandas.LIBRARY, _polars.LIBRARY)
 
 
 def _oxford_join(items):
@@ -39,27 +40,28 @@ def _oxford_join(items):
 
 
 SUPPORTED_DATAFRAME_INPUT_TYPES = _oxford_join(
-    ["pandas.DataFrame"] + [name for lib in EXTERNAL_DATAFRAME_LIBRARIES for name in lib.dataframe_display_names]
+    [name for lib in DATAFRAME_LIBRARIES for name in lib.dataframe_display_names]
 )
 
 
 def get_dataframe_library(obj, *, allow_series=False):
-    for library in EXTERNAL_DATAFRAME_LIBRARIES:
+    for library in DATAFRAME_LIBRARIES:
         if library.is_dataframe(obj) or (allow_series and library.is_series(obj)):
             return library
 
 
 def is_supported_dataframe(obj):
     """Return whether ``obj`` is a dataframe type explicitly supported by sksurv."""
-    return nw.dependencies.is_pandas_dataframe(obj) or get_dataframe_library(obj) is not None
+    return get_dataframe_library(obj) is not None
 
 
 def is_supported_dataframe_or_series(obj):
-    return (
-        is_supported_dataframe(obj)
-        or nw.dependencies.is_pandas_series(obj)
-        or get_dataframe_library(obj, allow_series=True) is not None
-    )
+    return get_dataframe_library(obj, allow_series=True) is not None
+
+
+def is_supported_series(obj):
+    """Return whether ``obj`` is a supported native Series (and not a DataFrame)."""
+    return is_supported_dataframe_or_series(obj) and not is_supported_dataframe(obj)
 
 
 def unsupported_dataframe_error(obj):
@@ -74,7 +76,7 @@ def is_non_numeric_cast_error(exc):
     column being non-numeric (intentional fallthrough) or from an unrelated
     failure (reraise).
     """
-    return any(lib.is_non_numeric_cast_error(exc) for lib in EXTERNAL_DATAFRAME_LIBRARIES)
+    return any(lib.is_non_numeric_cast_error(exc) for lib in DATAFRAME_LIBRARIES)
 
 
 def is_narwhals_dataframe(obj):
@@ -87,9 +89,7 @@ def is_narwhals_dataframe_or_series(obj):
     return get_dataframe_library(obj, allow_series=True) is not None
 
 
-_LAZYFRAME_NOT_SUPPORTED_MSG = (
-    "polars.LazyFrame is not supported; call .collect() before passing to scikit-survival."
-)
+_LAZYFRAME_NOT_SUPPORTED_MSG = "polars.LazyFrame is not supported; call .collect() before passing to scikit-survival."
 
 
 def _reject_polars_lazyframe(obj):
