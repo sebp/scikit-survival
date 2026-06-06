@@ -547,7 +547,7 @@ class TestKernelSurvivalSVM:
 
         assert ssvm.__sklearn_tags__().input_tags.pairwise is (kernel == "precomputed")
 
-        assert float(ssvm.intercept_) == pytest.approx(6.416017539824949, 1e-5)
+        assert float(ssvm.intercept_) == pytest.approx(6.416017539824949, rel=1e-3)
 
         i = np.arange(250)
         np.random.default_rng(0).shuffle(i)

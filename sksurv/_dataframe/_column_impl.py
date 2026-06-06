@@ -178,34 +178,48 @@ def categorical_to_numeric_narwhals(table):
     return reattach_pandas_index(result, original_index)
 
 
+def _int_codes_to_numpy(int_series, null_mask):
+    """Materialize a possibly null-containing Int64 series as a numpy array.
+
+    ``fill_null`` runs before ``to_numpy`` so nullable backends (e.g. pandas'
+    Arrow-backed strings) build an integer array instead of failing to convert a
+    null to int; null positions are then restored to ``NaN``.
+    """
+    codes = int_series.fill_null(-1).to_numpy()
+    if np.any(null_mask):
+        codes = codes.astype(float)
+        codes[null_mask] = np.nan
+    return codes
+
+
 def _encode_series_as_numeric_codes(nw_series):
     dt = nw_series.dtype
     if isinstance(dt, nw.Boolean):
         return nw_series.cast(nw.Int64).to_numpy()
-    if isinstance(dt, (nw.String, nw.Object)):
-        # A string/object column may actually hold integer labels (e.g. "1",
-        # "2", "3"); encode those as the integers themselves. If the strings are
-        # not numeric, the cast raises a backend-specific "non-numeric cast"
-        # error; swallow only that one and fall through to category-code
-        # assignment below. Re-raise anything else.
+    null_mask = nw_series.is_null().to_numpy()
+    if isinstance(dt, (nw.String, nw.Object)) and not np.any(null_mask):
+        # No nulls: a string/object column may actually hold integer labels
+        # (e.g. "1", "2", "3"); encode those as the integers themselves. If the
+        # strings are not numeric, the cast raises a backend-specific
+        # "non-numeric cast" error; swallow only that one and fall through to
+        # category codes. The int cast is skipped when nulls are present, because
+        # casting a null to int fails on nullable backends (e.g. pandas
+        # Arrow-backed strings); those take the null-aware path below.
         try:
             return nw_series.cast(nw.Int64).to_numpy()
         except Exception as exc:
             if not is_non_numeric_cast_error(exc):
                 raise
-    # Reached only for categorical / enum / string / object columns: numeric
-    # native dtypes are returned early by both callers and booleans are handled
-    # above, so infer_column_semantics always reports a nominal column here.
+    # Reached for categorical / enum / string / object columns: numeric native
+    # dtypes are returned early by both callers and booleans are handled above,
+    # so infer_column_semantics always reports a nominal column here.
     semantics = infer_column_semantics(nw_series)
     # Category order is centralized in get_semantic_categories (declared order
     # for pandas Categorical / Enum, sorted for polars Categorical / String),
     # so use semantics.categories as-is here rather than re-sorting.
     categories = semantics.categories or ()
     mapping = {value: idx for idx, value in enumerate(categories)}
-    codes = nw_series.replace_strict(mapping, default=-1, return_dtype=nw.Int64).to_numpy()
+    codes_series = nw_series.replace_strict(mapping, default=-1, return_dtype=nw.Int64)
     if isinstance(dt, nw.String):
-        null_mask = nw_series.is_null().to_numpy()
-        if np.any(null_mask):
-            codes = codes.astype(float)
-            codes[null_mask] = np.nan
-    return codes
+        return _int_codes_to_numpy(codes_series, null_mask)
+    return codes_series.to_numpy()

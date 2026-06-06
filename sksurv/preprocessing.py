@@ -21,6 +21,7 @@ from ._dataframe import (
     infer_column_semantics,
     to_narwhals_dataframe,
 )
+from .column import encode_categorical as encode_categorical
 
 __all__ = ["OneHotEncoder"]
 
