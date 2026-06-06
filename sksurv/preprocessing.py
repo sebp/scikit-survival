@@ -21,9 +21,9 @@ from ._dataframe import (
     infer_column_semantics,
     to_narwhals_dataframe,
 )
-from .column import encode_categorical as encode_categorical
+from .column import encode_categorical
 
-__all__ = ["OneHotEncoder"]
+__all__ = ["OneHotEncoder", "encode_categorical"]
 
 
 def check_columns_exist(actual, expected):

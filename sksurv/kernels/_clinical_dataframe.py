@@ -242,7 +242,7 @@ def _normalize_nominal_nulls_for_kernel(arr):
         return arr
     # Element-wise ``is None`` over an object array; ``== None`` matches only
     # Python ``None`` (not ``NaN``), which is exactly what we normalize here.
-    mask = arr == None  # noqa: E711
+    mask = arr == None  # noqa: E711  # pylint: disable=singleton-comparison
     if not mask.any():
         return arr
     out = arr.copy()
