@@ -31,7 +31,7 @@ __all__ = ["RandomSurvivalForest", "ExtraSurvivalTrees"]
 MAX_INT = np.iinfo(np.int32).max
 MAX_SAMPLES_CONSTRAINTS = [
     None,
-    Interval(RealNotInt, 0.0, 1.0, closed="right"),
+    Interval(RealNotInt, 0.0, 1.0, closed="neither"),
     Interval(Integral, 1, None, closed="left"),
 ]
 
@@ -442,7 +442,7 @@ class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
         - If None (default), then draw `X.shape[0]` samples.
         - If int, then draw `max_samples` samples.
         - If float, then draw `max_samples * X.shape[0]` samples. Thus,
-          `max_samples` should be in the interval `(0.0, 1.0]`.
+          `max_samples` should be in the interval `(0.0, 1.0)`.
 
     low_memory : bool, optional, default: False
         If set, :meth:`predict` computations use reduced memory but :meth:`predict_cumulative_hazard_function`
@@ -759,7 +759,7 @@ class ExtraSurvivalTrees(SurvivalAnalysisMixin, _BaseSurvivalForest):
         - If None (default), then draw `X.shape[0]` samples.
         - If int, then draw `max_samples` samples.
         - If float, then draw `max_samples * X.shape[0]` samples. Thus,
-          `max_samples` should be in the interval `(0.0, 1.0]`.
+          `max_samples` should be in the interval `(0.0, 1.0)`.
 
     low_memory : bool, optional, default: False
         If set, :meth:`predict` computations use reduced memory but :meth:`predict_cumulative_hazard_function`

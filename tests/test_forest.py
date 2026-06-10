@@ -300,6 +300,7 @@ def test_pipeline_predict(breast_cancer, forest_cls, func):
     "max_samples, exc_type, exc_msg, with_prefix",
     [
         (int(1e9), ValueError, "`max_samples` must be <= n_samples=500 but got value 1000000000", False),
+        (1.0, ValueError, r"Got 1\.0 instead", True),
         (1.0 + 1e-7, ValueError, r"Got 1\.0000001 instead", True),
         (2.0, ValueError, r"Got 2\.0 instead", True),
         (0.0, ValueError, r"Got 0\.0 instead", True),
@@ -315,7 +316,7 @@ def test_fit_max_samples(make_whas500, forest_cls, max_samples, exc_type, exc_ms
     forest = forest_cls(max_samples=max_samples)
     prefix = (
         f"The 'max_samples' parameter of {forest_cls.__name__} must be None, "
-        r"a float in the range \(0\.0, 1\.0] or an int in the range \[1, inf\)\. "
+        r"a float in the range \(0\.0, 1\.0\) or an int in the range \[1, inf\)\. "
     )
     if with_prefix:
         msg = prefix + exc_msg
