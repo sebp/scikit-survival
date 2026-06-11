@@ -161,6 +161,20 @@ class TestClinicalKernelTransformPolars:
         assert list(t._nominal_columns) == []
 
     @staticmethod
+    def test_fit_transform_missing_numeric_matches_pandas():
+        pd_x = pd.DataFrame({"a": [1.0, 2.0, np.nan, 4.0], "b": [1.0, 1.0, 2.0, 2.0]})
+        pl_x = pl.DataFrame({"a": [1.0, 2.0, None, 4.0], "b": [1.0, 1.0, 2.0, 2.0]})
+
+        pd_t = ClinicalKernelTransform().fit(pd_x)
+        pl_t = ClinicalKernelTransform().fit(pl_x)
+
+        # The range of "a" is computed from the non-missing values only.
+        assert_array_almost_equal(pd_t._numeric_ranges, [3.0, 1.0])
+        assert_array_almost_equal(pl_t._numeric_ranges, pd_t._numeric_ranges)
+
+        assert_array_almost_equal(pl_t.transform(pl_x), pd_t.transform(pd_x))
+
+    @staticmethod
     def test_fit_once_fit_polars_dataframe_raises(make_polars_clinical_data):
         data, _ = make_polars_clinical_data()
         t = ClinicalKernelTransform(fit_once=True, ordinal_categories=ORDINAL_CATS_POLARS)

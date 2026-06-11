@@ -152,7 +152,11 @@ def _extract_numeric_kernel_array_dataframe(x, ordinal_categories=None):
 
 
 def _continuous_range(values):
-    return (values.max() - values.min()) if values.size > 0 else np.nan
+    # Missing values must not poison the range; guard the all-NaN case to
+    # avoid numpy's All-NaN warning while keeping the NaN result.
+    if values.size == 0 or np.all(np.isnan(values)):
+        return np.nan
+    return np.nanmax(values) - np.nanmin(values)
 
 
 def _ordinal_range(codes):

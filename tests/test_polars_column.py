@@ -171,6 +171,29 @@ class StandardizePolarsCases(FixtureParameterFactory):
         expected = expected_numeric.with_columns(cat)
         return df, expected, does_not_raise()
 
+    @property
+    def expected_standardized_missing(self):
+        return [-0.872872, -0.218218, None, 1.091089]
+
+    @property
+    def expected_standardized_other(self):
+        return [-1.161895, -0.387298, 0.387298, 1.161895]
+
+    def data_polars_missing_null(self):
+        # The statistics skip nulls (matching pandas' NaN handling) and the
+        # output keeps null as null.
+        df = pl.DataFrame({"a": [1.0, 2.0, None, 4.0], "b": [1.0, 2.0, 3.0, 4.0]})
+        expected = pl.DataFrame({"a": self.expected_standardized_missing, "b": self.expected_standardized_other})
+        return df, expected, does_not_raise()
+
+    def data_polars_missing_nan(self):
+        # Float NaN must be skipped by the statistics as well (it would
+        # otherwise poison the whole column) and stays NaN in the output.
+        df = pl.DataFrame({"a": [1.0, 2.0, float("nan"), 4.0], "b": [1.0, 2.0, 3.0, 4.0]})
+        expected_a = [float("nan") if v is None else v for v in self.expected_standardized_missing]
+        expected = pl.DataFrame({"a": expected_a, "b": self.expected_standardized_other})
+        return df, expected, does_not_raise()
+
 
 @pytest.mark.parametrize("in_data,expected,expected_error", StandardizePolarsCases().get_cases())
 def test_standardize_polars(in_data, expected, expected_error):

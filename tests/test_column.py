@@ -45,8 +45,28 @@ class StandardizeCase(FixtureParameterFactory):
         data = data.astype({"q3": "category"})
         return data
 
+    @property
+    def numeric_data_with_missing(self):
+        return pd.DataFrame(
+            {"a": [1.0, 2.0, np.nan, 4.0], "b": [1.0, 2.0, 3.0, 4.0]},
+            index=[10, 20, 30, 40],
+        )
+
+    @property
+    def expected_with_missing(self):
+        return pd.DataFrame(
+            {
+                "a": [-0.872872, -0.218218, np.nan, 1.091089],
+                "b": [-1.161895, -0.387298, 0.387298, 1.161895],
+            },
+            index=[10, 20, 30, 40],
+        )
+
     def data_numeric(self):
         return self.numeric_data, self.expected
+
+    def data_numeric_with_missing(self):
+        return self.numeric_data_with_missing, self.expected_with_missing
 
     def data_float_numpy_array(self):
         return self.numeric_data.to_numpy(), self.expected
@@ -87,6 +107,15 @@ def test_standardize(in_data, expected):
         result = pd.DataFrame(result, columns=expected.columns)
 
     tm.assert_frame_equal(pd.isna(result), pd.isna(expected))
+    tm.assert_frame_equal(result, expected)
+
+
+def test_standardize_with_missing_no_std():
+    data = pd.DataFrame({"a": [1.0, 2.0, np.nan, 4.0]})
+
+    result = column.standardize(data, with_std=False)
+
+    expected = pd.DataFrame({"a": [-4.0 / 3, -1.0 / 3, np.nan, 5.0 / 3]})
     tm.assert_frame_equal(result, expected)
 
 

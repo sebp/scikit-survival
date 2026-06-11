@@ -37,29 +37,26 @@ __all__ = [
 
 def standardize_narwhals_dataframe(table, with_std):
     nw_table = to_narwhals_dataframe(table)
-    implementation = nw_table.implementation
 
-    if nw_table.shape[1] == 0:
+    exprs = []
+    for col_name, dtype in nw_table.schema.items():
+        if not dtype.is_numeric():
+            continue
+        col = nw.col(col_name)
+        # Mean/std must skip missing values, but polars propagates float NaN
+        # through aggregations (only null is skipped), so compute the
+        # statistics on a NaN-to-null normalized expression. The
+        # transformation itself uses the original column, so each row keeps
+        # its missing-value representation (null stays null, NaN stays NaN).
+        stats_col = col.fill_nan(None) if isinstance(dtype, (nw.Float32, nw.Float64)) else col
+        standardized = col - stats_col.mean()
+        if with_std:
+            standardized = standardized / stats_col.std(ddof=1)
+        exprs.append(standardized)
+
+    if len(exprs) == 0:
         return nw_table.to_native()
-
-    nw_table, original_index = detach_pandas_index(nw_table)
-    output_frames = []
-    for col_name in nw_table.columns:
-        col = nw_table.get_column(col_name)
-        if col.dtype.is_numeric():
-            arr = col.to_numpy().astype(float)
-            mean = arr.mean()
-            arr = arr - mean
-            if with_std:
-                std = arr.std(ddof=1)
-                arr = arr / std
-            new_col = nw.new_series(col_name, arr, backend=implementation)
-            output_frames.append(new_col.to_frame())
-        else:
-            output_frames.append(nw_table.select(col_name))
-
-    result = nw.concat(output_frames, how="horizontal").to_native()
-    return reattach_pandas_index(result, original_index)
+    return nw_table.with_columns(exprs).to_native()
 
 
 def encode_categorical_narwhals(table, columns=None, allow_drop=True):

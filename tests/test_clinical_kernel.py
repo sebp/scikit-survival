@@ -96,6 +96,27 @@ class TestClinicalKernel:
         assert_array_almost_equal(expected, mat, 4)
 
     @staticmethod
+    def test_kernel_transform_with_missing_numeric():
+        x = pd.DataFrame({"a": [1.0, 2.0, np.nan, 4.0], "b": [1.0, 1.0, 2.0, 2.0]})
+
+        t = ClinicalKernelTransform().fit(x)
+
+        # The range of "a" is computed from the non-missing values only.
+        assert_array_almost_equal(t._numeric_ranges, [3.0, 1.0])
+
+        mat = t.transform(x)
+        # Only pairs involving the missing value are NaN.
+        expected = np.array(
+            [
+                [1.0, 5.0 / 6, np.nan, 0.0],
+                [5.0 / 6, 1.0, np.nan, 1.0 / 6],
+                [np.nan, np.nan, np.nan, np.nan],
+                [0.0, 1.0 / 6, np.nan, 1.0],
+            ]
+        )
+        assert_array_almost_equal(mat, expected)
+
+    @staticmethod
     def test_kernel_transform_num_features_mismatch(make_data):
         data, _ = make_data()
         t = ClinicalKernelTransform()
