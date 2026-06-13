@@ -4,7 +4,6 @@ from numbers import Integral, Real
 import numpy as np
 from scipy.sparse import issparse
 from sklearn.base import BaseEstimator
-from sklearn.tree import _tree
 from sklearn.tree._classes import DENSE_SPLITTERS, SPARSE_SPLITTERS
 from sklearn.tree._splitter import Splitter
 from sklearn.tree._tree import BestFirstTreeBuilder, DepthFirstTreeBuilder, Tree
@@ -12,6 +11,7 @@ from sklearn.utils._param_validation import Interval, RealNotInt, StrOptions
 from sklearn.utils.validation import (
     _assert_all_finite_element_wise,
     _check_n_features,
+    _check_sample_weight,
     assert_all_finite,
     check_is_fitted,
     check_random_state,
@@ -25,8 +25,6 @@ from ..util import check_array_survival
 from ._criterion import LogrankCriterion, get_unique_times
 
 __all__ = ["ExtraSurvivalTree", "SurvivalTree"]
-
-DTYPE = _tree.DTYPE
 
 
 def _array_to_step_function(x, array):
@@ -284,7 +282,14 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         random_state = check_random_state(self.random_state)
 
         if check_input:
-            X = validate_data(self, X, dtype=DTYPE, ensure_min_samples=2, accept_sparse="csc", ensure_all_finite=False)
+            X = validate_data(
+                self,
+                X,
+                dtype=np.float32,
+                ensure_min_samples=2,
+                accept_sparse="csc",
+                ensure_all_finite=False,
+            )
             event, time = check_array_survival(X, y)
             time = time.astype(np.float64)
             self.unique_times_, self.is_event_time_ = get_unique_times(time, event)
@@ -299,6 +304,9 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             y_numeric, self.unique_times_, self.is_event_time_ = y
 
         n_samples, self.n_features_in_ = X.shape
+        if sample_weight is not None:
+            sample_weight = _check_sample_weight(sample_weight, X, dtype=np.float64)
+
         params = self._check_params(n_samples)
 
         if self.low_memory:
@@ -426,7 +434,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             X = validate_data(
                 self,
                 X,
-                dtype=DTYPE,
+                dtype=np.float32,
                 accept_sparse=accept_sparse,
                 reset=False,
                 ensure_all_finite=ensure_all_finite,

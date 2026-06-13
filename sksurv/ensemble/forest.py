@@ -6,16 +6,15 @@ import warnings
 from joblib import Parallel, delayed
 import numpy as np
 from sklearn.ensemble._base import _partition_estimators
+from sklearn.ensemble._bootstrap import _get_n_samples_bootstrap
 from sklearn.ensemble._forest import (
     BaseForest,
     _accumulate_prediction,
     _generate_unsampled_indices,
-    _get_n_samples_bootstrap,
     _parallel_build_trees,
 )
-from sklearn.tree._tree import DTYPE
 from sklearn.utils._tags import get_tags
-from sklearn.utils.validation import check_is_fitted, check_random_state, validate_data
+from sklearn.utils.validation import _check_sample_weight, check_is_fitted, check_random_state, validate_data
 
 from ..base import SurvivalAnalysisMixin
 from ..docstrings import append_cumulative_hazard_example, append_survival_function_example
@@ -107,8 +106,18 @@ class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
         """
         self._validate_params()
 
-        X = validate_data(self, X, dtype=DTYPE, accept_sparse="csc", ensure_min_samples=2, ensure_all_finite=False)
+        X = validate_data(
+            self,
+            X,
+            dtype=np.float32,
+            accept_sparse="csc",
+            ensure_min_samples=2,
+            ensure_all_finite=False,
+        )
         event, time = check_array_survival(X, y)
+        if sample_weight is not None:
+            sample_weight = _check_sample_weight(sample_weight, X)
+        self._sample_weight = sample_weight
 
         # _compute_missing_values_in_feature_mask checks if X has missing values and
         # will raise an error if the underlying tree base estimator can't handle missing
@@ -135,7 +144,11 @@ class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
                 "`max_sample=None`."
             )
         elif self.bootstrap:
-            n_samples_bootstrap = _get_n_samples_bootstrap(n_samples=X.shape[0], max_samples=self.max_samples)
+            n_samples_bootstrap = _get_n_samples_bootstrap(
+                n_samples=X.shape[0],
+                max_samples=self.max_samples,
+                sample_weight=sample_weight,
+            )
         else:
             n_samples_bootstrap = None
 
@@ -187,7 +200,7 @@ class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
                     self.bootstrap,
                     X,
                     y_tree,
-                    sample_weight,
+                    self._sample_weight,
                     i,
                     len(trees),
                     verbose=self.verbose,
@@ -213,10 +226,15 @@ class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
         predictions = np.zeros(n_samples)
         n_predictions = np.zeros(n_samples)
 
-        n_samples_bootstrap = _get_n_samples_bootstrap(n_samples, self.max_samples)
+        n_samples_bootstrap = _get_n_samples_bootstrap(n_samples, self.max_samples, self._sample_weight)
 
         for estimator in self.estimators_:
-            unsampled_indices = _generate_unsampled_indices(estimator.random_state, n_samples, n_samples_bootstrap)
+            unsampled_indices = _generate_unsampled_indices(
+                estimator.random_state,
+                n_samples,
+                n_samples_bootstrap,
+                self._sample_weight,
+            )
             p_estimator = estimator.predict(X[unsampled_indices, :], check_input=False)
 
             predictions[unsampled_indices] += p_estimator
@@ -408,10 +426,11 @@ class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
         If bootstrap is True, the number of samples to draw from X
         to train each base estimator.
 
-        - If None (default), then draw `X.shape[0]` samples.
+        - If None (default), then draw `X.shape[0]` samples irrespective of
+          `sample_weight`.
         - If int, then draw `max_samples` samples.
-        - If float, then draw `max_samples * X.shape[0]` samples. Thus,
-          `max_samples` should be in the interval `(0.0, 1.0]`.
+        - If float, then draw `max_samples * X.shape[0]` unweighted samples
+          or `max_samples * sample_weight.sum()` weighted samples.
 
     low_memory : bool, optional, default: False
         If set, :meth:`predict` computations use reduced memory but :meth:`predict_cumulative_hazard_function`
@@ -724,10 +743,11 @@ class ExtraSurvivalTrees(SurvivalAnalysisMixin, _BaseSurvivalForest):
         If bootstrap is True, the number of samples to draw from X
         to train each base estimator.
 
-        - If None (default), then draw `X.shape[0]` samples.
+        - If None (default), then draw `X.shape[0]` samples irrespective of
+          `sample_weight`.
         - If int, then draw `max_samples` samples.
-        - If float, then draw `max_samples * X.shape[0]` samples. Thus,
-          `max_samples` should be in the interval `(0.0, 1.0]`.
+        - If float, then draw `max_samples * X.shape[0]` unweighted samples
+          or `max_samples * sample_weight.sum()` weighted samples.
 
     low_memory : bool, optional, default: False
         If set, :meth:`predict` computations use reduced memory but :meth:`predict_cumulative_hazard_function`
