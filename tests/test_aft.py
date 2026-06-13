@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.testing import assert_array_almost_equal
 import pytest
+from scipy.sparse import csr_array
 from sklearn.pipeline import make_pipeline
 
 from sksurv.base import SurvivalAnalysisMixin
@@ -71,3 +72,22 @@ class TestIPCRidge:
         )
 
         assert SurvivalAnalysisMixin.score(pipe, x_test, y_test) == 0.66925817946226107
+
+    @staticmethod
+    def test_sparse(make_whas500):
+        whas500 = make_whas500(to_numeric=True)
+
+        X_train = csr_array(whas500.x[:400])
+        X_test = csr_array(whas500.x[400:])
+        y_train = whas500.y[:400]
+        y_test = whas500.y[400:]
+
+        model_1 = IPCRidge(solver="lsqr").fit(X_train, y_train)
+        model_2 = IPCRidge(solver="lsqr").fit(whas500.x[:400], y_train)
+
+        assert model_1.solver_ == model_2.solver_
+
+        pred_1 = model_1.score(X_test, y_test)
+        pred_2 = model_2.score(whas500.x[400:], y_test)
+
+        assert pred_1 == pytest.approx(pred_2)

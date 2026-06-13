@@ -126,6 +126,9 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
         Names of features seen during ``fit``. Defined only when `X`
         has feature names that are all strings.
 
+    solver_ : str
+        The solver that was used at fit time by the computational routines.
+
     References
     ----------
     .. [1] W. Stute, "Consistent estimation under random censorship when covariables are
@@ -167,7 +170,7 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
 
         Parameters
         ----------
-        X : array-like, shape = (n_samples, n_features)
+        X : {array-like, sparse matrix}, shape = (n_samples, n_features)
             Data matrix.
 
         y : structured array, shape = (n_samples,)
