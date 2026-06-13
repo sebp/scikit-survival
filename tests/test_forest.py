@@ -375,7 +375,7 @@ def test_apply_sparse(make_whas500, forest_cls):
 
     forest = forest_cls()
     X, y = whas500.x, whas500.y
-    X_csr = sparse.csr_matrix(X)
+    X_csr = sparse.csr_array(X)
     forest.fit(X_csr, y)
 
     X_trans = forest.apply(X_csr)
@@ -403,8 +403,8 @@ def test_predict_sparse(make_whas500, forest_cls):
     y_cum_h = forest.predict_cumulative_hazard_function(X_test)
     y_surv = forest.predict_survival_function(X_test)
 
-    X_train_csr = sparse.csr_matrix(X_train)
-    X_test_csr = sparse.csr_matrix(X_test)
+    X_train_csr = sparse.csr_array(X_train)
+    X_test_csr = sparse.csr_array(X_test)
 
     forest_csr = forest_cls(random_state=seed)
     forest_csr.fit(X_train_csr, y_train)

@@ -756,7 +756,7 @@ def test_apply(veterans):
 def test_apply_sparse(veterans):
     X, y = veterans
     X = X.loc[:, "Karnofsky_score"].to_numpy(dtype=np.float32)[:, np.newaxis]
-    X_sparse = sparse.csr_matrix(X)
+    X_sparse = sparse.csr_array(X)
     tree = SurvivalTree(max_depth=2, max_features=1)
     tree.fit(X_sparse, y)
 
@@ -792,8 +792,8 @@ def test_predict_sparse(make_whas500):
     y_cum_h = tree.predict_cumulative_hazard_function(X_test)
     y_surv = tree.predict_survival_function(X_test)
 
-    X_train_csr = sparse.csr_matrix(X_train)
-    X_test_csr = sparse.csr_matrix(X_test)
+    X_train_csr = sparse.csr_array(X_train)
+    X_test_csr = sparse.csr_array(X_test)
 
     tree_csr = SurvivalTree(min_samples_leaf=10, random_state=seed)
     tree_csr.fit(X_train_csr, y_train)

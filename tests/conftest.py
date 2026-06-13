@@ -6,7 +6,7 @@ import numpy as np
 from packaging.version import Version
 import pandas as pd
 import pytest
-from scipy.sparse import coo_matrix
+from scipy.sparse import coo_array
 
 from sksurv.column import categorical_to_numeric, encode_categorical, standardize
 from sksurv.datasets import load_breast_cancer, load_whas500
@@ -69,7 +69,9 @@ def whas500_sparse_data():
         index_i.extend(idx)
         index_j.extend([j] * len(idx))
 
-    x_sparse = coo_matrix((data, (index_i, index_j)))
+    index_i = np.asarray(index_i, dtype=np.int32)
+    index_j = np.asarray(index_j, dtype=np.int32)
+    x_sparse = coo_array((data, (index_i, index_j)))
     return SparseDataSet(x_dense=x_dense, x_sparse=x_sparse, y=y)
 
 
