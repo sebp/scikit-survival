@@ -348,19 +348,7 @@ def patch_sklearn_gb_doc():
     _BaseComposition.steps = []
 
 
-def patch_sklearn_metadata_requests_doc():
-    # Workaround for https://github.com/scikit-learn/scikit-learn/issues/31804
-    # introduced in scikit-learn 1.7.1
-    from sklearn.utils import _metadata_requests
-
-    _metadata_requests.REQUESTER_DOC = _metadata_requests.REQUESTER_DOC.replace(
-        "\nConfigure whether metadata should be requested",
-        "        Configure whether metadata should be requested",
-    )
-
-
 patch_sklearn_gb_doc()
-patch_sklearn_metadata_requests_doc()
 
 # configure matplotlib plot directive
 # https://matplotlib.org/stable/api/sphinxext_plot_directive_api.html#configuration-options
