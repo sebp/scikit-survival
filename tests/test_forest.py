@@ -1,5 +1,5 @@
 import numpy as np
-from numpy.testing import assert_array_almost_equal, assert_array_equal
+from numpy.testing import assert_allclose, assert_array_almost_equal, assert_array_equal
 import pytest
 from scipy import sparse
 from sklearn.ensemble import ExtraTreesClassifier, RandomForestClassifier
@@ -299,10 +299,6 @@ def test_pipeline_predict(breast_cancer, forest_cls, func):
 @pytest.mark.parametrize(
     "max_samples, exc_type, exc_msg, with_prefix",
     [
-        (int(1e9), ValueError, "`max_samples` must be <= n_samples=500 but got value 1000000000", False),
-        (1.0, ValueError, r"Got 1\.0 instead", True),
-        (1.0 + 1e-7, ValueError, r"Got 1\.0000001 instead", True),
-        (2.0, ValueError, r"Got 2\.0 instead", True),
         (0.0, ValueError, r"Got 0\.0 instead", True),
         (np.nan, ValueError, "Got nan instead", True),
         (np.inf, ValueError, r"Got inf instead", True),
@@ -316,7 +312,7 @@ def test_fit_max_samples(make_whas500, forest_cls, max_samples, exc_type, exc_ms
     forest = forest_cls(max_samples=max_samples)
     prefix = (
         f"The 'max_samples' parameter of {forest_cls.__name__} must be None, "
-        r"a float in the range \(0\.0, 1\.0\) or an int in the range \[1, inf\)\. "
+        r"a float in the range \(0\.0, inf\) or an int in the range \[1, inf\)\. "
     )
     if with_prefix:
         msg = prefix + exc_msg
@@ -324,6 +320,21 @@ def test_fit_max_samples(make_whas500, forest_cls, max_samples, exc_type, exc_ms
         msg = exc_msg
     with pytest.raises(exc_type, match=msg):
         forest.fit(whas500.x, whas500.y)
+
+
+@pytest.mark.parametrize("forest_cls", FORESTS)
+def test_max_samples_geq_one(make_whas500, forest_cls):
+    # Check that `max_samples >= 1.0` and `max_samples >= n_samples` is allowed
+    whas500 = make_whas500(to_numeric=True)
+    X, y = whas500.x, whas500.y
+    max_samples_float = 1.5
+    max_sample_int = int(max_samples_float * whas500.x.shape[0])
+    est1 = forest_cls(bootstrap=True, max_samples=max_samples_float, random_state=123)
+    est1.fit(X, y)
+    est2 = forest_cls(bootstrap=True, max_samples=max_sample_int, random_state=123)
+    est2.fit(X, y)
+    assert est1._n_samples_bootstrap == est2._n_samples_bootstrap
+    assert_allclose(est1.score(X, y), est2.score(X, y))
 
 
 @pytest.mark.parametrize("forest_cls", FORESTS)
