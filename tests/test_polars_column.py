@@ -206,15 +206,21 @@ def test_standardize_polars(in_data, expected, expected_error):
         pt.assert_frame_equal(result, expected, check_exact=False, abs_tol=1e-6)
 
 
-def test_standardize_all_missing_column_matches_pandas_via_numpy():
+@pytest.mark.parametrize(
+    "polars_missing",
+    [
+        pl.Series([None] * 3, dtype=pl.Float64),
+        [float("nan")] * 3,
+    ],
+    ids=["null", "nan"],
+)
+def test_standardize_all_missing_column_matches_pandas_via_numpy(polars_missing):
     import pandas as pd
 
     pd_out = _sksurv_column.standardize(pd.DataFrame({"a": [np.nan] * 3, "b": [1.0, 2.0, 3.0]}))
     # The all-missing column must be a float dtype, not Null, or standardize
     # would skip it as non-numeric.
-    pl_out = _sksurv_column.standardize(
-        pl.DataFrame({"a": pl.Series([None] * 3, dtype=pl.Float64), "b": [1.0, 2.0, 3.0]})
-    )
+    pl_out = _sksurv_column.standardize(pl.DataFrame({"a": polars_missing, "b": [1.0, 2.0, 3.0]}))
 
     # The dataframe-level representation differs (pandas NaN vs polars null) but
     # both normalize to NaN at the numpy boundary that feeds the estimators.

@@ -181,3 +181,14 @@ def test_semantic_category_helpers_reject_unsupported_dtype():
     list_series = pl.Series("items", [[1], [2]])
     with pytest.raises(TypeError, match="unsupported dtype"):
         infer_column_semantics(list_series)
+
+
+def test_infer_column_semantics_numeric_and_boolean():
+    numeric = infer_column_semantics(pl.Series("x", [1.0, 2.0, 3.0]))
+    assert numeric == ColumnSemantics(name="x", kind="numeric", categories=None, ordered=False)
+
+    boolean = infer_column_semantics(pl.Series("b", [True, False, True]))
+    assert boolean.name == "b"
+    assert boolean.kind == "numeric"
+    assert boolean.categories is None
+    assert boolean.ordered is False

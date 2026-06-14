@@ -8,6 +8,7 @@ import polars as pl
 import pytest
 
 from sksurv.kernels import ClinicalKernelTransform, clinical_kernel
+from sksurv.kernels._clinical_dataframe import _ordinal_range
 from sksurv.preprocessing import OneHotEncoder
 
 
@@ -492,6 +493,34 @@ class TestClinicalKernelEdgeCases:
             clinical_kernel(df, ordinal_categories={"unknown": ["a"]})
         with pytest.raises(ValueError, match="requires a categorical, string, or object column"):
             clinical_kernel(df, ordinal_categories={"num": ["1", "2"]})
+        with pytest.raises(TypeError, match="must be an iterable of category labels"):
+            clinical_kernel(df, ordinal_categories={"grade": 5})
+        with pytest.raises(ValueError, match="must list at least one category"):
+            clinical_kernel(df, ordinal_categories={"grade": []})
+        with pytest.raises(ValueError, match="has duplicate categories"):
+            clinical_kernel(df, ordinal_categories={"grade": ["A", "A"]})
+
+    @staticmethod
+    def test_clinical_kernel_all_missing_ordinal_column_range_zero(recwarn):
+        df = pl.DataFrame(
+            {
+                "num": [1.0, 2.0, 3.0],
+                "stage": pl.Series("stage", [None, None, None], dtype=pl.Utf8),
+            }
+        )
+        # _ordinal_range maps an all-missing ordinal column to 0.0 instead of
+        # calling nanmax-nanmin on an all-NaN array, which would warn.
+        assert _ordinal_range(np.full(3, np.nan)) == 0.0
+
+        # fit() exercises the _ordinal_range path; the all-NaN guard keeps the
+        # warning from leaking.
+        ClinicalKernelTransform(ordinal_categories={"stage": ["T1", "T2", "T3"]}).fit(df)
+        assert not any("All-NaN" in str(w.message) for w in recwarn.list)
+
+        # The functional path also handles an all-missing ordinal column end-to-end.
+        mat = clinical_kernel(df, ordinal_categories={"stage": ["T1", "T2", "T3"]})
+        assert mat.shape == (3, 3)
+        assert np.all(np.isnan(mat))
 
     @staticmethod
     def test_unsupported_polars_dtype_raises():

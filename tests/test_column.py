@@ -295,6 +295,16 @@ def test_encode_categorical_series_preserves_index():
     tm.assert_frame_equal(actual, expected, check_exact=True)
 
 
+def test_encode_categorical_drops_single_category_series_preserves_index():
+    input_series = pd.Series(pd.Categorical(["a", "a", "a"]), name="c", index=["r0", "r1", "r2"])
+
+    actual = column.encode_categorical(input_series)
+
+    assert isinstance(actual, pd.DataFrame)
+    assert actual.shape == (3, 0)
+    assert list(actual.index) == ["r0", "r1", "r2"]
+
+
 def test_series_numeric():
     input_series = pd.Series([0.5, 0.1, 10, 25, 3.8, 11, 2256, -1, -0.2, 3.14], name="a_series")
 
