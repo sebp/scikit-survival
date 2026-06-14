@@ -148,8 +148,8 @@ def test_get_xy_polars(args, kwargs, x_expected, y_expected, error_expected):
 
 
 class TestGetXYLazyFrameRejected:
-    """``get_x_y(LazyFrame, ...)`` must reject the lazy frame with a
-    ``TypeError`` (LazyFrame is no longer a supported input).
+    """``get_x_y(LazyFrame, ...)`` must reject the lazy frame with the same
+    actionable ``TypeError`` as every other entry point.
     """
 
     @staticmethod
@@ -157,7 +157,7 @@ class TestGetXYLazyFrameRejected:
         from sksurv.datasets import get_x_y
 
         lf = pl.LazyFrame({"e": [True, False], "t": [1.0, 2.0], "x": [1, 2]})
-        with pytest.raises(TypeError, match=r"expected pandas\.DataFrame or polars\.DataFrame"):
+        with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported; call \.collect\(\)"):
             get_x_y(lf, None, survival=False)
 
     @staticmethod

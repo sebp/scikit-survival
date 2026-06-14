@@ -36,7 +36,7 @@ def _get_data_path(name):
 
 def _get_x_y_survival(dataset, col_event, col_time, val_outcome, competing_risks=False):
     if col_event is None or col_time is None:
-        return ensure_eager_dataframe(dataset), None
+        return dataset, None
 
     nw_data = to_narwhals_dataframe(dataset)
 
@@ -57,13 +57,13 @@ def _get_x_y_survival(dataset, col_event, col_time, val_outcome, competing_risks
 
 def _get_x_y_other(dataset, col_label):
     if col_label is None:
-        return ensure_eager_dataframe(dataset), None
+        return dataset, None
 
     nw_data = to_narwhals_dataframe(dataset)
 
     if isinstance(col_label, str):
-        # String label returns Series, matching historical pandas dataset.loc[:, "col"];
-        # polars also returns polars.Series for symmetry).
+        # A single label name yields a Series in the input dataframe library;
+        # a sequence of label names yields a DataFrame.
         y = nw_data.get_column(col_label).to_native()
         x_frame = nw_data.drop([col_label]).to_native()
     else:
@@ -117,6 +117,9 @@ def get_x_y(data_frame, attr_labels, pos_label=None, survival=True, competing_ri
 
         If `survival` is `False` and `attr_labels` is `None`, `y` is set to `None`.
     """
+    # Reject a polars LazyFrame first so it gets the actionable
+    # "call .collect()" error instead of the generic unsupported-type one.
+    data_frame = ensure_eager_dataframe(data_frame)
     if not is_supported_dataframe(data_frame):
         raise unsupported_dataframe_error(data_frame)
 
