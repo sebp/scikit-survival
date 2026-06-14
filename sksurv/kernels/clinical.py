@@ -13,10 +13,9 @@
 import narwhals.stable.v2 as nw
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import _check_feature_names, _check_n_features, check_is_fitted
+from sklearn.utils.validation import check_is_fitted, validate_data
 
 from .._dataframe import (
-    column_to_category_codes,
     ensure_eager_dataframe,
     get_dataframe_library,
     is_narwhals_dataframe,
@@ -25,6 +24,7 @@ from .._dataframe import (
 from ._clinical_dataframe import (
     _append_kernel_column,
     _check_clinical_kernel_inputs,
+    _column_to_kernel_codes,
     _encode_dataframe_kernel_column,
     _extract_nominal_kernel_arrays,
     _extract_numeric_kernel_array,
@@ -278,8 +278,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
             raise ValueError(f"expected 2d array, but got {ndim}")
 
         X = ensure_eager_dataframe(X)
-        _check_feature_names(self, X, reset=True)
-        _check_n_features(self, X, reset=True)
+        validate_data(self, X, skip_check_array=True)
 
         if self.fit_once:
             if is_narwhals_dataframe(X):
@@ -308,10 +307,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
             if kind == "numeric":
                 out[:, i] = col.to_numpy().astype(np.float64)
             else:
-                codes = column_to_category_codes(col, semantics).astype(np.float64)
-                null_mask = col.is_null().to_numpy()
-                codes[null_mask] = np.nan
-                out[:, i] = codes
+                out[:, i] = _column_to_kernel_codes(col, semantics)
         return out
 
     def transform(self, Y):
@@ -330,8 +326,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
         Y = ensure_eager_dataframe(Y)
 
-        _check_feature_names(self, Y, reset=False)
-        _check_n_features(self, Y, reset=False)
+        validate_data(self, Y, reset=False, skip_check_array=True)
 
         y_is_dataframe = is_narwhals_dataframe(Y)
         fit_impl = getattr(self, "_fit_implementation_", None)

@@ -13,7 +13,7 @@
 import narwhals.stable.v2 as nw
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import _check_feature_names, _check_feature_names_in, _check_n_features, check_is_fitted
+from sklearn.utils.validation import _check_feature_names_in, check_is_fitted, validate_data
 
 from ._dataframe import (
     ensure_eager_dataframe,
@@ -139,8 +139,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
             The transformed data. The output dataframe library matches the input.
         """
         X = ensure_eager_dataframe(X)
-        _check_feature_names(self, X, reset=True)
-        _check_n_features(self, X, reset=True)
+        validate_data(self, X, skip_check_array=True)
 
         self._fit_implementation_ = to_narwhals_dataframe(X).implementation
         return self._fit_transform_dataframe(X)
@@ -160,7 +159,10 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         """
         check_is_fitted(self, "encoded_columns_")
         X = ensure_eager_dataframe(X)
-        _check_n_features(self, X, reset=False)
+        nw_X = to_narwhals_dataframe(X)
+        check_columns_exist(pd.Index(nw_X.columns), pd.Index(self.feature_names_in_))
+        validation_X = nw_X.select(list(self.feature_names_in_)).to_native()
+        validate_data(self, validation_X, reset=False, skip_check_array=True)
 
         if to_narwhals_dataframe(X).implementation != self._fit_implementation_:
             raise TypeError("fit and transform must use the same dataframe library")
