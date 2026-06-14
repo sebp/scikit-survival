@@ -40,10 +40,13 @@ jobs:
           fi
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3.4.1
+        uses: pypa/cibuildwheel@v4.1.0
+        with:
+          extras: uv
         env:
           CIBW_ARCHS: auto64
           CIBW_BUILD: cp${{ matrix.python }}-${{ steps.platform.outputs.build_platform }}*
+          CIBW_BUILD_FRONTEND: build[uv]
           CIBW_BUILD_VERBOSITY: 1
           CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=${{ runner.arch == 'ARM64' && '11.0' || '10.13' }}
           CIBW_TEST_COMMAND: pytest --strict-markers -m 'not slow' -k 'not test_fit_and_predict_linear_regression' {project}/tests
