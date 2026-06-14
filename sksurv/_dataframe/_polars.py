@@ -53,9 +53,14 @@ class PolarsDataFrameLibrary:
     def ordinal_categories(native):
         """No auto-detected ordinal columns for polars.
 
-        polars ``Enum``/``Categorical`` carry no statistical-ordinality flag
-        (``Enum`` is also used for nominal closed category sets, e.g. ARFF), so
-        ordinal columns must be declared explicitly via ``ordinal_categories=``.
+        polars ``Enum`` is an ordered dtype, but it is also polars' only
+        dtype that can carry a declared closed category set, so nominal
+        columns use it as well (e.g. ARFF nominal attributes, which load as
+        unordered ``pandas.Categorical`` on the pandas side). Auto-detecting
+        ``Enum`` as statistically ordinal would therefore make kernel
+        semantics depend on the dataframe library for the same data.
+        Instead, ordinal columns must be declared explicitly via
+        ``ordinal_categories=``.
         """
         return {}
 

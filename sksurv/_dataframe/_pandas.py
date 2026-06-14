@@ -13,10 +13,10 @@
 """Pandas input predicates for the dataframe boundary.
 
 This module decides whether a native object is a pandas frame or series and
-holds the pandas-specific semantics that Narwhals cannot express (notably the
-ordered-categorical flag). Dataframe-library-neutral normalization and
-processing belong in ``_input.py``, ``_categorical_semantics.py``, or
-``_categorical_encoding.py`` after values enter Narwhals.
+holds the pandas-specific input policies (notably which columns count as
+ordinal). Dataframe-library-neutral normalization and processing belong in
+``_input.py``, ``_categorical_semantics.py``, or ``_categorical_encoding.py``
+after values enter Narwhals.
 """
 
 import narwhals.stable.v2 as nw
@@ -55,17 +55,17 @@ class PandasDataFrameLibrary:
         """Ordered-categorical columns declared via pandas' ``ordered=True``.
 
         Returns a mapping of column name to its declared category order for
-        every ordered ``pandas.Categorical`` column. This is the pandas-only
-        signal that Narwhals does not carry; the clinical kernel uses it to
-        auto-detect ordinal columns. Other libraries (e.g. polars) declare
-        ordinal columns explicitly instead and return ``{}``.
+        every ordered ``pandas.Categorical`` column; the clinical kernel uses
+        it to auto-detect ordinal columns. Narwhals maps ordered pandas
+        categoricals to ``nw.Enum`` and unordered ones to ``nw.Categorical``,
+        so on a pandas-backed frame the ``Enum`` dtype itself is the ordered
+        signal. Other libraries (e.g. polars) declare ordinal columns
+        explicitly instead and return ``{}``.
         """
-        from pandas.api.types import CategoricalDtype
-
         ordinal = {}
-        for name, dtype in native.dtypes.items():
-            if isinstance(dtype, CategoricalDtype) and dtype.ordered:
-                ordinal[str(name)] = tuple(dtype.categories.tolist())
+        for name, dtype in nw.from_native(native).schema.items():
+            if isinstance(dtype, nw.Enum):
+                ordinal[str(name)] = tuple(dtype.categories)
         return ordinal
 
 
