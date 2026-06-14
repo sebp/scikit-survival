@@ -50,7 +50,7 @@ jobs:
       - name: Build package
         run: |
           source activate sksurv-test
-          python -m build .
+          python -m build --installer=uv .
           pip install --exists-action=w --pre --no-index --find-links dist/ scikit-survival
           rm -fr dist sksurv
       - name: Run Tests
