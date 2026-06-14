@@ -18,7 +18,7 @@ from sklearn.utils.validation import check_is_fitted, validate_data
 from .._dataframe import (
     ensure_eager_dataframe,
     get_dataframe_library,
-    is_narwhals_dataframe,
+    is_supported_dataframe,
     to_narwhals_dataframe,
 )
 from ._clinical_dataframe import (
@@ -143,6 +143,9 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
     fit_once : bool, optional
         If set to ``True``, fit() does only transform the training data, but not update
         its internal state. You should call prepare() once before calling transform().
+        In this mode, fit() expects the prepared numeric array and rejects a
+        pandas or polars DataFrame with a :class:`TypeError`; call prepare(X)
+        with the DataFrame first.
         If set to ``False``, it behaves like a regular estimator, i.e., you need to
         call fit() before transform().
 
@@ -270,7 +273,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         self : object
             Returns the instance itself.
         """
-        if is_narwhals_dataframe(X):
+        if is_supported_dataframe(X):
             ndim = 2  # supported dataframe inputs are always 2D
         else:
             ndim = getattr(X, "ndim", 2)
@@ -281,7 +284,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         validate_data(self, X, skip_check_array=True)
 
         if self.fit_once:
-            if is_narwhals_dataframe(X):
+            if is_supported_dataframe(X):
                 raise TypeError(
                     "fit_once=True expects a numeric array in fit(); call prepare(X) first, "
                     "then pass the prepared numeric array."
@@ -328,7 +331,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
         validate_data(self, Y, reset=False, skip_check_array=True)
 
-        y_is_dataframe = is_narwhals_dataframe(Y)
+        y_is_dataframe = is_supported_dataframe(Y)
         fit_impl = getattr(self, "_fit_implementation_", None)
         if y_is_dataframe and fit_impl is not None and to_narwhals_dataframe(Y).implementation != fit_impl:
             raise TypeError("fit and transform must use the same dataframe library")

@@ -16,7 +16,7 @@ import pandas as pd
 
 from ._dataframe import (
     ensure_eager_dataframe,
-    is_narwhals_dataframe,
+    is_supported_dataframe,
 )
 from ._dataframe._column_impl import (
     categorical_to_numeric_narwhals,
@@ -74,7 +74,7 @@ def standardize(table, with_std=True):
         The standardized data. The output dataframe library matches the input.
     """
     table = ensure_eager_dataframe(table)
-    if is_narwhals_dataframe(table):
+    if is_supported_dataframe(table):
         return standardize_narwhals_dataframe(table, with_std=with_std)
     return _apply_along_column(table, standardize_column, with_std=with_std)
 

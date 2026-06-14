@@ -102,18 +102,19 @@ def get_x_y(data_frame, attr_labels, pos_label=None, survival=True, competing_ri
 
     Returns
     -------
-    X : pandas.DataFrame or polars.DataFrame, shape = (n_samples, n_columns - len(attr_labels))
+    X : pandas.DataFrame or polars.DataFrame, shape = (n_samples, n_features)
         Data frame containing features. The output dataframe library matches the input.
 
-    y : structured array, or pandas/polars DataFrame, or None
+    y : structured array, Series, DataFrame, or None
         If `survival` is `True`, a structured array of shape ``(n_samples,)`` with
         two fields.
         The first field is a boolean where ``True`` indicates an event and ``False``
         indicates right-censoring. The second field is a float with the time of
         event or time of censoring.
 
-        If `survival` is `False` and `attr_labels` not `None`, a DataFrame in the
-        input dataframe library with columns specified by `attr_labels`.
+        If `survival` is `False` and `attr_labels` is a single column name, a Series
+        in the input dataframe library; if it is a sequence of column names, a
+        DataFrame with those columns.
 
         If `survival` is `False` and `attr_labels` is `None`, `y` is set to `None`.
     """
@@ -219,7 +220,7 @@ def load_arff_files_standardized(
     x_train : pandas.DataFrame or polars.DataFrame, shape = (n_train, n_features)
         Training data.
 
-    y_train : structured array of shape (n_train,), or pandas / polars DataFrame of shape (n_train, len(attr_labels))
+    y_train : structured array, Series, DataFrame, or None
         Dependent variables of training data.
 
         If `survival` is `True`, a structured array with two fields.
@@ -227,15 +228,16 @@ def load_arff_files_standardized(
         indicates right-censoring. The second field is a float with the time of
         event or time of censoring.
 
-        If `survival` is `False` and `attr_labels` not `None`, a DataFrame in the
-        ``output_type`` dataframe library with columns specified by `attr_labels`.
+        If `survival` is `False` and `attr_labels` is a single column name, a Series
+        in the ``output_type`` dataframe library; if it is a sequence of column names,
+        a DataFrame with those columns.
 
         If `survival` is `False` and `attr_labels` is `None`, `y_train` is set to `None`.
 
     x_test : None, or pandas.DataFrame / polars.DataFrame of shape (n_test, n_features)
         Testing data if `path_testing` was provided. Dataframe library matches ``output_type``.
 
-    y_test : None or structured array, shape = (n_test,)
+    y_test : structured array, Series, DataFrame, or None
         Dependent variables of testing data if `path_testing` was provided.
 
         If `survival` is `True`, a structured array with two fields.
@@ -243,8 +245,9 @@ def load_arff_files_standardized(
         indicates right-censoring. The second field is a float with the time of
         event or time of censoring.
 
-        If `survival` is `False` and `attr_labels` not `None`, a DataFrame in the
-        ``output_type`` dataframe library with columns specified by `attr_labels`.
+        If `survival` is `False` and `attr_labels` is a single column name, a Series
+        in the ``output_type`` dataframe library; if it is a sequence of column names,
+        a DataFrame with those columns.
 
         If `survival` is `False` and `attr_labels` is `None`, `y_test` is set to `None`.
     """

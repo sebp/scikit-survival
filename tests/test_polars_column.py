@@ -206,6 +206,28 @@ def test_standardize_polars(in_data, expected, expected_error):
         pt.assert_frame_equal(result, expected, check_exact=False, abs_tol=1e-6)
 
 
+def test_standardize_all_missing_column_matches_pandas_via_numpy():
+    import pandas as pd
+
+    pd_out = _sksurv_column.standardize(pd.DataFrame({"a": [np.nan] * 3, "b": [1.0, 2.0, 3.0]}))
+    # The all-missing column must be a float dtype, not Null, or standardize
+    # would skip it as non-numeric.
+    pl_out = _sksurv_column.standardize(
+        pl.DataFrame({"a": pl.Series([None] * 3, dtype=pl.Float64), "b": [1.0, 2.0, 3.0]})
+    )
+
+    # The dataframe-level representation differs (pandas NaN vs polars null) but
+    # both normalize to NaN at the numpy boundary that feeds the estimators.
+    np.testing.assert_allclose(pd_out.to_numpy(), pl_out.to_numpy(), equal_nan=True)
+
+
+def test_standardize_all_missing_polars_column_stays_null():
+    # Pin the polars dataframe-level behavior so a future change to NaN is noticed.
+    out = _sksurv_column.standardize(pl.DataFrame({"a": pl.Series([None] * 3, dtype=pl.Float64), "b": [1.0, 2.0, 3.0]}))
+    assert out["a"].dtype == pl.Float64
+    assert out["a"].null_count() == 3
+
+
 class EncodeCategoricalPolarsCases(FixtureParameterFactory):
     def _make_randn(self, shape):
         return np.random.default_rng(0).standard_normal(shape)

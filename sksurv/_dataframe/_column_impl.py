@@ -43,11 +43,13 @@ def standardize_narwhals_dataframe(table, with_std):
         if not dtype.is_numeric():
             continue
         col = nw.col(col_name)
-        # Mean/std must skip missing values, but polars propagates float NaN
-        # through aggregations (only null is skipped), so compute the
-        # statistics on a NaN-to-null normalized expression. The
-        # transformation itself uses the original column, so each row keeps
-        # its missing-value representation (null stays null, NaN stays NaN).
+        # Mean/std must skip missing values, but polars only skips null in
+        # aggregations and propagates float NaN, so compute the statistics on a
+        # NaN-to-null normalized expression. The subtraction uses the original
+        # column, so a present row keeps its standardized value and a row that is
+        # missing stays missing. A fully-missing column standardizes to null on
+        # polars and NaN on pandas; both become NaN via to_numpy(), which is how
+        # the data reaches the estimators.
         stats_col = col.fill_nan(None) if isinstance(dtype, (nw.Float32, nw.Float64)) else col
         standardized = col - stats_col.mean()
         if with_std:

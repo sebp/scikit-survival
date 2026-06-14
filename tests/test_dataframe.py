@@ -14,8 +14,6 @@ from sksurv._dataframe import (
     get_dataframe_library,
     get_semantic_categories,
     infer_column_semantics,
-    is_narwhals_dataframe,
-    is_narwhals_dataframe_or_series,
     is_supported_dataframe,
     is_supported_dataframe_or_series,
     polars_inputs,
@@ -50,20 +48,6 @@ def test_external_dataframe_library_lookup():
     assert series_library.name == "polars"
     assert series_library.series_display_name == "polars.Series"
     assert get_dataframe_library(frame, allow_series=True) is frame_library
-
-
-def test_narwhals_predicates_route_backend_inputs():
-    frame = pl.DataFrame({"x": [1, 2]})
-
-    assert is_narwhals_dataframe(frame)
-    assert not is_narwhals_dataframe(frame.lazy())
-    assert not is_narwhals_dataframe(frame["x"])
-    assert not is_narwhals_dataframe([[1], [2]])
-
-    assert is_narwhals_dataframe_or_series(frame)
-    assert not is_narwhals_dataframe_or_series(frame.lazy())
-    assert is_narwhals_dataframe_or_series(frame["x"])
-    assert not is_narwhals_dataframe_or_series([[1], [2]])
 
 
 def test_ensure_eager_dataframe_rejects_lazyframe_and_passes_others_through():

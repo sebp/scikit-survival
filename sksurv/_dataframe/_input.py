@@ -25,8 +25,6 @@ __all__ = [
     "is_supported_dataframe_or_series",
     "is_supported_series",
     "unsupported_dataframe_error",
-    "is_narwhals_dataframe_or_series",
-    "is_narwhals_dataframe",
 ]
 
 DATAFRAME_LIBRARIES = (_pandas.LIBRARY, _polars.LIBRARY)
@@ -77,16 +75,6 @@ def is_non_numeric_cast_error(exc):
     failure (reraise).
     """
     return any(lib.is_non_numeric_cast_error(exc) for lib in DATAFRAME_LIBRARIES)
-
-
-def is_narwhals_dataframe(obj):
-    # Extend this predicate, not individual call sites, when another
-    # Narwhals-backed dataframe library is supported.
-    return get_dataframe_library(obj) is not None
-
-
-def is_narwhals_dataframe_or_series(obj):
-    return get_dataframe_library(obj, allow_series=True) is not None
 
 
 _LAZYFRAME_NOT_SUPPORTED_MSG = "polars.LazyFrame is not supported; call .collect() before passing to scikit-survival."
