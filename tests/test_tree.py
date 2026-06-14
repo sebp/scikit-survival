@@ -562,7 +562,7 @@ def test_fit_int_time(breast_cancer):
     assert_array_almost_equal(tree_f.tree_.threshold, tree_i.tree_.threshold)
 
 
-@pytest.mark.parametrize("dtype,missing", product(supported_float_dtypes(), [False, True]))
+@pytest.mark.parametrize("dtype,missing", list(product(supported_float_dtypes(), [False, True])))
 def test_fit_dtype(toy_data, dtype, missing):
     X, y = toy_data
     if missing:
