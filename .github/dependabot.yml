@@ -11,4 +11,10 @@ updates:
     allow:
       - dependency-name: "scikit-learn"
     versioning-strategy: increase-if-necessary
+  - package-ecosystem: "pre-commit"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "pre-commit"
 
