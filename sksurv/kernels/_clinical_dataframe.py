@@ -93,7 +93,7 @@ def _validate_ordinal_categories_against_schema(ordinal_categories, schema):
 
 
 def _classify_kernel_column(col_name, dtype, col, ordinal_categories):
-    if dtype.is_numeric() or isinstance(dtype, nw.Boolean):
+    if dtype.is_numeric() or dtype.is_boolean():
         return "continuous", col.to_numpy().astype(np.float64)
     if not is_categorical_or_string_dtype(dtype):
         raise TypeError(f"unsupported dtype: {dtype!r}")
@@ -192,7 +192,7 @@ def _column_to_kernel_codes(col, semantics):
 
 def _encode_dataframe_kernel_column(col_name, col, ordinal_categories):
     dtype = col.dtype
-    if dtype.is_numeric() or isinstance(dtype, nw.Boolean):
+    if dtype.is_numeric() or dtype.is_boolean():
         arr = col.to_numpy().astype(np.float64)
         return _make_numeric_kernel_column(arr)
     if not is_categorical_or_string_dtype(dtype):

@@ -72,7 +72,7 @@ def infer_column_semantics(column):
     s = nw.from_native(column, series_only=True)
     dt = s.dtype
 
-    if dt.is_numeric() or isinstance(dt, nw.Boolean):
+    if dt.is_numeric() or dt.is_boolean():
         return ColumnSemantics(name=s.name, kind="numeric", categories=None, ordered=False)
 
     if is_categorical_or_string_dtype(dt):

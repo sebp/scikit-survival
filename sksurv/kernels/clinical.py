@@ -305,7 +305,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
             col = nw_Y.get_column(col_name)
             kind, semantics = self._fitted_categorical_semantics[i]
             col_dtype = col.dtype
-            if col_dtype.is_numeric() or isinstance(col_dtype, nw.Boolean) or kind == "numeric":
+            if col_dtype.is_numeric() or col_dtype.is_boolean() or kind == "numeric":
                 out[:, i] = col.to_numpy().astype(np.float64)
             else:
                 out[:, i] = _column_to_kernel_codes(col, semantics)

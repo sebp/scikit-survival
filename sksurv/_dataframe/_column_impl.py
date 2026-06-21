@@ -50,7 +50,7 @@ def standardize_narwhals_dataframe(table, with_std):
         # missing stays missing. A fully-missing column standardizes to null on
         # polars and NaN on pandas; both become NaN via to_numpy(), which is how
         # the data reaches the estimators.
-        stats_col = col.fill_nan(None) if isinstance(dtype, (nw.Float32, nw.Float64)) else col
+        stats_col = col.fill_nan(None) if dtype.is_float() else col
         standardized = col - stats_col.mean()
         if with_std:
             standardized = standardized / stats_col.std(ddof=1)
@@ -101,7 +101,7 @@ def encode_categorical_narwhals(table, columns=None, allow_drop=True):
 
 def _prepare_column_for_one_hot(col):
     dtype = col.dtype
-    if isinstance(dtype, nw.Boolean):
+    if dtype.is_boolean():
         # Match pandas get_dummies(drop_first=True): False is the dropped baseline.
         present = set(col.drop_nulls().unique().to_list())
         observed = [value for value in (False, True) if value in present]
@@ -143,7 +143,7 @@ def categorical_to_numeric_narwhals(table):
     if is_supported_series(table):
         nw_series = nw.from_native(table, series_only=True)
         dt = nw_series.dtype
-        if dt.is_numeric() and not isinstance(dt, nw.Boolean):
+        if dt.is_numeric() and not dt.is_boolean():
             return nw_series.to_native()
         original_index = capture_pandas_index(nw_series)
         codes = _encode_series_as_numeric_codes(nw_series)
@@ -160,7 +160,7 @@ def categorical_to_numeric_narwhals(table):
     output_frames = []
     for col_name in nw_table.columns:
         col = nw_table.get_column(col_name)
-        if is_categorical_or_string_dtype(col.dtype) or isinstance(col.dtype, nw.Boolean):
+        if is_categorical_or_string_dtype(col.dtype) or col.dtype.is_boolean():
             codes = _encode_series_as_numeric_codes(col)
             output_frames.append(nw.new_series(col_name, codes, backend=implementation).to_frame())
         else:
@@ -187,7 +187,7 @@ def _int_codes_to_numpy(int_series, null_mask):
 
 def _encode_series_as_numeric_codes(nw_series):
     dt = nw_series.dtype
-    if isinstance(dt, nw.Boolean):
+    if dt.is_boolean():
         return nw_series.cast(nw.Int64).to_numpy()
     null_mask = nw_series.is_null().to_numpy()
     if isinstance(dt, (nw.String, nw.Object)) and not np.any(null_mask):
