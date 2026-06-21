@@ -9,6 +9,7 @@ import pytest
 import sksurv.datasets as sdata
 from sksurv.preprocessing import OneHotEncoder
 from sksurv.svm import NaiveSurvivalSVM
+from sksurv.testing import all_survival_estimators
 from sksurv.util import Surv
 
 
@@ -70,43 +71,51 @@ class TestNaiveSurvivalSVMPolars:
 
 
 def _make_survival_estimator_constructors():
-    from sksurv.ensemble import (
-        ComponentwiseGradientBoostingSurvivalAnalysis,
-        ExtraSurvivalTrees,
-        GradientBoostingSurvivalAnalysis,
-        RandomSurvivalForest,
-    )
-    from sksurv.linear_model import (
-        CoxnetSurvivalAnalysis,
-        CoxPHSurvivalAnalysis,
-        IPCRidge,
-    )
-    from sksurv.svm import (
-        FastKernelSurvivalSVM,
-        FastSurvivalSVM,
-        HingeLossSurvivalSVM,
-        MinlipSurvivalAnalysis,
-    )
-    from sksurv.tree import SurvivalTree
+    def _make_constructor(estimator_cls):
+        def _ctor():
+            estimator = estimator_cls()
+            params = estimator.get_params()
+
+            if "random_state" in params:
+                estimator.set_params(random_state=0)
+            if "n_estimators" in params:
+                estimator.set_params(n_estimators=5)
+
+            name = estimator_cls.__name__
+            if name == "CoxnetSurvivalAnalysis":
+                estimator.set_params(n_alphas=5)
+            elif name == "IPCRidge":
+                estimator.set_params(alpha=1.0)
+            elif name == "NaiveSurvivalSVM":
+                estimator.set_params(max_iter=200)
+            elif name in {"FastSurvivalSVM", "FastKernelSurvivalSVM"}:
+                estimator.set_params(max_iter=50)
+            elif name in {"MinlipSurvivalAnalysis", "HingeLossSurvivalSVM"}:
+                estimator.set_params(solver="ecos")
+
+            return estimator
+
+        return _ctor
 
     return [
-        ("CoxPHSurvivalAnalysis", CoxPHSurvivalAnalysis),
-        ("IPCRidge", lambda: IPCRidge(alpha=1.0)),
-        ("CoxnetSurvivalAnalysis", lambda: CoxnetSurvivalAnalysis(n_alphas=5)),
-        ("RandomSurvivalForest", lambda: RandomSurvivalForest(n_estimators=5, random_state=0)),
-        ("ExtraSurvivalTrees", lambda: ExtraSurvivalTrees(n_estimators=5, random_state=0)),
-        ("GradientBoostingSurvivalAnalysis", lambda: GradientBoostingSurvivalAnalysis(n_estimators=5, random_state=0)),
-        (
-            "ComponentwiseGradientBoostingSurvivalAnalysis",
-            lambda: ComponentwiseGradientBoostingSurvivalAnalysis(n_estimators=5, random_state=0),
-        ),
-        ("SurvivalTree", lambda: SurvivalTree(random_state=0)),
-        ("NaiveSurvivalSVM", lambda: NaiveSurvivalSVM(random_state=0, max_iter=200)),
-        ("FastSurvivalSVM", lambda: FastSurvivalSVM(random_state=0, max_iter=50)),
-        ("FastKernelSurvivalSVM", lambda: FastKernelSurvivalSVM(random_state=0, max_iter=50)),
-        ("MinlipSurvivalAnalysis", lambda: MinlipSurvivalAnalysis(solver="ecos")),
-        ("HingeLossSurvivalSVM", lambda: HingeLossSurvivalSVM(solver="ecos")),
+        (estimator_cls.__name__, _make_constructor(estimator_cls))
+        for estimator_cls in sorted(all_survival_estimators(), key=lambda cls: cls.__name__)
     ]
+
+
+_SCORE_ESTIMATOR_NAMES = {
+    "CoxnetSurvivalAnalysis",
+    "ExtraSurvivalTrees",
+    "FastKernelSurvivalSVM",
+    "FastSurvivalSVM",
+    "HingeLossSurvivalSVM",
+    "IPCRidge",
+    "MinlipSurvivalAnalysis",
+}
+
+
+def _make_score_estimator_constructors():
+    return [(name, ctor) for name, ctor in _make_survival_estimator_constructors() if name in _SCORE_ESTIMATOR_NAMES]
 
 
 @pytest.fixture(scope="module")
@@ -125,17 +134,13 @@ class TestSurvivalEstimatorPolarsParity:
     @pytest.mark.parametrize("name,ctor", ESTIMATORS, ids=[t[0] for t in ESTIMATORS])
     def test_estimator_polars_matches_pandas(name, ctor, whas500_encoded_small):
         X_pd, X_pl, y = whas500_encoded_small
-        import warnings
+        est_pd = ctor()
+        est_pd.fit(X_pd, y)
+        pred_pd = np.asarray(est_pd.predict(X_pd), dtype=float)
 
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            est_pd = ctor()
-            est_pd.fit(X_pd, y)
-            pred_pd = np.asarray(est_pd.predict(X_pd), dtype=float)
-
-            est_pl = ctor()
-            est_pl.fit(X_pl, y)
-            pred_pl = np.asarray(est_pl.predict(X_pl), dtype=float)
+        est_pl = ctor()
+        est_pl.fit(X_pl, y)
+        pred_pl = np.asarray(est_pl.predict(X_pl), dtype=float)
 
         # Iterative solvers (e.g. ecos used by Minlip / HingeLossSurvivalSVM)
         # can reach the same solution along slightly different paths when the
@@ -160,14 +165,10 @@ class TestSklearnPipelinePolars:
         from sksurv.linear_model import CoxPHSurvivalAnalysis
 
         X_pd, X_pl, y = whas500_pl_pd_small
-        import warnings
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            pipe_pd = Pipeline([("onehot", OneHotEncoder()), ("model", CoxPHSurvivalAnalysis())]).fit(X_pd, y)
-            pipe_pl = Pipeline([("onehot", OneHotEncoder()), ("model", CoxPHSurvivalAnalysis())]).fit(X_pl, y)
-            pred_pd = pipe_pd.predict(X_pd)
-            pred_pl = pipe_pl.predict(X_pl)
+        pipe_pd = Pipeline([("onehot", OneHotEncoder()), ("model", CoxPHSurvivalAnalysis())]).fit(X_pd, y)
+        pipe_pl = Pipeline([("onehot", OneHotEncoder()), ("model", CoxPHSurvivalAnalysis())]).fit(X_pl, y)
+        pred_pd = pipe_pd.predict(X_pd)
+        pred_pl = pipe_pl.predict(X_pl)
         np.testing.assert_allclose(pred_pd, pred_pl, rtol=1e-7, atol=0)
 
     @staticmethod
@@ -178,11 +179,7 @@ class TestSklearnPipelinePolars:
 
         _X_pd, X_pl, y = whas500_pl_pd_small
         X_pl_enc = OneHotEncoder().fit_transform(X_pl)
-        import warnings
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            scores = cross_val_score(CoxPHSurvivalAnalysis(), X_pl_enc, y, cv=KFold(3))
+        scores = cross_val_score(CoxPHSurvivalAnalysis(), X_pl_enc, y, cv=KFold(3))
         assert scores.shape == (3,)
 
 
@@ -197,28 +194,24 @@ class TestMetaEstimatorsPolars:
         X_pd_enc = OneHotEncoder().fit_transform(X_pd)
         X_pl_enc = OneHotEncoder().fit_transform(X_pl)
 
-        import warnings
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            s_pd = Stacking(
-                meta_estimator=CoxPHSurvivalAnalysis(),
-                base_estimators=[
-                    ("cox", CoxPHSurvivalAnalysis()),
-                    ("rsf", RandomSurvivalForest(n_estimators=5, random_state=0)),
-                ],
-                probabilities=False,
-            ).fit(X_pd_enc, y)
-            s_pl = Stacking(
-                meta_estimator=CoxPHSurvivalAnalysis(),
-                base_estimators=[
-                    ("cox", CoxPHSurvivalAnalysis()),
-                    ("rsf", RandomSurvivalForest(n_estimators=5, random_state=0)),
-                ],
-                probabilities=False,
-            ).fit(X_pl_enc, y)
-            pred_pd = s_pd.predict(X_pd_enc)
-            pred_pl = s_pl.predict(X_pl_enc)
+        s_pd = Stacking(
+            meta_estimator=CoxPHSurvivalAnalysis(),
+            base_estimators=[
+                ("cox", CoxPHSurvivalAnalysis()),
+                ("rsf", RandomSurvivalForest(n_estimators=5, random_state=0)),
+            ],
+            probabilities=False,
+        ).fit(X_pd_enc, y)
+        s_pl = Stacking(
+            meta_estimator=CoxPHSurvivalAnalysis(),
+            base_estimators=[
+                ("cox", CoxPHSurvivalAnalysis()),
+                ("rsf", RandomSurvivalForest(n_estimators=5, random_state=0)),
+            ],
+            probabilities=False,
+        ).fit(X_pl_enc, y)
+        pred_pd = s_pd.predict(X_pd_enc)
+        pred_pl = s_pl.predict(X_pl_enc)
         np.testing.assert_allclose(pred_pd, pred_pl, rtol=1e-7, atol=0)
 
     @staticmethod
@@ -236,28 +229,24 @@ class TestMetaEstimatorsPolars:
         def cindex(est, X, y):
             return concordance_index_censored(y["fstat"], y["lenfol"], est.predict(X))[0]
 
-        import warnings
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            es_pd = EnsembleSelection(
-                base_estimators=[
-                    ("cox1", CoxPHSurvivalAnalysis()),
-                    ("cox2", CoxPHSurvivalAnalysis(alpha=0.1)),
-                ],
-                cv=KFold(3),
-                scorer=cindex,
-            ).fit(X_pd_enc, y)
-            es_pl = EnsembleSelection(
-                base_estimators=[
-                    ("cox1", CoxPHSurvivalAnalysis()),
-                    ("cox2", CoxPHSurvivalAnalysis(alpha=0.1)),
-                ],
-                cv=KFold(3),
-                scorer=cindex,
-            ).fit(X_pl_enc, y)
-            pred_pd = es_pd.predict(X_pd_enc)
-            pred_pl = es_pl.predict(X_pl_enc)
+        es_pd = EnsembleSelection(
+            base_estimators=[
+                ("cox1", CoxPHSurvivalAnalysis()),
+                ("cox2", CoxPHSurvivalAnalysis(alpha=0.1)),
+            ],
+            cv=KFold(3),
+            scorer=cindex,
+        ).fit(X_pd_enc, y)
+        es_pl = EnsembleSelection(
+            base_estimators=[
+                ("cox1", CoxPHSurvivalAnalysis()),
+                ("cox2", CoxPHSurvivalAnalysis(alpha=0.1)),
+            ],
+            cv=KFold(3),
+            scorer=cindex,
+        ).fit(X_pl_enc, y)
+        pred_pd = es_pd.predict(X_pd_enc)
+        pred_pl = es_pl.predict(X_pl_enc)
         np.testing.assert_allclose(pred_pd, pred_pl, rtol=1e-7, atol=0)
 
 
@@ -270,12 +259,9 @@ class TestNumpyOnlyAPIsPolarsPassthrough:
         X_pd, X_pl, y = whas500_pl_pd_small
         X_pd_enc = OneHotEncoder().fit_transform(X_pd)
         X_pl_enc = OneHotEncoder().fit_transform(X_pl)
-        import warnings
 
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            risk_pd = CoxPHSurvivalAnalysis().fit(X_pd_enc, y).predict(X_pd_enc)
-            risk_pl = CoxPHSurvivalAnalysis().fit(X_pl_enc, y).predict(X_pl_enc)
+        risk_pd = CoxPHSurvivalAnalysis().fit(X_pd_enc, y).predict(X_pd_enc)
+        risk_pl = CoxPHSurvivalAnalysis().fit(X_pl_enc, y).predict(X_pl_enc)
         c_pd = concordance_index_censored(y["fstat"], y["lenfol"], risk_pd)
         c_pl = concordance_index_censored(y["fstat"], y["lenfol"], risk_pl)
         assert c_pd == c_pl
@@ -399,40 +385,15 @@ class TestEstimatorPredictionApiPolarsParity:
 
 class TestAdditionalEstimatorPredictionApis:
     @staticmethod
-    def _ctors_with_score():
-        from sksurv.ensemble import ExtraSurvivalTrees
-        from sksurv.linear_model import CoxnetSurvivalAnalysis, IPCRidge
-        from sksurv.svm import (
-            FastKernelSurvivalSVM,
-            FastSurvivalSVM,
-            HingeLossSurvivalSVM,
-            MinlipSurvivalAnalysis,
-        )
-
-        return [
-            ("IPCRidge", lambda: IPCRidge(alpha=1.0)),
-            ("CoxnetSurvivalAnalysis", lambda: CoxnetSurvivalAnalysis(n_alphas=5)),
-            ("FastSurvivalSVM", lambda: FastSurvivalSVM(random_state=0, max_iter=50)),
-            ("FastKernelSurvivalSVM", lambda: FastKernelSurvivalSVM(random_state=0, max_iter=50)),
-            ("MinlipSurvivalAnalysis", lambda: MinlipSurvivalAnalysis(solver="ecos")),
-            ("HingeLossSurvivalSVM", lambda: HingeLossSurvivalSVM(solver="ecos")),
-            ("ExtraSurvivalTrees", lambda: ExtraSurvivalTrees(n_estimators=5, random_state=0)),
-        ]
-
-    @staticmethod
     @pytest.mark.parametrize(
         "name,ctor",
-        _ctors_with_score(),
-        ids=[t[0] for t in _ctors_with_score()],
+        _make_score_estimator_constructors(),
+        ids=[t[0] for t in _make_score_estimator_constructors()],
     )
     def test_score_polars_matches_pandas(name, ctor, whas500_encoded_small):
-        import warnings
-
         X_pd, X_pl, y = whas500_encoded_small
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            s_pd = ctor().fit(X_pd, y).score(X_pd, y)
-            s_pl = ctor().fit(X_pl, y).score(X_pl, y)
+        s_pd = ctor().fit(X_pd, y).score(X_pd, y)
+        s_pl = ctor().fit(X_pl, y).score(X_pl, y)
         assert s_pd == s_pl, f"{name}: pandas={s_pd}, polars={s_pl}"
 
     @staticmethod
@@ -486,29 +447,21 @@ class TestSurvivalEstimatorLazyFrame:
     @staticmethod
     @pytest.mark.parametrize("name,ctor", ESTIMATORS, ids=[t[0] for t in ESTIMATORS])
     def test_estimator_lazyframe_rejected_polars(name, ctor, whas500_encoded_small):
-        import warnings
-
         _X_pd, X_pl, y = whas500_encoded_small
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            # fit must reject a LazyFrame
-            with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
-                ctor().fit(X_pl.lazy(), y)
+        # fit must reject a LazyFrame
+        with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
+            ctor().fit(X_pl.lazy(), y)
 
-            # predict must also reject a LazyFrame (fit on eager first)
-            est = ctor().fit(X_pl, y)
-            with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
-                est.predict(X_pl.lazy())
+        # predict must also reject a LazyFrame (fit on eager first)
+        est = ctor().fit(X_pl, y)
+        with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
+            est.predict(X_pl.lazy())
 
     @staticmethod
     def test_gb_staged_predict_lazyframe_rejected(whas500_encoded_small):
-        import warnings
-
         from sksurv.ensemble import GradientBoostingSurvivalAnalysis
 
         _X_pd, X_pl, y = whas500_encoded_small
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            gb = GradientBoostingSurvivalAnalysis(n_estimators=3, random_state=0).fit(X_pl, y)
-            with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
-                list(gb.staged_predict(X_pl.lazy()))
+        gb = GradientBoostingSurvivalAnalysis(n_estimators=3, random_state=0).fit(X_pl, y)
+        with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
+            list(gb.staged_predict(X_pl.lazy()))

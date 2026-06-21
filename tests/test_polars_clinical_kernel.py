@@ -212,7 +212,7 @@ class TestClinicalKernelTransformPolars:
 
     @staticmethod
     def test_lazyframe_rejected():
-        """``ClinicalKernelTransform.fit`` must reject a polars LazyFrame."""
+        """``ClinicalKernelTransform`` must reject a polars LazyFrame."""
         df = pl.DataFrame(
             {
                 "age": [40.0, 50.0, 60.0, 70.0],
@@ -221,6 +221,8 @@ class TestClinicalKernelTransformPolars:
         )
         with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
             ClinicalKernelTransform().fit(df.lazy())
+        with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
+            ClinicalKernelTransform(fit_once=True).prepare(df.lazy())
 
 
 class TestOrdinalColumnsOptIn:

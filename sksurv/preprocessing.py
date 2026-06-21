@@ -20,7 +20,6 @@ from ._dataframe import (
     expand_dataframe_with_one_hot_columns,
     infer_column_semantics,
     is_categorical_or_string_dtype,
-    to_narwhals_dataframe,
 )
 from .column import encode_categorical
 
@@ -143,7 +142,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         X = ensure_eager_dataframe(X)
         validate_data(self, X, skip_check_array=True)
 
-        self._fit_implementation_ = to_narwhals_dataframe(X).implementation
+        self._fit_implementation_ = nw.from_native(X).implementation
         return self._fit_transform_dataframe(X)
 
     def transform(self, X):
@@ -161,18 +160,18 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         """
         check_is_fitted(self, "encoded_columns_")
         X = ensure_eager_dataframe(X)
-        nw_X = to_narwhals_dataframe(X)
+        nw_X = nw.from_native(X)
         check_columns_exist(pd.Index(nw_X.columns), pd.Index(self.feature_names_in_))
         validation_X = nw_X.select(list(self.feature_names_in_)).to_native()
         validate_data(self, validation_X, reset=False, skip_check_array=True)
 
-        if to_narwhals_dataframe(X).implementation != self._fit_implementation_:
+        if nw.from_native(X).implementation != self._fit_implementation_:
             raise TypeError("fit and transform must use the same dataframe library")
 
         return self._transform_dataframe(X)
 
     def _fit_transform_dataframe(self, X):
-        nw_X = to_narwhals_dataframe(X)
+        nw_X = nw.from_native(X)
         implementation = nw_X.implementation
 
         columns_to_encode_list = [name for name, dtype in nw_X.schema.items() if is_categorical_or_string_dtype(dtype)]
@@ -198,7 +197,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         return x_dummy
 
     def _transform_dataframe(self, X):
-        nw_X = to_narwhals_dataframe(X)
+        nw_X = nw.from_native(X)
         implementation = nw_X.implementation
 
         check_columns_exist(pd.Index(nw_X.columns), self.feature_names_)

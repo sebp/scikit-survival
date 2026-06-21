@@ -8,7 +8,6 @@ from pandas.api.types import CategoricalDtype
 from .._dataframe import (
     ensure_eager_dataframe,
     is_supported_dataframe,
-    to_narwhals_dataframe,
     unsupported_dataframe_error,
 )
 from ..column import categorical_to_numeric, standardize
@@ -38,7 +37,7 @@ def _get_x_y_survival(dataset, col_event, col_time, val_outcome, competing_risks
     if col_event is None or col_time is None:
         return dataset, None
 
-    nw_data = to_narwhals_dataframe(dataset)
+    nw_data = nw.from_native(dataset)
 
     event_type = np.int64 if competing_risks else bool
     n_samples = nw_data.shape[0]
@@ -59,7 +58,7 @@ def _get_x_y_other(dataset, col_label):
     if col_label is None:
         return dataset, None
 
-    nw_data = to_narwhals_dataframe(dataset)
+    nw_data = nw.from_native(dataset)
 
     if isinstance(col_label, str):
         # A single label name yields a Series in the input dataframe library;
@@ -151,18 +150,13 @@ def _loadarff_with_index(filename, output_type="pandas"):
     return dataset
 
 
-def _validate_output_type(output_type):
-    if output_type not in ("pandas", "polars"):
-        raise ValueError(f"output_type must be 'pandas' or 'polars', got {output_type!r}")
-
-
 def _concat_rows(frames):
     frames = list(frames)
     if not frames:
         raise ValueError("No objects to concatenate")
     if nw.dependencies.is_pandas_dataframe(frames[0]):
         return pd.concat(frames, axis=0)
-    return nw.concat([to_narwhals_dataframe(frame) for frame in frames], how="vertical").to_native()
+    return nw.concat([nw.from_native(frame) for frame in frames], how="vertical").to_native()
 
 
 def load_arff_files_standardized(
@@ -251,7 +245,6 @@ def load_arff_files_standardized(
 
         If `survival` is `False` and `attr_labels` is `None`, `y_test` is set to `None`.
     """
-    _validate_output_type(output_type)
     dataset = _loadarff_with_index(path_training, output_type=output_type)
 
     x_train, y_train = get_x_y(dataset, attr_labels, pos_label, survival)
@@ -340,7 +333,6 @@ def load_whas500(*, output_type="pandas"):
         "Applied Survival Analysis: Regression Modeling of Time to Event Data."
         John Wiley & Sons, Inc. (2008)
     """
-    _validate_output_type(output_type)
     fn = _get_data_path("whas500.arff")
     return get_x_y(loadarff(fn, output_type=output_type), attr_labels=["fstat", "lenfol"], pos_label="1")
 
@@ -378,7 +370,6 @@ def load_gbsg2(*, output_type="pandas"):
         in node-positive breast cancer patients."
         Journal of Clinical Oncology 12, 2086–2093. (1994)
     """
-    _validate_output_type(output_type)
     fn = _get_data_path("GBSG2.arff")
     return get_x_y(loadarff(fn, output_type=output_type), attr_labels=["cens", "time"], pos_label="1")
 
@@ -413,7 +404,6 @@ def load_veterans_lung_cancer(*, output_type="pandas"):
     .. [1] Kalbfleisch, J.D., Prentice, R.L.:
         "The Statistical Analysis of Failure Time Data." John Wiley & Sons, Inc. (2002)
     """
-    _validate_output_type(output_type)
     fn = _get_data_path("veteran.arff")
     return get_x_y(
         loadarff(fn, output_type=output_type),
@@ -461,7 +451,6 @@ def load_aids(endpoint="aids", *, output_type="pandas"):
         "Applied Survival Analysis: Regression Modeling of Time to Event Data."
         John Wiley & Sons, Inc. (2008)
     """
-    _validate_output_type(output_type)
     labels_aids = ["censor", "time"]
     labels_death = ["censor_d", "time_d"]
     if endpoint == "aids":
@@ -512,7 +501,6 @@ def load_breast_cancer(*, output_type="pandas"):
         Patients in the TRANSBIG Multicenter Independent Validation Series."
         Clin. Cancer Res. 13(11), 3207–14 (2007)
     """
-    _validate_output_type(output_type)
     fn = _get_data_path("breast_cancer_GSE7390-metastasis.arff")
     return get_x_y(
         loadarff(fn, output_type=output_type),
@@ -566,7 +554,6 @@ def load_flchain(*, output_type="pandas"):
            Use of nonclonal serum immunoglobulin free light chains to predict overall survival in
            the general population, Mayo Clinic Proceedings 87:512-523. (2012)
     """
-    _validate_output_type(output_type)
     fn = _get_data_path("flchain.arff")
     return get_x_y(
         loadarff(fn, output_type=output_type),
@@ -620,7 +607,6 @@ def load_bmt(*, output_type="pandas"):
 
     .. [2] https://luca-scr.github.io/R/bmt.csv
     """
-    _validate_output_type(output_type)
     full_path = _get_data_path("bmt.arff")
     data = loadarff(full_path, output_type=output_type)
     data = nw.from_native(data).with_columns(nw.col("ftime").cast(nw.Int64)).to_native()
@@ -721,7 +707,6 @@ def load_cgvhd(*, output_type="pandas"):
 
     .. [2] Melania Pintilie: "Competing Risks: A Practical Perspective". John Wiley & Sons, 2006
     """
-    _validate_output_type(output_type)
     full_path = _get_data_path("cgvhd.arff")
     data = loadarff(full_path, output_type=output_type)
     nw_data = nw.from_native(data)

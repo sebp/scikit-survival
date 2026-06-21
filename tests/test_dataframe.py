@@ -1,5 +1,6 @@
 """Tests for the internal dataframe boundary helpers."""
 
+import narwhals.stable.v2 as nw
 import numpy as np
 import pandas as pd
 import polars as pl
@@ -17,7 +18,6 @@ from sksurv._dataframe import (
     is_supported_dataframe,
     is_supported_dataframe_or_series,
     polars_inputs,
-    to_narwhals_dataframe,
     unsupported_dataframe_error,
 )
 
@@ -61,18 +61,6 @@ def test_ensure_eager_dataframe_rejects_lazyframe_and_passes_others_through():
     assert ensure_eager_dataframe(series) is series
     arr = np.arange(3)
     assert ensure_eager_dataframe(arr) is arr
-
-
-def test_to_narwhals_dataframe_returns_eager_dataframe_wrapper():
-    frame = pl.DataFrame({"x": [1, 2]})
-
-    nw_frame = to_narwhals_dataframe(frame)
-    assert nw_frame.columns == ["x"]
-    assert nw_frame.shape == (2, 1)
-    assert isinstance(nw_frame.to_native(), pl.DataFrame)
-
-    with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
-        to_narwhals_dataframe(frame.lazy())
 
 
 def test_supported_input_predicates_are_explicit_to_sksurv():
@@ -124,7 +112,7 @@ def test_get_one_hot_column_names_without_dropping_first_category():
 
 
 def test_expand_dataframe_with_one_hot_columns_empty_frame_policy():
-    nw_frame = to_narwhals_dataframe(pl.DataFrame())
+    nw_frame = nw.from_native(pl.DataFrame())
     result = expand_dataframe_with_one_hot_columns(
         nw_frame,
         columns_to_encode={},
@@ -136,7 +124,7 @@ def test_expand_dataframe_with_one_hot_columns_empty_frame_policy():
 
 
 def test_expand_dataframe_with_one_hot_columns_empty_policy_errors():
-    nw_frame = to_narwhals_dataframe(pl.DataFrame())
+    nw_frame = nw.from_native(pl.DataFrame())
 
     with pytest.raises(ValueError, match="No objects to concatenate"):
         expand_dataframe_with_one_hot_columns(
@@ -159,7 +147,7 @@ def test_expand_dataframe_with_one_hot_columns_empty_policy_errors():
 
 def test_expand_dataframe_with_one_hot_columns_preserves_single_category_when_requested():
     df = pl.DataFrame({"grade": pl.Series(["A", "A"], dtype=pl.Enum(["A"]))})
-    nw_frame = to_narwhals_dataframe(df)
+    nw_frame = nw.from_native(df)
     col = nw_frame.get_column("grade")
     semantics = infer_column_semantics(col)
 

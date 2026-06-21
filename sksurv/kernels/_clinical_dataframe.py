@@ -29,7 +29,6 @@ from .._dataframe import (
     get_dataframe_library,
     infer_column_semantics,
     is_categorical_or_string_dtype,
-    to_narwhals_dataframe,
 )
 
 
@@ -93,10 +92,6 @@ def _validate_ordinal_categories_against_schema(ordinal_categories, schema):
             )
 
 
-def _extract_numeric_kernel_array(x, ordinal_categories=None):
-    return _extract_numeric_kernel_array_dataframe(x, ordinal_categories=ordinal_categories)
-
-
 def _classify_kernel_column(col_name, dtype, col, ordinal_categories):
     if dtype.is_numeric() or isinstance(dtype, nw.Boolean):
         return "continuous", col.to_numpy().astype(np.float64)
@@ -114,9 +109,9 @@ def _classify_kernel_column(col_name, dtype, col, ordinal_categories):
     return "nominal", None
 
 
-def _extract_numeric_kernel_array_dataframe(x, ordinal_categories=None):
+def _extract_numeric_kernel_array(x, ordinal_categories=None):
     resolved = _resolve_ordinal_categories(x, ordinal_categories)
-    nw_x = to_narwhals_dataframe(x)
+    nw_x = nw.from_native(x)
 
     schema = nw_x.schema
     _validate_ordinal_categories_against_schema(resolved, schema)
@@ -238,7 +233,7 @@ def _check_clinical_kernel_inputs(x, y):
         raise ValueError("x and y have different number of features")
     if get_dataframe_library(x) is not get_dataframe_library(y):
         raise TypeError("x and y must use the same dataframe library")
-    if list(to_narwhals_dataframe(x).columns) != list(to_narwhals_dataframe(y).columns):
+    if list(nw.from_native(x).columns) != list(nw.from_native(y).columns):
         raise ValueError("columns do not match")
 
 
@@ -268,8 +263,8 @@ def _extract_nominal_dataframe_array(nw_frame, nominal_columns):
 
 
 def _extract_nominal_kernel_arrays(x, y, nominal_columns):
-    nw_x = to_narwhals_dataframe(x)
-    nw_y = to_narwhals_dataframe(y)
+    nw_x = nw.from_native(x)
+    nw_y = nw.from_native(y)
     return (
         _extract_nominal_dataframe_array(nw_x, nominal_columns),
         _extract_nominal_dataframe_array(nw_y, nominal_columns),

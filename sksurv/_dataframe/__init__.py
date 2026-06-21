@@ -31,14 +31,12 @@ from ._input import (
     get_dataframe_library,
     is_supported_dataframe,
     is_supported_dataframe_or_series,
-    to_narwhals_dataframe,
     unsupported_dataframe_error,
 )
 
 __all__ = [
     "ColumnSemantics",
     "SUPPORTED_DATAFRAME_INPUT_TYPES",
-    "to_narwhals_dataframe",
     "column_to_category_codes",
     "column_to_one_hot_matrix",
     "expand_dataframe_with_one_hot_columns",

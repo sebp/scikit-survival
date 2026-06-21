@@ -19,7 +19,6 @@ from .._dataframe import (
     ensure_eager_dataframe,
     get_dataframe_library,
     is_supported_dataframe,
-    to_narwhals_dataframe,
 )
 from ._clinical_dataframe import (
     _append_kernel_column,
@@ -204,14 +203,15 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         self._fit_kernel_columns(X)
 
     def _fit_kernel_columns(self, X):
+        X = ensure_eager_dataframe(X)
         if get_dataframe_library(X) is None:
             raise TypeError("X must be a pandas DataFrame or supported Narwhals dataframe input")
-        self._fit_implementation_ = to_narwhals_dataframe(X).implementation
+        self._fit_implementation_ = nw.from_native(X).implementation
         return self._fit_dataframe_kernel_columns(X)
 
     def _fit_dataframe_kernel_columns(self, X):
         ordinal_categories = _resolve_ordinal_categories(X, self.ordinal_categories)
-        nw_X = to_narwhals_dataframe(X)
+        nw_X = nw.from_native(X)
 
         schema = nw_X.schema
         _validate_ordinal_categories_against_schema(ordinal_categories, schema)
@@ -297,7 +297,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         return self
 
     def _encode_dataframe_for_transform(self, Y):
-        nw_Y = to_narwhals_dataframe(Y)
+        nw_Y = nw.from_native(Y)
         n_samples = nw_Y.shape[0]
         n_features = self.n_features_in_
         out = np.empty((n_samples, n_features), dtype=np.float64)
@@ -331,7 +331,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
         y_is_dataframe = is_supported_dataframe(Y)
         fit_impl = getattr(self, "_fit_implementation_", None)
-        if y_is_dataframe and fit_impl is not None and to_narwhals_dataframe(Y).implementation != fit_impl:
+        if y_is_dataframe and fit_impl is not None and nw.from_native(Y).implementation != fit_impl:
             raise TypeError("fit and transform must use the same dataframe library")
 
         n_samples_x = self.X_fit_.shape[0]

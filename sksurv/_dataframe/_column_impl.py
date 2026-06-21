@@ -26,7 +26,7 @@ from ._categorical_encoding import (
     reattach_pandas_index,
 )
 from ._categorical_semantics import ColumnSemantics, infer_column_semantics, is_categorical_or_string_dtype
-from ._input import is_non_numeric_cast_error, is_supported_series, to_narwhals_dataframe
+from ._input import is_non_numeric_cast_error, is_supported_series
 
 __all__ = [
     "categorical_to_numeric_narwhals",
@@ -36,7 +36,7 @@ __all__ = [
 
 
 def standardize_narwhals_dataframe(table, with_std):
-    nw_table = to_narwhals_dataframe(table)
+    nw_table = nw.from_native(table)
 
     exprs = []
     for col_name, dtype in nw_table.schema.items():
@@ -73,7 +73,7 @@ def encode_categorical_narwhals(table, columns=None, allow_drop=True):
             implementation=nw_series.implementation,
         )
 
-    nw_table = to_narwhals_dataframe(table)
+    nw_table = nw.from_native(table)
     implementation = nw_table.implementation
 
     if columns is None:
@@ -103,10 +103,8 @@ def _prepare_column_for_one_hot(col):
     dtype = col.dtype
     if isinstance(dtype, nw.Boolean):
         # Match pandas get_dummies(drop_first=True): False is the dropped baseline.
-        col = col.replace_strict({True: "True", False: "False"}, default=None, return_dtype=nw.String)
         present = set(col.drop_nulls().unique().to_list())
-        # Keep "False" before "True" so drop_first drops "False" as the baseline.
-        observed = [value for value in ("False", "True") if value in present]
+        observed = [value for value in (False, True) if value in present]
         return col, ColumnSemantics(name=col.name, kind="nominal", categories=tuple(observed), ordered=False)
     if dtype.is_numeric():
         ordered_values = sorted(col.drop_nulls().unique().to_list())
@@ -152,7 +150,7 @@ def categorical_to_numeric_narwhals(table):
         result = nw.new_series(nw_series.name, codes, backend=nw_series.implementation).to_native()
         return reattach_pandas_index(result, original_index)
 
-    nw_table = to_narwhals_dataframe(table)
+    nw_table = nw.from_native(table)
 
     if nw_table.shape[1] == 0:
         return nw_table.to_native()

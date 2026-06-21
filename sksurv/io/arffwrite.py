@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import CategoricalDtype, is_string_dtype
 
-from .._dataframe import ensure_eager_dataframe, polars_inputs, to_narwhals_dataframe
+from .._dataframe import ensure_eager_dataframe, polars_inputs
 
 _ILLEGAL_CHARACTER_PAT = re.compile(r"[^-_=\w\d\(\)<>\.]")
 
@@ -28,7 +28,7 @@ def _prepare_polars_for_arff_write(data):
     declared categories. Column-by-column to avoid an undeclared ``pyarrow``
     dependency (``nw_df.to_pandas()`` would dispatch Categorical/Enum through Arrow).
     """
-    nw_df = to_narwhals_dataframe(data)
+    nw_df = nw.from_native(data)
     columns = {}
     for col_name in nw_df.columns:
         col = nw_df.get_column(col_name)

@@ -17,7 +17,6 @@ import narwhals.stable.v2 as nw
 from . import _pandas, _polars
 
 __all__ = [
-    "to_narwhals_dataframe",
     "ensure_eager_dataframe",
     "get_dataframe_library",
     "is_non_numeric_cast_error",
@@ -96,8 +95,3 @@ def ensure_eager_dataframe(obj):
     """
     _reject_polars_lazyframe(obj)
     return obj
-
-
-def to_narwhals_dataframe(obj):
-    _reject_polars_lazyframe(obj)
-    return nw.from_native(obj)

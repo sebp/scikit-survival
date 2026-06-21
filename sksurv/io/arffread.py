@@ -66,15 +66,17 @@ def _to_polars_dataframe(data, meta):
         tp, attr_format = meta[name]
         if tp == "nominal":
             values = [_decode_nominal_value(b) for b in data[name]]
-            columns.append(pl.Series(name, values, dtype=pl.Enum(list(attr_format))))
+            dtype = pl.Enum(list(attr_format))
         else:
             arr = data[name]
             if is_string_dtype(arr.dtype):
                 # scipy returns bytes for string-typed attributes; decode + null-map.
                 values = [_decode_nominal_value(b) for b in arr]
-                columns.append(pl.Series(name, values, dtype=pl.String))
+                dtype = pl.String
             else:
-                columns.append(pl.Series(name, arr))
+                values = arr
+                dtype = None
+        columns.append(pl.Series(name, values, dtype=dtype))
     return pl.DataFrame(columns)
 
 

@@ -10,13 +10,13 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import narwhals.stable.v2 as nw
 import numpy as np
 from sklearn.utils.validation import check_array, check_consistent_length
 
 from ._dataframe import (
     ensure_eager_dataframe,
     is_supported_dataframe,
-    to_narwhals_dataframe,
     unsupported_dataframe_error,
 )
 
@@ -157,7 +157,7 @@ class Surv:
         if not is_supported_dataframe(data):
             raise unsupported_dataframe_error(data)
 
-        nw_data = to_narwhals_dataframe(data)
+        nw_data = nw.from_native(data)
 
         return Surv.from_arrays(
             nw_data.get_column(event).to_numpy(),
