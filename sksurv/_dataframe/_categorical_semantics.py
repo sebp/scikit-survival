@@ -27,7 +27,12 @@ __all__ = [
     "ColumnSemantics",
     "infer_column_semantics",
     "get_semantic_categories",
+    "is_categorical_or_string_dtype",
 ]
+
+
+def is_categorical_or_string_dtype(dtype):
+    return isinstance(dtype, (nw.Categorical, nw.Enum, nw.String, nw.Object))
 
 
 def get_semantic_categories(series):
@@ -47,7 +52,7 @@ def get_semantic_categories(series):
         return tuple(s.cat.get_categories().to_list())
     if isinstance(dt, nw.Categorical) and s.implementation.is_pandas_like():
         return tuple(s.cat.get_categories().to_list())
-    if isinstance(dt, (nw.Categorical, nw.String, nw.Object)):
+    if is_categorical_or_string_dtype(dt):
         return tuple(sorted(s.drop_nulls().unique().to_list()))
     raise TypeError(f"get_semantic_categories: unsupported dtype {dt!r}; expected Enum, Categorical, String, or Object")
 
@@ -70,7 +75,7 @@ def infer_column_semantics(column):
     if dt.is_numeric() or isinstance(dt, nw.Boolean):
         return ColumnSemantics(name=s.name, kind="numeric", categories=None, ordered=False)
 
-    if isinstance(dt, (nw.Enum, nw.Categorical, nw.String, nw.Object)):
+    if is_categorical_or_string_dtype(dt):
         return ColumnSemantics(
             name=s.name,
             kind="nominal",

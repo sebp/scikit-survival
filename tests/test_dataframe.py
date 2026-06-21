@@ -120,7 +120,7 @@ def test_get_one_hot_column_names_without_dropping_first_category():
     from sksurv._dataframe import get_one_hot_column_names
 
     semantics = ColumnSemantics(name="grade", kind="nominal", categories=("A", "B"), ordered=False)
-    assert get_one_hot_column_names(semantics, drop_first=False) == ("grade=A", "grade=B")
+    assert get_one_hot_column_names(semantics, drop_first=False) == ["grade=A", "grade=B"]
 
 
 def test_expand_dataframe_with_one_hot_columns_empty_frame_policy():

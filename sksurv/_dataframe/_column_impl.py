@@ -25,7 +25,7 @@ from ._categorical_encoding import (
     get_one_hot_column_names,
     reattach_pandas_index,
 )
-from ._categorical_semantics import ColumnSemantics, infer_column_semantics
+from ._categorical_semantics import ColumnSemantics, infer_column_semantics, is_categorical_or_string_dtype
 from ._input import is_non_numeric_cast_error, is_supported_series, to_narwhals_dataframe
 
 __all__ = [
@@ -65,7 +65,7 @@ def encode_categorical_narwhals(table, columns=None, allow_drop=True):
     if is_supported_series(table):
         nw_series = nw.from_native(table, series_only=True)
         dt = nw_series.dtype
-        if not isinstance(dt, (nw.Categorical, nw.Enum, nw.String, nw.Object)):
+        if not is_categorical_or_string_dtype(dt):
             raise TypeError(f"series must be of categorical dtype, but was {dt}")
         return _encode_series_as_dataframe(
             nw_series,
@@ -77,11 +77,7 @@ def encode_categorical_narwhals(table, columns=None, allow_drop=True):
     implementation = nw_table.implementation
 
     if columns is None:
-        columns_to_encode = {
-            name
-            for name, dtype in nw_table.schema.items()
-            if isinstance(dtype, (nw.Categorical, nw.Enum, nw.String, nw.Object))
-        }
+        columns_to_encode = {name for name, dtype in nw_table.schema.items() if is_categorical_or_string_dtype(dtype)}
     else:
         columns_to_encode = set(columns)
 
@@ -141,7 +137,7 @@ def _encode_series_as_dataframe(nw_series, allow_drop, implementation):
 
     encoded = column_to_one_hot_matrix(nw_series, semantics, drop_first=True)
     new_names = get_one_hot_column_names(semantics, drop_first=True)
-    result = nw.from_numpy(encoded, schema=list(new_names), backend=implementation).to_native()
+    result = nw.from_numpy(encoded, schema=new_names, backend=implementation).to_native()
     return reattach_pandas_index(result, original_index)
 
 
@@ -166,7 +162,7 @@ def categorical_to_numeric_narwhals(table):
     output_frames = []
     for col_name in nw_table.columns:
         col = nw_table.get_column(col_name)
-        if isinstance(col.dtype, (nw.Categorical, nw.Enum, nw.String, nw.Object, nw.Boolean)):
+        if is_categorical_or_string_dtype(col.dtype) or isinstance(col.dtype, nw.Boolean):
             codes = _encode_series_as_numeric_codes(col)
             output_frames.append(nw.new_series(col_name, codes, backend=implementation).to_frame())
         else:

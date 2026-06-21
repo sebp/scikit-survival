@@ -81,7 +81,7 @@ def get_one_hot_column_names(semantics, drop_first=True):
     categories = semantics.categories or ()
     if drop_first:
         categories = categories[1:]
-    return tuple(f"{semantics.name}={level}" for level in categories)
+    return [f"{semantics.name}={level}" for level in categories]
 
 
 def column_to_one_hot_matrix(column, semantics, drop_first=True, unknown_value=-1):
@@ -132,7 +132,7 @@ def expand_dataframe_with_one_hot_columns(
 
         encoded = column_to_one_hot_matrix(col, semantics, drop_first=True)
         new_names = get_one_hot_column_names(semantics, drop_first=True)
-        encoded_frame = nw.from_numpy(encoded, schema=list(new_names), backend=implementation)
+        encoded_frame = nw.from_numpy(encoded, schema=new_names, backend=implementation)
         output_frames.append(encoded_frame)
 
     if len(output_frames) == 0:

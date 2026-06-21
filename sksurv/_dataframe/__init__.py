@@ -19,7 +19,12 @@ from ._categorical_encoding import (
     expand_dataframe_with_one_hot_columns,
     get_one_hot_column_names,
 )
-from ._categorical_semantics import ColumnSemantics, get_semantic_categories, infer_column_semantics
+from ._categorical_semantics import (
+    ColumnSemantics,
+    get_semantic_categories,
+    infer_column_semantics,
+    is_categorical_or_string_dtype,
+)
 from ._input import (
     SUPPORTED_DATAFRAME_INPUT_TYPES,
     ensure_eager_dataframe,
@@ -40,6 +45,7 @@ __all__ = [
     "ensure_eager_dataframe",
     "get_dataframe_library",
     "infer_column_semantics",
+    "is_categorical_or_string_dtype",
     "is_supported_dataframe",
     "is_supported_dataframe_or_series",
     "get_one_hot_column_names",

@@ -28,6 +28,7 @@ from .._dataframe import (
     column_to_category_codes,
     get_dataframe_library,
     infer_column_semantics,
+    is_categorical_or_string_dtype,
     to_narwhals_dataframe,
 )
 
@@ -86,7 +87,7 @@ def _validate_ordinal_categories_against_schema(ordinal_categories, schema):
         raise ValueError(f"ordinal_categories contains unknown column names: {sorted(unknown)!r}")
     for name in ordinal_categories:
         dtype = schema[name]
-        if not isinstance(dtype, (nw.Categorical, nw.Enum, nw.String, nw.Object)):
+        if not is_categorical_or_string_dtype(dtype):
             raise ValueError(
                 f"ordinal_categories={name!r} requires a categorical, string, or object column; got {dtype!r}"
             )
@@ -99,7 +100,7 @@ def _extract_numeric_kernel_array(x, ordinal_categories=None):
 def _classify_kernel_column(col_name, dtype, col, ordinal_categories):
     if dtype.is_numeric() or isinstance(dtype, nw.Boolean):
         return "continuous", col.to_numpy().astype(np.float64)
-    if not isinstance(dtype, (nw.Categorical, nw.Enum, nw.String, nw.Object)):
+    if not is_categorical_or_string_dtype(dtype):
         raise TypeError(f"unsupported dtype: {dtype!r}")
     if col_name in ordinal_categories:
         semantics = ColumnSemantics(
@@ -199,7 +200,7 @@ def _encode_dataframe_kernel_column(col_name, col, ordinal_categories):
     if dtype.is_numeric() or isinstance(dtype, nw.Boolean):
         arr = col.to_numpy().astype(np.float64)
         return _make_numeric_kernel_column(arr)
-    if not isinstance(dtype, (nw.Categorical, nw.Enum, nw.String, nw.Object)):
+    if not is_categorical_or_string_dtype(dtype):
         raise TypeError(f"unsupported dtype: {dtype!r}")
     if col_name in ordinal_categories:
         semantics = ColumnSemantics(

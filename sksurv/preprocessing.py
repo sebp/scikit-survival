@@ -19,6 +19,7 @@ from ._dataframe import (
     ensure_eager_dataframe,
     expand_dataframe_with_one_hot_columns,
     infer_column_semantics,
+    is_categorical_or_string_dtype,
     to_narwhals_dataframe,
 )
 from .column import encode_categorical
@@ -174,11 +175,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         nw_X = to_narwhals_dataframe(X)
         implementation = nw_X.implementation
 
-        columns_to_encode_list = [
-            name
-            for name, dtype in nw_X.schema.items()
-            if isinstance(dtype, (nw.Categorical, nw.Enum, nw.String, nw.Object))
-        ]
+        columns_to_encode_list = [name for name, dtype in nw_X.schema.items() if is_categorical_or_string_dtype(dtype)]
 
         self._categorical_semantics_ = {
             name: infer_column_semantics(nw_X.get_column(name)) for name in columns_to_encode_list
