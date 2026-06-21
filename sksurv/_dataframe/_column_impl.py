@@ -108,11 +108,10 @@ def _prepare_column_for_one_hot(col):
         return col, ColumnSemantics(name=col.name, kind="nominal", categories=tuple(observed), ordered=False)
     if dtype.is_numeric():
         ordered_values = sorted(col.drop_nulls().unique().to_list())
-        col = col.cast(nw.String)
         return col, ColumnSemantics(
             name=col.name,
             kind="nominal",
-            categories=tuple(str(v) for v in ordered_values),
+            categories=tuple(ordered_values),
             ordered=False,
         )
     return col, infer_column_semantics(col)

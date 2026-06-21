@@ -287,8 +287,8 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         if self.fit_once:
             if is_supported_dataframe(X):
                 raise TypeError(
-                    "fit_once=True expects a numeric array in fit(); call prepare(X) first, "
-                    "then fit on the numeric X_fit_ array."
+                    "fit_once=True expects a numeric array in fit(); call prepare(X) to set self.X_fit_, "
+                    "then pass self.X_fit_ to fit()."
                 )
             self.X_fit_ = X
         else:

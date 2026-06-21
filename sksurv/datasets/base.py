@@ -254,8 +254,9 @@ def load_arff_files_standardized(
 
         train_cols = nw.from_native(x_train).columns
         test_cols = nw.from_native(x_test).columns
+        train_col_set = set(train_cols)
         test_col_set = set(test_cols)
-        if set(train_cols) != test_col_set:
+        if train_col_set != test_col_set:
             warnings.warn("Restricting columns to intersection between training and testing data", stacklevel=2)
 
             cols = [c for c in train_cols if c in test_col_set]
