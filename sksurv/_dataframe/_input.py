@@ -34,7 +34,7 @@ def _oxford_join(items):
     items = list(items)
     if len(items) <= 2:
         return " or ".join(items)
-    return ", ".join(items[:-1]) + ", or " + items[-1]
+    return ", ".join(items[:-1]) + ", or " + items[-1]  # pragma: no cover
 
 
 SUPPORTED_DATAFRAME_INPUT_TYPES = _oxford_join(

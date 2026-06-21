@@ -9,10 +9,6 @@ from sksurv.preprocessing import OneHotEncoder
 from sksurv.testing import get_pandas_infer_string_context
 
 
-def _encoded_data(data):
-    return expected_one_hot_data(data)
-
-
 @pytest.fixture()
 def create_categorical_data():
     return make_one_hot_categorical_data
@@ -31,7 +27,7 @@ def create_string_data():
         )
 
         data_cat = data.astype(dict.fromkeys(data.columns, "category"))
-        return data, _encoded_data(data_cat)
+        return data, expected_one_hot_data(data_cat)
 
     return _create_data
 

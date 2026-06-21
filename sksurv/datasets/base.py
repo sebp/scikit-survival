@@ -259,12 +259,13 @@ def load_arff_files_standardized(
     if path_testing is not None:
         x_test, y_test = _load_arff_testing(path_testing, attr_labels, pos_label, survival, output_type=output_type)
 
-        train_cols = list(nw.from_native(x_train).columns)
-        test_cols = list(nw.from_native(x_test).columns)
-        if set(train_cols) != set(test_cols):
+        train_cols = nw.from_native(x_train).columns
+        test_cols = nw.from_native(x_test).columns
+        test_col_set = set(test_cols)
+        if set(train_cols) != test_col_set:
             warnings.warn("Restricting columns to intersection between training and testing data", stacklevel=2)
 
-            cols = [c for c in train_cols if c in set(test_cols)]
+            cols = [c for c in train_cols if c in test_col_set]
             if not cols:
                 raise ValueError("columns of training and test data do not intersect")
 

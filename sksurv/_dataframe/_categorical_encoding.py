@@ -37,7 +37,6 @@ def capture_pandas_index(nw_obj):
     """
     if nw_obj.implementation.is_pandas_like():
         return nw_obj.to_native().index
-    return None
 
 
 def detach_pandas_index(nw_frame):

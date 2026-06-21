@@ -72,7 +72,7 @@ def _resolve_ordinal_categories(table, ordinal_categories):
     their declared order. Other backends (e.g. polars) contribute nothing
     automatically.
     """
-    resolved = dict(_normalize_ordinal_categories(ordinal_categories))
+    resolved = _normalize_ordinal_categories(ordinal_categories)
     library = get_dataframe_library(table)
     if library is not None:
         for name, cats in library.ordinal_categories(table).items():

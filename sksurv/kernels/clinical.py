@@ -42,6 +42,7 @@ __all__ = ["clinical_kernel", "ClinicalKernelTransform"]
 
 
 def _nominal_kernel(x, y, out):
+    """Number of features that match exactly."""
     for i in range(x.shape[0]):
         for j in range(y.shape[0]):
             out[i, j] += (x[i, :] == y[j, :]).sum()
@@ -287,7 +288,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
             if is_supported_dataframe(X):
                 raise TypeError(
                     "fit_once=True expects a numeric array in fit(); call prepare(X) first, "
-                    "then pass the prepared numeric array."
+                    "then fit on the numeric X_fit_ array."
                 )
             self.X_fit_ = X
         else:
@@ -304,10 +305,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
             col = nw_Y.get_column(col_name)
             kind, semantics = self._fitted_categorical_semantics[i]
             col_dtype = col.dtype
-            if col_dtype.is_numeric() or isinstance(col_dtype, nw.Boolean):
-                out[:, i] = col.to_numpy().astype(np.float64)
-                continue
-            if kind == "numeric":
+            if col_dtype.is_numeric() or isinstance(col_dtype, nw.Boolean) or kind == "numeric":
                 out[:, i] = col.to_numpy().astype(np.float64)
             else:
                 out[:, i] = _column_to_kernel_codes(col, semantics)
@@ -340,7 +338,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
         # Replay fit-time semantics if recorded; otherwise pass through
         # (fit_once / prepare paths, or pre-encoded numeric input).
-        if getattr(self, "_fitted_categorical_semantics", None) is not None and y_is_dataframe:
+        if hasattr(self, "_fitted_categorical_semantics") and y_is_dataframe:
             Y_arr = self._encode_dataframe_for_transform(Y)
         else:
             Y_arr = np.asarray(Y)

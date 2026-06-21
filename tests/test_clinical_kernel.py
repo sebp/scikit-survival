@@ -11,12 +11,7 @@ from sksurv.kernels import ClinicalKernelTransform, clinical_kernel
 
 @pytest.fixture()
 def make_data():
-    def _make_data(with_ordinal=True, with_nominal=True, with_continuous=True):
-        return make_clinical_kernel_pandas_data(
-            with_ordinal=with_ordinal, with_nominal=with_nominal, with_continuous=with_continuous
-        )
-
-    return _make_data
+    return make_clinical_kernel_pandas_data
 
 
 class TestClinicalKernel:
