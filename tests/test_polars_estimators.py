@@ -240,7 +240,6 @@ class TestMetaEstimatorsPolars:
 
         from sksurv.linear_model import CoxPHSurvivalAnalysis
         from sksurv.meta import EnsembleSelection
-        from sksurv.metrics import concordance_index_censored
 
         X_pd, X_pl, y = whas500_pl_pd_small
         X_pd_enc = OneHotEncoder().fit_transform(X_pd)
