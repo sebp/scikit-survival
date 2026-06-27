@@ -10,6 +10,9 @@ on:
         default: false
         type: boolean
 
+permissions:
+  contents: read
+
 
 jobs:
   build_wheels:
