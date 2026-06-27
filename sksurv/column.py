@@ -26,20 +26,20 @@ from ._dataframe._column_impl import (
 __all__ = ["categorical_to_numeric", "encode_categorical", "standardize"]
 
 
-def standardize_column(series_or_array, with_std=True):
-    d = series_or_array.dtype
+def standardize_column(array, with_std=True):
+    d = array.dtype
     if issubclass(d.type, np.number):
-        output = series_or_array.astype(float)
-        m = series_or_array.mean()
+        output = array.astype(float)
+        m = array.mean()
         output -= m
 
         if with_std:
-            s = series_or_array.std(ddof=1)
+            s = array.std(ddof=1)
             output /= s
 
         return output
 
-    return series_or_array
+    return array
 
 
 def standardize(table, with_std=True):
