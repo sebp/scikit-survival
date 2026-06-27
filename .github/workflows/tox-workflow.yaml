@@ -1,6 +1,9 @@
 name: Tox
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   linting_and_docs:
     runs-on: ubuntu-latest
