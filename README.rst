@@ -41,6 +41,7 @@ Requirements
 - pandas 2.2.0 or later
 - scikit-learn 1.9
 - scipy
+- narwhals 2.0.1 or later
 - C/C++ compiler
 
 ============
