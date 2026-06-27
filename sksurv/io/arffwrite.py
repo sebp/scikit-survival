@@ -13,11 +13,35 @@
 import os.path
 import re
 
+import narwhals.stable.v2 as nw
 import numpy as np
 import pandas as pd
 from pandas.api.types import CategoricalDtype, is_string_dtype
 
+from .._dataframe import ensure_eager_dataframe, polars_inputs
+
 _ILLEGAL_CHARACTER_PAT = re.compile(r"[^-_=\w\d\(\)<>\.]")
+
+
+def _prepare_polars_for_arff_write(data):
+    """Convert a polars DataFrame to pandas, preserving ``pl.Enum``
+    declared categories. Column-by-column to avoid an undeclared ``pyarrow``
+    dependency (``nw_df.to_pandas()`` would dispatch Categorical/Enum through Arrow).
+    """
+    nw_df = nw.from_native(data)
+    columns = {}
+    for col_name in nw_df.columns:
+        col = nw_df.get_column(col_name)
+        dtype = col.dtype
+        if isinstance(dtype, nw.Enum):
+            categories = col.cat.get_categories().to_list()
+            columns[col_name] = pd.Categorical(col.to_list(), categories=categories)
+        elif isinstance(dtype, nw.Categorical):
+            categories = sorted(col.drop_nulls().unique())
+            columns[col_name] = pd.Categorical(col.to_list(), categories=categories)
+        else:
+            columns[col_name] = col.to_list()
+    return pd.DataFrame(columns)
 
 
 def writearff(data, filename, relation_name=None, index=True):
@@ -25,8 +49,9 @@ def writearff(data, filename, relation_name=None, index=True):
 
     Parameters
     ----------
-    data : :class:`pandas.DataFrame`
-        DataFrame containing data
+    data : :class:`pandas.DataFrame` or :class:`polars.DataFrame`
+        Polars input is converted to pandas internally; ``pl.Enum`` columns
+        keep their declared categories (incl. unseen labels) in the ARFF header.
 
     filename : str or file-like object
         Path to ARFF file or file-like object. In the latter case,
@@ -36,7 +61,8 @@ def writearff(data, filename, relation_name=None, index=True):
         Name of relation in ARFF file.
 
     index : boolean, optional, default: True
-        Write row names (index)
+        Write row names (index). Only relevant for pandas input; other
+        dataframe libraries have no row-index concept, so the value is ignored.
 
     See Also
     --------
@@ -44,6 +70,8 @@ def writearff(data, filename, relation_name=None, index=True):
 
     Examples
     --------
+    >>> import tempfile
+    >>> from pathlib import Path
     >>> import numpy as np
     >>> import pandas as pd
     >>> from sksurv.io import writearff
@@ -55,13 +83,11 @@ def writearff(data, filename, relation_name=None, index=True):
     ...     'class': ['A', 'B', 'C']
     ... }, index=['One', 'Two', 'Three'])
     >>>
-    >>> # Write to ARFF file
-    >>> writearff(data, 'test_output.arff', relation_name='test_data')
-    >>>
-    >>> # Read contents of ARFF file
-    >>> with open('test_output.arff') as f:
-    ...     arff_contents = "".join(f.readlines())
-    >>> print(arff_contents)
+    >>> # Write to a temporary directory so the CWD stays clean.
+    >>> with tempfile.TemporaryDirectory() as tmpdir:
+    ...     path = Path(tmpdir) / "data.arff"
+    ...     writearff(data, str(path), relation_name='test_data')
+    ...     print(path.read_text())
     @relation test_data
     <BLANKLINE>
     @attribute index        {One,Three,Two}
@@ -73,7 +99,27 @@ def writearff(data, filename, relation_name=None, index=True):
     One,1.0,2.0,A
     Two,3.0,?,B
     Three,5.0,6.0,C
+
+    Polars input is accepted as well. ``pl.Enum`` columns preserve their
+    declared category list (including labels absent from the data) in the
+    resulting ARFF header.
+
+    >>> import polars as pl
+    >>> data_pl = pl.DataFrame({
+    ...     'feature1': [1.0, 3.0, 5.0],
+    ...     'class': pl.Series(['A', 'B', 'C'], dtype=pl.Enum(['A', 'B', 'C'])),
+    ... })
+    >>> with tempfile.TemporaryDirectory() as tmpdir:
+    ...     path = Path(tmpdir) / "data.arff"
+    ...     writearff(data_pl, str(path), relation_name='test_data')
     """
+    data = ensure_eager_dataframe(data)
+    if polars_inputs.LIBRARY.is_dataframe(data):
+        data = _prepare_polars_for_arff_write(data)
+        # Polars frames have no meaningful row index; suppress it so the
+        # output does not gain a spurious ``index`` attribute.
+        index = False
+
     if isinstance(filename, str):
         fp = open(filename, "w")
 
@@ -173,6 +219,9 @@ def _write_data(data, fp):
         return str(x)
 
     data = data.map(to_str)
+    # The header has already been written; coerce rows to object values so
+    # categorical-only frames can pass through ``_check_str_array``.
+    data = data.astype(object)
     n_rows = data.shape[0]
     for i in range(n_rows):
         str_values = list(data.iloc[i, :].apply(_check_str_array))

@@ -18,6 +18,7 @@ from sklearn.utils.validation import (
     validate_data,
 )
 
+from .._dataframe import ensure_eager_dataframe
 from ..base import SurvivalAnalysisMixin
 from ..docstrings import append_cumulative_hazard_example, append_survival_function_example
 from ..functions import StepFunction
@@ -284,7 +285,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         if check_input:
             X = validate_data(
                 self,
-                X,
+                ensure_eager_dataframe(X),
                 dtype=np.float32,
                 ensure_min_samples=2,
                 accept_sparse="csc",
@@ -426,6 +427,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
     def _validate_X_predict(self, X, check_input, accept_sparse="csr"):
         """Validate X whenever one tries to predict"""
+        X = ensure_eager_dataframe(X)
         if check_input:
             if self._support_missing_values(X):
                 ensure_all_finite = "allow-nan"

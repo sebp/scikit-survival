@@ -1,155 +1,12 @@
-from collections import OrderedDict
 from contextlib import nullcontext as does_not_raise
 
 import numpy as np
 from numpy.testing import assert_array_equal
 import pandas as pd
-import pandas.testing as tm
 import pytest
 
 from sksurv.testing import FixtureParameterFactory
-from sksurv.util import Surv, _PropertyAvailableIfDescriptor, property_available_if, safe_concat
-
-
-class ConcatCasesFactory(FixtureParameterFactory):
-    @property
-    def rnd(self):
-        return np.random.default_rng(14)
-
-    def to_data_frame(self, data):
-        return pd.DataFrame.from_dict(OrderedDict(data))
-
-    def make_numeric_series(self, name):
-        return pd.Series(self.rnd.standard_normal(100), name=name)
-
-    def make_categorical_5_series(self, name):
-        return pd.Series(
-            pd.Categorical.from_codes(self.rnd.binomial(4, 0.6, 100), ["C1", "C2", "C3", "C4", "C5"]), name=name
-        )
-
-    def make_categorical_4_series(self, name):
-        return pd.Series(pd.Categorical.from_codes(self.rnd.binomial(3, 0.6, 100), ["C1", "C2", "C3", "C4"]), name=name)
-
-    def make_categorical_3_series(self, name):
-        return pd.Series(pd.Categorical.from_codes(self.rnd.binomial(2, 0.6, 100), ["C1", "C2", "C3"]), name=name)
-
-    def make_binary_series(self, name):
-        return pd.Series(pd.Categorical.from_codes(self.rnd.binomial(1, 0.6, 100), ["Yes", "No"]), name=name)
-
-
-class ConcatCasesAxes1(ConcatCasesFactory):
-    def data_numeric(self):
-        a = self.make_numeric_series("col_A")
-        b = self.make_numeric_series("col_B")
-
-        expected = [(a.name, a), (b.name, b)]
-        return (a, b), self.to_data_frame(expected), does_not_raise()
-
-    def data_numeric_categorical(self):
-        a = self.make_numeric_series("col_A")
-        b = self.make_categorical_5_series("col_B")
-
-        expected = [(a.name, a), (b.name, b)]
-        return (a, b), self.to_data_frame(expected), does_not_raise()
-
-    def data_frame_numeric_categorical(self):
-        numeric_df = self.to_data_frame(
-            [
-                ("col_A", self.make_numeric_series("col_A")),
-                ("col_B", self.make_categorical_5_series("col_B")),
-            ]
-        )
-
-        cat_series = self.make_categorical_5_series("col_C")
-
-        expected_df = numeric_df.copy()
-        expected_df.loc[:, "col_C"] = cat_series
-        return (numeric_df, cat_series), expected_df, does_not_raise()
-
-    def data_duplicate_columns(self):
-        numeric_df = self.to_data_frame(
-            [
-                ("col_N", self.make_numeric_series("col_N")),
-                ("col_B", self.make_categorical_5_series("col_B")),
-                ("col_A", self.make_categorical_5_series("col_A")),
-            ]
-        )
-
-        cat_df = pd.DataFrame.from_dict(
-            OrderedDict(
-                [
-                    ("col_A", self.make_categorical_5_series("col_A")),
-                    ("col_C", self.make_binary_series("col_C")),
-                ]
-            )
-        )
-
-        err = pytest.raises(ValueError, match="duplicate columns col_A")
-        return (numeric_df, cat_df), None, err
-
-
-class ConcatCasesAxes0(ConcatCasesFactory):
-    def data_categorical(self):
-        a = self.to_data_frame(
-            [
-                ("col_A", self.make_categorical_3_series("col_A")),
-                ("col_B", self.make_numeric_series("col_B")),
-            ]
-        )
-        b = self.to_data_frame(
-            [("col_A", self.make_categorical_3_series("col_A")), ("col_B", self.make_numeric_series("col_B"))]
-        )
-
-        expected = [
-            (
-                "col_A",
-                pd.Series(
-                    pd.Categorical.from_codes(
-                        np.r_[a.col_A.cat.codes.to_numpy(), b.col_A.cat.codes.to_numpy()], ["C1", "C2", "C3"]
-                    )
-                ),
-            ),
-            ("col_B", np.r_[a.col_B.to_numpy(), b.col_B.to_numpy()]),
-        ]
-        expected_df = self.to_data_frame(expected)
-        expected_df.index = pd.Index(a.index.tolist() + b.index.tolist())
-
-        return (a, b), expected_df, does_not_raise()
-
-    def data_categorical_mismatch(self):
-        a = self.to_data_frame(
-            [
-                ("col_A", self.make_categorical_3_series("col_A")),
-                ("col_B", self.make_numeric_series("col_B")),
-            ]
-        )
-        b = self.to_data_frame(
-            [
-                ("col_A", self.make_categorical_4_series("col_A")),
-                ("col_B", self.make_numeric_series("col_B")),
-            ]
-        )
-
-        err = pytest.raises(ValueError, match="categories for column col_A do not match")
-        return (a, b), None, err
-
-
-@pytest.mark.parametrize("inputs,expected_df,expected_error", ConcatCasesAxes1().get_cases())
-def test_concat_axis_1(inputs, expected_df, expected_error):
-    with expected_error:
-        actual_df = safe_concat(inputs, axis=1)
-
-    if expected_df is not None:
-        tm.assert_frame_equal(actual_df, expected_df)
-
-
-@pytest.mark.parametrize("inputs,expected_df,expected_error", ConcatCasesAxes0().get_cases())
-def test_concat_axis_0(inputs, expected_df, expected_error):
-    with expected_error:
-        actual_df = safe_concat(inputs, axis=0)
-
-    if expected_df is not None:
-        tm.assert_frame_equal(actual_df, expected_df)
+from sksurv.util import Surv, _PropertyAvailableIfDescriptor, property_available_if
 
 
 class SurvCases(FixtureParameterFactory):
@@ -351,14 +208,20 @@ class SurvDataFrameCases(SurvCases):
     def data_wrong_class_0(self):
         data, _ = self.get_surv_data_frame()
 
-        err = pytest.raises(TypeError, match=r"expected pandas.DataFrame, but got <class 'dict'>")
+        err = pytest.raises(
+            TypeError,
+            match=r"expected pandas\.DataFrame or polars\.DataFrame, but got <class 'dict'>",
+        )
         inputs = ("event", "time", data.to_dict())
         return inputs, None, err
 
     def data_wrong_class_1(self):
         data, _ = self.get_surv_data_frame()
 
-        err = pytest.raises(TypeError, match=r"expected pandas.DataFrame, but got <class 'numpy.ndarray'>")
+        err = pytest.raises(
+            TypeError,
+            match=(r"expected pandas\.DataFrame or polars\.DataFrame, " r"but got <class 'numpy.ndarray'>"),
+        )
         inputs = ("event", "time", data.to_numpy())
         return inputs, None, err
 

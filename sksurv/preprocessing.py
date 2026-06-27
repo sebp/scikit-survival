@@ -10,14 +10,20 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import narwhals.stable.v2 as nw
 import pandas as pd
-from pandas.api.types import CategoricalDtype, is_string_dtype
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import _check_feature_names, _check_feature_names_in, _check_n_features, check_is_fitted
+from sklearn.utils.validation import _check_feature_names_in, check_is_fitted, validate_data
 
+from ._dataframe import (
+    ensure_eager_dataframe,
+    expand_dataframe_with_one_hot_columns,
+    infer_column_semantics,
+    is_categorical_or_string_dtype,
+)
 from .column import encode_categorical
 
-__all__ = ["OneHotEncoder"]
+__all__ = ["OneHotEncoder", "encode_categorical"]
 
 
 def check_columns_exist(actual, expected):
@@ -43,15 +49,24 @@ def check_columns_exist(actual, expected):
 class OneHotEncoder(BaseEstimator, TransformerMixin):
     """Encode categorical features using a one-hot scheme.
 
-    This transformer only works on pandas DataFrames. It identifies columns
-    with `category` or `object` data type as categorical features.
+    Accepts :class:`pandas.DataFrame` and :class:`polars.DataFrame` inputs.
+    The following column dtypes are treated as categorical features:
+
+    - pandas: ``category`` or ``object``
+    - polars: :class:`polars.Categorical`, :class:`polars.Enum`, or
+      :class:`polars.String`
+
     The features are encoded using a one-hot (or dummy) encoding scheme, which
     creates a binary column for each category. By default, one category per feature
-    is dropped. a column with `M` categories is encoded as `M-1` integer columns
+    is dropped: a column with ``M`` categories is encoded as ``M - 1`` integer columns
     according to the one-hot scheme.
 
     The order of non-categorical columns is preserved. Encoded columns are inserted
-    in place of the original column.
+    in place of the original column. The output dataframe library matches the input.
+
+    ``fit`` and ``transform`` must be called with the same dataframe library.
+    Passing a pandas input to one and a polars input to the other raises
+    :class:`TypeError`.
 
     Parameters
     ----------
@@ -65,8 +80,8 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         Names of categorical features that were encoded.
 
     categories_ : dict
-        A dictionary mapping each categorical feature name to a list of its
-        categories.
+        A dictionary mapping each categorical feature name to a
+        :class:`pandas.Index` of categories.
 
     encoded_columns_ : pandas.Index
         The full list of feature names in the transformed output.
@@ -87,7 +102,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : pandas.DataFrame
+        X : pandas.DataFrame or polars.DataFrame
             The data to determine categorical features from.
         y : None
             Ignored. This parameter exists only for compatibility with
@@ -101,9 +116,6 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         self.fit_transform(X)
         return self
 
-    def _encode(self, X, columns_to_encode):
-        return encode_categorical(X, columns=columns_to_encode, allow_drop=self.allow_drop)
-
     def fit_transform(self, X, y=None, **fit_params):  # pylint: disable=unused-argument
         """Fit to data, then transform it.
 
@@ -113,7 +125,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : pandas.DataFrame
+        X : pandas.DataFrame or polars.DataFrame
             The data to fit and transform.
         y : None, optional
             Ignored. This parameter exists only for compatibility with
@@ -124,52 +136,81 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        Xt : pandas.DataFrame
-            The transformed data.
+        Xt : pandas.DataFrame or polars.DataFrame
+            The transformed data. The output dataframe library matches the input.
         """
-        _check_feature_names(self, X, reset=True)
-        _check_n_features(self, X, reset=True)
+        X = ensure_eager_dataframe(X)
+        validate_data(self, X, skip_check_array=True)
 
-        def is_string_or_categorical_dtype(dtype):
-            return is_string_dtype(dtype) or isinstance(dtype, CategoricalDtype)
-
-        columns_to_encode = pd.Index(
-            [name for name, dtype in X.dtypes.items() if is_string_or_categorical_dtype(dtype)]
-        )
-        x_dummy = self._encode(X, columns_to_encode)
-
-        self.feature_names_ = columns_to_encode
-        cat_cols = {}
-        for col_name in columns_to_encode:
-            col = X[col_name]
-            if not isinstance(col.dtype, CategoricalDtype):
-                col = col.astype("category")
-            cat_cols[col_name] = col.cat.categories
-        self.categories_ = cat_cols
-        self.encoded_columns_ = x_dummy.columns.copy()
-        return x_dummy
+        self._fit_implementation_ = nw.from_native(X).implementation
+        return self._fit_transform_dataframe(X)
 
     def transform(self, X):
         """Transform ``X`` by one-hot encoding categorical features.
 
         Parameters
         ----------
-        X : pandas.DataFrame
+        X : pandas.DataFrame or polars.DataFrame
             The data to transform.
 
         Returns
         -------
-        Xt : pandas.DataFrame
-            The transformed data.
+        Xt : pandas.DataFrame or polars.DataFrame
+            The transformed data. The output dataframe library matches the input.
         """
         check_is_fitted(self, "encoded_columns_")
-        _check_n_features(self, X, reset=False)
-        check_columns_exist(X.columns, self.feature_names_)
+        X = ensure_eager_dataframe(X)
+        nw_X = nw.from_native(X)
+        check_columns_exist(pd.Index(nw_X.columns), pd.Index(self.feature_names_in_))
+        validation_X = nw_X.select(list(self.feature_names_in_)).to_native()
+        validate_data(self, validation_X, reset=False, skip_check_array=True)
 
-        Xt = X.astype({col: CategoricalDtype(cat) for col, cat in self.categories_.items()})
+        if nw.from_native(X).implementation != self._fit_implementation_:
+            raise TypeError("fit and transform must use the same dataframe library")
 
-        new_data = self._encode(Xt, self.feature_names_)
-        return new_data.loc[:, self.encoded_columns_]
+        return self._transform_dataframe(X)
+
+    def _fit_transform_dataframe(self, X):
+        nw_X = nw.from_native(X)
+        implementation = nw_X.implementation
+
+        columns_to_encode_list = [name for name, dtype in nw_X.schema.items() if is_categorical_or_string_dtype(dtype)]
+
+        self._categorical_semantics_ = {
+            name: infer_column_semantics(nw_X.get_column(name)) for name in columns_to_encode_list
+        }
+
+        columns_to_encode = {name: (nw_X.get_column(name), sem) for name, sem in self._categorical_semantics_.items()}
+        x_dummy = expand_dataframe_with_one_hot_columns(
+            nw_X,
+            columns_to_encode=columns_to_encode,
+            allow_drop=self.allow_drop,
+            implementation=implementation,
+            on_empty="raise",
+        )
+
+        self.feature_names_ = pd.Index(columns_to_encode_list)
+        self.categories_ = {
+            name: pd.Index(self._categorical_semantics_[name].categories or ()) for name in columns_to_encode_list
+        }
+        self.encoded_columns_ = pd.Index(x_dummy.columns)
+        return x_dummy
+
+    def _transform_dataframe(self, X):
+        nw_X = nw.from_native(X)
+        implementation = nw_X.implementation
+
+        check_columns_exist(pd.Index(nw_X.columns), self.feature_names_)
+
+        columns_to_encode = {name: (nw_X.get_column(name), sem) for name, sem in self._categorical_semantics_.items()}
+        result = expand_dataframe_with_one_hot_columns(
+            nw_X,
+            columns_to_encode=columns_to_encode,
+            allow_drop=self.allow_drop,
+            implementation=implementation,
+            on_empty="raise",
+        )
+        return nw.from_native(result).select(list(self.encoded_columns_)).to_native()
 
     def get_feature_names_out(self, input_features=None):
         """Get output feature names for transformation.

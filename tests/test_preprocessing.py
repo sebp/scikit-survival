@@ -1,5 +1,4 @@
-from collections import OrderedDict
-
+from dataframe_test_utils import expected_one_hot_data, make_one_hot_categorical_data
 import numpy as np
 from numpy.testing import assert_array_equal
 import pandas as pd
@@ -10,46 +9,9 @@ from sksurv.preprocessing import OneHotEncoder
 from sksurv.testing import get_pandas_infer_string_context
 
 
-def _encoded_data(data):
-    expected = []
-    for nam, col in data.items():
-        if hasattr(col, "cat"):
-            for cat in col.cat.categories[1:]:
-                name = f"{nam}={cat}"
-                s = pd.Series(col == cat, dtype=np.float64)
-                expected.append((name, s))
-        else:
-            expected.append((nam, col))
-
-    expected_data = pd.DataFrame.from_dict(OrderedDict(expected))
-    return expected_data
-
-
 @pytest.fixture()
 def create_categorical_data():
-    def _create_data(n_samples=117):
-        rnd = np.random.default_rng(51365192)
-        data_num = pd.DataFrame(rnd.random((n_samples, 5)), columns=[f"N{i}" for i in range(5)])
-
-        dat_cat = pd.DataFrame(
-            OrderedDict(
-                [
-                    ("binary_1", pd.Categorical.from_codes(rnd.binomial(1, 0.6, n_samples), ["Yes", "No"])),
-                    ("binary_2", pd.Categorical.from_codes(rnd.binomial(1, 0.376, n_samples), ["East", "West"])),
-                    ("trinary", pd.Categorical.from_codes(rnd.binomial(2, 0.76, n_samples), ["Green", "Blue", "Red"])),
-                    (
-                        "many",
-                        pd.Categorical.from_codes(
-                            rnd.binomial(5, 0.47, n_samples), ["One", "Two", "Three", "Four", "Five", "Six"]
-                        ),
-                    ),
-                ]
-            )
-        )
-        data = pd.concat((data_num, dat_cat), axis=1)
-        return data, _encoded_data(data)
-
-    return _create_data
+    return make_one_hot_categorical_data
 
 
 @pytest.fixture()
@@ -57,17 +19,15 @@ def create_string_data():
     def _create_data(n_samples=97):
         rnd = np.random.default_rng(882)
         data = pd.DataFrame(
-            OrderedDict(
-                [
-                    ("answer", np.array(["Yes", "No"])[rnd.binomial(1, 0.6, n_samples)]),
-                    ("direction", np.array(["East", "North", "West", "South"])[rnd.integers(4, size=n_samples)]),
-                    ("color", np.array(["Green", "Blue", "Red"])[rnd.integers(3, size=n_samples)]),
-                ]
-            )
+            {
+                "answer": np.array(["Yes", "No"])[rnd.binomial(1, 0.6, n_samples)],
+                "direction": np.array(["East", "North", "West", "South"])[rnd.integers(4, size=n_samples)],
+                "color": np.array(["Green", "Blue", "Red"])[rnd.integers(3, size=n_samples)],
+            }
         )
 
         data_cat = data.astype(dict.fromkeys(data.columns, "category"))
-        return data, _encoded_data(data_cat)
+        return data, expected_one_hot_data(data_cat)
 
     return _create_data
 
@@ -81,10 +41,16 @@ class TestOneHotEncoder:
 
             t = OneHotEncoder().fit(data)
 
+            assert isinstance(t.feature_names_, pd.Index)
+            assert isinstance(t.encoded_columns_, pd.Index)
             assert t.feature_names_.tolist() == ["binary_1", "binary_2", "trinary", "many"]
             assert set(t.encoded_columns_) == set(expected_data.columns)
 
-            assert t.categories_ == {k: data[k].cat.categories for k in ["binary_1", "binary_2", "trinary", "many"]}
+            expected_categories = {k: data[k].cat.categories for k in ["binary_1", "binary_2", "trinary", "many"]}
+            assert set(t.categories_) == set(expected_categories)
+            for key, expected_index in expected_categories.items():
+                assert isinstance(t.categories_[key], pd.Index)
+                assert t.categories_[key].tolist() == expected_index.tolist()
 
     @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
     @staticmethod
@@ -169,8 +135,7 @@ class TestOneHotEncoder:
                 t.transform(data_renamed)
 
             data_dropped = data.drop("trinary", axis=1)
-            error_msg = "X has 8 features, but OneHotEncoder is expecting 9 features as input"
-            with pytest.raises(ValueError, match=error_msg):
+            with pytest.raises(ValueError, match=r"1 features are missing from data: \['trinary'\]"):
                 t.transform(data_dropped)
 
             data_renamed = data.rename(columns={"binary_1": "renamed_1", "many": "too_many"})

@@ -30,6 +30,7 @@ from sklearn.utils.validation import (
     validate_data,
 )
 
+from .._dataframe import ensure_eager_dataframe
 from ..base import SurvivalAnalysisMixin
 from ..docstrings import append_cumulative_hazard_example, append_survival_function_example
 from ..linear_model.coxph import BreslowEstimator
@@ -395,7 +396,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         if not self.warm_start:
             self._clear_state()
 
-        X = validate_data(self, X, ensure_min_samples=2)
+        X = validate_data(self, ensure_eager_dataframe(X), ensure_min_samples=2)
         event, time = check_array_survival(X, y)
 
         sample_weight = _check_sample_weight(sample_weight, X)
@@ -476,7 +477,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
             Predicted risk scores.
         """
         check_is_fitted(self, "estimators_")
-        X = validate_data(self, X, reset=False)
+        X = validate_data(self, ensure_eager_dataframe(X), reset=False)
 
         return self._predict(X)
 
@@ -1208,7 +1209,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         X = validate_data(
             self,
-            X,
+            ensure_eager_dataframe(X),
             ensure_min_samples=2,
             order="C",
             accept_sparse=["csr", "csc", "coo"],
@@ -1363,7 +1364,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         return raw_predictions
 
     def _dropout_staged_raw_predict(self, X):
-        X = validate_data(self, X, dtype=np.float32, order="C", accept_sparse="csr")
+        X = validate_data(self, ensure_eager_dataframe(X), dtype=np.float32, order="C", accept_sparse="csr")
         raw_predictions = self._raw_predict_init(X)
 
         n_estimators, K = self.estimators_.shape
@@ -1411,7 +1412,9 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         """
         check_is_fitted(self, "estimators_")
 
-        X = validate_data(self, X, reset=False, order="C", accept_sparse="csr", dtype=np.float32)
+        X = validate_data(
+            self, ensure_eager_dataframe(X), reset=False, order="C", accept_sparse="csr", dtype=np.float32
+        )
         return self._predict(X)
 
     def staged_predict(self, X):
@@ -1436,6 +1439,8 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
             The predicted value of the input samples.
         """
         check_is_fitted(self, "estimators_")
+
+        X = ensure_eager_dataframe(X)
 
         # if dropout wasn't used during training, proceed as usual,
         # otherwise consider scaling factor of individual trees

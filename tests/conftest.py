@@ -105,5 +105,8 @@ def non_finite_value(request):
 def temp_file():
     f = tempfile.NamedTemporaryFile(mode="w", delete=False)
     fp = Path(f.name)
-    yield f
-    fp.unlink()
+    try:
+        yield f
+    finally:
+        f.close()
+        fp.unlink(missing_ok=True)

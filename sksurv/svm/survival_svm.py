@@ -31,6 +31,7 @@ from sklearn.utils.validation import (
     validate_data,
 )
 
+from .._dataframe import ensure_eager_dataframe
 from ..base import SurvivalAnalysisMixin
 from ..bintrees import AVLTree, RBTree
 from ..exceptions import NoComparablePairException
@@ -756,7 +757,7 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
         """
 
     def _validate_for_fit(self, X):
-        return validate_data(self, X, ensure_min_samples=2)
+        return validate_data(self, ensure_eager_dataframe(X), ensure_min_samples=2)
 
     def fit(self, X, y):
         """Build a survival support vector machine model from training data.
@@ -979,7 +980,7 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
 
     def predict(self, X):
         check_is_fitted(self, "coef_")
-        X = validate_data(self, X, reset=False)
+        X = validate_data(self, ensure_eager_dataframe(X), reset=False)
 
         val = np.dot(X, self.coef_)
         if hasattr(self, "intercept_"):
@@ -1219,7 +1220,7 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         return opt_result
 
     def predict(self, X):
-        X = validate_data(self, X, reset=False)
+        X = validate_data(self, ensure_eager_dataframe(X), reset=False)
         kernel_mat = self._get_kernel(X, self.fit_X_)
 
         val = np.dot(kernel_mat, self.coef_)

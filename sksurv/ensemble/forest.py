@@ -16,6 +16,7 @@ from sklearn.ensemble._forest import (
 from sklearn.utils._tags import get_tags
 from sklearn.utils.validation import _check_sample_weight, check_is_fitted, check_random_state, validate_data
 
+from .._dataframe import ensure_eager_dataframe
 from ..base import SurvivalAnalysisMixin
 from ..docstrings import append_cumulative_hazard_example, append_survival_function_example
 from ..metrics import concordance_index_censored
@@ -108,7 +109,7 @@ class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
 
         X = validate_data(
             self,
-            X,
+            ensure_eager_dataframe(X),
             dtype=np.float32,
             accept_sparse="csc",
             ensure_min_samples=2,
@@ -257,7 +258,7 @@ class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
     def _predict(self, predict_fn, X):
         check_is_fitted(self, "estimators_")
         # Check data
-        X = self._validate_X_predict(X)
+        X = self._validate_X_predict(ensure_eager_dataframe(X))
 
         # Assign chunk of trees to jobs
         n_jobs, _, _ = _partition_estimators(self.n_estimators, self.n_jobs)

@@ -45,8 +45,28 @@ class StandardizeCase(FixtureParameterFactory):
         data = data.astype({"q3": "category"})
         return data
 
+    @property
+    def numeric_data_with_missing(self):
+        return pd.DataFrame(
+            {"a": [1.0, 2.0, np.nan, 4.0], "b": [1.0, 2.0, 3.0, 4.0]},
+            index=[10, 20, 30, 40],
+        )
+
+    @property
+    def expected_with_missing(self):
+        return pd.DataFrame(
+            {
+                "a": [-0.872872, -0.218218, np.nan, 1.091089],
+                "b": [-1.161895, -0.387298, 0.387298, 1.161895],
+            },
+            index=[10, 20, 30, 40],
+        )
+
     def data_numeric(self):
         return self.numeric_data, self.expected
+
+    def data_numeric_with_missing(self):
+        return self.numeric_data_with_missing, self.expected_with_missing
 
     def data_float_numpy_array(self):
         return self.numeric_data.to_numpy(), self.expected
@@ -88,6 +108,24 @@ def test_standardize(in_data, expected):
 
     tm.assert_frame_equal(pd.isna(result), pd.isna(expected))
     tm.assert_frame_equal(result, expected)
+
+
+def test_standardize_with_missing_no_std():
+    data = pd.DataFrame({"a": [1.0, 2.0, np.nan, 4.0]})
+
+    result = column.standardize(data, with_std=False)
+
+    expected = pd.DataFrame({"a": [-4.0 / 3, -1.0 / 3, np.nan, 5.0 / 3]})
+    tm.assert_frame_equal(result, expected)
+
+
+def test_standardize_numpy_without_std():
+    data = np.arange(12, dtype=float).reshape(4, 3)
+
+    result = column.standardize(data, with_std=False)
+
+    expected = data - data.mean(axis=0)
+    np.testing.assert_allclose(result, expected)
 
 
 class CategoricalCases(FixtureParameterFactory):
@@ -257,10 +295,29 @@ def test_encode_categorical(make_data_fn, infer_string_context):
         tm.assert_frame_equal(actual_df, expected_df, check_exact=True)
 
 
+def test_encode_categorical_series_preserves_index():
+    input_series = pd.Series(["a", "b", "a"], name="letter", index=["r0", "r0", "r2"])
+    expected = pd.DataFrame({"letter=b": [0.0, 1.0, 0.0]}, index=input_series.index)
+
+    actual = column.encode_categorical(input_series)
+
+    tm.assert_frame_equal(actual, expected, check_exact=True)
+
+
+def test_encode_categorical_drops_single_category_series_preserves_index():
+    input_series = pd.Series(pd.Categorical(["a", "a", "a"]), name="c", index=["r0", "r1", "r2"])
+
+    actual = column.encode_categorical(input_series)
+
+    assert isinstance(actual, pd.DataFrame)
+    assert actual.shape == (3, 0)
+    assert list(actual.index) == ["r0", "r1", "r2"]
+
+
 def test_series_numeric():
     input_series = pd.Series([0.5, 0.1, 10, 25, 3.8, 11, 2256, -1, -0.2, 3.14], name="a_series")
 
-    with pytest.raises(TypeError, match="series must be of categorical dtype, but was float"):
+    with pytest.raises(TypeError, match="series must be of categorical dtype"):
         column.encode_categorical(input_series)
 
 
@@ -288,6 +345,11 @@ class CategoricalToNumeric(CategoricalCases):
         )
         return input_series, expected
 
+    def data_object_numeric_series_to_numeric(self):
+        input_series = pd.Series([1, 2, 1], name="x", dtype=object)
+        expected = pd.Series([1, 2, 1], name="x", dtype=np.int64)
+        return input_series, expected
+
     def data_frame_to_numeric(self):
         input_df = self.mixed_data_frame
 
@@ -297,6 +359,11 @@ class CategoricalToNumeric(CategoricalCases):
         expected = pd.DataFrame.from_dict({"a_category": a_num, "a_binary": b_num})
         expected.loc[:, "a_number"] = input_df.loc[:, "a_number"].to_numpy(copy=True)
 
+        return input_df, expected
+
+    def data_object_numeric_frame_to_numeric(self):
+        input_df = pd.DataFrame({"x": pd.Series([1, 2, 1], dtype=object)})
+        expected = pd.DataFrame({"x": pd.Series([1, 2, 1], dtype=np.int64)})
         return input_df, expected
 
 

@@ -12,12 +12,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import itertools
 
+import narwhals.stable.v2 as nw
 import numpy as np
 import pandas as pd
 from scipy.special import comb
 from sklearn.svm import LinearSVC
 from sklearn.utils.validation import _get_feature_names, check_random_state, validate_data
 
+from .._dataframe import ensure_eager_dataframe, is_supported_dataframe
 from ..base import SurvivalAnalysisMixin
 from ..exceptions import NoComparablePairException
 from ..util import check_array_survival
@@ -164,7 +166,9 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
         NoComparablePairException
             If no comparable pairs can be formed from the input data.
         """
+        X = ensure_eager_dataframe(X)
         feature_names = _get_feature_names(X)
+        input_implementation = nw.from_native(X).implementation if is_supported_dataframe(X) else None
 
         X = validate_data(self, X, ensure_min_samples=2)
         event, time = check_array_survival(X, y)
@@ -194,7 +198,10 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
         y_pairs.resize(k, refcheck=False)
 
         if feature_names is not None:
-            x_pairs = pd.DataFrame(x_pairs, columns=feature_names)
+            if input_implementation is not None:
+                x_pairs = nw.from_numpy(x_pairs, schema=list(feature_names), backend=input_implementation).to_native()
+            else:
+                x_pairs = pd.DataFrame(x_pairs, columns=feature_names)
         return x_pairs, y_pairs
 
     def fit(self, X, y, sample_weight=None):
@@ -246,4 +253,4 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
         y : ndarray, shape = (n_samples,), dtype = float
             Predicted risk scores.
         """
-        return -self.decision_function(X)
+        return -self.decision_function(ensure_eager_dataframe(X))

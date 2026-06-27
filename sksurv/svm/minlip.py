@@ -10,6 +10,7 @@ from sklearn.metrics.pairwise import PAIRWISE_KERNEL_FUNCTIONS, pairwise_kernels
 from sklearn.utils._param_validation import Interval, StrOptions
 from sklearn.utils.validation import validate_data
 
+from .._dataframe import ensure_eager_dataframe
 from ..base import SurvivalAnalysisMixin
 from ..exceptions import NoComparablePairException
 from ..util import check_array_survival
@@ -492,7 +493,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         self
         """
         self._validate_params()
-        X = validate_data(self, X, ensure_min_samples=2)
+        X = validate_data(self, ensure_eager_dataframe(X), ensure_min_samples=2)
         event, time = check_array_survival(X, y)
         self._fit(X, event, time)
 
@@ -516,7 +517,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         y : ndarray, shape = (n_samples,)
             Predicted risk.
         """
-        X = validate_data(self, X, reset=False)
+        X = validate_data(self, ensure_eager_dataframe(X), reset=False)
         K = self._get_kernel(X, self.X_fit_)
         pred = -np.dot(self.coef_, K.T)
         return pred.ravel()

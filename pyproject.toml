@@ -45,6 +45,7 @@ classifiers = [
 dependencies = [
     "ecos",
     "joblib",
+    "narwhals >=2.0.1",
     "numexpr",
     "numpy >=2.0.0",
     "osqp >=1.0.2",
@@ -84,6 +85,7 @@ docs = [
 
 test = [
     "coverage",
+    "polars >=1.0.0",
     "pytest >=9",
 ]
 
@@ -143,6 +145,16 @@ filterwarnings = [
     "ignore:scipy\\.optimize. The `disp` and `iprint` options of the L-BFGS-B solver are deprecated.*:DeprecationWarning",
     # deprecated since pandas 3.0.0
     "ignore:The copy keyword is deprecated and will be removed in a future version.*:DeprecationWarning",
+    # deprecated since polars 1.40.0: scikit-learn (pre-narwhals release) still
+    # routes feature-name extraction through ``X.__dataframe__()`` which polars
+    # has marked as deprecated. Once a sklearn release that uses narwhals
+    # (PR #31127, merged 2026-05-07) reaches our minimum, this entry can go.
+    "ignore:Support for the dataframe interchange protocol is deprecated.*:DeprecationWarning",
+    # pandas 4 deprecates the implicit ``str``-via-``object`` inclusion in
+    # ``DataFrame.select_dtypes``. Listing ``"str"`` explicitly would resolve
+    # the deprecation but is rejected by pandas <= 3.x with ``TypeError``,
+    # so the cross-version-safe call still emits the warning on pandas 4.
+    "ignore:For backward compatibility, 'str' dtypes are included by select_dtypes.*",
 ]
 
 [tool.coverage.run]
