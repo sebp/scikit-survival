@@ -37,38 +37,18 @@ def survival_smoke_data():
 
 class TestNaiveSurvivalSVMPolars:
     @staticmethod
-    @pytest.mark.parametrize("dataframe_library", ["pandas", "polars"])
-    def test_fit_predict(survival_smoke_data, dataframe_library):
+    @pytest.mark.parametrize("dataframe_library,dataframe_class", [("pandas", pd.DataFrame), ("polars", pl.DataFrame)])
+    def test_dataframe_container_preserved(survival_smoke_data, dataframe_library, dataframe_class):
+        from sklearn.utils import check_random_state
+
         X, y = survival_smoke_data(dataframe_library)
         est = NaiveSurvivalSVM(random_state=0)
-        est.fit(X, y)
-        assert list(est.feature_names_in_) == [f"f{i}" for i in range(5)]
-        scores = est.predict(X)
-        assert scores.shape == (X.shape[0],)
-
-    @staticmethod
-    def test_polars_internal_container_preserved(survival_smoke_data):
-        from sklearn.utils import check_random_state
-
-        X, y = survival_smoke_data("polars")
-        est = NaiveSurvivalSVM(random_state=0)
         rs = check_random_state(0)
         x_pairs, _ = est._get_survival_pairs(X, y, rs)
-        assert isinstance(
-            x_pairs, pl.DataFrame
-        ), f"polars input should yield polars internal container, got {type(x_pairs)!r}"
 
-    @staticmethod
-    def test_pandas_internal_container_preserved(survival_smoke_data):
-        from sklearn.utils import check_random_state
-
-        X, y = survival_smoke_data("pandas")
-        est = NaiveSurvivalSVM(random_state=0)
-        rs = check_random_state(0)
-        x_pairs, _ = est._get_survival_pairs(X, y, rs)
         assert isinstance(
-            x_pairs, pd.DataFrame
-        ), f"pandas input should yield pandas internal container, got {type(x_pairs)!r}"
+            x_pairs, dataframe_class
+        ), f"{dataframe_library} input should yield {dataframe_library} internal container, got {type(x_pairs)!r}"
 
 
 def _make_survival_estimator_constructors():
@@ -138,11 +118,14 @@ class TestSurvivalEstimatorPolarsParity:
         est_pl.fit(X_pl, y)
         pred_pl = est_pl.predict(X_pl)
 
+        np.testing.assert_equal(est_pd.feature_names_in_, est_pl.feature_names_in_)
+
         # Iterative solvers (e.g. ecos used by Minlip / HingeLossSurvivalSVM)
         # can reach the same solution along slightly different paths when the
         # input is built through different dataframe libraries, leaving
         # convergence-level differences on a handful of elements. Allow a
         # tight tolerance instead of bit-exact equality.
+        assert pred_pd.shape == (y.shape[0],)
         assert pred_pd.dtype == pred_pl.dtype
         np.testing.assert_allclose(pred_pd, pred_pl, rtol=1e-7, atol=0)
         assert est_pd.score(X_pd, y) == est_pl.score(X_pl, y)
