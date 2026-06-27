@@ -52,9 +52,9 @@ jobs:
           CIBW_BUILD_FRONTEND: build[uv]
           CIBW_BUILD_VERBOSITY: 1
           CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=${{ runner.arch == 'ARM64' && '11.0' || '10.13' }}
+          CIBW_TEST_GROUPS: test
           CIBW_TEST_COMMAND: pytest --strict-markers -m 'not slow' -k 'not test_fit_and_predict_linear_regression' {project}/tests
           CIBW_TEST_COMMAND_WINDOWS: pytest --strict-markers -m "not slow" -k "not test_fit_and_predict_linear_regression" {project}\\tests
-          CIBW_TEST_REQUIRES: pytest
           # Skip trying to test arm64 builds on Intel Macs, and vice versa
           CIBW_TEST_SKIP: "*-macosx_${{ runner.arch == 'ARM64' && 'x86_64' || 'arm64' }} *-macosx_universal2"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
