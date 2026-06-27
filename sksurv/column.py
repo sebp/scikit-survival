@@ -12,7 +12,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
-import pandas as pd
 
 from ._dataframe import (
     ensure_eager_dataframe,
@@ -25,12 +24,6 @@ from ._dataframe._column_impl import (
 )
 
 __all__ = ["categorical_to_numeric", "encode_categorical", "standardize"]
-
-
-def _apply_along_column(array, func1d, **kwargs):
-    if isinstance(array, pd.DataFrame):
-        return array.apply(func1d, **kwargs)
-    return np.apply_along_axis(func1d, 0, array, **kwargs)
 
 
 def standardize_column(series_or_array, with_std=True):
@@ -76,7 +69,7 @@ def standardize(table, with_std=True):
     table = ensure_eager_dataframe(table)
     if is_supported_dataframe(table):
         return standardize_narwhals_dataframe(table, with_std=with_std)
-    return _apply_along_column(table, standardize_column, with_std=with_std)
+    return np.apply_along_axis(standardize_column, 0, table, with_std=with_std)
 
 
 def encode_categorical(table, columns=None, **kwargs):

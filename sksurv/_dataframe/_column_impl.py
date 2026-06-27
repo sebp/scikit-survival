@@ -103,11 +103,11 @@ def _prepare_column_for_one_hot(col):
     dtype = col.dtype
     if dtype.is_boolean():
         # Match pandas get_dummies(drop_first=True): False is the dropped baseline.
-        present = set(col.drop_nulls().unique().to_list())
+        present = set(col.drop_nulls().unique())
         observed = [value for value in (False, True) if value in present]
         return col, ColumnSemantics(name=col.name, kind="nominal", categories=tuple(observed), ordered=False)
     if dtype.is_numeric():
-        ordered_values = sorted(col.drop_nulls().unique().to_list())
+        ordered_values = sorted(col.drop_nulls().unique())
         return col, ColumnSemantics(
             name=col.name,
             kind="nominal",

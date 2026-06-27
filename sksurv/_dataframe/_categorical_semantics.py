@@ -49,11 +49,11 @@ def get_semantic_categories(series):
     s = nw.from_native(series, series_only=True)
     dt = s.dtype
     if isinstance(dt, nw.Enum):
-        return tuple(s.cat.get_categories().to_list())
+        return tuple(s.cat.get_categories())
     if isinstance(dt, nw.Categorical) and s.implementation.is_pandas_like():
-        return tuple(s.cat.get_categories().to_list())
+        return tuple(s.cat.get_categories())
     if is_categorical_or_string_dtype(dt):
-        return tuple(sorted(s.drop_nulls().unique().to_list()))
+        return tuple(sorted(s.drop_nulls().unique()))
     raise TypeError(f"get_semantic_categories: unsupported dtype {dt!r}; expected Enum, Categorical, String, or Object")
 
 

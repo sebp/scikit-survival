@@ -119,6 +119,15 @@ def test_standardize_with_missing_no_std():
     tm.assert_frame_equal(result, expected)
 
 
+def test_standardize_numpy_without_std():
+    data = np.arange(12, dtype=float).reshape(4, 3)
+
+    result = column.standardize(data, with_std=False)
+
+    expected = data - data.mean(axis=0)
+    np.testing.assert_allclose(result, expected)
+
+
 class CategoricalCases(FixtureParameterFactory):
     def _make_randn(self, shape):
         return np.random.default_rng(0).standard_normal(shape)

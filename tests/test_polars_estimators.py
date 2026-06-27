@@ -7,6 +7,7 @@ import polars as pl
 import pytest
 
 import sksurv.datasets as sdata
+from sksurv.metrics import concordance_index_censored
 from sksurv.preprocessing import OneHotEncoder
 from sksurv.svm import NaiveSurvivalSVM
 from sksurv.testing import all_survival_estimators
@@ -82,16 +83,17 @@ def _make_survival_estimator_constructors():
                 estimator.set_params(n_estimators=5)
 
             name = estimator_cls.__name__
-            if name == "CoxnetSurvivalAnalysis":
-                estimator.set_params(n_alphas=5)
-            elif name == "IPCRidge":
-                estimator.set_params(alpha=1.0)
-            elif name == "NaiveSurvivalSVM":
-                estimator.set_params(max_iter=200)
-            elif name in {"FastSurvivalSVM", "FastKernelSurvivalSVM"}:
-                estimator.set_params(max_iter=50)
-            elif name in {"MinlipSurvivalAnalysis", "HingeLossSurvivalSVM"}:
-                estimator.set_params(solver="ecos")
+            match name:
+                case "CoxnetSurvivalAnalysis":
+                    estimator.set_params(n_alphas=5, fit_baseline_model=True)
+                case "IPCRidge":
+                    estimator.set_params(alpha=1.0)
+                case "NaiveSurvivalSVM":
+                    estimator.set_params(max_iter=200)
+                case "FastSurvivalSVM" | "FastKernelSurvivalSVM":
+                    estimator.set_params(max_iter=50)
+                case "MinlipSurvivalAnalysis" | "HingeLossSurvivalSVM":
+                    estimator.set_params(solver="ecos")
 
             return estimator
 
@@ -103,21 +105,6 @@ def _make_survival_estimator_constructors():
     ]
 
 
-_SCORE_ESTIMATOR_NAMES = {
-    "CoxnetSurvivalAnalysis",
-    "ExtraSurvivalTrees",
-    "FastKernelSurvivalSVM",
-    "FastSurvivalSVM",
-    "HingeLossSurvivalSVM",
-    "IPCRidge",
-    "MinlipSurvivalAnalysis",
-}
-
-
-def _make_score_estimator_constructors():
-    return [(name, ctor) for name, ctor in _make_survival_estimator_constructors() if name in _SCORE_ESTIMATOR_NAMES]
-
-
 @pytest.fixture(scope="module")
 def whas500_encoded_small():
     X_pd, y = sdata.load_whas500()
@@ -125,6 +112,15 @@ def whas500_encoded_small():
     X_pd_enc = OneHotEncoder().fit_transform(X_pd.iloc[:100])
     X_pl_enc = OneHotEncoder().fit_transform(X_pl.head(100))
     return X_pd_enc, X_pl_enc, y[:100]
+
+
+def _assert_step_functions_equal(functions_pd, functions_pl):
+    assert len(functions_pd) == len(functions_pl)
+    for function_pd, function_pl in zip(functions_pd, functions_pl):
+        np.testing.assert_array_equal(function_pd.x, function_pl.x)
+        # Different intermediate dtype handling can produce
+        # machine-epsilon-scale differences in cumulative products.
+        np.testing.assert_allclose(function_pd.y, function_pl.y, rtol=1e-12, atol=0)
 
 
 class TestSurvivalEstimatorPolarsParity:
@@ -136,18 +132,30 @@ class TestSurvivalEstimatorPolarsParity:
         X_pd, X_pl, y = whas500_encoded_small
         est_pd = ctor()
         est_pd.fit(X_pd, y)
-        pred_pd = np.asarray(est_pd.predict(X_pd), dtype=float)
+        pred_pd = est_pd.predict(X_pd)
 
         est_pl = ctor()
         est_pl.fit(X_pl, y)
-        pred_pl = np.asarray(est_pl.predict(X_pl), dtype=float)
+        pred_pl = est_pl.predict(X_pl)
 
         # Iterative solvers (e.g. ecos used by Minlip / HingeLossSurvivalSVM)
         # can reach the same solution along slightly different paths when the
         # input is built through different dataframe libraries, leaving
         # convergence-level differences on a handful of elements. Allow a
         # tight tolerance instead of bit-exact equality.
+        assert pred_pd.dtype == pred_pl.dtype
         np.testing.assert_allclose(pred_pd, pred_pl, rtol=1e-7, atol=0)
+        assert est_pd.score(X_pd, y) == est_pl.score(X_pl, y)
+
+        cindex_pd = concordance_index_censored(y["fstat"], y["lenfol"], pred_pd)
+        cindex_pl = concordance_index_censored(y["fstat"], y["lenfol"], pred_pl)
+        assert cindex_pd == cindex_pl
+
+        for method_name in ("predict_survival_function", "predict_cumulative_hazard_function"):
+            if hasattr(est_pd, method_name):
+                functions_pd = getattr(est_pd, method_name)(X_pd[:10])
+                functions_pl = getattr(est_pl, method_name)(X_pl.head(10))
+                _assert_step_functions_equal(functions_pd, functions_pl)
 
 
 @pytest.fixture(scope="module")
@@ -181,6 +189,18 @@ class TestSklearnPipelinePolars:
         X_pl_enc = OneHotEncoder().fit_transform(X_pl)
         scores = cross_val_score(CoxPHSurvivalAnalysis(), X_pl_enc, y, cv=KFold(3))
         assert scores.shape == (3,)
+
+    @staticmethod
+    def test_gridsearchcv_polars(whas500_encoded_small):
+        from sklearn.model_selection import GridSearchCV
+
+        from sksurv.linear_model import CoxPHSurvivalAnalysis
+
+        X_pd, X_pl, y = whas500_encoded_small
+        param_grid = {"alpha": [0.01, 0.1, 1.0]}
+        gs_pd = GridSearchCV(CoxPHSurvivalAnalysis(), param_grid, cv=3).fit(X_pd, y)
+        gs_pl = GridSearchCV(CoxPHSurvivalAnalysis(), param_grid, cv=3).fit(X_pl, y)
+        assert gs_pd.best_params_ == gs_pl.best_params_
 
 
 class TestMetaEstimatorsPolars:
@@ -248,197 +268,6 @@ class TestMetaEstimatorsPolars:
         pred_pd = es_pd.predict(X_pd_enc)
         pred_pl = es_pl.predict(X_pl_enc)
         np.testing.assert_allclose(pred_pd, pred_pl, rtol=1e-7, atol=0)
-
-
-class TestNumpyOnlyAPIsPolarsPassthrough:
-    @staticmethod
-    def test_concordance_index_censored_with_polars_derived_risk(whas500_pl_pd_small):
-        from sksurv.linear_model import CoxPHSurvivalAnalysis
-        from sksurv.metrics import concordance_index_censored
-
-        X_pd, X_pl, y = whas500_pl_pd_small
-        X_pd_enc = OneHotEncoder().fit_transform(X_pd)
-        X_pl_enc = OneHotEncoder().fit_transform(X_pl)
-
-        risk_pd = CoxPHSurvivalAnalysis().fit(X_pd_enc, y).predict(X_pd_enc)
-        risk_pl = CoxPHSurvivalAnalysis().fit(X_pl_enc, y).predict(X_pl_enc)
-        c_pd = concordance_index_censored(y["fstat"], y["lenfol"], risk_pd)
-        c_pl = concordance_index_censored(y["fstat"], y["lenfol"], risk_pl)
-        assert c_pd == c_pl
-
-    @staticmethod
-    def test_kaplan_meier_estimator_passthrough(whas500_pl_pd_small):
-        from sksurv.nonparametric import kaplan_meier_estimator
-
-        _X_pd, _X_pl, y = whas500_pl_pd_small
-        t, s = kaplan_meier_estimator(y["fstat"], y["lenfol"])
-        assert t.shape == s.shape
-        assert len(t) > 0
-
-    @staticmethod
-    def test_nelson_aalen_estimator_passthrough(whas500_pl_pd_small):
-        from sksurv.nonparametric import nelson_aalen_estimator
-
-        _X_pd, _X_pl, y = whas500_pl_pd_small
-        t, ch = nelson_aalen_estimator(y["fstat"], y["lenfol"])
-        assert t.shape == ch.shape
-        assert len(t) > 0
-
-    @staticmethod
-    def test_compare_survival_passthrough(whas500_pl_pd_small):
-        from sksurv.compare import compare_survival
-
-        _X_pd, _X_pl, y = whas500_pl_pd_small
-        n = len(y)
-        group = np.repeat([0, 1, 2], n // 3 + 1)[:n]
-        chi2, pval = compare_survival(y, group)
-        assert np.isfinite(chi2)
-        assert 0.0 <= pval <= 1.0
-
-
-class TestEstimatorPredictionApiPolarsParity:
-    @staticmethod
-    def _step_functions_equal(arr_pd, arr_pl):
-        assert len(arr_pd) == len(arr_pl)
-        for a, b in zip(arr_pd, arr_pl):
-            np.testing.assert_array_equal(a.x, b.x)
-            # The pandas and Narwhals code paths reach the survival-function
-            # kernel through different intermediate dtype handling, which can
-            # produce machine-epsilon-scale differences in cumulative products.
-            # Allow a tight tolerance rather than bit-exact equality.
-            np.testing.assert_allclose(a.y, b.y, rtol=1e-12, atol=0)
-
-    @staticmethod
-    def test_cox_predict_survival_function(whas500_encoded_small):
-        from sksurv.linear_model import CoxPHSurvivalAnalysis
-
-        X_pd, X_pl, y = whas500_encoded_small
-        est_pd = CoxPHSurvivalAnalysis().fit(X_pd, y)
-        est_pl = CoxPHSurvivalAnalysis().fit(X_pl, y)
-        sf_pd = est_pd.predict_survival_function(X_pd[:10])
-        sf_pl = est_pl.predict_survival_function(X_pl.head(10))
-        TestEstimatorPredictionApiPolarsParity._step_functions_equal(sf_pd, sf_pl)
-
-    @staticmethod
-    def test_cox_predict_cumulative_hazard_function(whas500_encoded_small):
-        from sksurv.linear_model import CoxPHSurvivalAnalysis
-
-        X_pd, X_pl, y = whas500_encoded_small
-        est_pd = CoxPHSurvivalAnalysis().fit(X_pd, y)
-        est_pl = CoxPHSurvivalAnalysis().fit(X_pl, y)
-        chf_pd = est_pd.predict_cumulative_hazard_function(X_pd[:10])
-        chf_pl = est_pl.predict_cumulative_hazard_function(X_pl.head(10))
-        TestEstimatorPredictionApiPolarsParity._step_functions_equal(chf_pd, chf_pl)
-
-    @staticmethod
-    def test_rsf_predict_survival_function(whas500_encoded_small):
-        from sksurv.ensemble import RandomSurvivalForest
-
-        X_pd, X_pl, y = whas500_encoded_small
-        est_pd = RandomSurvivalForest(n_estimators=5, random_state=0).fit(X_pd, y)
-        est_pl = RandomSurvivalForest(n_estimators=5, random_state=0).fit(X_pl, y)
-        sf_pd = est_pd.predict_survival_function(X_pd[:10])
-        sf_pl = est_pl.predict_survival_function(X_pl.head(10))
-        TestEstimatorPredictionApiPolarsParity._step_functions_equal(sf_pd, sf_pl)
-
-    @staticmethod
-    def test_survival_tree_predict_survival_function(whas500_encoded_small):
-        from sksurv.tree import SurvivalTree
-
-        X_pd, X_pl, y = whas500_encoded_small
-        est_pd = SurvivalTree(random_state=0).fit(X_pd, y)
-        est_pl = SurvivalTree(random_state=0).fit(X_pl, y)
-        sf_pd = est_pd.predict_survival_function(X_pd[:10])
-        sf_pl = est_pl.predict_survival_function(X_pl.head(10))
-        TestEstimatorPredictionApiPolarsParity._step_functions_equal(sf_pd, sf_pl)
-
-    @staticmethod
-    @pytest.mark.parametrize("estimator_name", ["cox", "rsf", "tree"])
-    def test_score_method_parity(whas500_encoded_small, estimator_name):
-        from sksurv.ensemble import RandomSurvivalForest
-        from sksurv.linear_model import CoxPHSurvivalAnalysis
-        from sksurv.tree import SurvivalTree
-
-        ctors = {
-            "cox": CoxPHSurvivalAnalysis,
-            "rsf": lambda: RandomSurvivalForest(n_estimators=5, random_state=0),
-            "tree": lambda: SurvivalTree(random_state=0),
-        }
-        ctor = ctors[estimator_name]
-        X_pd, X_pl, y = whas500_encoded_small
-        est_pd = ctor().fit(X_pd, y)
-        est_pl = ctor().fit(X_pl, y)
-        assert est_pd.score(X_pd, y) == est_pl.score(X_pl, y)
-
-    @staticmethod
-    def test_gridsearchcv_polars(whas500_encoded_small):
-        from sklearn.model_selection import GridSearchCV
-
-        from sksurv.linear_model import CoxPHSurvivalAnalysis
-
-        X_pd, X_pl, y = whas500_encoded_small
-        param_grid = {"alpha": [0.01, 0.1, 1.0]}
-        gs_pd = GridSearchCV(CoxPHSurvivalAnalysis(), param_grid, cv=3).fit(X_pd, y)
-        gs_pl = GridSearchCV(CoxPHSurvivalAnalysis(), param_grid, cv=3).fit(X_pl, y)
-        assert gs_pd.best_params_ == gs_pl.best_params_
-
-
-class TestAdditionalEstimatorPredictionApis:
-    @staticmethod
-    @pytest.mark.parametrize(
-        "name,ctor",
-        _make_score_estimator_constructors(),
-        ids=[t[0] for t in _make_score_estimator_constructors()],
-    )
-    def test_score_polars_matches_pandas(name, ctor, whas500_encoded_small):
-        X_pd, X_pl, y = whas500_encoded_small
-        s_pd = ctor().fit(X_pd, y).score(X_pd, y)
-        s_pl = ctor().fit(X_pl, y).score(X_pl, y)
-        assert s_pd == s_pl, f"{name}: pandas={s_pd}, polars={s_pl}"
-
-    @staticmethod
-    def test_coxnet_predict_survival_function(whas500_encoded_small):
-        from sksurv.linear_model import CoxnetSurvivalAnalysis
-
-        X_pd, X_pl, y = whas500_encoded_small
-        est_pd = CoxnetSurvivalAnalysis(n_alphas=5, fit_baseline_model=True).fit(X_pd, y)
-        est_pl = CoxnetSurvivalAnalysis(n_alphas=5, fit_baseline_model=True).fit(X_pl, y)
-        sf_pd = est_pd.predict_survival_function(X_pd[:10])
-        sf_pl = est_pl.predict_survival_function(X_pl.head(10))
-        TestEstimatorPredictionApiPolarsParity._step_functions_equal(sf_pd, sf_pl)
-
-    @staticmethod
-    def test_coxnet_predict_cumulative_hazard_function(whas500_encoded_small):
-        from sksurv.linear_model import CoxnetSurvivalAnalysis
-
-        X_pd, X_pl, y = whas500_encoded_small
-        est_pd = CoxnetSurvivalAnalysis(n_alphas=5, fit_baseline_model=True).fit(X_pd, y)
-        est_pl = CoxnetSurvivalAnalysis(n_alphas=5, fit_baseline_model=True).fit(X_pl, y)
-        chf_pd = est_pd.predict_cumulative_hazard_function(X_pd[:10])
-        chf_pl = est_pl.predict_cumulative_hazard_function(X_pl.head(10))
-        TestEstimatorPredictionApiPolarsParity._step_functions_equal(chf_pd, chf_pl)
-
-    @staticmethod
-    def test_extra_survival_trees_predict_survival_function(whas500_encoded_small):
-        from sksurv.ensemble import ExtraSurvivalTrees
-
-        X_pd, X_pl, y = whas500_encoded_small
-        est_pd = ExtraSurvivalTrees(n_estimators=5, random_state=0).fit(X_pd, y)
-        est_pl = ExtraSurvivalTrees(n_estimators=5, random_state=0).fit(X_pl, y)
-        sf_pd = est_pd.predict_survival_function(X_pd[:10])
-        sf_pl = est_pl.predict_survival_function(X_pl.head(10))
-        TestEstimatorPredictionApiPolarsParity._step_functions_equal(sf_pd, sf_pl)
-
-    @staticmethod
-    def test_extra_survival_trees_predict_cumulative_hazard_function(whas500_encoded_small):
-        from sksurv.ensemble import ExtraSurvivalTrees
-
-        X_pd, X_pl, y = whas500_encoded_small
-        est_pd = ExtraSurvivalTrees(n_estimators=5, random_state=0).fit(X_pd, y)
-        est_pl = ExtraSurvivalTrees(n_estimators=5, random_state=0).fit(X_pl, y)
-        chf_pd = est_pd.predict_cumulative_hazard_function(X_pd[:10])
-        chf_pl = est_pl.predict_cumulative_hazard_function(X_pl.head(10))
-        TestEstimatorPredictionApiPolarsParity._step_functions_equal(chf_pd, chf_pl)
 
 
 class TestSurvivalEstimatorLazyFrame:
