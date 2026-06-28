@@ -149,7 +149,7 @@ def test_from_arrays(args, kwargs, expected, expected_error):
         y = Surv.from_arrays(*args, **kwargs)
 
     if expected is not None:
-        assert_array_equal(y, expected)
+        assert_array_equal(y, expected, strict=True)
 
 
 class SurvDataFrameCases(SurvCases):
@@ -232,7 +232,7 @@ def test_from_dataframe(args, expected, expected_error):
         y = Surv.from_dataframe(*args)
 
     if expected is not None:
-        assert_array_equal(y, expected)
+        assert_array_equal(y, expected, strict=True)
 
 
 def test_cond_avail_property():

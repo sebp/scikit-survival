@@ -22,21 +22,24 @@ def _make_features(n_samples, n_features, seed):
 
 def _make_survival_data(n_samples, n_features, seed):
     rnd = np.random.default_rng(seed)
+
     x = _make_features(n_samples, n_features, seed)
-    event = rnd.binomial(1, 0.2, n_samples)
+    event = rnd.binomial(1, 0.2, n_samples).astype(bool)
     time = rnd.exponential(25, size=n_samples)
     return x, event, time
 
 
 def _make_classification_data(n_samples, n_features, n_classes, seed):
     rnd = np.random.default_rng(seed)
+
     x = _make_features(n_samples, n_features, seed)
     y = rnd.binomial(n_classes - 1, 0.2, n_samples)
-    return x, y
+    return x, y[:, np.newaxis]
 
 
 def _make_competing_risks_data(n_samples, n_features, seed):
     rnd = np.random.default_rng(seed)
+
     x = _make_features(n_samples, n_features, seed)
     event = rnd.integers(0, 3, n_samples)
     time = rnd.exponential(25, size=n_samples)
@@ -63,10 +66,15 @@ class GetXyPolarsCases(FixtureParameterFactory):
         return ["event", "time"]
 
     def _make_polars_eager(self, data_arrays, columns):
-        data = np.column_stack(data_arrays) if isinstance(data_arrays, tuple | list) else data_arrays
         import pandas as pd
 
-        return to_polars_dataframe(pd.DataFrame(data, columns=columns))
+        if not isinstance(data_arrays, tuple | list):
+            data_arrays = (data_arrays,)
+
+        df = [pd.DataFrame(data_array) for data_array in data_arrays]
+
+        data = pd.concat(df, axis=1).set_axis(columns, axis=1)
+        return to_polars_dataframe(data)
 
     def data_polars_eager_survival(self):
         x, event, time = _make_survival_data(self.n_samples, self.n_features, 0)
@@ -131,7 +139,7 @@ def test_get_xy_polars(args, kwargs, x_expected, y_expected, error_expected):
 
     if not isinstance(x_expected, _Skip):
         assert isinstance(x_test, pl.DataFrame), f"expected polars.DataFrame, got {type(x_test)!r}"
-        assert_array_equal(x_test.to_numpy(), x_expected)
+        assert_array_equal(x_test.to_numpy(), x_expected, strict=True)
 
     if not isinstance(y_expected, _Skip):
         if y_expected is None:
@@ -139,12 +147,12 @@ def test_get_xy_polars(args, kwargs, x_expected, y_expected, error_expected):
         elif isinstance(y_expected, tuple):
             assert y_test.dtype.names == ("event", "time")
             event, time = y_expected
-            assert_array_equal(y_test["event"].astype(np.uint32), event.astype(np.uint32))
+            assert_array_equal(y_test["event"], event, strict=True)
             assert_array_almost_equal(y_test["time"], time)
         else:
             assert isinstance(y_test, pl.DataFrame), f"expected polars.DataFrame, got {type(y_test)!r}"
             assert y_test.shape[1] == 1
-            assert_array_equal(y_test.to_numpy().ravel(), y_expected)
+            assert_array_equal(y_test.to_numpy(), y_expected, strict=True)
 
 
 class TestGetXYLazyFrameRejected:

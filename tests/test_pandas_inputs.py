@@ -1,4 +1,3 @@
-import numpy as np
 from numpy.testing import assert_array_equal
 import pandas as pd
 import pytest
@@ -20,7 +19,7 @@ def test_pandas_inputs(estimator_cls):
         estimator.set_params(kernel="rbf")
     estimator.fit(X_df, y)
     assert hasattr(estimator, "feature_names_in_")
-    assert_array_equal(estimator.feature_names_in_, np.asarray(X_df.columns, dtype=object))
+    assert_array_equal(estimator.feature_names_in_, X_df.columns.to_numpy(), strict=True)
     estimator.predict(X_df)
 
     msg = "Feature names must be in the same order as they were in fit"

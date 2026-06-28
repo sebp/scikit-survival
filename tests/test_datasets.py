@@ -63,7 +63,7 @@ def _make_survival_data(n_samples, n_features, seed):
     rnd = np.random.default_rng(seed)
 
     x = _make_features(n_samples, n_features, seed)
-    event = rnd.binomial(1, 0.2, n_samples)
+    event = rnd.binomial(1, 0.2, n_samples).astype(bool)
     time = rnd.exponential(25, size=n_samples)
     return x, event, time
 
@@ -73,7 +73,7 @@ def _make_classification_data(n_samples, n_features, n_classes, seed):
 
     x = _make_features(n_samples, n_features, seed)
     y = rnd.binomial(n_classes - 1, 0.2, 100)
-    return x, y
+    return x, y[:, np.newaxis]
 
 
 class GetXyCases(FixtureParameterFactory):
@@ -89,10 +89,14 @@ class GetXyCases(FixtureParameterFactory):
     def attr_labels(self):
         return ["event", "time"]
 
-    def _to_data_frame(self, data, columns):
-        if isinstance(data, tuple | list):
-            data = np.column_stack(data)
-        return pd.DataFrame(data, columns=columns)
+    def _to_data_frame(self, data_arrays, columns):
+        if not isinstance(data_arrays, tuple | list):
+            data_arrays = (data_arrays,)
+
+        df = [pd.DataFrame(data_array) for data_array in data_arrays]
+
+        data = pd.concat(df, axis=1).set_axis(columns, axis=1)
+        return data
 
     @property
     def columns(self):
@@ -193,7 +197,7 @@ def test_get_xy(args, kwargs, x_expected, y_expected, error_expected):
         x_test, y_test = sdata.get_x_y(*args, **kwargs)
 
     if not isinstance(x_expected, Skip):
-        assert_array_equal(x_test, x_expected)
+        assert_array_equal(x_test, x_expected, strict=True)
 
     if not isinstance(y_expected, Skip):
         if y_expected is None:
@@ -201,11 +205,11 @@ def test_get_xy(args, kwargs, x_expected, y_expected, error_expected):
         elif isinstance(y_expected, tuple):
             assert y_test.dtype.names == ("event", "time")
             event, time = y_expected
-            assert_array_equal(y_test["event"].astype(np.uint32), event.astype(np.uint32))
+            assert_array_equal(y_test["event"], event, strict=True)
             assert_array_almost_equal(y_test["time"], time)
         else:
             assert y_test.ndim == 2
-            assert_array_equal(y_test.to_numpy().ravel(), y_expected)
+            assert_array_equal(y_test.to_numpy(), y_expected, strict=True)
 
 
 def assert_structured_array_dtype(arr, event, time, num_events):

@@ -327,14 +327,14 @@ class TestNominalNullParity:
         df_pd, df_pl = TestNominalNullParity._frames_with_null()
         out_pd = OneHotEncoder().fit_transform(df_pd).to_numpy()
         out_pl = OneHotEncoder().fit_transform(df_pl).to_numpy()
-        np.testing.assert_array_equal(out_pd, out_pl)
+        np.testing.assert_array_equal(out_pd, out_pl, strict=True)
 
     @staticmethod
     def test_clinical_kernel_null_parity():
         df_pd, df_pl = TestNominalNullParity._frames_with_null()
         K_pd = clinical_kernel(df_pd)
         K_pl = clinical_kernel(df_pl)
-        np.testing.assert_allclose(K_pd, K_pl, atol=1e-12)
+        np.testing.assert_allclose(K_pd, K_pl, atol=1e-12, strict=True)
         assert K_pl[1, 1] < 1.0
 
     @staticmethod
@@ -342,7 +342,7 @@ class TestNominalNullParity:
         df_pd, df_pl = TestNominalNullParity._frames_with_null()
         K_pd = ClinicalKernelTransform().fit(df_pd)(df_pd, df_pd)
         K_pl = ClinicalKernelTransform().fit(df_pl)(df_pl, df_pl)
-        np.testing.assert_allclose(K_pd, K_pl, atol=1e-12)
+        np.testing.assert_allclose(K_pd, K_pl, atol=1e-12, strict=True)
 
     @staticmethod
     def test_pairwise_kernel_null_parity():
@@ -421,11 +421,11 @@ class TestClinicalKernelTransformReplay:
 
         K_pd_transform = ClinicalKernelTransform().fit(df_pd).transform(df_pd)
         K_pd_direct = clinical_kernel(df_pd, df_pd)
-        np.testing.assert_allclose(K_pd_transform, K_pd_direct, atol=1e-12, equal_nan=True)
+        np.testing.assert_allclose(K_pd_transform, K_pd_direct, atol=1e-12, strict=True)
 
         K_pl_transform = ClinicalKernelTransform(ordinal_categories=ordinal_categories).fit(df_pl).transform(df_pl)
         K_pl_direct = clinical_kernel(df_pl, df_pl, ordinal_categories=ordinal_categories)
-        np.testing.assert_allclose(K_pl_transform, K_pl_direct, atol=1e-12, equal_nan=True)
+        np.testing.assert_allclose(K_pl_transform, K_pl_direct, atol=1e-12, strict=True)
 
     @staticmethod
     def test_all_categorical_polars_transform():
@@ -447,7 +447,7 @@ class TestClinicalKernelTransformReplay:
         t = ClinicalKernelTransform().fit(fit)
         K = t.transform(transform)
         assert K.shape == (2, 3)
-        np.testing.assert_allclose(K, clinical_kernel(fit, fit.head(2)).T)
+        np.testing.assert_allclose(K, clinical_kernel(fit, fit.head(2)).T, strict=True)
 
     @staticmethod
     def test_polars_transform_all_numeric_no_nominal_columns():
@@ -455,7 +455,7 @@ class TestClinicalKernelTransformReplay:
         t = ClinicalKernelTransform().fit(df)
         K = t.transform(df.head(2))
         assert K.shape == (2, 3)
-        np.testing.assert_allclose(K, clinical_kernel(df, df.head(2)).T)
+        np.testing.assert_allclose(K, clinical_kernel(df, df.head(2)).T, strict=True)
 
 
 class TestClinicalKernelEdgeCases:
@@ -465,7 +465,7 @@ class TestClinicalKernelEdgeCases:
         df_pd = pd.DataFrame({"num": pd.Series([], dtype=np.float64)})
         t_pl = ClinicalKernelTransform().fit(df_pl)
         t_pd = ClinicalKernelTransform().fit(df_pd)
-        np.testing.assert_array_equal(t_pl._numeric_ranges, t_pd._numeric_ranges)
+        np.testing.assert_array_equal(t_pl._numeric_ranges, t_pd._numeric_ranges, strict=True)
         assert t_pl.X_fit_.shape == t_pd.X_fit_.shape == (0, 1)
 
     @staticmethod
@@ -555,4 +555,4 @@ class TestClinicalKernelEdgeCases:
         transform = ClinicalKernelTransform().fit(df)
         value = transform.pairwise_kernel(transform.X_fit_[0], transform.X_fit_[1])
         expected = clinical_kernel(df)[0, 1]
-        np.testing.assert_allclose(value, expected, atol=1e-12)
+        np.testing.assert_allclose(value, expected, atol=1e-12, strict=True)

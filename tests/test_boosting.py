@@ -415,7 +415,7 @@ class TestGradientBoosting:
         for y_staged in model.staged_predict(X):
             assert y_staged.shape == y_pred.shape
 
-        assert_array_equal(y_pred, y_staged)
+        assert_array_equal(y_pred, y_staged, strict=True)
 
     @pytest.mark.parametrize("dropout_rate", [0.0, 0.03])
     @pytest.mark.parametrize("loss", ["ipcwls", "squared"])
