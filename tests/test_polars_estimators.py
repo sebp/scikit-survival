@@ -58,7 +58,7 @@ def _make_survival_estimator_constructors():
             params = estimator.get_params()
 
             if "random_state" in params:
-                estimator.set_params(random_state=0)
+                estimator.set_params(random_state=0xF1)
             if "n_estimators" in params:
                 estimator.set_params(n_estimators=5)
 
@@ -69,9 +69,9 @@ def _make_survival_estimator_constructors():
                 case "IPCRidge":
                     estimator.set_params(alpha=1.0)
                 case "NaiveSurvivalSVM":
-                    estimator.set_params(max_iter=200)
+                    estimator.set_params(max_iter=1000, tol=1e-6)
                 case "FastSurvivalSVM" | "FastKernelSurvivalSVM":
-                    estimator.set_params(max_iter=50)
+                    estimator.set_params(max_iter=100, tol=1e-6)
                 case "MinlipSurvivalAnalysis" | "HingeLossSurvivalSVM":
                     estimator.set_params(solver="ecos")
 
