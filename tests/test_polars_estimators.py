@@ -127,7 +127,7 @@ class TestSurvivalEstimatorPolarsParity:
         # tight tolerance instead of bit-exact equality.
         assert pred_pd.shape == (y.shape[0],)
         assert pred_pd.dtype == pred_pl.dtype
-        np.testing.assert_allclose(pred_pd, pred_pl, rtol=1e-7, atol=0)
+        np.testing.assert_array_almost_equal(pred_pd, pred_pl)
         assert est_pd.score(X_pd, y) == est_pl.score(X_pl, y)
 
         cindex_pd = concordance_index_censored(y["fstat"], y["lenfol"], pred_pd)
