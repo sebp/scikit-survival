@@ -99,7 +99,7 @@ def test_standardize(in_data, expected):
 
     # check that data wasn't modified inplace
     if isinstance(before, np.ndarray) and np.issubdtype(before.dtype, float):
-        assert_array_equal(before, in_data)
+        assert_array_equal(before, in_data, strict=True)
     elif isinstance(before, pd.DataFrame):
         tm.assert_frame_equal(before, in_data)
 

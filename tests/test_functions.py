@@ -37,13 +37,13 @@ class TestStepFunction:
     @staticmethod
     def test_exact(a_step_function):
         actual = np.array([a_step_function(v) for v in a_step_function.x])
-        assert_array_equal(actual, a_step_function.y)
+        assert_array_equal(actual, a_step_function.y, strict=True)
 
     @staticmethod
     def test_not_exact(a_step_function):
         z = np.diff(a_step_function.x).min() / 2
         actual = np.array([a_step_function(v + z) for v in a_step_function.x[:-1]])
-        assert_array_equal(actual, a_step_function.y[:-1])
+        assert_array_equal(actual, a_step_function.y[:-1], strict=True)
 
     @staticmethod
     @pytest.mark.parametrize("value", [-100, 100, -np.finfo(float).eps * 8, np.finfo(float).eps * 8])

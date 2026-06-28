@@ -107,7 +107,7 @@ class TestOneHotEncoderUnseenAndCrossDataframeLibrary:
         out_pl = OneHotEncoder().fit(df_fit_pl).transform(df_test_pl).to_numpy()
         assert np.isnan(out_pd[1]).all()
         assert np.isnan(out_pl[1]).all()
-        np.testing.assert_array_equal(out_pd, out_pl)
+        np.testing.assert_array_equal(out_pd, out_pl, strict=True)
 
     def test_fit_pandas_transform_polars_raises(self):
         df_fit_pd, _, _, _ = self._make_fit_test_pair()

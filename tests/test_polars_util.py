@@ -83,7 +83,7 @@ def test_from_dataframe_polars(args, expected, expected_error):
         y = Surv.from_dataframe(*args)
 
     if expected is not None:
-        assert_array_equal(y, expected)
+        assert_array_equal(y, expected, strict=True)
 
 
 def test_from_dataframe_polars_lazyframe_rejected():

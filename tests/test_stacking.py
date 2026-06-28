@@ -315,7 +315,7 @@ class TestStackingSurvivalAnalysis:
         meta.fit(whas500.x_data_frame, whas500.y)
         names = whas500.x_data_frame.columns.to_numpy()
         assert meta.n_features_in_ == len(names)
-        assert_array_equal(meta.feature_names_in_, names)
+        assert_array_equal(meta.feature_names_in_, names, strict=True)
 
         meta.fit(whas500.x, whas500.y)
         assert meta.n_features_in_ == len(names)

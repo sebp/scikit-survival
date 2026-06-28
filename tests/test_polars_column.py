@@ -103,7 +103,7 @@ class TestEncodeCategoricalExplicitColumnsParity:
         pd_out = encode_categorical(pd_df, columns=["x"])
         pl_out = encode_categorical(pl_df, columns=["x"])
         assert list(pd_out.columns) == list(pl_out.columns)
-        np.testing.assert_array_equal(pd_out.to_numpy().astype(float), pl_out.to_numpy().astype(float))
+        np.testing.assert_array_equal(pd_out.to_numpy(), pl_out.to_numpy(), strict=True)
 
     @staticmethod
     def test_explicit_boolean_column_polars_matches_pandas():
@@ -116,7 +116,7 @@ class TestEncodeCategoricalExplicitColumnsParity:
         pd_out = encode_categorical(pd_df, columns=["b"])
         pl_out = encode_categorical(pl_df, columns=["b"])
         assert list(pd_out.columns) == list(pl_out.columns) == ["b=True"]
-        np.testing.assert_array_equal(pd_out.to_numpy().astype(float), pl_out.to_numpy().astype(float))
+        np.testing.assert_array_equal(pd_out.to_numpy(), pl_out.to_numpy(), strict=True)
 
     @staticmethod
     def test_explicit_numeric_column_preserves_value_ordering():
@@ -128,7 +128,7 @@ class TestEncodeCategoricalExplicitColumnsParity:
         pd_out = encode_categorical(pd_df, columns=["x"])
         pl_out = encode_categorical(to_polars_dataframe(pd_df), columns=["x"])
         assert list(pd_out.columns) == list(pl_out.columns) == ["x=2", "x=10"]
-        np.testing.assert_array_equal(pd_out.to_numpy().astype(float), pl_out.to_numpy().astype(float))
+        np.testing.assert_array_equal(pd_out.to_numpy(), pl_out.to_numpy(), strict=True)
 
 
 class StandardizePolarsCases(FixtureParameterFactory):
@@ -481,7 +481,7 @@ class TestCategoricalDataInferredParity:
         df_pl = pl.DataFrame({"fruit": pl.Series(values, dtype=pl.Categorical)})
         out_pd = categorical_to_numeric(df_pd).to_numpy()
         out_pl = categorical_to_numeric(df_pl).to_numpy()
-        np.testing.assert_array_equal(out_pd, out_pl)
+        np.testing.assert_array_equal(out_pd, out_pl, strict=True)
 
     @staticmethod
     def test_categorical_to_numeric_enum_matches_pandas_explicit_order():
@@ -495,7 +495,7 @@ class TestCategoricalDataInferredParity:
         df_pl = pl.DataFrame({"x": pl.Series("x", values, dtype=pl.Enum(categories))})
         out_pd = categorical_to_numeric(df_pd).to_numpy()
         out_pl = categorical_to_numeric(df_pl).to_numpy()
-        np.testing.assert_array_equal(out_pd, out_pl)
+        np.testing.assert_array_equal(out_pd, out_pl, strict=True)
 
     @staticmethod
     def test_encode_categorical_pl_categorical_matches_pandas():
@@ -508,7 +508,7 @@ class TestCategoricalDataInferredParity:
         df_pl = pl.DataFrame({"fruit": pl.Series(values, dtype=pl.Categorical)})
         out_pd = encode_categorical(df_pd).to_numpy()
         out_pl = encode_categorical(df_pl).to_numpy()
-        np.testing.assert_array_equal(out_pd, out_pl)
+        np.testing.assert_array_equal(out_pd, out_pl, strict=True)
 
 
 class TestLazyFramePaths:

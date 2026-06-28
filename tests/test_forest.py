@@ -154,7 +154,7 @@ def test_fit_with_sample_weight(make_whas500, forest_cls):
     forest = forest_cls(oob_score=True, random_state=2)
     forest.fit(whas500.x, whas500.y, sample_weight=sample_weight)
 
-    assert_array_equal(forest._sample_weight, sample_weight)
+    assert_array_equal(forest._sample_weight, sample_weight, strict=True)
     assert forest.oob_prediction_.shape == (whas500.x.shape[0],)
     assert np.isfinite(forest.oob_score_)
 
@@ -274,7 +274,7 @@ def test_estimators_samples(make_whas500, forest_cls):
 
     n_samples = [len(np.unique(arr)) for arr in est.estimators_samples_]
     expected = np.array([255, 227, 245, 247, 246, 239, 254, 252, 245, 248])
-    assert_array_equal(n_samples, expected)
+    assert_array_equal(n_samples, expected, strict=True)
 
 
 @pytest.mark.parametrize("forest_cls", FORESTS)
@@ -415,9 +415,9 @@ def test_predict_sparse(make_whas500, forest_cls):
     assert y_pred.shape[0] == X_test.shape[0]
     assert y_pred_csr.shape[0] == X_test.shape[0]
 
-    assert_array_equal(y_pred, y_pred_csr)
-    assert_array_equal(y_cum_h_csr, y_cum_h)
-    assert_array_equal(y_surv, y_surv_csr)
+    assert_array_equal(y_pred, y_pred_csr, strict=True)
+    assert_array_equal(y_cum_h_csr, y_cum_h, strict=True)
+    assert_array_equal(y_surv, y_surv_csr, strict=True)
 
 
 @pytest.mark.parametrize(

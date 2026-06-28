@@ -86,7 +86,7 @@ class TestOneHotEncoder:
             t.fit(data)
 
             out_names = t.get_feature_names_out()
-            assert_array_equal(out_names, expected_data.columns.to_numpy())
+            assert_array_equal(out_names, expected_data.columns.to_numpy(), strict=True)
 
     @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
     @staticmethod
@@ -109,14 +109,15 @@ class TestOneHotEncoder:
                     "many=Four",
                     "many=Five",
                     "many=Six",
-                ]
+                ],
+                dtype=object,
             )
 
             t = OneHotEncoder()
             t.fit(data.loc[:, order])
 
             out_names = t.get_feature_names_out()
-            assert_array_equal(out_names, expected_columns)
+            assert_array_equal(out_names, expected_columns, strict=True)
 
             with pytest.raises(ValueError, match="input_features is not equal to feature_names_in_"):
                 t.get_feature_names_out(data.columns.tolist())

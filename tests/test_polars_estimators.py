@@ -97,10 +97,10 @@ def whas500_encoded_small():
 def _assert_step_functions_equal(functions_pd, functions_pl):
     assert len(functions_pd) == len(functions_pl)
     for function_pd, function_pl in zip(functions_pd, functions_pl):
-        np.testing.assert_array_equal(function_pd.x, function_pl.x)
+        np.testing.assert_array_equal(function_pd.x, function_pl.x, strict=True)
         # Different intermediate dtype handling can produce
         # machine-epsilon-scale differences in cumulative products.
-        np.testing.assert_allclose(function_pd.y, function_pl.y, rtol=1e-12, atol=0)
+        np.testing.assert_allclose(function_pd.y, function_pl.y, rtol=1e-12, strict=True)
 
 
 class TestSurvivalEstimatorPolarsParity:
@@ -118,7 +118,7 @@ class TestSurvivalEstimatorPolarsParity:
         est_pl.fit(X_pl, y)
         pred_pl = est_pl.predict(X_pl)
 
-        np.testing.assert_equal(est_pd.feature_names_in_, est_pl.feature_names_in_)
+        np.testing.assert_equal(est_pd.feature_names_in_, est_pl.feature_names_in_, strict=True)
 
         # Iterative solvers (e.g. ecos used by Minlip / HingeLossSurvivalSVM)
         # can reach the same solution along slightly different paths when the
@@ -160,7 +160,7 @@ class TestSklearnPipelinePolars:
         pipe_pl = Pipeline([("onehot", OneHotEncoder()), ("model", CoxPHSurvivalAnalysis())]).fit(X_pl, y)
         pred_pd = pipe_pd.predict(X_pd)
         pred_pl = pipe_pl.predict(X_pl)
-        np.testing.assert_allclose(pred_pd, pred_pl, rtol=1e-7, atol=0)
+        np.testing.assert_allclose(pred_pd, pred_pl, strict=True)
 
     @staticmethod
     def test_cross_val_score_polars_does_not_raise(whas500_pl_pd_small):
@@ -215,7 +215,7 @@ class TestMetaEstimatorsPolars:
         ).fit(X_pl_enc, y)
         pred_pd = s_pd.predict(X_pd_enc)
         pred_pl = s_pl.predict(X_pl_enc)
-        np.testing.assert_allclose(pred_pd, pred_pl, rtol=1e-7, atol=0)
+        np.testing.assert_allclose(pred_pd, pred_pl, strict=True)
 
     @staticmethod
     def test_ensemble_selection_polars_matches_pandas(whas500_pl_pd_small):
@@ -249,7 +249,7 @@ class TestMetaEstimatorsPolars:
         ).fit(X_pl_enc, y)
         pred_pd = es_pd.predict(X_pd_enc)
         pred_pl = es_pl.predict(X_pl_enc)
-        np.testing.assert_allclose(pred_pd, pred_pl, rtol=1e-7, atol=0)
+        np.testing.assert_allclose(pred_pd, pred_pl, strict=True)
 
 
 class TestSurvivalEstimatorLazyFrame:
