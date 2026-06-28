@@ -37,7 +37,7 @@ jobs:
           source ci/deps/${{ matrix.config }}.sh
           echo "CI_NO_SLOW=${CI_NO_SLOW}" >> $GITHUB_ENV
       - name: Cache downloaded packages
-        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25  # v5.1.0
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
           path: ${{ env.CONDA_PKGS_DIRS }}
           key: ${{ runner.os }}-${{ runner.arch }}-conda-${{ matrix.config }}-${{ hashFiles(steps.dependencies.outputs.requirements, 'pyproject.toml', 'ci/deps/requirements.yaml.tmpl') }}
@@ -112,7 +112,7 @@ jobs:
           Add-Content -Path $env:GITHUB_OUTPUT -Value "requirements=.\ci\deps\windows\${{ matrix.config }}.ps1"
           Add-Content -Path $env:GITHUB_ENV -Value "CONDA_PKGS_DIRS=${{ runner.temp }}\conda_pkgs_dir"
       - name: Cache downloaded packages
-        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25  # v5.1.0
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
           path: ${{ env.CONDA_PKGS_DIRS }}
           key: ${{ runner.os }}-${{ runner.arch }}-conda-${{ matrix.config }}-${{ hashFiles(steps.dependencies.outputs.requirements, 'pyproject.toml', 'ci/deps/requirements.yaml.tmpl') }}
@@ -147,7 +147,7 @@ jobs:
           echo "CONDA_PKGS_DIRS=${{ runner.temp }}/conda_pkgs_dir" >> $GITHUB_ENV
           echo "requirements=ci/deps/${DEPS_CONFIG}.sh" >> $GITHUB_OUTPUT
       - name: Cache downloaded packages
-        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25  # v5.1.0
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
           path: ${{ env.CONDA_PKGS_DIRS }}
           key: ${{ runner.os }}-${{ runner.arch }}-conda-${{ env.DEPS_CONFIG }}-${{ hashFiles(steps.dependencies.outputs.requirements, 'pyproject.toml', 'ci/deps/requirements.yaml.tmpl') }}
