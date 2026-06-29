@@ -23,5 +23,5 @@ jobs:
           key: pre-commit-3|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
 
       - run: pip install pre-commit
-      - run: pre-commit run --show-diff-on-failure --color=always ${{ inputs.extra_args }}
+      - run: pre-commit run --all-files --color=always
         shell: bash
