@@ -10,6 +10,7 @@ from scipy.sparse import coo_array
 
 from sksurv.column import categorical_to_numeric, encode_categorical, standardize
 from sksurv.datasets import load_breast_cancer, load_whas500
+from sksurv.testing import get_pandas_infer_string_context
 from sksurv.util import Surv
 
 DataSet = namedtuple("DataSet", ["x", "y"])
@@ -22,6 +23,33 @@ if Version("2.3.0") <= Version(pd.__version__) < Version("3.0.0"):
 
 def pytest_configure(config):
     config.addinivalue_line("markers", "slow: marks test as slow (deselect with '-m \"not slow\"')")
+
+
+def _dataframe_backend_params():
+    pandas_params = [
+        pytest.param(
+            ("pandas", context_param.values[0]),
+            id=f"pandas-{context_param.id}" if context_param.id else "pandas",
+            marks=context_param.marks,
+        )
+        for context_param in get_pandas_infer_string_context()
+    ]
+    return [*pandas_params, pytest.param(("polars", None), id="polars")]
+
+
+@pytest.fixture(params=_dataframe_backend_params())
+def dataframe_backend(request):
+    """Dataframe library to test against.
+
+    The pandas entries mirror ``get_pandas_infer_string_context()``, so pandas
+    runs once per option context while polars runs once.
+    """
+    backend, pandas_context = request.param
+    if backend == "pandas":
+        with pandas_context:
+            yield backend
+    else:
+        yield backend
 
 
 @pytest.fixture()

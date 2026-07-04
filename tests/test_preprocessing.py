@@ -15,33 +15,6 @@ from sksurv.preprocessing import OneHotEncoder
 from sksurv.testing import get_pandas_infer_string_context
 
 
-def _dataframe_backend_params():
-    pandas_params = [
-        pytest.param(
-            ("pandas", context_param.values[0]),
-            id=f"pandas-{context_param.id}" if context_param.id else "pandas",
-            marks=context_param.marks,
-        )
-        for context_param in get_pandas_infer_string_context()
-    ]
-    return [*pandas_params, pytest.param(("polars", None), id="polars")]
-
-
-@pytest.fixture(params=_dataframe_backend_params())
-def dataframe_backend(request):
-    """Dataframe library to test against.
-
-    The pandas entries mirror ``get_pandas_infer_string_context()``, so pandas
-    runs once per option context while polars runs once.
-    """
-    backend, pandas_context = request.param
-    if backend == "pandas":
-        with pandas_context:
-            yield backend
-    else:
-        yield backend
-
-
 @pytest.fixture()
 def create_backend_categorical_data(dataframe_backend):
     def _create(n_samples=117):
