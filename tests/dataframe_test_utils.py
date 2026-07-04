@@ -24,6 +24,24 @@ def to_polars_dataframe(df):
     return pl.DataFrame(columns)
 
 
+def assert_backend_frame_equal(actual, expected, backend):
+    """Assert frame equality with the testing helper of ``backend``.
+
+    polars comparisons allow ``abs_tol=1e-9`` because encoded columns are
+    rebuilt through float64 numpy arrays.
+    """
+    if backend == "polars":
+        import polars as pl
+        import polars.testing as pt
+
+        assert isinstance(actual, pl.DataFrame)
+        pt.assert_frame_equal(actual, expected, check_exact=False, abs_tol=1e-9)
+    else:
+        import pandas.testing as tm
+
+        tm.assert_frame_equal(actual, expected)
+
+
 def expected_one_hot_data(data):
     expected = []
     for nam, col in data.items():
