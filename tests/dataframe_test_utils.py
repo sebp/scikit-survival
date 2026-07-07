@@ -3,6 +3,7 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 from pandas.api.types import CategoricalDtype
+import pandas.testing as tm
 
 
 def to_polars_dataframe(df):
@@ -37,8 +38,6 @@ def assert_backend_frame_equal(actual, expected, backend):
         assert isinstance(actual, pl.DataFrame)
         pt.assert_frame_equal(actual, expected, check_exact=False, abs_tol=1e-9)
     else:
-        import pandas.testing as tm
-
         tm.assert_frame_equal(actual, expected)
 
 

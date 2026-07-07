@@ -396,7 +396,6 @@ class TestStandardizeEmptyParity:
 
     @staticmethod
     def test_categorical_to_numeric_empty_polars_parity():
-        import pandas as pd
 
         from sksurv.column import categorical_to_numeric
 
@@ -421,7 +420,6 @@ class TestStandardizeEmptyParity:
 class TestCategoricalToNumericPandasParity:
     @staticmethod
     def test_string_numeric_dataframe_parses_ints():
-        import pandas as pd
 
         from sksurv.column import categorical_to_numeric
 
@@ -433,7 +431,6 @@ class TestCategoricalToNumericPandasParity:
 
     @staticmethod
     def test_string_non_numeric_falls_back_to_codes():
-        import pandas as pd
 
         from sksurv.column import categorical_to_numeric
 
@@ -445,7 +442,6 @@ class TestCategoricalToNumericPandasParity:
 
     @staticmethod
     def test_string_non_numeric_null_maps_to_nan():
-        import pandas as pd
 
         from sksurv.column import categorical_to_numeric
 
@@ -467,7 +463,6 @@ class TestCategoricalToNumericPandasParity:
 class TestEncodeCategoricalExplicitColumnsParity:
     @staticmethod
     def test_explicit_numeric_column_polars_matches_pandas():
-        import pandas as pd
 
         from sksurv.column import encode_categorical
 
@@ -480,7 +475,6 @@ class TestEncodeCategoricalExplicitColumnsParity:
 
     @staticmethod
     def test_explicit_boolean_column_polars_matches_pandas():
-        import pandas as pd
 
         from sksurv.column import encode_categorical
 
@@ -493,7 +487,6 @@ class TestEncodeCategoricalExplicitColumnsParity:
 
     @staticmethod
     def test_explicit_numeric_column_preserves_value_ordering():
-        import pandas as pd
 
         from sksurv.column import encode_categorical
 
@@ -588,7 +581,6 @@ def test_standardize_polars(in_data, expected, expected_error):
     ids=["null", "nan"],
 )
 def test_standardize_all_missing_column_matches_pandas_via_numpy(polars_missing):
-    import pandas as pd
 
     pd_out = column.standardize(pd.DataFrame({"a": [np.nan] * 3, "b": [1.0, 2.0, 3.0]}))
     # The all-missing column must be a float dtype, not Null, or standardize
@@ -845,7 +837,6 @@ class TestPolarsCategoryOrderPolicy:
 class TestCategoricalDataInferredParity:
     @staticmethod
     def test_categorical_to_numeric_pl_categorical_matches_pandas():
-        import pandas as pd
 
         from sksurv.column import categorical_to_numeric
 
@@ -858,7 +849,6 @@ class TestCategoricalDataInferredParity:
 
     @staticmethod
     def test_categorical_to_numeric_enum_matches_pandas_explicit_order():
-        import pandas as pd
 
         from sksurv.column import categorical_to_numeric
 
@@ -872,7 +862,6 @@ class TestCategoricalDataInferredParity:
 
     @staticmethod
     def test_encode_categorical_pl_categorical_matches_pandas():
-        import pandas as pd
 
         from sksurv.column import encode_categorical
 

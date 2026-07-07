@@ -467,7 +467,6 @@ class TestLoadDatasetsPolars:
         ids=[t[0] for t in _POLARS_LOADERS],
     )
     def test_polars_shape_and_y(name, loader, kwargs, shape, event_name, time_name, n_events):
-        import polars as pl
 
         x, y = loader(output_type="polars", **kwargs)
         assert isinstance(x, pl.DataFrame), f"{name}: x is {type(x).__name__}"
@@ -479,7 +478,6 @@ class TestLoadDatasetsPolars:
     def test_polars_matches_pandas_columns():
         """Polars and pandas paths produce identical column lists (modulo
         dataframe-library container differences) for every loader."""
-        import polars as pl
 
         for name, loader, kwargs, _shape, *_ in _POLARS_LOADERS:
             x_pd, _ = loader(**kwargs)
@@ -491,7 +489,6 @@ class TestLoadDatasetsPolars:
     def test_polars_nominal_columns_are_enum():
         """ARFF nominal columns must surface as pl.Enum in the polars output,
         preserving the declared category list from the ARFF schema."""
-        import polars as pl
 
         x, _ = sdata.load_gbsg2(output_type="polars")
         # GBSG2 has nominal columns "horTh", "menostat", "tgrade"
@@ -500,7 +497,6 @@ class TestLoadDatasetsPolars:
 
     @staticmethod
     def test_load_bmt_polars():
-        import polars as pl
 
         x, _ = sdata.load_bmt(output_type="polars")
         assert isinstance(x, pl.DataFrame)
@@ -509,7 +505,6 @@ class TestLoadDatasetsPolars:
 
     @staticmethod
     def test_load_cgvhd_polars():
-        import polars as pl
 
         x, _ = sdata.load_cgvhd(output_type="polars")
         assert isinstance(x, pl.DataFrame)
@@ -533,7 +528,6 @@ class TestLoadDatasetsPolars:
         feeding downstream ``standardize`` / ``categorical_to_numeric`` /
         row concatenation with an extra (and possibly string-typed) feature.
         """
-        import polars as pl
 
         arff = (
             "@relation test\n"
@@ -578,7 +572,6 @@ class TestLoadDatasetsPolars:
         in pandas; the conversion back to polars must not demote pd.Categorical
         to pl.Categorical.
         """
-        import polars as pl
 
         arff = (
             "@relation test\n"
