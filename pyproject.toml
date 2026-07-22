@@ -152,6 +152,8 @@ filterwarnings = [
     "ignore:For backward compatibility, 'str' dtypes are included by select_dtypes.*",
     # deprecated since polars 1.40.1
     "ignore: the default behavior of `how='horizontal'` for `concat` is deprecated and will require equal heights in the next breaking release.*:DeprecationWarning",
+    # deprecated since polars 1.43, to be removed in 2.0
+    "ignore:`cat.get_categories\\(\\)` is deprecated.*:DeprecationWarning",
 ]
 
 [tool.coverage.run]
