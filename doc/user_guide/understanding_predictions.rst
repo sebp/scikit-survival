@@ -29,7 +29,7 @@ last follow-up. Therefore, their records are *censored*.
 
 Formally, each patient record consists of a set of covariates :math:`x \in \mathbb{R}^d` , and the time
 :math:`t>0` when an event
-occurred or the time :math:`c>0` of censoring. Since censoring and experiencing and event are mutually exclusive,
+occurred or the time :math:`c>0` of censoring. Since censoring and experiencing an event are mutually exclusive,
 it is common to define an event indicator :math:`\delta \in \{0;1\}` and the observable survival time :math:`y>0`.
 The observable time :math:`y` of a right censored sample is defined as
 
