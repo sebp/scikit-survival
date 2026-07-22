@@ -50,7 +50,8 @@ def _nominal_kernel(x, y, out):
 
 
 def clinical_kernel(x, y=None, *, ordinal_categories=None):
-    """Computes clinical kernel.
+    """
+    Compute clinical kernel.
 
     The clinical kernel distinguishes between continuous
     ordinal, and nominal variables.
@@ -74,7 +75,7 @@ def clinical_kernel(x, y=None, *, ordinal_categories=None):
 
     Returns
     -------
-    kernel : array, shape = (n_samples_x, n_samples_y)
+    ndarray, shape = (n_samples_x, n_samples_y)
         Kernel matrix.
 
     References
@@ -102,7 +103,6 @@ def clinical_kernel(x, y=None, *, ordinal_categories=None):
     [[1.         0.33333333 0.5       ]
      [0.33333333 1.         0.16666667]
      [0.5        0.16666667 1.        ]]
-
     """
     x = ensure_eager_dataframe(x)
     if y is not None:
@@ -127,7 +127,8 @@ def clinical_kernel(x, y=None, *, ordinal_categories=None):
 
 
 class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
-    """Transform data using a clinical Kernel
+    """
+    Transform data using a clinical Kernel.
 
     The clinical kernel distinguishes between continuous
     ordinal, and nominal variables.
@@ -187,14 +188,15 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         self._nominal_columns = _nominal_columns
 
     def prepare(self, X):
-        """Determine transformation parameters from data in X.
+        """
+        Determine transformation parameters from data in X.
 
         Use if `fit_once` is `True`, in which case `fit()` does
         not set the parameters of the clinical kernel.
 
         Parameters
         ----------
-        X: pandas.DataFrame or polars.DataFrame, shape = (n_samples, n_features)
+        X : pandas.DataFrame or polars.DataFrame, shape = (n_samples, n_features)
             Data to estimate parameters from.
         """
         if not self.fit_once:
@@ -248,7 +250,8 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         self._fitted_categorical_semantics = per_col_semantics
 
     def fit(self, X, y=None, **kwargs):  # pylint: disable=unused-argument
-        """Determine transformation parameters from data in X.
+        """
+        Determine transformation parameters from data in X.
 
         Subsequent calls to `transform(Y)` compute the pairwise
         distance to `X`.
@@ -258,7 +261,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X: pandas.DataFrame or polars.DataFrame, shape = (n_samples, n_features)
+        X : pandas.DataFrame or polars.DataFrame, shape = (n_samples, n_features)
             Data to estimate parameters from.
 
         y : None
@@ -271,8 +274,8 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        self : object
-            Returns the instance itself.
+        object
+            The instance itself.
         """
         if is_supported_dataframe(X):
             ndim = 2  # supported dataframe inputs are always 2D
@@ -312,15 +315,17 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         return out
 
     def transform(self, Y):
-        r"""Compute all pairwise distances between `self.X_fit_` and `Y`.
+        r"""
+        Compute all pairwise distances between `self.X_fit_` and `Y`.
 
         Parameters
         ----------
         Y : array-like, shape = (n_samples_y, n_features)
+            Testing data.
 
         Returns
         -------
-        kernel : ndarray, shape = (n_samples_y, n_samples_X_fit\_)
+        ndarray, shape = (n_samples_y, n_samples_X_fit\_)
             Kernel matrix. Values are normalized to lie within [0, 1].
         """
         check_is_fitted(self, "X_fit_")
@@ -362,35 +367,39 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
         return mat
 
     def __call__(self, X, Y):
-        """Compute Kernel matrix between `X` and `Y`.
+        """
+        Compute Kernel matrix between `X` and `Y`.
 
         Parameters
         ----------
-        x : pandas.DataFrame or polars.DataFrame, shape = (n_samples_x, n_features)
+        X : pandas.DataFrame or polars.DataFrame, shape = (n_samples_x, n_features)
             Training data.
 
-        y : pandas.DataFrame or polars.DataFrame, shape = (n_samples_y, n_features)
+        Y : pandas.DataFrame or polars.DataFrame, shape = (n_samples_y, n_features)
             Testing data. Must use the same dataframe library as ``x``.
 
         Returns
         -------
-        kernel : ndarray, shape = (n_samples_x, n_samples_y)
+        ndarray, shape = (n_samples_x, n_samples_y)
             Kernel matrix. Values are normalized to lie within [0, 1].
         """
         return self.fit(X).transform(Y).T
 
     def pairwise_kernel(self, X, Y):
-        """Function to use with :func:`sklearn.metrics.pairwise.pairwise_kernels`.
+        """
+        Function to use with :func:`sklearn.metrics.pairwise.pairwise_kernels`.
 
         Parameters
         ----------
         X : ndarray, shape = (n_features,)
+            First feature vector.
 
         Y : ndarray, shape = (n_features,)
+            Second feature vector.
 
         Returns
         -------
-        similarity : float
+        float
             Similarities are normalized to be within [0, 1].
         """
         check_is_fitted(self, "X_fit_")

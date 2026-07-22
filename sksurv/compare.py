@@ -11,7 +11,8 @@ __all__ = ["compare_survival"]
 
 
 def compare_survival(y, group_indicator, return_stats=False):
-    """Compare survival functions of two or more groups using the log-rank test.
+    """
+    Compare survival functions of two or more groups using the log-rank test.
 
     The log-rank test is a non-parametric hypothesis test for comparing the
     survival functions of two or more independent groups. The null hypothesis is

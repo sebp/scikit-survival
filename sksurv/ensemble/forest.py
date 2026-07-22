@@ -85,16 +85,17 @@ class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
 
     @property
     def feature_importances_(self):
-        """Not implemented"""
+        """Not implemented."""
         raise NotImplementedError()
 
     def fit(self, X, y, sample_weight=None):
-        """Build a forest of survival trees from the training set (X, y).
+        """
+        Build a forest of survival trees from the training set (X, y).
 
         Parameters
         ----------
         X : array-like, shape = (n_samples, n_features)
-            Data matrix
+            Data matrix.
 
         y : structured array, shape = (n_samples,)
             A structured array with two fields. The first field is a boolean
@@ -103,7 +104,8 @@ class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
 
         Returns
         -------
-        self
+        object
+            Fitted estimator.
         """
         self._validate_params()
 
@@ -286,7 +288,8 @@ class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
         return y_hat
 
     def predict(self, X):
-        r"""Predict risk score.
+        r"""
+        Predict risk score.
 
         The ensemble risk score is the total number of events,
         which can be estimated by the sum of the estimated
@@ -306,7 +309,7 @@ class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
 
         Returns
         -------
-        risk_scores : ndarray, shape = (n_samples,)
+        ndarray, shape = (n_samples,)
             Predicted risk scores.
         """
         return self._predict("predict", X)
@@ -325,7 +328,8 @@ class _BaseSurvivalForest(BaseForest, metaclass=ABCMeta):
 
 
 class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
-    """A random survival forest.
+    """
+    A random survival forest.
 
     A random survival forest is a meta estimator that fits a number of
     survival trees on various sub-samples of the dataset and uses
@@ -370,7 +374,7 @@ class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
           `ceil(min_samples_leaf * n_samples)` are the minimum
           number of samples for each node.
 
-    min_weight_fraction_leaf : float, optional, default: 0.
+    min_weight_fraction_leaf : float, optional, default: 0.0
         The minimum weighted fraction of the sum total of weights (of all
         the input samples) required to be at a leaf node. Samples have
         equal weight when sample_weight is not provided.
@@ -456,7 +460,7 @@ class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
         Concordance index of the training dataset obtained
         using an out-of-bag estimate.
 
-    See also
+    See Also
     --------
     sksurv.tree.SurvivalTree
         A single survival tree.
@@ -550,7 +554,8 @@ class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
 
     @append_cumulative_hazard_example(estimator_mod="ensemble", estimator_class="RandomSurvivalForest")
     def predict_cumulative_hazard_function(self, X, return_array=False):
-        """Predict cumulative hazard function.
+        """
+        Predict cumulative hazard function.
 
         For each tree in the ensemble, the cumulative hazard
         function (CHF) for an individual with feature vector
@@ -580,7 +585,7 @@ class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
 
         Returns
         -------
-        cum_hazard : ndarray
+        ndarray
             If `return_array` is `False`, an array of `n_samples`
             :class:`sksurv.functions.StepFunction` instances is returned.
 
@@ -594,7 +599,8 @@ class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
 
     @append_survival_function_example(estimator_mod="ensemble", estimator_class="RandomSurvivalForest")
     def predict_survival_function(self, X, return_array=False):
-        """Predict survival function.
+        """
+        Predict survival function.
 
         For each tree in the ensemble, the survival function
         for an individual with feature vector :math:`x` is
@@ -624,7 +630,7 @@ class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
 
         Returns
         -------
-        survival : ndarray
+        ndarray
             If `return_array` is `False`, an array of `n_samples`
             :class:`sksurv.functions.StepFunction` instances is returned.
 
@@ -638,7 +644,8 @@ class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
 
 
 class ExtraSurvivalTrees(SurvivalAnalysisMixin, _BaseSurvivalForest):
-    """An extremely random survival forest.
+    """
+    An extremely random survival forest.
 
     This class implements a meta estimator that fits a number of randomized
     survival trees (a.k.a. extra-trees) on various sub-samples of the dataset
@@ -687,7 +694,7 @@ class ExtraSurvivalTrees(SurvivalAnalysisMixin, _BaseSurvivalForest):
           `ceil(min_samples_leaf * n_samples)` are the minimum
           number of samples for each node.
 
-    min_weight_fraction_leaf : float, optional, default: 0.
+    min_weight_fraction_leaf : float, optional, default: 0.0
         The minimum weighted fraction of the sum total of weights (of all
         the input samples) required to be at a leaf node. Samples have
         equal weight when sample_weight is not provided.
@@ -773,7 +780,7 @@ class ExtraSurvivalTrees(SurvivalAnalysisMixin, _BaseSurvivalForest):
         Concordance index of the training dataset obtained
         using an out-of-bag estimate.
 
-    See also
+    See Also
     --------
     sksurv.tree.SurvivalTree
         A single survival tree.
@@ -836,7 +843,8 @@ class ExtraSurvivalTrees(SurvivalAnalysisMixin, _BaseSurvivalForest):
 
     @append_cumulative_hazard_example(estimator_mod="ensemble", estimator_class="ExtraSurvivalTrees")
     def predict_cumulative_hazard_function(self, X, return_array=False):
-        """Predict cumulative hazard function.
+        """
+        Predict cumulative hazard function.
 
         For each tree in the ensemble, the cumulative hazard
         function (CHF) for an individual with feature vector
@@ -866,7 +874,7 @@ class ExtraSurvivalTrees(SurvivalAnalysisMixin, _BaseSurvivalForest):
 
         Returns
         -------
-        cum_hazard : ndarray
+        ndarray
             If `return_array` is `False`, an array of `n_samples`
             :class:`sksurv.functions.StepFunction` instances is returned.
 
@@ -880,7 +888,8 @@ class ExtraSurvivalTrees(SurvivalAnalysisMixin, _BaseSurvivalForest):
 
     @append_survival_function_example(estimator_mod="ensemble", estimator_class="ExtraSurvivalTrees")
     def predict_survival_function(self, X, return_array=False):
-        """Predict survival function.
+        """
+        Predict survival function.
 
         For each tree in the ensemble, the survival function
         for an individual with feature vector :math:`x` is
@@ -910,7 +919,7 @@ class ExtraSurvivalTrees(SurvivalAnalysisMixin, _BaseSurvivalForest):
 
         Returns
         -------
-        survival : ndarray
+        ndarray
             If `return_array` is `False`, an array of `n_samples`
             :class:`sksurv.functions.StepFunction` instances is returned.
 

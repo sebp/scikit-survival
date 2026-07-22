@@ -66,16 +66,17 @@ class Counter(metaclass=ABCMeta):
 
     @abstractmethod
     def calculate(self, v):
-        """Return l_plus, xv_plus, l_minus, xv_minus"""
+        """Return l_plus, xv_plus, l_minus, xv_minus."""
 
 
 class OrderStatisticTreeSurvivalCounter(Counter):
-    """Counting method used by :class:`LargeScaleOptimizer` for survival analysis.
+    """
+    Counting method used by :class:`LargeScaleOptimizer` for survival analysis.
 
     Parameters
     ----------
     x : array, shape = (n_samples, n_features)
-        Feature matrix
+        Feature matrix.
 
     y : array of int, shape = (n_samples,)
         Unique ranks of samples, starting with 0.
@@ -142,7 +143,7 @@ class SurvivalCounter(Counter):
         self.n_relevance_levels = n_relevance_levels
 
     def _count_values(self):
-        """Return dict mapping relevance level to sample index"""
+        """Return dict mapping relevance level to sample index."""
         indices = {yi: [i] for i, yi in enumerate(self.y) if self.status[i]}
 
         return indices
@@ -187,7 +188,7 @@ class SurvivalCounter(Counter):
 
 
 class RankSVMOptimizer(metaclass=ABCMeta):
-    """Abstract base class for all optimizers"""
+    """Abstract base class for all optimizers."""
 
     def __init__(self, alpha, rank_ratio, timeit=False):
         self.alpha = alpha
@@ -201,24 +202,24 @@ class RankSVMOptimizer(metaclass=ABCMeta):
 
     @abstractmethod
     def _objective_func(self, w):
-        """Evaluate objective function at w"""
+        """Evaluate objective function at w."""
 
     @abstractmethod
     def _update_constraints(self, w):
-        """Update constraints"""
+        """Update constraints."""
 
     @abstractmethod
     def _gradient_func(self, w):
-        """Evaluate gradient at w"""
+        """Evaluate gradient at w."""
 
     @abstractmethod
     def _hessian_func(self, w, s):
-        """Evaluate Hessian at w"""
+        """Evaluate Hessian at w."""
 
     @property
     @abstractmethod
     def n_coefficients(self):
-        """Return number of coefficients (includes intercept)"""
+        """Return number of coefficients (includes intercept)."""
 
     def _update_constraints_if_necessary(self, w):
         needs_update = (w != self._last_w).any()
@@ -280,7 +281,7 @@ class RankSVMOptimizer(metaclass=ABCMeta):
 
 
 class SimpleOptimizer(RankSVMOptimizer):
-    """Simple optimizer, which explicitly constructs matrix of all pairs of samples"""
+    """Simple optimizer, which explicitly constructs matrix of all pairs of samples."""
 
     def __init__(self, x, y, alpha, rank_ratio, timeit=False):
         super().__init__(alpha, rank_ratio, timeit)
@@ -321,8 +322,7 @@ class SimpleOptimizer(RankSVMOptimizer):
 
 
 class PRSVMOptimizer(RankSVMOptimizer):
-    """PRSVM optimizer that after each iteration of Newton's method
-    constructs matrix of support vector pairs"""
+    """PRSVM optimizer that after each iteration of Newton's method constructs matrix of support vector pairs."""
 
     def __init__(self, x, y, alpha, rank_ratio, timeit=False):
         super().__init__(alpha, rank_ratio, timeit)
@@ -362,7 +362,8 @@ class PRSVMOptimizer(RankSVMOptimizer):
 
 
 class LargeScaleOptimizer(RankSVMOptimizer):
-    """Optimizer that does not explicitly create matrix of constraints
+    """
+    Optimizer that does not explicitly create matrix of constraints.
 
     Parameters
     ----------
@@ -415,7 +416,7 @@ class LargeScaleOptimizer(RankSVMOptimizer):
         return w
 
     def _split_coefficents(self, w):
-        """Split into intercept/bias and feature-specific coefficients"""
+        """Split into intercept/bias and feature-specific coefficients."""
         if self._fit_intercept:
             bias = w[0]
             wf = w[1:]
@@ -503,7 +504,8 @@ class LargeScaleOptimizer(RankSVMOptimizer):
 
 
 class NonlinearLargeScaleOptimizer(RankSVMOptimizer):
-    """Optimizer that does not explicitly create matrix of constraints
+    """
+    Optimizer that does not explicitly create matrix of constraints.
 
     Parameters
     ----------
@@ -553,7 +555,7 @@ class NonlinearLargeScaleOptimizer(RankSVMOptimizer):
         return w
 
     def _split_coefficents(self, w):
-        """Split into intercept/bias and feature-specific coefficients"""
+        """Split into intercept/bias and feature-specific coefficients."""
         if self._fit_intercept:
             bias = w[0]
             wf = w[1:]
@@ -684,8 +686,8 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
         self.coef_ = None
         self.optimizer_result_ = None
 
-    def _create_optimizer(self, X, y, status):
-        """Samples are ordered by relevance"""
+    def _create_optimizer(self, X, y, status):  # numpydoc ignore=SS05
+        """Samples are ordered by relevance."""
         if self.optimizer is None:
             self.optimizer = "avltree"
 
@@ -728,11 +730,12 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
 
     @abstractmethod
     def _fit(self, X, time, event, samples_order):
-        """Create and run optimizer"""
+        """Create and run optimizer."""
 
     @abstractmethod
     def predict(self, X):
-        """Predict risk scores or transformed survival times.
+        """
+        Predict risk scores or transformed survival times.
 
         If the model has been fit only considering the ranking objective
         (``rank_ratio = 1``), predictions are risk scores (i.e. higher values
@@ -751,7 +754,7 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
 
         Returns
         -------
-        y : ndarray, shape = (n_samples,), dtype=float
+        ndarray, shape = (n_samples,), dtype=float
             Risk scores (if ``rank_ratio = 1``), or transformed survival times
             (if ``rank_ratio < 1``).
         """
@@ -760,7 +763,8 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
         return validate_data(self, ensure_eager_dataframe(X), ensure_min_samples=2)
 
     def fit(self, X, y):
-        """Build a survival support vector machine model from training data.
+        """
+        Build a survival support vector machine model from training data.
 
         Parameters
         ----------
@@ -774,7 +778,8 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
 
         Returns
         -------
-        self
+        object
+            Fitted estimator.
         """
         X = self._validate_for_fit(X)
         event, time = check_array_survival(X, y, allow_time_zero=False)
@@ -817,7 +822,7 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
 
     @staticmethod
     def _argsort_and_resolve_ties(time, random_state):
-        """Like np.argsort, but resolves ties uniformly at random"""
+        """Like np.argsort, but resolves ties uniformly at random."""
         n_samples = len(time)
         order = np.argsort(time, kind="mergesort")
 
@@ -835,8 +840,10 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
 
 
 class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
-    r"""Implements an efficient linear Support Vector Machine for survival analysis,
-    capable of optimizing both ranking and regression objectives.
+    r"""
+    Implements an efficient linear Support Vector Machine for survival analysis.
+
+    Capable of optimizing both ranking and regression objectives.
 
     Training data consists of *n* triplets :math:`(\mathbf{x}_i, y_i, \delta_i)`,
     where :math:`\mathbf{x}_i` is a *d*-dimensional feature vector, :math:`y_i > 0`
@@ -926,7 +933,7 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     n_iter_ : int
         Number of iterations run by the optimization routine to fit the model.
 
-    See also
+    See Also
     --------
     FastKernelSurvivalSVM
         Fast implementation for arbitrary kernel functions.
@@ -997,7 +1004,8 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
 
 
 class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
-    """Implements an efficient kernel Support Vector Machine for survival analysis.
+    """
+    Implements an efficient kernel Support Vector Machine for survival analysis.
 
     The model extends :class:`FastSurvivalSVM` to non-linear relationships through kernel functions.
 
@@ -1050,7 +1058,7 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         as callable object.
 
     max_iter : int, optional, default: 20
-        Maximum number of iterations to perform in Newton optimization
+        Maximum number of iterations to perform in Newton optimization.
 
     verbose : bool, optional, default: False
         If ``True``, print messages during optimization.
@@ -1093,7 +1101,7 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     n_iter_ : int
         Number of iterations run by the optimization routine to fit the model.
 
-    See also
+    See Also
     --------
     FastSurvivalSVM
         Fast implementation for linear kernel.

@@ -73,7 +73,8 @@ def _get_x_y_other(dataset, col_label):
 
 
 def get_x_y(data_frame, attr_labels, pos_label=None, survival=True, competing_risks=False):
-    """Split data frame into features and labels.
+    """
+    Split data frame into features and labels.
 
     Parameters
     ----------
@@ -170,7 +171,8 @@ def load_arff_files_standardized(
     *,
     output_type="pandas",
 ):
-    """Load dataset in ARFF format.
+    """
+    Load dataset in ARFF format.
 
     Parameters
     ----------
@@ -302,7 +304,8 @@ def _load_arff_testing(path_testing, attr_labels, pos_label, survival, output_ty
 
 
 def load_whas500(*, output_type="pandas"):
-    """Load and return the Worcester Heart Attack Study dataset
+    """
+    Load and return the Worcester Heart Attack Study dataset.
 
     The dataset has 500 samples and 14 features.
     The endpoint is death, which occurred for 215 patients (43.0%).
@@ -324,7 +327,7 @@ def load_whas500(*, output_type="pandas"):
         or the event time is right-censored.
 
         *lenfol*: total length of follow-up (days from hospital admission date
-        to date of last follow-up)
+        to date of last follow-up).
 
     References
     ----------
@@ -339,7 +342,8 @@ def load_whas500(*, output_type="pandas"):
 
 
 def load_gbsg2(*, output_type="pandas"):
-    """Load and return the German Breast Cancer Study Group 2 dataset
+    """
+    Load and return the German Breast Cancer Study Group 2 dataset.
 
     The dataset has 686 samples and 8 features.
     The endpoint is recurrence free survival, which occurred for 299 patients (43.6%).
@@ -360,7 +364,7 @@ def load_gbsg2(*, output_type="pandas"):
         *cens*: boolean indicating whether the endpoint has been reached
         or the event time is right-censored.
 
-        *time*: total length of follow-up
+        *time*: total length of follow-up.
 
     References
     ----------
@@ -376,8 +380,8 @@ def load_gbsg2(*, output_type="pandas"):
 
 
 def load_veterans_lung_cancer(*, output_type="pandas"):
-    """Load and return data from the Veterans' Administration
-    Lung Cancer Trial
+    """
+    Load and return data from the Veterans' Administration Lung Cancer Trial.
 
     The dataset has 137 samples and 6 features.
     The endpoint is death, which occurred for 128 patients (93.4%).
@@ -398,7 +402,7 @@ def load_veterans_lung_cancer(*, output_type="pandas"):
         *Status*: boolean indicating whether the endpoint has been reached
         or the event time is right-censored.
 
-        *Survival_in_days*: total length of follow-up
+        *Survival_in_days*: total length of follow-up.
 
     References
     ----------
@@ -414,7 +418,8 @@ def load_veterans_lung_cancer(*, output_type="pandas"):
 
 
 def load_aids(endpoint="aids", *, output_type="pandas"):
-    """Load and return the AIDS Clinical Trial dataset
+    """
+    Load and return the AIDS Clinical Trial dataset.
 
     The dataset has 1,151 samples and 11 features.
     The dataset has 2 endpoints:
@@ -470,7 +475,8 @@ def load_aids(endpoint="aids", *, output_type="pandas"):
 
 
 def load_breast_cancer(*, output_type="pandas"):
-    """Load and return the breast cancer dataset
+    """
+    Load and return the breast cancer dataset.
 
     The dataset has 198 samples and 80 features.
     The endpoint is the presence of distance metastases, which occurred for 51 patients (25.8%).
@@ -491,7 +497,7 @@ def load_breast_cancer(*, output_type="pandas"):
         *e.tdm*: boolean indicating whether the endpoint has been reached
         or the event time is right-censored.
 
-        *t.tdm*: time to distant metastasis (days)
+        *t.tdm*: time to distant metastasis (days).
 
     References
     ----------
@@ -511,7 +517,8 @@ def load_breast_cancer(*, output_type="pandas"):
 
 
 def load_flchain(*, output_type="pandas"):
-    """Load and return assay of serum free light chain for 7874 subjects.
+    """
+    Load and return assay of serum free light chain for 7874 subjects.
 
     The dataset has 7874 samples and 9 features:
 
@@ -564,7 +571,8 @@ def load_flchain(*, output_type="pandas"):
 
 
 def load_bmt(*, output_type="pandas"):
-    """Load and return response to hematopoietic stem cell transplantation (HSCT) for acute leukemia patients.
+    """
+    Load and return response to hematopoietic stem cell transplantation (HSCT) for acute leukemia patients.
 
     The dataset has 35 samples and 1 feature "dis" indicating the type of leukemia::
 
@@ -615,8 +623,10 @@ def load_bmt(*, output_type="pandas"):
 
 
 def load_cgvhd(*, output_type="pandas"):
-    r"""Load and return data from multicentre randomized clinical trial
-    initiated for patients with a myeloid malignancy who were to
+    r"""
+    Load and return data from multicentre randomized clinical trial in bone marrow transplant.
+
+    Initiated for patients with a myeloid malignancy who were to
     undergo an allogeneic bone marrow transplant.
 
     The dataset is a 100 patient subsample of the full data set. See [2]_ for further details.

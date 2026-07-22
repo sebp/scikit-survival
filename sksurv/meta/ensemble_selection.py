@@ -37,7 +37,8 @@ def _corr_kendalltau(X):
 
 
 class EnsembleAverage(BaseEstimator):
-    """A meta-estimator that averages the predictions of base estimators.
+    """
+    A meta-estimator that averages the predictions of base estimators.
 
     This estimator is for internal use by :class:`BaseEnsembleSelection`.
     It takes a list of estimators that have already been fitted and
@@ -58,11 +59,12 @@ class EnsembleAverage(BaseEstimator):
         assert not hasattr(self.base_estimators[0], "classes_"), "base estimator cannot be a classifier"
 
     def get_base_params(self):
-        """Get parameters for this estimator's first base estimator.
+        """
+        Get parameters for this estimator's first base estimator.
 
         Returns
         -------
-        params : dict
+        dict
             Parameter names mapped to their values.
         """
         return self.base_estimators[0].get_params()
@@ -71,7 +73,8 @@ class EnsembleAverage(BaseEstimator):
         return self
 
     def predict(self, X):
-        """Predict using the ensemble of estimators.
+        """
+        Predict using the ensemble of estimators.
 
         The prediction is the average of the predictions of all base
         estimators.
@@ -83,7 +86,7 @@ class EnsembleAverage(BaseEstimator):
 
         Returns
         -------
-        y_pred : ndarray, shape = (n_samples,)
+        ndarray, shape = (n_samples,)
             The predicted values.
         """
         prediction = np.zeros(X.shape[0])
@@ -94,7 +97,8 @@ class EnsembleAverage(BaseEstimator):
 
 
 class MeanEstimator(BaseEstimator):
-    """A meta-estimator that averages predictions.
+    """
+    A meta-estimator that averages predictions.
 
     This estimator computes the mean of an array along its last axis.
     It is intended to be used as a ``meta_estimator`` in an ensemble model,
@@ -105,7 +109,8 @@ class MeanEstimator(BaseEstimator):
         return self
 
     def predict(self, X):  # pylint: disable=no-self-use
-        """Return the mean of an array along its last axis.
+        """
+        Return the mean of an array along its last axis.
 
         Parameters
         ----------
@@ -114,14 +119,15 @@ class MeanEstimator(BaseEstimator):
 
         Returns
         -------
-        y_pred : ndarray, shape = (n_samples,)
+        ndarray, shape = (n_samples,)
             The averaged predictions.
         """
         return X.mean(axis=X.ndim - 1)
 
 
 class MeanRankEstimator(BaseEstimator):
-    """A meta-estimator that averages the ranks of predictions of base estimators.
+    """
+    A meta-estimator that averages the ranks of predictions of base estimators.
 
     This estimator first converts the predictions of each base estimator
     into ranks and then averages the ranks. It is intended to be used as
@@ -132,7 +138,8 @@ class MeanRankEstimator(BaseEstimator):
         return self
 
     def predict(self, X):  # pylint: disable=no-self-use
-        """Return the mean of ranks.
+        """
+        Return the mean of ranks.
 
         The predictions of each base estimator are first converted into
         ranks and then averaged.
@@ -144,7 +151,7 @@ class MeanRankEstimator(BaseEstimator):
 
         Returns
         -------
-        y_pred : ndarray, shape = (n_samples,)
+        ndarray, shape = (n_samples,)
             The averaged ranks.
         """
         # convert predictions of individual models into ranks
@@ -239,7 +246,7 @@ class BaseEnsembleSelection(Stacking):
             self._corr_func = lambda x: spearmanr(x, axis=0).correlation
 
     def _create_base_ensemble(self, out, n_estimators, n_folds):
-        """For each base estimator collect models trained on each fold"""
+        """For each base estimator collect models trained on each fold."""
         if hasattr(self, "feature_names_in_"):
             # Delete the attribute when the estimator is fitted on a new dataset
             # that has no feature names.
@@ -261,7 +268,7 @@ class BaseEnsembleSelection(Stacking):
         return ensemble_scores, base_ensemble
 
     def _create_cv_ensemble(self, base_ensemble, idx_models_included, model_names=None):
-        """For each selected base estimator, average models trained on each fold"""
+        """For each selected base estimator, average models trained on each fold."""
         fitted_models = np.empty(len(idx_models_included), dtype=object)
         for i, idx in enumerate(idx_models_included):
             model_name = self.base_estimators[idx][0] if model_names is None else model_names[idx]
@@ -271,7 +278,8 @@ class BaseEnsembleSelection(Stacking):
         return fitted_models
 
     def _get_base_estimators(self, X):
-        """Takes special care of estimators using custom kernel function
+        """
+        Take special care of estimators using custom kernel function.
 
         Parameters
         ----------
@@ -316,7 +324,7 @@ class BaseEnsembleSelection(Stacking):
         return base_estimators, kernel_cache
 
     def _restore_base_estimators(self, kernel_cache, out, X, cv):
-        """Restore custom kernel functions of estimators for predictions"""
+        """Restore custom kernel functions of estimators for predictions."""
         train_folds = {fold: train_index for fold, (train_index, _) in enumerate(cv)}
 
         for idx, fold, _, est in out:
@@ -333,7 +341,7 @@ class BaseEnsembleSelection(Stacking):
         return out
 
     def _fit_and_score_ensemble(self, X, y, cv, **fit_params):
-        """Create a cross-validated model by training a model for each fold with the same model parameters"""
+        """Create a cross-validated model by training a model for each fold with the same model parameters."""
         fit_params_steps = self._split_fit_params(fit_params)
 
         folds = list(cv.split(X, y))
@@ -379,7 +387,8 @@ class BaseEnsembleSelection(Stacking):
         raise NotImplementedError()
 
     def fit(self, X, y=None, **fit_params):
-        """Fit ensemble of models.
+        """
+        Fit ensemble of models.
 
         Parameters
         ----------
@@ -394,7 +403,8 @@ class BaseEnsembleSelection(Stacking):
 
         Returns
         -------
-        self
+        object
+            Fitted estimator.
         """
         self._check_params()
 
@@ -405,7 +415,8 @@ class BaseEnsembleSelection(Stacking):
 
 
 class EnsembleSelection(BaseEnsembleSelection):
-    """Ensemble selection for survival analysis that accounts for a score and correlations between predictions.
+    """
+    Ensemble selection for survival analysis that accounts for a score and correlations between predictions.
 
     The ensemble is pruned during training only according to the specified score (accuracy) and
     additionally for prediction according to the correlation between predictions (diversity).
@@ -447,7 +458,7 @@ class EnsembleSelection(BaseEnsembleSelection):
     n_jobs : int, optional, default: 1
         Number of jobs to run in parallel.
 
-    verbose : integer
+    verbose : int
         Controls the verbosity: the higher, the more messages.
 
     Attributes
@@ -555,7 +566,8 @@ class EnsembleSelection(BaseEnsembleSelection):
 
 
 class EnsembleSelectionRegressor(BaseEnsembleSelection):
-    r"""Ensemble selection for regression that accounts for the accuracy and correlation of errors.
+    r"""
+    Ensemble selection for regression that accounts for the accuracy and correlation of errors.
 
     The ensemble is pruned during training according to estimators' accuracy and the correlation
     between prediction errors per sample. The accuracy of the *i*-th estimator defined as

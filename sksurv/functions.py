@@ -18,7 +18,8 @@ __all__ = ["StepFunction"]
 
 
 class StepFunction:
-    r"""A callable step function.
+    r"""
+    A callable step function.
 
     The function is defined by a set of points :math:`(x_i, y_i)` and is
     evaluated as:
@@ -55,7 +56,8 @@ class StepFunction:
 
     @property
     def domain(self):
-        """The domain of the function.
+        """
+        The domain of the function.
 
         The domain is the range of values that the function accepts.
 
@@ -70,7 +72,8 @@ class StepFunction:
         return self._domain
 
     def __call__(self, x):
-        """Evaluate the step function at given values.
+        """
+        Evaluate the step function at given values.
 
         Parameters
         ----------
@@ -80,7 +83,7 @@ class StepFunction:
 
         Returns
         -------
-        y : float or array-like, shape=(n_values,)
+        float or array-like, shape=(n_values,)
             The value of the step function at ``x``.
 
         Raises

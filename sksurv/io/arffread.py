@@ -81,7 +81,8 @@ def _to_polars_dataframe(data, meta):
 
 
 def loadarff(filename, *, output_type="pandas"):
-    """Load ARFF file.
+    """
+    Load ARFF file.
 
     Parameters
     ----------
@@ -95,7 +96,7 @@ def loadarff(filename, *, output_type="pandas"):
 
     Returns
     -------
-    data_frame : :class:`pandas.DataFrame` or :class:`polars.DataFrame`
+    pandas.DataFrame or polars.DataFrame
         DataFrame containing data of the ARFF file. The dataframe library follows
         ``output_type``.
 

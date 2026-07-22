@@ -31,7 +31,8 @@ __all__ = ["CoxPHSurvivalAnalysis"]
 
 
 class BreslowEstimator:
-    """Breslow's non-parametric estimator for the cumulative baseline hazard.
+    """
+    Breslow's non-parametric estimator for the cumulative baseline hazard.
 
     This class is used by :class:`CoxPHSurvivalAnalysis` to estimate the
     cumulative baseline hazard and baseline survival function after the
@@ -50,7 +51,8 @@ class BreslowEstimator:
     """
 
     def fit(self, linear_predictor, event, time):
-        """Compute baseline cumulative hazard function.
+        """
+        Compute baseline cumulative hazard function.
 
         Parameters
         ----------
@@ -65,7 +67,8 @@ class BreslowEstimator:
 
         Returns
         -------
-        self
+        object
+            Fitted estimator.
         """
         risk_score = np.exp(linear_predictor)
         order = np.argsort(time, kind="mergesort")
@@ -91,7 +94,8 @@ class BreslowEstimator:
         return self
 
     def get_cumulative_hazard_function(self, linear_predictor):
-        """Predict cumulative hazard function.
+        """
+        Predict cumulative hazard function.
 
         Parameters
         ----------
@@ -100,7 +104,7 @@ class BreslowEstimator:
 
         Returns
         -------
-        cum_hazard : ndarray, shape = (n_samples,)
+        ndarray, shape = (n_samples,)
             Predicted cumulative hazard functions.
         """
         risk_score = np.exp(linear_predictor)
@@ -111,7 +115,8 @@ class BreslowEstimator:
         return funcs
 
     def get_survival_function(self, linear_predictor):
-        """Predict survival function.
+        """
+        Predict survival function.
 
         Parameters
         ----------
@@ -120,7 +125,7 @@ class BreslowEstimator:
 
         Returns
         -------
-        survival : ndarray, shape = (n_samples,)
+        ndarray, shape = (n_samples,)
             Predicted survival functions.
         """
         risk_score = np.exp(linear_predictor)
@@ -132,7 +137,8 @@ class BreslowEstimator:
 
 
 class CoxPHOptimizer:
-    """Helper class for fitting the Cox proportional hazards model.
+    """
+    Helper class for fitting the Cox proportional hazards model.
 
     This class computes the negative log-likelihood, its gradient, and the
     Hessian matrix for the Cox model. It is used internally by
@@ -167,17 +173,18 @@ class CoxPHOptimizer:
         self._is_breslow = ties == "breslow"
 
     def nlog_likelihood(self, w):
-        """Compute negative partial log-likelihood
+        """
+        Compute negative partial log-likelihood.
 
         Parameters
         ----------
         w : array, shape = (n_features,)
-            Estimate of coefficients
+            Estimate of coefficients.
 
         Returns
         -------
-        loss : float
-            Average negative partial log-likelihood
+        float
+            Average negative partial log-likelihood.
         """
         time = self.time
         n_samples = self.x.shape[0]
@@ -298,7 +305,8 @@ class CoxPHOptimizer:
 
 
 class VerboseReporter:
-    """Helper class to report optimization progress.
+    """
+    Helper class to report optimization progress.
 
     This class is used by :class:`CoxPHSurvivalAnalysis` to print
     optimization progress depending on the verbosity level.
@@ -332,7 +340,8 @@ class VerboseReporter:
 
 
 class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
-    """The Cox proportional hazards model, also known as Cox regression.
+    """
+    The Cox proportional hazards model, also known as Cox regression.
 
     This model is a semi-parametric model that can be used to model the
     relationship between a set of features and the time to an event.
@@ -365,9 +374,12 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         The maximum number of iterations taken for the solver to converge.
 
     tol : float, optional, default: 1e-9
-        Convergence criteria. Convergence is based on the negative log-likelihood::
+        Convergence criteria based on the negative log-likelihood::
 
-        |1 - (new neg. log-likelihood / old neg. log-likelihood) | < tol
+            |1 - (new neg. log-likelihood / old neg. log-likelihood)| < tol
+
+        If the condition is not satisfied before `n_iter` iterations,
+        a `ConvergenceWarning` is raised.
 
     verbose : int, optional, default: 0
         Specifies the amount of additional debug information
@@ -394,7 +406,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     unique_times_ : ndarray, shape = (n_unique_times,)
         Unique time points.
 
-    See also
+    See Also
     --------
     sksurv.linear_model.CoxnetSurvivalAnalysis
         Cox proportional hazards model with l1 (LASSO) and l2 (ridge) penalty.
@@ -439,12 +451,13 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         return self._baseline_model.unique_times_
 
     def fit(self, X, y):
-        """Fit the model to the given data.
+        """
+        Fit the model to the given data.
 
         Parameters
         ----------
         X : array-like, shape = (n_samples, n_features)
-            Data matrix
+            Data matrix.
 
         y : structured array, shape = (n_samples,)
             A structured array with two fields. The first field is a boolean
@@ -453,7 +466,8 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Returns
         -------
-        self
+        object
+            Fitted estimator.
         """
         self._validate_params()
 
@@ -524,7 +538,8 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         return self
 
     def predict(self, X):
-        """Predict risk scores.
+        """
+        Predict risk scores.
 
         The risk score is the linear predictor of the model,
         computed as the dot product of the input features `X` and the
@@ -538,7 +553,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Returns
         -------
-        risk_score : array, shape = (n_samples,)
+        ndarray, shape = (n_samples,)
             Predicted risk scores.
         """
         check_is_fitted(self, "coef_")
@@ -549,7 +564,8 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
     @append_cumulative_hazard_example(estimator_mod="linear_model", estimator_class="CoxPHSurvivalAnalysis")
     def predict_cumulative_hazard_function(self, X, return_array=False):
-        r"""Predict cumulative hazard function.
+        r"""
+        Predict cumulative hazard function.
 
         The cumulative hazard function for an individual
         with feature vector :math:`x` is defined as
@@ -580,7 +596,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Returns
         -------
-        cum_hazard : ndarray
+        ndarray
             If `return_array` is `False`, an array of `n_samples`
             :class:`sksurv.functions.StepFunction` instances is returned.
 
@@ -594,7 +610,8 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
     @append_survival_function_example(estimator_mod="linear_model", estimator_class="CoxPHSurvivalAnalysis")
     def predict_survival_function(self, X, return_array=False):
-        r"""Predict survival function.
+        r"""
+        Predict survival function.
 
         The survival function for an individual
         with feature vector :math:`x` is defined as
@@ -625,7 +642,7 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Returns
         -------
-        survival : ndarray
+        ndarray
             If `return_array` is `False`, an array of `n_samples`
             :class:`sksurv.functions.StepFunction` instances is returned.
 

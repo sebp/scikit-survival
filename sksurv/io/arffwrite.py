@@ -24,8 +24,10 @@ _ILLEGAL_CHARACTER_PAT = re.compile(r"[^-_=\w\d\(\)<>\.]")
 
 
 def _prepare_polars_for_arff_write(data):
-    """Convert a polars DataFrame to pandas, preserving ``pl.Enum``
-    declared categories. Column-by-column to avoid an undeclared ``pyarrow``
+    """
+    Convert a polars DataFrame to pandas, preserving ``pl.Enum`` declared categories.
+
+    Column-by-column to avoid an undeclared ``pyarrow``
     dependency (``nw_df.to_pandas()`` would dispatch Categorical/Enum through Arrow).
     """
     nw_df = nw.from_native(data)
@@ -45,7 +47,8 @@ def _prepare_polars_for_arff_write(data):
 
 
 def writearff(data, filename, relation_name=None, index=True):
-    """Write ARFF file
+    """
+    Write ARFF file.
 
     Parameters
     ----------
@@ -60,7 +63,7 @@ def writearff(data, filename, relation_name=None, index=True):
     relation_name : str, optional, default: 'pandas'
         Name of relation in ARFF file.
 
-    index : boolean, optional, default: True
+    index : bool, optional, default: True
         Write row names (index). Only relevant for pandas input; other
         dataframe libraries have no row-index concept, so the value is ignored.
 
@@ -140,7 +143,7 @@ def writearff(data, filename, relation_name=None, index=True):
 
 
 def _write_header(data, fp, relation_name, index):
-    """Write header containing attribute names and types"""
+    """Write header containing attribute names and types."""
     fp.write(f"@relation {relation_name}\n\n")
 
     if index:
@@ -168,7 +171,7 @@ def _write_header(data, fp, relation_name, index):
 
 
 def _sanitize_column_names(data):
-    """Replace illegal characters with underscore"""
+    """Replace illegal characters with underscore."""
     new_names = {}
     for name in data.columns:
         new_names[name] = _ILLEGAL_CHARACTER_PAT.sub("_", name)
@@ -176,7 +179,7 @@ def _sanitize_column_names(data):
 
 
 def _check_str_value(x):
-    """If string has a space, wrap it in double quotes and remove/escape illegal characters"""
+    """If string has a space, wrap it in double quotes and remove/escape illegal characters."""
     if isinstance(x, str):
         # remove commas, and single quotation marks since loadarff cannot deal with it
         x = x.replace(",", ".").replace(chr(0x2018), "'").replace(chr(0x2019), "'")
@@ -195,7 +198,7 @@ _check_str_array = np.frompyfunc(_check_str_value, 1, 1)
 
 
 def _write_attribute_categorical(series, fp):
-    """Write categories of a categorical/nominal attribute"""
+    """Write categories of a categorical/nominal attribute."""
     if isinstance(series.dtype, CategoricalDtype):
         categories = series.cat.categories
         string_values = _check_str_array(categories)
@@ -210,7 +213,7 @@ def _write_attribute_categorical(series, fp):
 
 
 def _write_data(data, fp):
-    """Write the data section"""
+    """Write the data section."""
     fp.write("@data\n")
 
     def to_str(x):

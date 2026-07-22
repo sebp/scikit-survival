@@ -20,7 +20,8 @@ __all__ = ["MinlipSurvivalAnalysis", "HingeLossSurvivalSVM"]
 
 
 class QPSolver(metaclass=ABCMeta):
-    r"""Abstract base class for quadratic program solvers.
+    r"""
+    Abstract base class for quadratic program solvers.
 
     This class defines the interface for solvers that minimize a quadratic
     objective function subject to linear inequality constraints,
@@ -46,7 +47,8 @@ class QPSolver(metaclass=ABCMeta):
 
     @abstractmethod
     def solve(self, P, q, G, h):
-        """Find solution to QP.
+        """
+        Find solution to QP.
 
         Parameters
         ----------
@@ -104,7 +106,7 @@ class OsqpSolver(QPSolver):
         return results.x[np.newaxis], n_iter
 
     def _get_options(self):
-        """Returns a dictionary of OSQP solver options."""
+        """Return a dictionary of OSQP solver options."""
         solver_opts = {
             "eps_abs": 1e-5,
             "eps_rel": 1e-5,
@@ -116,7 +118,8 @@ class OsqpSolver(QPSolver):
 
 
 class EcosSolver(QPSolver):
-    r"""Solves QP by expressing it as second-order cone program:
+    r"""
+    Solves QP by expressing it as second-order cone program.
 
     .. math::
 
@@ -192,7 +195,8 @@ class EcosSolver(QPSolver):
         return x[np.newaxis], n_iter
 
     def _check_success(self, results):  # pylint: disable=no-self-use
-        """Checks if the ECOS solver converged successfully.
+        """
+        Check if the ECOS solver converged successfully.
 
         Parameters
         ----------
@@ -200,7 +204,7 @@ class EcosSolver(QPSolver):
             The results dictionary returned by ``ecos.solve``.
 
         Raises
-        -------
+        ------
         RuntimeError
             If the solver failed for an unknown reason or found primal/dual infeasibility.
         """
@@ -220,7 +224,8 @@ class EcosSolver(QPSolver):
             raise RuntimeError(f"Unknown problem in ECOS solver, exit status: {exit_flag}")
 
     def _decompose(self, P):
-        """Performs eigenvalue decomposition of P.
+        """
+        Perform eigenvalue decomposition of P.
 
         Parameters
         ----------
@@ -256,7 +261,8 @@ class EcosSolver(QPSolver):
 
 
 class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
-    r"""Survival model based on a minimal Lipschitz smoothness strategy.
+    r"""
+    Survival model based on a minimal Lipschitz smoothness strategy.
 
     This model is related to :class:`sksurv.svm.FastKernelSurvivalSVM` but
     minimizes a different objective function, focusing on Lipschitz
@@ -287,7 +293,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     solver : {'ecos', 'osqp'}, optional, default: 'ecos'
         Which quadratic program solver to use.
 
-    kernel : str or callable, optional, default: 'linear'.
+    kernel : str or callable, optional, default: 'linear'
         Kernel mapping used internally. This parameter is directly passed to
         :func:`sklearn.metrics.pairwise.pairwise_kernels`.
         If `kernel` is a string, it must be one of the metrics
@@ -476,7 +482,8 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         self.coef_ = coef * D
 
     def fit(self, X, y):
-        """Build a MINLIP survival model from training data.
+        """
+        Build a MINLIP survival model from training data.
 
         Parameters
         ----------
@@ -490,7 +497,8 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Returns
         -------
-        self
+        object
+            Fitted estimator.
         """
         self._validate_params()
         X = validate_data(self, ensure_eager_dataframe(X), ensure_min_samples=2)
@@ -500,7 +508,8 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         return self
 
     def predict(self, X):
-        """Predict risk score of experiencing an event.
+        """
+        Predict risk score of experiencing an event.
 
         Higher values indicate an increased risk of experiencing an event,
         lower values a decreased risk of experiencing an event. The scores
@@ -514,7 +523,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Returns
         -------
-        y : ndarray, shape = (n_samples,)
+        ndarray, shape = (n_samples,)
             Predicted risk.
         """
         X = validate_data(self, ensure_eager_dataframe(X), reset=False)
@@ -524,7 +533,8 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
 
 class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
-    r"""Naive implementation of kernel survival support vector machine.
+    r"""
+    Naive implementation of kernel survival support vector machine.
 
     This implementation creates a new set of samples by building the difference
     between any two feature vectors in the original data. This approach
@@ -627,7 +637,7 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
     n_iter_ : int
         Number of iterations run by the optimization routine to fit the model.
 
-    See also
+    See Also
     --------
     sksurv.svm.NaiveSurvivalSVM : The linear naive survival SVM based on liblinear.
 

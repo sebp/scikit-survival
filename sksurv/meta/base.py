@@ -16,7 +16,7 @@ from sklearn.utils.metaestimators import _safe_split
 
 
 def _fit_and_score(est, x, y, scorer, train_index, test_index, parameters, fit_params, predict_params):
-    """Train survival model on given data and return its score on test data"""
+    """Train survival model on given data and return its score on test data."""
     X_train, y_train = _safe_split(est, x, y, train_index)
     train_params = fit_params.copy()
 

@@ -134,7 +134,7 @@ def check_module_minimum_version(module, min_version_str, max_version_str=None):
 
     Returns
     -------
-    available : bool
+    bool
         True if the module is available and its version is >= `version_str`.
     """
     try:

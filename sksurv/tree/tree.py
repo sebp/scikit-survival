@@ -37,7 +37,8 @@ def _array_to_step_function(x, array):
 
 
 class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
-    """A single survival tree.
+    """
+    A single survival tree.
 
     The quality of a split is measured by the log-rank splitting rule.
 
@@ -78,7 +79,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
           `ceil(min_samples_leaf * n_samples)` are the minimum
           number of samples for each node.
 
-    min_weight_fraction_leaf : float, optional, default: 0.
+    min_weight_fraction_leaf : float, optional, default: 0.0
         The minimum weighted fraction of the sum total of weights (of all
         the input samples) required to be at a leaf node. Samples have
         equal weight when sample_weight is not provided.
@@ -137,7 +138,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         The underlying Tree object. Please refer to
         ``help(sklearn.tree._tree.Tree)`` for attributes of Tree object.
 
-    See also
+    See Also
     --------
     sksurv.ensemble.RandomSurvivalForest : An ensemble of SurvivalTrees.
 
@@ -210,12 +211,13 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         return not issparse(X) and self.__sklearn_tags__().input_tags.allow_nan
 
     def _compute_missing_values_in_feature_mask(self, X, estimator_name=None):
-        """Return boolean mask denoting if there are missing values for each feature.
+        """
+        Return boolean mask denoting if there are missing values for each feature.
 
         This method also ensures that X is finite.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         X : array-like, shape = (n_samples, n_features), dtype = DOUBLE
             Input data.
 
@@ -224,7 +226,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         Returns
         -------
-        missing_values_in_feature_mask : ndarray of shape (n_features,), or None
+        ndarray of shape (n_features,), or None
             Missing value mask. If missing values are not supported or there
             are no missing values, return None.
         """
@@ -250,7 +252,8 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         return missing_values_in_feature_mask
 
     def fit(self, X, y, sample_weight=None, check_input=True):
-        """Build a survival tree from the training set (X, y).
+        """
+        Build a survival tree from the training set (X, y).
 
         If ``splitter='best'``, `X` is allowed to contain missing
         values. In addition to evaluating each potential threshold on
@@ -261,20 +264,21 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         Parameters
         ----------
         X : array-like or sparse matrix, shape = (n_samples, n_features)
-            Data matrix
+            Data matrix.
 
         y : structured array, shape = (n_samples,)
             A structured array with two fields. The first field is a boolean
             where ``True`` indicates an event and ``False`` indicates right-censoring.
             The second field is a float with the time of event or time of censoring.
 
-        check_input : boolean, default: True
+        check_input : bool, default: True
             Allow to bypass several input checking.
             Don't use this parameter unless you know what you do.
 
         Returns
         -------
-        self
+        object
+            Fitted estimator.
         """
         self._fit(X, y, sample_weight, check_input)
         return self
@@ -426,7 +430,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             )
 
     def _validate_X_predict(self, X, check_input, accept_sparse="csr"):
-        """Validate X whenever one tries to predict"""
+        """Validate X whenever one tries to predict."""
         X = ensure_eager_dataframe(X)
         if check_input:
             if self._support_missing_values(X):
@@ -448,7 +452,8 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         return X
 
     def predict(self, X, check_input=True):
-        r"""Predict risk score.
+        r"""
+        Predict risk score.
 
         The risk score is the total number of events, which can
         be estimated by the sum of the estimated cumulative
@@ -469,13 +474,13 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             values and decisions are made as described in
             :ref:`tree_missing_value_support`.
 
-        check_input : boolean, default: True
+        check_input : bool, default: True
             Allow to bypass several input checking.
             Don't use this parameter unless you know what you do.
 
         Returns
         -------
-        risk_scores : ndarray, shape = (n_samples,), dtype=float
+        ndarray, shape = (n_samples,), dtype=float
             Predicted risk scores.
         """
 
@@ -490,7 +495,8 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
     @append_cumulative_hazard_example(estimator_mod="tree", estimator_class="SurvivalTree")
     def predict_cumulative_hazard_function(self, X, check_input=True, return_array=False):
-        """Predict cumulative hazard function.
+        """
+        Predict cumulative hazard function.
 
         The cumulative hazard function (CHF) for an individual
         with feature vector :math:`x` is computed from
@@ -506,7 +512,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             values and decisions are made as described in
             :ref:`tree_missing_value_support`.
 
-        check_input : boolean, default: True
+        check_input : bool, default: True
             Allow to bypass several input checking.
             Don't use this parameter unless you know what you do.
 
@@ -524,7 +530,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         Returns
         -------
-        cum_hazard : ndarray
+        ndarray
             If `return_array` is `False`, an array of `n_samples`
             :class:`sksurv.functions.StepFunction` instances is returned.
 
@@ -546,7 +552,8 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
     @append_survival_function_example(estimator_mod="tree", estimator_class="SurvivalTree")
     def predict_survival_function(self, X, check_input=True, return_array=False):
-        """Predict survival function.
+        """
+        Predict survival function.
 
         The survival function for an individual
         with feature vector :math:`x` is computed from
@@ -562,7 +569,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             values and decisions are made as described in
             :ref:`tree_missing_value_support`.
 
-        check_input : boolean, default: True
+        check_input : bool, default: True
             Allow to bypass several input checking.
             Don't use this parameter unless you know what you do.
 
@@ -580,7 +587,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         Returns
         -------
-        survival : ndarray
+        ndarray
             If `return_array` is `False`, an array of `n_samples`
             :class:`sksurv.functions.StepFunction` instances is returned.
 
@@ -601,7 +608,8 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         return _array_to_step_function(self.unique_times_, arr)
 
     def apply(self, X, check_input=True):
-        """Return the index of the leaf that each sample is predicted as.
+        """
+        Return the index of the leaf that each sample is predicted as.
 
         Parameters
         ----------
@@ -619,7 +627,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         Returns
         -------
-        X_leaves : ndarray, shape = (n_samples,), dtype=int
+        ndarray, shape = (n_samples,), dtype=int
             For each datapoint x in X, return the index of the leaf x
             ends up in. Leaves are numbered within
             ``[0; self.tree_.node_count)``, possibly with gaps in the
@@ -630,7 +638,8 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
         return self.tree_.apply(X)
 
     def decision_path(self, X, check_input=True):
-        """Return the decision path in the tree.
+        """
+        Return the decision path in the tree.
 
         Parameters
         ----------
@@ -648,7 +657,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         Returns
         -------
-        indicator : sparse matrix, shape = (n_samples, n_nodes)
+        sparse matrix, shape = (n_samples, n_nodes)
             Return a node indicator CSR matrix where non zero elements
             indicates that the samples goes through the nodes.
         """
@@ -657,7 +666,8 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
 
 class ExtraSurvivalTree(SurvivalTree):
-    """An Extremely Randomized Survival Tree.
+    """
+    An Extremely Randomized Survival Tree.
 
     This class implements an Extremely Randomized Tree for survival analysis.
     It differs from :class:`SurvivalTree` in how splits are chosen:
@@ -697,7 +707,7 @@ class ExtraSurvivalTree(SurvivalTree):
           `ceil(min_samples_leaf * n_samples)` are the minimum
           number of samples for each node.
 
-    min_weight_fraction_leaf : float, optional, default: 0.
+    min_weight_fraction_leaf : float, optional, default: 0.0
         The minimum weighted fraction of the sum total of weights (of all
         the input samples) required to be at a leaf node. Samples have
         equal weight when sample_weight is not provided.
@@ -756,7 +766,7 @@ class ExtraSurvivalTree(SurvivalTree):
         The underlying Tree object. Please refer to
         ``help(sklearn.tree._tree.Tree)`` for attributes of Tree object.
 
-    See also
+    See Also
     --------
     sksurv.ensemble.ExtraSurvivalTrees : An ensemble of ExtraSurvivalTrees.
     """

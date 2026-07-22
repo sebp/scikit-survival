@@ -26,7 +26,8 @@ from ..util import check_array_survival
 
 
 class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
-    r"""Naive implementation of linear Survival Support Vector Machine.
+    r"""
+    Naive implementation of linear Survival Support Vector Machine.
 
     This class uses a regular linear support vector classifier (liblinear)
     to implement a survival SVM. It constructs a new dataset by computing
@@ -52,18 +53,15 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
 
     Parameters
     ----------
-    alpha : float, optional, default: 1.0
-        Weight of penalizing the squared hinge loss in the objective function. Must be greater than 0.
+    penalty : {'l1', 'l2'}, optional,default: 'l2'
+        Specifies the norm used in the penalization. The 'l2'
+        penalty is the standard used in SVC. The 'l1' leads to `coef_`
+        vectors that are sparse.
 
     loss : {'hinge', 'squared_hinge'}, optional,default: 'squared_hinge'
         Specifies the loss function. 'hinge' is the standard SVM loss
         (used e.g. by the SVC class) while 'squared_hinge' is the
         square of the hinge loss.
-
-    penalty : {'l1', 'l2'}, optional,default: 'l2'
-        Specifies the norm used in the penalization. The 'l2'
-        penalty is the standard used in SVC. The 'l1' leads to `coef_`
-        vectors that are sparse.
 
     dual : bool, optional,default: True
         Select the algorithm to either solve the dual or primal
@@ -71,6 +69,9 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
 
     tol : float, optional, default: 1e-4
         Tolerance for stopping criteria.
+
+    alpha : float, optional, default: 1.0
+        Weight of penalizing the squared hinge loss in the objective function. Must be greater than 0.
 
     verbose : int, optional, default: 0
         If ``True``, enable verbose output. Note that this setting takes advantage of a
@@ -89,7 +90,7 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
     n_iter_ : int
         Number of iterations run by the optimization routine to fit the model.
 
-    See also
+    See Also
     --------
     sksurv.svm.FastSurvivalSVM : Alternative implementation with reduced time complexity for training.
     sksurv.svm.HingeLossSurvivalSVM : Non-linear version of the naive survival SVM based on kernel functions.
@@ -103,7 +104,6 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
     .. [2] Evers, L., Messow, C.M.,
            "Sparse kernel methods for high-dimensional survival data",
            Bioinformatics 24(14), 1632-8, 2008.
-
     """
 
     _parameter_constraints = {
@@ -142,7 +142,8 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
         self.alpha = alpha
 
     def _get_survival_pairs(self, X, y, random_state):  # pylint: disable=no-self-use
-        """Generates comparable pairs from survival data.
+        """
+        Generate comparable pairs from survival data.
 
         Parameters
         ----------
@@ -205,7 +206,8 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
         return x_pairs, y_pairs
 
     def fit(self, X, y, sample_weight=None):
-        """Build a survival support vector machine model from training data.
+        """
+        Build a survival support vector machine model from training data.
 
         Parameters
         ----------
@@ -224,7 +226,8 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
 
         Returns
         -------
-        self
+        object
+            Fitted estimator.
         """
         random_state = check_random_state(self.random_state)
 
@@ -236,7 +239,8 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
         return super().fit(x_pairs, y_pairs, sample_weight=sample_weight)
 
     def predict(self, X):
-        """Predict risk scores.
+        """
+        Predict risk scores.
 
         Predictions are risk scores (i.e. higher values indicate an
         increased risk of experiencing an event). The scores have no
@@ -250,7 +254,7 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
 
         Returns
         -------
-        y : ndarray, shape = (n_samples,), dtype = float
+        ndarray, shape = (n_samples,), dtype = float
             Predicted risk scores.
         """
         return -self.decision_function(ensure_eager_dataframe(X))

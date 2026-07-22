@@ -20,7 +20,8 @@ from ..util import check_array_survival
 
 
 class IPCRidge(Ridge, SurvivalAnalysisMixin):
-    r"""Accelerated failure time model with inverse probability of censoring weights.
+    r"""
+    Accelerated failure time model with inverse probability of censoring weights.
 
     This model assumes a regression model of the form
 
@@ -167,7 +168,8 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
         return False
 
     def fit(self, X, y):
-        """Build an accelerated failure time model.
+        """
+        Build an accelerated failure time model.
 
         Parameters
         ----------
@@ -181,7 +183,8 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
 
         Returns
         -------
-        self
+        object
+            Fitted estimator.
         """
         X = ensure_eager_dataframe(X)
         event, time = check_array_survival(X, y)
@@ -192,7 +195,8 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
         return self
 
     def predict(self, X):
-        """Predict using the linear accelerated failure time model.
+        """
+        Predict using the linear accelerated failure time model.
 
         Parameters
         ----------
@@ -201,8 +205,8 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
 
         Returns
         -------
-        y_pred : array, shape = (n_samples,)
-            Returns predicted values on original scale (NOT log scale).
+        ndarray, shape = (n_samples,)
+            Predicted values on original scale (NOT log scale).
         """
         X = ensure_eager_dataframe(X)
         return np.exp(super().predict(X))

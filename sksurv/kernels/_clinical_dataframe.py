@@ -10,7 +10,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""DataFrame preparation helpers for the clinical kernel.
+"""
+DataFrame preparation helpers for the clinical kernel.
 
 This module is private to :mod:`sksurv.kernels.clinical`. It keeps
 DataFrame/Narwhals dtype dispatch and categorical semantics separate from
@@ -65,7 +66,8 @@ def _normalize_ordinal_categories(ordinal_categories):
 
 
 def _resolve_ordinal_categories(table, ordinal_categories):
-    """Merge user-declared ordinal categories with backend auto-detected ones.
+    """
+    Merge user-declared ordinal categories with backend auto-detected ones.
 
     Explicit ``ordinal_categories`` win. In addition, pandas ``Categorical``
     columns declared with ``ordered=True`` are auto-detected as ordinal using

@@ -171,7 +171,8 @@ def categorical_to_numeric_narwhals(table):
 
 
 def _int_codes_to_numpy(int_series, null_mask):
-    """Materialize a possibly null-containing Int64 series as a numpy array.
+    """
+    Materialize a possibly null-containing Int64 series as a numpy array.
 
     ``fill_null`` runs before ``to_numpy`` so nullable backends (e.g. pandas'
     Arrow-backed strings) build an integer array instead of failing to convert a

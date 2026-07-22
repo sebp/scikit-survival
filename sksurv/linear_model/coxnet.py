@@ -36,7 +36,8 @@ __all__ = ["CoxnetSurvivalAnalysis"]
 
 
 class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
-    r"""Cox's proportional hazard's model with elastic net penalty.
+    r"""
+    Cox's proportional hazard's model with elastic net penalty.
 
     See the :ref:`User Guide </user_guide/coxnet.ipynb>` and [1]_ for further description.
 
@@ -94,7 +95,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         :class:`sklearn.preprocessing.StandardScaler` before calling ``fit``
         on an estimator with ``normalize=False``.
 
-    copy_X : boolean, optional, default: True
+    copy_X : bool, optional, default: True
         If ``True``, X will be copied; else, it may be overwritten.
 
     tol : float, optional, default: 1e-7
@@ -264,12 +265,13 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         return create_path, alphas.astype(np.float64), penalty_factor.astype(np.float64), alpha_min_ratio
 
     def fit(self, X, y):
-        """Fit estimator.
+        """
+        Fit estimator.
 
         Parameters
         ----------
         X : array-like, shape = (n_samples, n_features)
-            Data matrix
+            Data matrix.
 
         y : structured array, shape = (n_samples,)
             A structured array with two fields. The first field is a boolean
@@ -278,7 +280,8 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Returns
         -------
-        self
+        object
+            Fitted estimator.
         """
         X, event_num, time, X_offset, X_scale = self._pre_fit(X, y)
         create_path, alphas, penalty, alpha_min_ratio = self._check_params(*X.shape)
@@ -337,8 +340,12 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         return coef
 
     def _interpolate_coefficients(self, alpha):
-        """Interpolate coefficients by calculating the weighted average of coefficient vectors corresponding to
-        neighbors of alpha in the list of alphas constructed during training."""
+        """
+        Interpolate coefficients.
+
+        Calculate the weighted average of coefficient vectors corresponding to
+        neighbors of alpha in the list of alphas constructed during training.
+        """
         exact = False
         coef_idx = None
         for i, val in enumerate(self.alphas_):
@@ -366,7 +373,8 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         return coef, offset
 
     def predict(self, X, alpha=None):
-        """Predict risk scores.
+        """
+        Predict risk scores.
 
         The risk score is the linear predictor of the model,
         computed as the dot product of the input features `X` and the
@@ -376,7 +384,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         Parameters
         ----------
         X : array-like, shape = (n_samples, n_features)
-            Test data of which to calculate log-likelihood from
+            Test data of which to calculate log-likelihood from.
 
         alpha : float, optional
             Constant that multiplies the penalty terms. If the same alpha was used during training, exact
@@ -385,7 +393,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Returns
         -------
-        risk_score : array, shape = (n_samples,)
+        ndarray, shape = (n_samples,)
             Predicted risk scores.
         """
         X = validate_data(self, ensure_eager_dataframe(X), reset=False)
@@ -410,7 +418,8 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         return baseline_model
 
     def predict_cumulative_hazard_function(self, X, alpha=None, return_array=False):
-        r"""Predict cumulative hazard function.
+        r"""
+        Predict cumulative hazard function.
 
         Only available if :meth:`fit` has been called with `fit_baseline_model = True`.
 
@@ -447,7 +456,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Returns
         -------
-        cum_hazard : ndarray
+        ndarray
             If `return_array` is `False`, an array of `n_samples`
             :class:`sksurv.functions.StepFunction` instances is returned.
 
@@ -498,7 +507,8 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         return self._predict_cumulative_hazard_function(baseline_model, self.predict(X, alpha=alpha), return_array)
 
     def predict_survival_function(self, X, alpha=None, return_array=False):
-        r"""Predict survival function.
+        r"""
+        Predict survival function.
 
         Only available if :meth:`fit` has been called with `fit_baseline_model = True`.
 
@@ -535,13 +545,12 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         Returns
         -------
-        survival : ndarray
+        ndarray
             If `return_array` is `False`, an array of `n_samples`
             :class:`sksurv.functions.StepFunction` instances is returned.
 
             If `return_array` is `True`, a numeric array of shape
             `(n_samples, n_unique_times_)` is returned.
-
 
         Examples
         --------

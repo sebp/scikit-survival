@@ -27,7 +27,8 @@ __all__ = [
 
 
 def capture_pandas_index(nw_obj):
-    """Return the pandas row index of a frame/series, or ``None`` for index-less backends.
+    """
+    Return the pandas row index of a frame/series, or ``None`` for index-less backends.
 
     Narwhals rebuilds columns positionally, so values reconstructed from numpy
     lose the caller's pandas index. Capture it here and restore it afterwards
@@ -40,7 +41,8 @@ def capture_pandas_index(nw_obj):
 
 
 def detach_pandas_index(nw_frame):
-    """Detach a pandas frame's row index so rebuilt columns concat positionally.
+    """
+    Detach a pandas frame's row index so rebuilt columns concat positionally.
 
     Narwhals concatenates pandas frames by index *label*, but columns rebuilt
     from numpy (one-hot blocks, standardized columns, integer codes) carry a

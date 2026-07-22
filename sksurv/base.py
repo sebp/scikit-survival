@@ -27,7 +27,8 @@ class SurvivalAnalysisMixin:
         return arr
 
     def _predict_survival_function(self, baseline_model, prediction, return_array):
-        """Return survival functions.
+        """
+        Return survival functions.
 
         Parameters
         ----------
@@ -44,7 +45,7 @@ class SurvivalAnalysisMixin:
 
         Returns
         -------
-        survival : ndarray of StepFunction
+        ndarray of StepFunction
             If `return_array` is True, an array of shape (n_samples, n_unique_times)
             containing the survival function values. Otherwise, a list of
             :class:`sksurv.functions.StepFunction` instances.
@@ -52,7 +53,8 @@ class SurvivalAnalysisMixin:
         return self._predict_function("get_survival_function", baseline_model, prediction, return_array)
 
     def _predict_cumulative_hazard_function(self, baseline_model, prediction, return_array):
-        """Return cumulative hazard functions.
+        """
+        Return cumulative hazard functions.
 
         Parameters
         ----------
@@ -69,7 +71,7 @@ class SurvivalAnalysisMixin:
 
         Returns
         -------
-        cum_hazard : ndarray of StepFunction
+        ndarray of StepFunction
             If `return_array` is True, an array of shape (n_samples, n_unique_times)
             containing the cumulative hazard function values. Otherwise, a list of
             :class:`sksurv.functions.StepFunction` instances.
@@ -77,7 +79,8 @@ class SurvivalAnalysisMixin:
         return self._predict_function("get_cumulative_hazard_function", baseline_model, prediction, return_array)
 
     def score(self, X, y):
-        """Returns the concordance index of the prediction.
+        """
+        Return the concordance index of the prediction.
 
         Parameters
         ----------
@@ -91,10 +94,10 @@ class SurvivalAnalysisMixin:
 
         Returns
         -------
-        cindex : float
+        float
             Estimated concordance index.
 
-        See also
+        See Also
         --------
         sksurv.metrics.concordance_index_censored : Computes the concordance index.
         """

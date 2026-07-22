@@ -31,7 +31,8 @@ __all__ = [
 
 
 def _compute_counts(event, time, order=None):
-    """Count right-censored and uncensored samples at each unique time point.
+    """
+    Count right-censored and uncensored samples at each unique time point.
 
     Parameters
     ----------
@@ -116,7 +117,8 @@ def _compute_counts(event, time, order=None):
 
 
 def _compute_counts_truncated(event, time_enter, time_exit):
-    """Compute counts for left truncated and right-censored survival data.
+    """
+    Compute counts for left truncated and right-censored survival data.
 
     Parameters
     ----------
@@ -189,9 +191,11 @@ def _compute_counts_truncated(event, time_enter, time_exit):
 
 
 def _ci_logmlog(s, sigma_t, conf_level):
-    r"""Compute the pointwise log-minus-log transformed confidence intervals.
-    s refers to the prob_survival or the cum_inc (for the competing risks case).
-    sigma_t is the square root of the variance of the log of the estimator of s.
+    r"""
+    Compute the pointwise log-minus-log transformed confidence intervals.
+
+    `s` refers to the prob_survival or the cum_inc (for the competing risks case).
+    `sigma_t` is the square root of the variance of the log of the estimator of s.
 
     .. math::
 
@@ -212,7 +216,8 @@ def _ci_logmlog(s, sigma_t, conf_level):
 
 
 def _km_ci_estimator(prob_survival, ratio_var, conf_level, conf_type):
-    """Helper to compute confidence intervals for the Kaplan-Meier estimate.
+    """
+    Helper to compute confidence intervals for the Kaplan-Meier estimate.
 
     Parameters
     ----------
@@ -230,7 +235,7 @@ def _km_ci_estimator(prob_survival, ratio_var, conf_level, conf_type):
 
     Returns
     -------
-    ci : ndarray, shape = (2, n_times)
+    ndarray, shape = (2, n_times)
         Pointwise confidence interval.
     """
     if conf_type not in {"log-log"}:
@@ -253,7 +258,8 @@ def kaplan_meier_estimator(
     conf_level=0.95,
     conf_type=None,
 ):
-    """Computes the Kaplan-Meier estimate of the survival function.
+    """
+    Compute the Kaplan-Meier estimate of the survival function.
 
     See [1]_ for further description.
 
@@ -284,7 +290,7 @@ def kaplan_meier_estimator(
     conf_level : float, optional, default: 0.95
         The level for a two-sided confidence interval on the survival curves.
 
-    conf_type : None or {'log-log'}, optional, default: None.
+    conf_type : None or {'log-log'}, optional, default: None
         The type of confidence intervals to estimate.
         If `None`, no confidence intervals are estimated.
         If "log-log", estimate confidence intervals using
@@ -303,6 +309,19 @@ def kaplan_meier_estimator(
         Pointwise confidence interval of the Kaplan-Meier estimator
         at each unique time point.
         Only provided if `conf_type` is not None.
+
+    See Also
+    --------
+    sksurv.nonparametric.SurvivalFunctionEstimator
+        Estimator API of the Kaplan-Meier estimator.
+
+    References
+    ----------
+    .. [1] Kaplan, E. L. and Meier, P., "Nonparametric estimation from incomplete observations",
+           Journal of The American Statistical Association, vol. 53, pp. 457-481, 1958.
+    .. [2] Borgan Ø. and Liestøl K., "A Note on Confidence Intervals and Bands for the
+           Survival Function Based on Transformations", Scandinavian Journal of
+           Statistics. 1990;17(1):35–41.
 
     Examples
     --------
@@ -325,19 +344,6 @@ def kaplan_meier_estimator(
         >>> plt.ylim(0, 1)
         (0.0, 1.0)
         >>> plt.show()  # doctest: +SKIP
-
-    See also
-    --------
-    sksurv.nonparametric.SurvivalFunctionEstimator
-        Estimator API of the Kaplan-Meier estimator.
-
-    References
-    ----------
-    .. [1] Kaplan, E. L. and Meier, P., "Nonparametric estimation from incomplete observations",
-           Journal of The American Statistical Association, vol. 53, pp. 457-481, 1958.
-    .. [2] Borgan Ø. and Liestøl K., "A Note on Confidence Intervals and Bands for the
-           Survival Function Based on Transformations", Scandinavian Journal of
-           Statistics. 1990;17(1):35–41.
     """
     event, time_enter, time_exit = check_y_survival(event, time_enter, time_exit, allow_all_censored=True)
     check_consistent_length(event, time_enter, time_exit)
@@ -393,7 +399,8 @@ def kaplan_meier_estimator(
 
 
 def nelson_aalen_estimator(event, time):
-    """Computes the Nelson-Aalen estimate of the cumulative hazard function.
+    """
+    Compute the Nelson-Aalen estimate of the cumulative hazard function.
 
     See [1]_, [2]_ for further description.
 
@@ -414,6 +421,14 @@ def nelson_aalen_estimator(event, time):
     cum_hazard : ndarray, shape = (n_times,)
         Cumulative hazard at each unique time point.
 
+    References
+    ----------
+    .. [1] Nelson, W., "Theory and applications of hazard plotting for censored failure data",
+           Technometrics, vol. 14, pp. 945-965, 1972.
+
+    .. [2] Aalen, O. O., "Nonparametric inference for a family of counting processes",
+           Annals of Statistics, vol. 6, pp. 701–726, 1978.
+
     Examples
     --------
     Creating a cumulative hazard curve:
@@ -430,14 +445,6 @@ def nelson_aalen_estimator(event, time):
         >>> plt.step(time, cum_hazard, where="post")
         [...]
         >>> plt.show()  # doctest: +SKIP
-
-    References
-    ----------
-    .. [1] Nelson, W., "Theory and applications of hazard plotting for censored failure data",
-           Technometrics, vol. 14, pp. 945-965, 1972.
-
-    .. [2] Aalen, O. O., "Nonparametric inference for a family of counting processes",
-           Annals of Statistics, vol. 6, pp. 701–726, 1978.
     """
     event, time = check_y_survival(event, time)
     check_consistent_length(event, time)
@@ -449,7 +456,8 @@ def nelson_aalen_estimator(event, time):
 
 
 def ipc_weights(event, time):
-    """Compute inverse probability of censoring weights
+    """
+    Compute inverse probability of censoring weights.
 
     Parameters
     ----------
@@ -462,10 +470,10 @@ def ipc_weights(event, time):
 
     Returns
     -------
-    weights : ndarray, shape = (n_samples,)
-        inverse probability of censoring weights
+    ndarray, shape = (n_samples,)
+        Inverse probability of censoring weights.
 
-    See also
+    See Also
     --------
     CensoringDistributionEstimator
         An estimator interface for estimating inverse probability
@@ -488,20 +496,21 @@ def ipc_weights(event, time):
 
 
 class SurvivalFunctionEstimator(BaseEstimator):
-    """Kaplan–Meier estimate of the survival function.
+    """
+    Kaplan–Meier estimate of the survival function.
 
     Parameters
     ----------
     conf_level : float, optional, default: 0.95
         The level for a two-sided confidence interval on the survival curves.
 
-    conf_type : None or {'log-log'}, optional, default: None.
+    conf_type : None or {'log-log'}, optional, default: None
         The type of confidence intervals to estimate.
         If `None`, no confidence intervals are estimated.
         If "log-log", estimate confidence intervals using
         the log hazard or :math:`log(-log(S(t)))`.
 
-    See also
+    See Also
     --------
     sksurv.nonparametric.kaplan_meier_estimator
         Functional API of the Kaplan-Meier estimator.
@@ -517,7 +526,8 @@ class SurvivalFunctionEstimator(BaseEstimator):
         self.conf_type = conf_type
 
     def fit(self, y):
-        """Estimate survival distribution from training data.
+        """
+        Estimate survival distribution from training data.
 
         Parameters
         ----------
@@ -528,7 +538,8 @@ class SurvivalFunctionEstimator(BaseEstimator):
 
         Returns
         -------
-        self
+        object
+            Fitted estimator.
         """
         self._validate_params()
         event, time = check_y_survival(y, allow_all_censored=True)
@@ -546,7 +557,8 @@ class SurvivalFunctionEstimator(BaseEstimator):
         return self
 
     def predict_proba(self, time, return_conf_int=False):
-        r"""Return probability of remaining event-free at given time points.
+        r"""
+        Return probability of remaining event-free at given time points.
 
         :math:`\hat{S}(t) = P(T > t)`
 
@@ -609,7 +621,8 @@ class CensoringDistributionEstimator(SurvivalFunctionEstimator):
     """Kaplan–Meier estimator for the censoring distribution."""
 
     def fit(self, y):
-        """Estimate censoring distribution from training data.
+        """
+        Estimate censoring distribution from training data.
 
         Parameters
         ----------
@@ -620,7 +633,8 @@ class CensoringDistributionEstimator(SurvivalFunctionEstimator):
 
         Returns
         -------
-        self
+        object
+            Fitted estimator.
         """
         event, time = check_y_survival(y)
         if event.all():
@@ -634,7 +648,8 @@ class CensoringDistributionEstimator(SurvivalFunctionEstimator):
         return self
 
     def predict_ipcw(self, y):
-        r"""Return inverse probability of censoring weights at given time points.
+        r"""
+        Return inverse probability of censoring weights at given time points.
 
         :math:`\omega_i = \delta_i / \hat{G}(y_i)`
 
@@ -647,7 +662,7 @@ class CensoringDistributionEstimator(SurvivalFunctionEstimator):
 
         Returns
         -------
-        ipcw : ndarray, shape = (n_samples,)
+        ndarray, shape = (n_samples,)
             Inverse probability of censoring weights.
         """
         event, time = check_y_survival(y)
@@ -685,7 +700,8 @@ def cumulative_incidence_competing_risks(
     conf_type=None,
     var_type="Aalen",
 ):
-    """Non-parametric estimator of Cumulative Incidence function in the case of competing risks.
+    """
+    Non-parametric estimator of Cumulative Incidence function in the case of competing risks.
 
     See the :ref:`User Guide </user_guide/competing-risks.ipynb>` and [1]_ for further details.
 
@@ -707,7 +723,7 @@ def cumulative_incidence_competing_risks(
     conf_level : float, optional, default: 0.95
         The level for a two-sided confidence interval on the cumulative incidence curves.
 
-    conf_type : None or {'log-log'}, optional, default: None.
+    conf_type : None or {'log-log'}, optional, default: None
         The type of confidence intervals to estimate.
         If `None`, no confidence intervals are estimated.
         If "log-log", estimate confidence intervals using
@@ -734,6 +750,16 @@ def cumulative_incidence_competing_risks(
         at each unique time point (last axis)
         for all possible risks (first axis), including overall risk (``conf_int[0]``).
         Only provided if `conf_type` is not None.
+
+    References
+    ----------
+    .. [1] Kalbfleisch, J.D. and Prentice, R.L. (2002)
+           The Statistical Analysis of Failure Time Data. 2nd Edition, John Wiley and Sons, New York.
+    .. [2] Aalen, O. (1978a). Annals of Statistics, 6, 534–545.
+           We implement the formula in M. Pintilie: "Competing Risks: A Practical Perspective".
+           John Wiley & Sons, 2006, Eq. 4.5
+    .. [3] Dinse and Larson, Biometrika (1986), 379. Sect. 4, Eqs. 4 and 5.
+    .. [4] Dinse and Larson, Biometrika (1986), 379. Sect. 4, Eq. 6.
 
     Examples
     --------
@@ -768,16 +794,6 @@ def cumulative_incidence_competing_risks(
         >>> plt.legend()
         <matplotlib.legend.Legend object at 0x...>
         >>> plt.show()  # doctest: +SKIP
-
-    References
-    ----------
-    .. [1] Kalbfleisch, J.D. and Prentice, R.L. (2002)
-           The Statistical Analysis of Failure Time Data. 2nd Edition, John Wiley and Sons, New York.
-    .. [2] Aalen, O. (1978a). Annals of Statistics, 6, 534–545.
-           We implement the formula in M. Pintilie: "Competing Risks: A Practical Perspective".
-           John Wiley & Sons, 2006, Eq. 4.5
-    .. [3] Dinse and Larson, Biometrika (1986), 379. Sect. 4, Eqs. 4 and 5.
-    .. [4] Dinse and Larson, Biometrika (1986), 379. Sect. 4, Eq. 6.
     """
     event, time_exit = check_y_survival(event, time_exit, allow_all_censored=True, competing_risks=True)
     check_consistent_length(event, time_exit)
@@ -827,8 +843,8 @@ def cumulative_incidence_competing_risks(
 
 def _var_dinse_approx(n_events_cr, kpe_prime, n_at_risk, cum_inc):
     """
-    Variance estimator from Dinse and Larson, Biometrika (1986), 379
-    See Section 4, Eqs. 6.
+    Variance estimator from Dinse and Larson, Biometrika (1986), 379. See Section 4, Eqs. 6.
+
     This is an approximation from the _var_dinse, so that one should be preferred.
     However, this seems to be more common in the literature.
     """
@@ -849,8 +865,7 @@ def _var_dinse_approx(n_events_cr, kpe_prime, n_at_risk, cum_inc):
 
 def _var_dinse(n_events_cr, kpe_prime, n_at_risk):
     """
-    Variance estimator from Dinse and Larson, Biometrika (1986), 379
-    See Section 4, Eqs. 4 and 5
+    Variance estimator from Dinse and Larson, Biometrika (1986), 379. See Section 4, Eqs. 4 and 5.
     """
     dr = n_events_cr[:, 0]
     dr_cr = n_events_cr[:, 1:].T
@@ -877,9 +892,10 @@ def _var_dinse(n_events_cr, kpe_prime, n_at_risk):
 
 def _var_aalen(n_events_cr, kpe_prime, n_at_risk, cum_inc):
     """
-    Variance estimator from Aalen
-    Aalen, O. (1978a). Nonparametric estimation of partial transition
-    probabilities in multiple decrement models. Annals of Statistics, 6, 534–545.
+    Variance estimator from Aalen, O. (1978a).
+
+    Nonparametric estimation of partial transition probabilities in multiple decrement models.
+    Annals of Statistics, 6, 534–545.
     We implement it as shown in
     M. Pintilie: "Competing Risks: A Practical Perspective". John Wiley & Sons, 2006, Eq. 4.5
     This seems to be the estimator used in cmprsk, but there are some numerical differences with our implementation.
