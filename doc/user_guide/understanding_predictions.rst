@@ -97,10 +97,10 @@ using :meth:`sksurv.linear_model.CoxPHSurvivalAnalysis.predict_survival_function
     Their predictions are risk scores of arbitrary scale. If samples are ordered according to
     their predicted risk score (in ascending order), one obtains the sequence of events,
     as predicted by the model.
-    This is the return value of the :func:`predict()` method of **all survival models in scikit-survival**.
+    This is the return value of the :func:`predict` method of **all survival models in scikit-survival**.
 
     Consequently, predictions are often evaluated by a measure of rank correlation between predicted risk scores
     and observed time points in the test data. In particular, Harrell's concordance index
     (:func:`sksurv.metrics.concordance_index_censored`) computes the ratio of correctly ordered
     (concordant) pairs to comparable pairs and is the default performance metric when calling
-    a survival model's :func:`score()` method.
+    a survival model's :func:`score` method.
