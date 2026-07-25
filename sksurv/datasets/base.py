@@ -538,16 +538,31 @@ def load_flchain(*, output_type="pandas"):
 
     The dataset has 7874 samples and 9 features:
 
-        1. age: age in years
-        2. sex: F=female, M=male
-        3. sample.yr: the calendar year in which a blood sample was obtained
-        4. kappa: serum free light chain, kappa portion
-        5. lambda: serum free light chain, lambda portion
-        6. flc.grp: the serum free light chain group for the subject, as used in the original analysis
-        7. creatinine: serum creatinine
-        8. mgus: whether the subject had been diagnosed with monoclonal gammapothy (MGUS)
-        9. chapter: for those who died, a grouping of their primary cause of death by chapter headings
-           of the International Code of Diseases ICD-9
+    +-------+------------+--------------------------------------------------------+
+    | Index | Name       | Description                                            |
+    +=======+============+========================================================+
+    | 0     | age        | age in years                                           |
+    +-------+------------+--------------------------------------------------------+
+    | 1     | sex        | F=female, M=male                                       |
+    +-------+------------+--------------------------------------------------------+
+    | 2     | sample.yr  | the calendar year in which a blood sample was obtained |
+    +-------+------------+--------------------------------------------------------+
+    | 3     | kappa      | serum free light chain, kappa portion                  |
+    +-------+------------+--------------------------------------------------------+
+    | 4     | lambda     | serum free light chain, lambda portion                 |
+    +-------+------------+--------------------------------------------------------+
+    | 5     | flc.grp    | the serum free light chain group for the subject,      |
+    |       |            | as used in the original analysis                       |
+    +-------+------------+--------------------------------------------------------+
+    | 6     | creatinine | serum creatinine                                       |
+    +-------+------------+--------------------------------------------------------+
+    | 7     | mgus       | whether the subject had been diagnosed with monoclonal |
+    |       |            | gammapothy (MGUS)                                      |
+    +-------+------------+--------------------------------------------------------+
+    | 8     | chapter    | for those who died, a grouping of their primary cause  |
+    |       |            | of death by chapter headings of the                    |
+    |       |            | International Code of Diseases ICD-9                   |
+    +-------+------------+--------------------------------------------------------+
 
     The endpoint is death, which occurred for 2169 subjects (27.5%).
 
@@ -590,10 +605,15 @@ def load_bmt(*, output_type="pandas"):
     """
     Load and return response to hematopoietic stem cell transplantation (HSCT) for acute leukemia patients.
 
-    The dataset has 35 samples and 1 feature "dis" indicating the type of leukemia::
+    The dataset has 35 samples and 1 feature "dis" indicating the type of leukemia
 
-        0=ALL (Acute Lymphoblastic Leukemia)
-        1=AML (Acute Myeloid Leukemia)
+    +-------+------------------------------------+
+    | Value | Description                        |
+    +=======+====================================+
+    | 0     | ALL (Acute Lymphoblastic Leukemia) |
+    +-------+------------------------------------+
+    | 1     | AML (Acute Myeloid Leukemia)       |
+    +-------+------------------------------------+
 
     The endpoint (status) is defined as
 
@@ -650,39 +670,39 @@ def load_cgvhd(*, output_type="pandas"):
     +-------+------------+----------------------------------------------+-------------------------------------------+
     | Index | Name       | Description                                  | Encoding                                  |
     +=======+============+==============================================+===========================================+
-    | 1     | dx         | Diagnosis                                    | | AML=acute myeloid leukaemia             |
+    | 0     | dx         | Diagnosis                                    | | AML=acute myeloid leukaemia             |
     |       |            |                                              | | CML=chronic myeloid leukaemia           |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 2     | tx         | Randomized treatment                         | | BM=cell harvested from the bone marrow  |
+    | 1     | tx         | Randomized treatment                         | | BM=cell harvested from the bone marrow  |
     |       |            |                                              | | PB=cell harvested from peripheral blood |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 3     | extent     | Extent of disease                            | L=limited, E=extensive                    |
+    | 2     | extent     | Extent of disease                            | L=limited, E=extensive                    |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 4     | agvhdgd    | Grade of acute GVHD                          |                                           |
+    | 3     | agvhdgd    | Grade of acute GVHD                          |                                           |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 5     | age        | Age                                          | Years                                     |
+    | 4     | age        | Age                                          | Years                                     |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 6     | survtime   | Time from date of transplant to death        | Years                                     |
+    | 5     | survtime   | Time from date of transplant to death        | Years                                     |
     |       |            | or last follow-up                            |                                           |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 7     | reltime    | Time from date of transplant to relapse      | Years                                     |
+    | 6     | reltime    | Time from date of transplant to relapse      | Years                                     |
     |       |            | or last follow-up                            |                                           |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 8     | agvhtime   | Time from date of transplant to acute GVHD   | Years                                     |
+    | 7     | agvhtime   | Time from date of transplant to acute GVHD   | Years                                     |
     |       |            | or last follow-up                            |                                           |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 9     | cgvhtime   | Time from date of transplant to chronic GVHD | Years                                     |
+    | 8     | cgvhtime   | Time from date of transplant to chronic GVHD | Years                                     |
     |       |            | or last follow-up                            |                                           |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 10    | stat       | Status                                       | 1=Dead, 0=Alive                           |
+    | 9     | stat       | Status                                       | 1=Dead, 0=Alive                           |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 11    | rcens      | Relapse                                      | 1=Yes, 0=No                               |
+    | 10    | rcens      | Relapse                                      | 1=Yes, 0=No                               |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 12    | agvh       | Acute GVHD                                   | 1=Yes, 0=No                               |
+    | 11    | agvh       | Acute GVHD                                   | 1=Yes, 0=No                               |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 13    | cgvh       | Chronic GVHD                                 | 1=Yes, 0=No                               |
+    | 12    | cgvh       | Chronic GVHD                                 | 1=Yes, 0=No                               |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 14    | stnum      | patient ID                                   |                                           |
+    | 13    | stnum      | patient ID                                   |                                           |
     +-------+------------+----------------------------------------------+-------------------------------------------+
 
     Columns 6,7 and 9 contain the time to death, relapse and CGVHD
