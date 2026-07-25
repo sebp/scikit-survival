@@ -733,6 +733,64 @@ class _BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
         """Create and run optimizer."""
 
     @abstractmethod
+    def _compute_scores(self, X):
+        """
+        Compute raw scores for input samples.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            The input samples.
+
+        Returns
+        -------
+        ndarray, shape = (n_samples,), dtype=float
+            Raw scores before intercept adjustment and rank_ratio transformation.
+        """
+
+    def _validate_predict_input(self, X):
+        """
+        Validate input for prediction and check if estimator is fitted.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            The input samples.
+
+        Returns
+        -------
+        X_validated : ndarray, shape = (n_samples, n_features)
+            Validated input samples.
+        """
+        check_is_fitted(self, "coef_")
+        return validate_data(self, ensure_eager_dataframe(X), reset=False)
+
+    def _post_process_scores(self, val):
+        """
+        Apply intercept adjustment and rank_ratio-based transformation to raw scores.
+
+        Parameters
+        ----------
+        val : ndarray, shape = (n_samples,), dtype=float
+            Raw scores from _compute_scores.
+
+        Returns
+        -------
+        ndarray, shape = (n_samples,), dtype=float
+            Post-processed scores (risk scores or transformed survival times).
+        """
+        if hasattr(self, "intercept_"):
+            val += self.intercept_
+
+        # Order by increasing survival time if objective is pure ranking
+        if self.rank_ratio == 1:
+            val *= -1
+        else:
+            # model was fitted on log(time), transform to original scale
+            val = np.exp(val)
+
+        return val
+
     def predict(self, X):
         """
         Predict risk scores or transformed survival times.
@@ -758,6 +816,9 @@ class _BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
             Risk scores (if ``rank_ratio = 1``), or transformed survival times
             (if ``rank_ratio < 1``).
         """
+        X = self._validate_predict_input(X)
+        val = self._compute_scores(X)
+        return self._post_process_scores(val)
 
     def _validate_for_fit(self, X):
         return validate_data(self, ensure_eager_dataframe(X), ensure_min_samples=2)
@@ -985,22 +1046,8 @@ class FastSurvivalSVM(_BaseSurvivalSVM, SurvivalAnalysisMixin):
         opt_result = optimizer.run(tol=self.tol, options={"maxiter": self.max_iter, "disp": self.verbose})
         return opt_result
 
-    def predict(self, X):
-        check_is_fitted(self, "coef_")
-        X = validate_data(self, ensure_eager_dataframe(X), reset=False)
-
-        val = np.dot(X, self.coef_)
-        if hasattr(self, "intercept_"):
-            val += self.intercept_
-
-        # Order by increasing survival time if objective is pure ranking
-        if self.rank_ratio == 1:
-            val *= -1
-        else:
-            # model was fitted on log(time), transform to original scale
-            val = np.exp(val)
-
-        return val
+    def _compute_scores(self, X):
+        return np.dot(X, self.coef_)
 
 
 class FastKernelSurvivalSVM(_BaseSurvivalSVM, SurvivalAnalysisMixin):
@@ -1205,6 +1252,10 @@ class FastKernelSurvivalSVM(_BaseSurvivalSVM, SurvivalAnalysisMixin):
             return super()._validate_for_fit(X)
         return X
 
+    def _validate_predict_input(self, X):
+        check_is_fitted(self, ["coef_", "fit_X_"])
+        return validate_data(self, ensure_eager_dataframe(X), reset=False)
+
     def _fit(self, X, time, event, samples_order):
         # don't reorder X here, because it might be a precomputed kernel matrix
         kernel_mat = self._get_kernel(X)
@@ -1227,19 +1278,6 @@ class FastKernelSurvivalSVM(_BaseSurvivalSVM, SurvivalAnalysisMixin):
 
         return opt_result
 
-    def predict(self, X):
-        X = validate_data(self, ensure_eager_dataframe(X), reset=False)
+    def _compute_scores(self, X):
         kernel_mat = self._get_kernel(X, self.fit_X_)
-
-        val = np.dot(kernel_mat, self.coef_)
-        if hasattr(self, "intercept_"):
-            val += self.intercept_
-
-        # Order by increasing survival time if objective is pure ranking
-        if self.rank_ratio == 1:
-            val *= -1
-        else:
-            # model was fitted on log(time), transform to original scale
-            val = np.exp(val)
-
-        return val
+        return np.dot(kernel_mat, self.coef_)
