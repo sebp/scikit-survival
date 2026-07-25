@@ -10,6 +10,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Kernel function for mixed-type data.
+"""
+
 import narwhals.stable.v2 as nw
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin

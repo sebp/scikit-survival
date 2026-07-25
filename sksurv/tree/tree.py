@@ -10,6 +10,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Tree-based survival models.
+"""
+
 from math import ceil
 from numbers import Integral, Real
 
@@ -815,13 +819,13 @@ class ExtraSurvivalTree(SurvivalTree):
             low_memory=low_memory,
         )
 
-    def predict_cumulative_hazard_function(self, X, check_input=True, return_array=False):
+    def predict_cumulative_hazard_function(self, X, check_input=True, return_array=False):  # numpydoc ignore=GL08
         ExtraSurvivalTree.predict_cumulative_hazard_function.__doc__ = (
             SurvivalTree.predict_cumulative_hazard_function.__doc__.replace("SurvivalTree", "ExtraSurvivalTree")
         )
         return super().predict_cumulative_hazard_function(X, check_input=check_input, return_array=return_array)
 
-    def predict_survival_function(self, X, check_input=True, return_array=False):
+    def predict_survival_function(self, X, check_input=True, return_array=False):  # numpydoc ignore=GL08
         ExtraSurvivalTree.predict_survival_function.__doc__ = SurvivalTree.predict_survival_function.__doc__.replace(
             "SurvivalTree", "ExtraSurvivalTree"
         )

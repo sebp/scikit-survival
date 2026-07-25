@@ -10,6 +10,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Forest-based survival estimators.
+"""
+
 from abc import ABCMeta, abstractmethod
 from functools import partial
 import threading

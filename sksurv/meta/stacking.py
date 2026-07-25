@@ -10,6 +10,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Ensemble estimator based on stacking.
+"""
+
 import numpy as np
 from sklearn.base import MetaEstimatorMixin, clone
 from sklearn.utils._param_validation import HasMethods

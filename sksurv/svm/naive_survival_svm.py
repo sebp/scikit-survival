@@ -10,6 +10,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Naive implementations of the survival SVM.
+"""
+
 import itertools
 
 import narwhals.stable.v2 as nw

@@ -10,6 +10,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Functions to read ARFF files.
+"""
+
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_string_dtype

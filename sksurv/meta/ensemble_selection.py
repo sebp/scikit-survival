@@ -10,6 +10,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Ensemble selection for survival models.
+"""
+
 import numbers
 
 from joblib import Parallel, delayed
@@ -18,8 +22,8 @@ from scipy.stats import kendalltau, rankdata, spearmanr
 from sklearn.base import BaseEstimator, clone
 from sklearn.model_selection import check_cv
 from sklearn.utils._param_validation import Interval, StrOptions
+from sklearn.utils.metaestimators import _safe_split
 
-from .base import _fit_and_score
 from .stacking import Stacking
 
 __all__ = ["EnsembleSelection", "EnsembleSelectionRegressor", "MeanEstimator"]
@@ -34,6 +38,26 @@ def _corr_kendalltau(X):
             mat[i, j] = v
             mat[j, i] = v
     return mat
+
+
+def _fit_and_score(est, x, y, scorer, train_index, test_index, parameters, fit_params, predict_params):
+    """Train survival model on given data and return its score on test data."""
+    X_train, y_train = _safe_split(est, x, y, train_index)
+    train_params = fit_params.copy()
+
+    # Training
+    est.set_params(**parameters)
+    est.fit(X_train, y_train, **train_params)
+
+    # Testing
+    test_predict_params = predict_params.copy()
+    X_test, y_test = _safe_split(est, x, y, test_index, train_index)
+
+    score = scorer(est, X_test, y_test, **test_predict_params)
+    if not isinstance(score, numbers.Number):
+        raise ValueError(f"scoring must return a number, got {score!s} ({type(score)}) instead.")
+
+    return score
 
 
 class EnsembleAverage(BaseEstimator):
@@ -69,7 +93,7 @@ class EnsembleAverage(BaseEstimator):
         """
         return self.base_estimators[0].get_params()
 
-    def fit(self, X, y=None, **kwargs):  # pragma: no cover; # pylint: disable=unused-argument
+    def fit(self, X, y=None, **kwargs):  # pragma: no cover; # pylint: disable=unused-argument; # numpydoc ignore=GL08
         return self
 
     def predict(self, X):
@@ -105,7 +129,7 @@ class MeanEstimator(BaseEstimator):
     where it averages the predictions of the base estimators.
     """
 
-    def fit(self, X, y=None, **kwargs):  # pragma: no cover; # pylint: disable=unused-argument
+    def fit(self, X, y=None, **kwargs):  # pragma: no cover; # pylint: disable=unused-argument; # numpydoc ignore=GL08
         return self
 
     def predict(self, X):  # pylint: disable=no-self-use
@@ -134,7 +158,7 @@ class MeanRankEstimator(BaseEstimator):
     a ``meta_estimator`` in an ensemble model.
     """
 
-    def fit(self, X, y=None, **kwargs):  # pragma: no cover; # pylint: disable=unused-argument
+    def fit(self, X, y=None, **kwargs):  # pragma: no cover; # pylint: disable=unused-argument; # numpydoc ignore=GL08
         return self
 
     def predict(self, X):  # pylint: disable=no-self-use

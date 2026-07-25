@@ -10,6 +10,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Implementation of gradient boosting survival models.
+"""
+
 import numbers
 
 import numpy as np

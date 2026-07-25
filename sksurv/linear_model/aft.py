@@ -10,6 +10,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Implementation of accelerated failure time model.
+"""
+
 import numpy as np
 from sklearn.linear_model import Ridge
 
@@ -211,7 +215,7 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
         X = ensure_eager_dataframe(X)
         return np.exp(super().predict(X))
 
-    def score(self, X, y, sample_weight=None):
+    def score(self, X, y, sample_weight=None):  # numpydoc ignore=GL08
         X = ensure_eager_dataframe(X)
         return SurvivalAnalysisMixin.score(self, X, y)
 

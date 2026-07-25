@@ -10,6 +10,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Fast implementations of the survival SVM.
+"""
+
 from abc import ABCMeta, abstractmethod
 from numbers import Integral, Real
 import warnings

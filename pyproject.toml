@@ -234,12 +234,12 @@ checks = [
     "all",   # report on all checks, except the below
     "ES01",  # no extended summary
     "EX01",  # no examples section
-    "GL08",  # object does not have a docstring
     "SA01",  # no See Also section
 ]
 exclude = [
     # Exclude all private functions and classes (those beginning with _):
     '\._',
+    '.+_$',
 ]
 exclude_files = [
     '(^|.*/)_[^/]*\.py$',
