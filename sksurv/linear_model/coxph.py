@@ -10,6 +10,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Implementation of Cox's proportional hazards model.
+"""
+
 import numbers
 import warnings
 
@@ -136,7 +140,7 @@ class BreslowEstimator:
         return funcs
 
 
-class CoxPHOptimizer:
+class _CoxPHOptimizer:
     """
     Helper class for fitting the Cox proportional hazards model.
 
@@ -304,7 +308,7 @@ class CoxPHOptimizer:
         self.hessian = hessian
 
 
-class VerboseReporter:
+class _VerboseReporter:
     """
     Helper class to report optimization progress.
 
@@ -486,9 +490,9 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         if alphas.shape[0] != X.shape[1]:
             raise ValueError(f"Length alphas ({alphas.shape[0]}) must match number of features ({X.shape[1]}).")
 
-        optimizer = CoxPHOptimizer(X, event, time, alphas, self.ties)
+        optimizer = _CoxPHOptimizer(X, event, time, alphas, self.ties)
 
-        verbose_reporter = VerboseReporter(self.verbose)
+        verbose_reporter = _VerboseReporter(self.verbose)
         w = np.zeros(X.shape[1])
         w_prev = w
         i = 0

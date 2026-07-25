@@ -22,8 +22,8 @@ from sksurv.svm.naive_survival_svm import NaiveSurvivalSVM
 from sksurv.svm.survival_svm import (
     FastKernelSurvivalSVM,
     FastSurvivalSVM,
-    OrderStatisticTreeSurvivalCounter,
-    SurvivalCounter,
+    _OrderStatisticTreeSurvivalCounter,
+    _SurvivalCounter,
 )
 from sksurv.testing import FixtureParameterFactory, assert_cindex_almost_equal
 from sksurv.util import Surv
@@ -751,9 +751,9 @@ class TestKernelSurvivalSVM:
 
 @pytest.fixture(
     params=[
-        SurvivalCounter,
-        partial(OrderStatisticTreeSurvivalCounter, tree_class=RBTree),
-        partial(OrderStatisticTreeSurvivalCounter, tree_class=AVLTree),
+        _SurvivalCounter,
+        partial(_OrderStatisticTreeSurvivalCounter, tree_class=RBTree),
+        partial(_OrderStatisticTreeSurvivalCounter, tree_class=AVLTree),
     ]
 )
 def make_survival_counter(request):

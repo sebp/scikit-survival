@@ -19,7 +19,7 @@ from ._minlip import create_difference_matrix
 __all__ = ["MinlipSurvivalAnalysis", "HingeLossSurvivalSVM"]
 
 
-class QPSolver(metaclass=ABCMeta):
+class _QPSolver(metaclass=ABCMeta):
     r"""
     Abstract base class for quadratic program solvers.
 
@@ -70,7 +70,7 @@ class QPSolver(metaclass=ABCMeta):
         """
 
 
-class OsqpSolver(QPSolver):
+class _OsqpSolver(_QPSolver):
     def __init__(self, max_iter, verbose):
         super().__init__(
             max_iter=max_iter,
@@ -117,7 +117,7 @@ class OsqpSolver(QPSolver):
         return solver_opts
 
 
-class EcosSolver(QPSolver):
+class _EcosSolver(_QPSolver):
     r"""
     Solves QP by expressing it as second-order cone program.
 
@@ -209,16 +209,16 @@ class EcosSolver(QPSolver):
             If the solver failed for an unknown reason or found primal/dual infeasibility.
         """
         exit_flag = results["info"]["exitFlag"]
-        if exit_flag in (EcosSolver.EXIT_OPTIMAL, EcosSolver.EXIT_OPTIMAL + EcosSolver.EXIT_INACC_OFFSET):
+        if exit_flag in (_EcosSolver.EXIT_OPTIMAL, _EcosSolver.EXIT_OPTIMAL + _EcosSolver.EXIT_INACC_OFFSET):
             return
 
-        if exit_flag == EcosSolver.EXIT_MAXIT:
+        if exit_flag == _EcosSolver.EXIT_MAXIT:
             warnings.warn(
                 "ECOS solver did not converge: maximum iterations reached", category=ConvergenceWarning, stacklevel=3
             )
-        elif exit_flag == EcosSolver.EXIT_PINF:  # pragma: no cover
+        elif exit_flag == _EcosSolver.EXIT_PINF:  # pragma: no cover
             raise RuntimeError("Certificate of primal infeasibility found")
-        elif exit_flag == EcosSolver.EXIT_DINF:  # pragma: no cover
+        elif exit_flag == _EcosSolver.EXIT_DINF:  # pragma: no cover
             raise RuntimeError("Certificate of dual infeasibility found")
         else:  # pragma: no cover
             raise RuntimeError(f"Unknown problem in ECOS solver, exit status: {exit_flag}")
@@ -457,9 +457,9 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         max_iter = self.max_iter
         if self.solver == "ecos":
-            solver = EcosSolver(max_iter=max_iter, verbose=self.verbose)
+            solver = _EcosSolver(max_iter=max_iter, verbose=self.verbose)
         elif self.solver == "osqp":
-            solver = OsqpSolver(max_iter=max_iter, verbose=self.verbose)
+            solver = _OsqpSolver(max_iter=max_iter, verbose=self.verbose)
 
         K = self._get_kernel(x)
         problem_data = self._setup_qp(K, D, time)

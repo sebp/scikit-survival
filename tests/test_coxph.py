@@ -11,7 +11,7 @@ from sklearn.preprocessing import StandardScaler
 
 from sksurv.column import standardize
 from sksurv.datasets import load_breast_cancer
-from sksurv.linear_model.coxph import CoxPHOptimizer, CoxPHSurvivalAnalysis
+from sksurv.linear_model.coxph import CoxPHSurvivalAnalysis, _CoxPHOptimizer
 from sksurv.preprocessing import OneHotEncoder
 
 
@@ -650,7 +650,7 @@ def assert_decreasing(x):
 class TestCoxPH:
     @staticmethod
     def test_likelihood_breslow(rossi, coef_rossi_coxph_breslow):
-        cph = CoxPHOptimizer(
+        cph = _CoxPHOptimizer(
             rossi.x.to_numpy(), rossi.y["arrest"], rossi.y["week"], alpha=np.zeros(rossi.x.shape[1]), ties="breslow"
         )
 
@@ -662,7 +662,7 @@ class TestCoxPH:
 
     @staticmethod
     def test_gradient_breslow(rossi):
-        cph = CoxPHOptimizer(
+        cph = _CoxPHOptimizer(
             rossi.x.to_numpy(), rossi.y["arrest"], rossi.y["week"], alpha=np.zeros(rossi.x.shape[1]), ties="breslow"
         )
 
@@ -680,7 +680,7 @@ class TestCoxPH:
 
     @staticmethod
     def test_likelihood_efron(rossi, coef_rossi_coxph_efron):
-        cph = CoxPHOptimizer(
+        cph = _CoxPHOptimizer(
             rossi.x.to_numpy(), rossi.y["arrest"], rossi.y["week"], alpha=np.zeros(rossi.x.shape[1]), ties="efron"
         )
 
@@ -692,7 +692,7 @@ class TestCoxPH:
 
     @staticmethod
     def test_gradient_efron(rossi):
-        cph = CoxPHOptimizer(
+        cph = _CoxPHOptimizer(
             rossi.x.to_numpy(dtype=float),
             rossi.y["arrest"],
             rossi.y["week"],

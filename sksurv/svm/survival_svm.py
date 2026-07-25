@@ -39,7 +39,7 @@ from ..util import check_array_survival
 from ._prsvm import survival_constraints_simple, survival_constraints_with_support_vectors
 
 
-class Counter(metaclass=ABCMeta):
+class _Counter(metaclass=ABCMeta):
     @abstractmethod
     def __init__(self, x, y, status, time=None):
         self.x, self.y = check_X_y(x, y)
@@ -69,7 +69,7 @@ class Counter(metaclass=ABCMeta):
         """Return l_plus, xv_plus, l_minus, xv_minus."""
 
 
-class OrderStatisticTreeSurvivalCounter(Counter):
+class _OrderStatisticTreeSurvivalCounter(_Counter):
     """
     Counting method used by :class:`LargeScaleOptimizer` for survival analysis.
 
@@ -137,7 +137,7 @@ class OrderStatisticTreeSurvivalCounter(Counter):
         return l_plus, xv_plus, l_minus, xv_minus
 
 
-class SurvivalCounter(Counter):
+class _SurvivalCounter(_Counter):
     def __init__(self, x, y, status, n_relevance_levels, time=None):
         super().__init__(x, y, status, time)
         self.n_relevance_levels = n_relevance_levels
@@ -187,7 +187,7 @@ class SurvivalCounter(Counter):
         return l_plus, xv_plus, l_minus, xv_minus
 
 
-class RankSVMOptimizer(metaclass=ABCMeta):
+class _RankSVMOptimizer(metaclass=ABCMeta):
     """Abstract base class for all optimizers."""
 
     def __init__(self, alpha, rank_ratio, timeit=False):
@@ -280,7 +280,7 @@ class RankSVMOptimizer(metaclass=ABCMeta):
         return opt_result
 
 
-class SimpleOptimizer(RankSVMOptimizer):
+class _SimpleOptimizer(_RankSVMOptimizer):
     """Simple optimizer, which explicitly constructs matrix of all pairs of samples."""
 
     def __init__(self, x, y, alpha, rank_ratio, timeit=False):
@@ -321,7 +321,7 @@ class SimpleOptimizer(RankSVMOptimizer):
         return s + np.dot(safe_sparse_dot(z.T, self.Asv), self.data_x).T
 
 
-class PRSVMOptimizer(RankSVMOptimizer):
+class _PRSVMOptimizer(_RankSVMOptimizer):
     """PRSVM optimizer that after each iteration of Newton's method constructs matrix of support vector pairs."""
 
     def __init__(self, x, y, alpha, rank_ratio, timeit=False):
@@ -361,7 +361,7 @@ class PRSVMOptimizer(RankSVMOptimizer):
         return s + z
 
 
-class LargeScaleOptimizer(RankSVMOptimizer):
+class _LargeScaleOptimizer(_RankSVMOptimizer):
     """
     Optimizer that does not explicitly create matrix of constraints.
 
@@ -503,7 +503,7 @@ class LargeScaleOptimizer(RankSVMOptimizer):
         return hessp
 
 
-class NonlinearLargeScaleOptimizer(RankSVMOptimizer):
+class _NonlinearLargeScaleOptimizer(_RankSVMOptimizer):
     """
     Optimizer that does not explicitly create matrix of constraints.
 
@@ -648,7 +648,7 @@ class NonlinearLargeScaleOptimizer(RankSVMOptimizer):
         return hessian
 
 
-class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
+class _BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
     _parameter_constraints = {
         "alpha": [Interval(Real, 0.0, None, closed="neither")],
         "rank_ratio": [Interval(Real, 0.0, 1.0, closed="both")],
@@ -694,31 +694,31 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
         times, ranks = y
 
         if self.optimizer == "simple":
-            optimizer = SimpleOptimizer(X, status, self.alpha, self.rank_ratio, timeit=self.timeit)
+            optimizer = _SimpleOptimizer(X, status, self.alpha, self.rank_ratio, timeit=self.timeit)
         elif self.optimizer == "PRSVM":
-            optimizer = PRSVMOptimizer(X, status, self.alpha, self.rank_ratio, timeit=self.timeit)
+            optimizer = _PRSVMOptimizer(X, status, self.alpha, self.rank_ratio, timeit=self.timeit)
         elif self.optimizer == "direct-count":
-            optimizer = LargeScaleOptimizer(
+            optimizer = _LargeScaleOptimizer(
                 self.alpha,
                 self.rank_ratio,
                 self.fit_intercept,
-                SurvivalCounter(X, ranks, status, len(ranks), times),
+                _SurvivalCounter(X, ranks, status, len(ranks), times),
                 timeit=self.timeit,
             )
         elif self.optimizer == "rbtree":
-            optimizer = LargeScaleOptimizer(
+            optimizer = _LargeScaleOptimizer(
                 self.alpha,
                 self.rank_ratio,
                 self.fit_intercept,
-                OrderStatisticTreeSurvivalCounter(X, ranks, status, RBTree, times),
+                _OrderStatisticTreeSurvivalCounter(X, ranks, status, RBTree, times),
                 timeit=self.timeit,
             )
         elif self.optimizer == "avltree":
-            optimizer = LargeScaleOptimizer(
+            optimizer = _LargeScaleOptimizer(
                 self.alpha,
                 self.rank_ratio,
                 self.fit_intercept,
-                OrderStatisticTreeSurvivalCounter(X, ranks, status, AVLTree, times),
+                _OrderStatisticTreeSurvivalCounter(X, ranks, status, AVLTree, times),
                 timeit=self.timeit,
             )
 
@@ -798,7 +798,7 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
             assert np.isfinite(time).all()
 
         random_state = check_random_state(self.random_state)
-        samples_order = BaseSurvivalSVM._argsort_and_resolve_ties(time, random_state)
+        samples_order = _BaseSurvivalSVM._argsort_and_resolve_ties(time, random_state)
 
         opt_result = self._fit(X, time, event, samples_order)
         coef = opt_result.x
@@ -839,7 +839,7 @@ class BaseSurvivalSVM(BaseEstimator, metaclass=ABCMeta):
         return order
 
 
-class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
+class FastSurvivalSVM(_BaseSurvivalSVM, SurvivalAnalysisMixin):
     r"""
     Implements an efficient linear Support Vector Machine for survival analysis.
 
@@ -948,7 +948,7 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
     """
 
     _parameter_constraints = {
-        **BaseSurvivalSVM._parameter_constraints,
+        **_BaseSurvivalSVM._parameter_constraints,
         "optimizer": [StrOptions({"simple", "PRSVM", "direct-count", "rbtree", "avltree"}), None],
     }
 
@@ -1003,7 +1003,7 @@ class FastSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         return val
 
 
-class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
+class FastKernelSurvivalSVM(_BaseSurvivalSVM, SurvivalAnalysisMixin):
     """
     Implements an efficient kernel Support Vector Machine for survival analysis.
 
@@ -1182,19 +1182,19 @@ class FastKernelSurvivalSVM(BaseSurvivalSVM, SurvivalAnalysisMixin):
         times, ranks = y
 
         if self.optimizer == "rbtree":
-            optimizer = NonlinearLargeScaleOptimizer(
+            optimizer = _NonlinearLargeScaleOptimizer(
                 self.alpha,
                 self.rank_ratio,
                 self.fit_intercept,
-                OrderStatisticTreeSurvivalCounter(kernel_mat, ranks, status, RBTree, times),
+                _OrderStatisticTreeSurvivalCounter(kernel_mat, ranks, status, RBTree, times),
                 timeit=self.timeit,
             )
         elif self.optimizer == "avltree":
-            optimizer = NonlinearLargeScaleOptimizer(
+            optimizer = _NonlinearLargeScaleOptimizer(
                 self.alpha,
                 self.rank_ratio,
                 self.fit_intercept,
-                OrderStatisticTreeSurvivalCounter(kernel_mat, ranks, status, AVLTree, times),
+                _OrderStatisticTreeSurvivalCounter(kernel_mat, ranks, status, AVLTree, times),
                 timeit=self.timeit,
             )
 

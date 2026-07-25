@@ -175,7 +175,7 @@ def _score_regressor(estimator, X, y, idx):
     return idx, error
 
 
-class BaseEnsembleSelection(Stacking):
+class _BaseEnsembleSelection(Stacking):
     _parameter_constraints = {
         **Stacking._parameter_constraints,
         "scorer": [callable],
@@ -414,7 +414,7 @@ class BaseEnsembleSelection(Stacking):
         return self
 
 
-class EnsembleSelection(BaseEnsembleSelection):
+class EnsembleSelection(_BaseEnsembleSelection):
     """
     Ensemble selection for survival analysis that accounts for a score and correlations between predictions.
 
@@ -492,7 +492,7 @@ class EnsembleSelection(BaseEnsembleSelection):
     """
 
     _parameter_constraints = {
-        **BaseEnsembleSelection._parameter_constraints,
+        **_BaseEnsembleSelection._parameter_constraints,
     }
     _parameter_constraints.pop("meta_estimator")
 
@@ -565,7 +565,7 @@ class EnsembleSelection(BaseEnsembleSelection):
         return predictions
 
 
-class EnsembleSelectionRegressor(BaseEnsembleSelection):
+class EnsembleSelectionRegressor(_BaseEnsembleSelection):
     r"""
     Ensemble selection for regression that accounts for the accuracy and correlation of errors.
 
@@ -648,7 +648,7 @@ class EnsembleSelectionRegressor(BaseEnsembleSelection):
     """
 
     _parameter_constraints = {
-        **BaseEnsembleSelection._parameter_constraints,
+        **_BaseEnsembleSelection._parameter_constraints,
     }
     _parameter_constraints.pop("meta_estimator")
 

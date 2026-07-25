@@ -48,6 +48,11 @@ class CoxPH(SurvivalLossFunction):
             First element is boolean event indicator and second element survival/censoring time.
         y_pred : np.ndarray, shape=(n,):
             The predictions.
+
+        Returns
+        -------
+        ndarray
+            The gradient.
         """
         ret = coxph_negative_gradient(y_true["event"].astype(np.uint8), y_true["time"], raw_prediction.ravel())
         if sample_weight is not None:
@@ -98,6 +103,11 @@ class CensoredSquaredLoss(SurvivalLossFunction):
             First element is boolean event indicator and second element survival/censoring time.
         y_pred : np.ndarray, shape=(n,):
             The predictions.
+
+        Returns
+        -------
+        ndarray
+            The gradient.
         """
         pred_time = y_true["time"] - raw_prediction.ravel()
         mask = (pred_time > 0) | y_true["event"]

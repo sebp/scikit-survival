@@ -97,7 +97,7 @@ def all_survival_estimators():
         module = import_module(modname)
         for _name, cls in inspect.getmembers(module, _is_survival_estimator):
             if inspect.isabstract(cls):
-                continue
+                continue  # pragma: no cover
             all_classes.append(cls)
     return set(all_classes)
 
