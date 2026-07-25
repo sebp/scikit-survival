@@ -271,6 +271,13 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
             where ``True`` indicates an event and ``False`` indicates right-censoring.
             The second field is a float with the time of event or time of censoring.
 
+        sample_weight : array-like of shape (n_samples,), default: None
+            Sample weights. If None, then samples are equally weighted. Splits
+            that would create child nodes with net zero or negative weight are
+            ignored while searching for a split in each node. Splits are also
+            ignored if they would result in any single class carrying a
+            negative weight in either child node.
+
         check_input : bool, default: True
             Allow to bypass several input checking.
             Don't use this parameter unless you know what you do.

@@ -235,9 +235,6 @@ checks = [
     "ES01",  # no extended summary
     "EX01",  # no examples section
     "GL08",  # object does not have a docstring
-    "PR01",  # parameters not documented
-    "PR02",  # unknown parameters
-    "RT01",  # no returns section
     "SA01",  # no See Also section
 ]
 exclude = [
@@ -245,8 +242,9 @@ exclude = [
     '\._',
 ]
 exclude_files = [
-    '^tests/.*',
-    '^sksurv/linear_model/src/eigen/.*',
+    '(^|.*/)_[^/]*\.py$',
+    '(^|.*/)tests/.*',
+    '(^|.*/)sksurv/linear_model/src/eigen/.*',
 ]
 
 [tool.setuptools_scm]

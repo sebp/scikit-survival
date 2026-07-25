@@ -126,7 +126,7 @@ def clinical_kernel(x, y=None, *, ordinal_categories=None):
     return mat
 
 
-class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
+class ClinicalKernelTransform(BaseEstimator, TransformerMixin):  # numpydoc ignore=PR01
     """
     Transform data using a clinical Kernel.
 
@@ -268,7 +268,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):
             Ignored. This parameter exists only for compatibility with
             :class:`sklearn.pipeline.Pipeline`.
 
-        kwargs : dict
+        **kwargs : dict
             Ignored. This parameter exists only for compatibility with
             :class:`sklearn.pipeline.Pipeline`.
 

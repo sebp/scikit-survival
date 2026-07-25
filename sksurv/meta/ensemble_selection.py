@@ -444,6 +444,10 @@ class EnsembleSelection(_BaseEnsembleSelection):
         Threshold for pruning estimators based on scoring metric. After `fit`, only estimators
         with a score above `min_score` are retained.
 
+    correlation : {'pearson', 'spearman', 'kendall'}, default: 'pearson'
+        The type of correlation to use: Pearson product-moment correlation coefficient,
+        Spearman correlation coefficient, or Kendall's tau.
+
     min_correlation : float, optional, default: 0.6
         Threshold for Pearson's correlation coefficient that determines when predictions of
         two estimators are significantly correlated.
@@ -599,6 +603,10 @@ class EnsembleSelectionRegressor(_BaseEnsembleSelection):
     min_score : float, optional, default: 0.66
         Threshold for pruning estimators based on scoring metric. After `fit`, only estimators
         with an accuracy above `min_score` are retained.
+
+    correlation : {'pearson', 'spearman', 'kendall'}, default: 'pearson'
+        The type of correlation to use: Pearson product-moment correlation coefficient,
+        Spearman correlation coefficient, or Kendall's tau.
 
     min_correlation : float, optional, default: 0.6
         Threshold for Pearson's correlation coefficient that determines when residuals of
