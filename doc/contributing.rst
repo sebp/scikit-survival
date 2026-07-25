@@ -124,18 +124,17 @@ For a pull request to be accepted, your changes must meet the below requirements
 
 2. All code must follow the standard Python guidelines for code style,
    `PEP8 <https://peps.python.org/pep-0008/>`_.
-   To check that your code conforms to PEP8, you can install
-   `tox`_ and run::
-
-    tox -e lint
-
-   Alternatively, you can use `pre-commit`_ to check your code on every commit automatically::
+   To check that your code conforms to PEP8, use `pre-commit`_ to run checks automatically on every commit.
+   Install pre-commit hooks with::
 
     pre-commit install
 
 3. Each function, class, method, and attribute needs to be documented using doc strings.
    scikit-survival conforms to the
    `numpy docstring standard <https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard>`_.
+   To validate doc strings, install `tox`_ and run::
+
+    tox -e lint
 
 4. Code submissions must always include unit tests.
    We are using `pytest <https://docs.pytest.org/>`_.
