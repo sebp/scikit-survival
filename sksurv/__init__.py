@@ -61,7 +61,8 @@ def show_versions():
 
 @available_if(_final_estimator_has("predict_cumulative_hazard_function"))
 def predict_cumulative_hazard_function(self, X, **kwargs):
-    r"""Predict cumulative hazard function for a pipeline.
+    r"""
+    Predict cumulative hazard function for a pipeline.
 
     The cumulative hazard function for an individual
     with feature vector :math:`x` is defined as
@@ -80,7 +81,7 @@ def predict_cumulative_hazard_function(self, X, **kwargs):
 
     Returns
     -------
-    cum_hazard : ndarray, shape = (n_samples,)
+    ndarray, shape = (n_samples,)
         Predicted cumulative hazard functions. Each element is an instance
         of :class:`sksurv.functions.StepFunction`.
 
@@ -113,7 +114,8 @@ def predict_cumulative_hazard_function(self, X, **kwargs):
 
 @available_if(_final_estimator_has("predict_survival_function"))
 def predict_survival_function(self, X, **kwargs):
-    r"""Predict survival function for a pipeline.
+    r"""
+    Predict survival function for a pipeline.
 
     The survival function for an individual
     with feature vector :math:`x` is defined as
@@ -132,7 +134,7 @@ def predict_survival_function(self, X, **kwargs):
 
     Returns
     -------
-    survival : ndarray, shape = (n_samples,)
+    ndarray, shape = (n_samples,)
         Predicted survival functions. Each element is an instance
         of :class:`sksurv.functions.StepFunction`.
 

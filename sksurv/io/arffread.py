@@ -10,6 +10,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Functions to read ARFF files.
+"""
+
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_string_dtype
@@ -81,7 +85,8 @@ def _to_polars_dataframe(data, meta):
 
 
 def loadarff(filename, *, output_type="pandas"):
-    """Load ARFF file.
+    """
+    Load ARFF file.
 
     Parameters
     ----------
@@ -95,7 +100,7 @@ def loadarff(filename, *, output_type="pandas"):
 
     Returns
     -------
-    data_frame : :class:`pandas.DataFrame` or :class:`polars.DataFrame`
+    pandas.DataFrame or polars.DataFrame
         DataFrame containing data of the ARFF file. The dataframe library follows
         ``output_type``.
 

@@ -10,7 +10,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""Column semantics for Narwhals-backed dataframe inputs.
+"""
+Column semantics for Narwhals-backed dataframe inputs.
 
 The non-obvious policy is that ``nw.Enum`` is nominal, not ordinal. Its
 declared category order is used for ARFF/category fidelity only; callers
@@ -36,7 +37,8 @@ def is_categorical_or_string_dtype(dtype):
 
 
 def get_semantic_categories(series):
-    """Return deterministic categories for Narwhals-backed categorical columns.
+    """
+    Return deterministic categories for Narwhals-backed categorical columns.
 
     Declared category orders are preserved for ``Enum`` (both backends) and for
     pandas ``Categorical``, whose declared order is a user-meaningful choice.

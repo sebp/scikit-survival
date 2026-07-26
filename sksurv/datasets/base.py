@@ -1,3 +1,19 @@
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Dataset loaders.
+"""
+
 import warnings
 
 import narwhals.stable.v2 as nw
@@ -73,7 +89,8 @@ def _get_x_y_other(dataset, col_label):
 
 
 def get_x_y(data_frame, attr_labels, pos_label=None, survival=True, competing_risks=False):
-    """Split data frame into features and labels.
+    """
+    Split data frame into features and labels.
 
     Parameters
     ----------
@@ -170,7 +187,8 @@ def load_arff_files_standardized(
     *,
     output_type="pandas",
 ):
-    """Load dataset in ARFF format.
+    """
+    Load dataset in ARFF format.
 
     Parameters
     ----------
@@ -302,7 +320,8 @@ def _load_arff_testing(path_testing, attr_labels, pos_label, survival, output_ty
 
 
 def load_whas500(*, output_type="pandas"):
-    """Load and return the Worcester Heart Attack Study dataset
+    """
+    Load and return the Worcester Heart Attack Study dataset.
 
     The dataset has 500 samples and 14 features.
     The endpoint is death, which occurred for 215 patients (43.0%).
@@ -324,7 +343,7 @@ def load_whas500(*, output_type="pandas"):
         or the event time is right-censored.
 
         *lenfol*: total length of follow-up (days from hospital admission date
-        to date of last follow-up)
+        to date of last follow-up).
 
     References
     ----------
@@ -339,7 +358,8 @@ def load_whas500(*, output_type="pandas"):
 
 
 def load_gbsg2(*, output_type="pandas"):
-    """Load and return the German Breast Cancer Study Group 2 dataset
+    """
+    Load and return the German Breast Cancer Study Group 2 dataset.
 
     The dataset has 686 samples and 8 features.
     The endpoint is recurrence free survival, which occurred for 299 patients (43.6%).
@@ -360,7 +380,7 @@ def load_gbsg2(*, output_type="pandas"):
         *cens*: boolean indicating whether the endpoint has been reached
         or the event time is right-censored.
 
-        *time*: total length of follow-up
+        *time*: total length of follow-up.
 
     References
     ----------
@@ -376,8 +396,8 @@ def load_gbsg2(*, output_type="pandas"):
 
 
 def load_veterans_lung_cancer(*, output_type="pandas"):
-    """Load and return data from the Veterans' Administration
-    Lung Cancer Trial
+    """
+    Load and return data from the Veterans' Administration Lung Cancer Trial.
 
     The dataset has 137 samples and 6 features.
     The endpoint is death, which occurred for 128 patients (93.4%).
@@ -398,7 +418,7 @@ def load_veterans_lung_cancer(*, output_type="pandas"):
         *Status*: boolean indicating whether the endpoint has been reached
         or the event time is right-censored.
 
-        *Survival_in_days*: total length of follow-up
+        *Survival_in_days*: total length of follow-up.
 
     References
     ----------
@@ -414,7 +434,8 @@ def load_veterans_lung_cancer(*, output_type="pandas"):
 
 
 def load_aids(endpoint="aids", *, output_type="pandas"):
-    """Load and return the AIDS Clinical Trial dataset
+    """
+    Load and return the AIDS Clinical Trial dataset.
 
     The dataset has 1,151 samples and 11 features.
     The dataset has 2 endpoints:
@@ -470,7 +491,8 @@ def load_aids(endpoint="aids", *, output_type="pandas"):
 
 
 def load_breast_cancer(*, output_type="pandas"):
-    """Load and return the breast cancer dataset
+    """
+    Load and return the breast cancer dataset.
 
     The dataset has 198 samples and 80 features.
     The endpoint is the presence of distance metastases, which occurred for 51 patients (25.8%).
@@ -491,7 +513,7 @@ def load_breast_cancer(*, output_type="pandas"):
         *e.tdm*: boolean indicating whether the endpoint has been reached
         or the event time is right-censored.
 
-        *t.tdm*: time to distant metastasis (days)
+        *t.tdm*: time to distant metastasis (days).
 
     References
     ----------
@@ -511,20 +533,36 @@ def load_breast_cancer(*, output_type="pandas"):
 
 
 def load_flchain(*, output_type="pandas"):
-    """Load and return assay of serum free light chain for 7874 subjects.
+    """
+    Load and return assay of serum free light chain for 7874 subjects.
 
     The dataset has 7874 samples and 9 features:
 
-        1. age: age in years
-        2. sex: F=female, M=male
-        3. sample.yr: the calendar year in which a blood sample was obtained
-        4. kappa: serum free light chain, kappa portion
-        5. lambda: serum free light chain, lambda portion
-        6. flc.grp: the serum free light chain group for the subject, as used in the original analysis
-        7. creatinine: serum creatinine
-        8. mgus: whether the subject had been diagnosed with monoclonal gammapothy (MGUS)
-        9. chapter: for those who died, a grouping of their primary cause of death by chapter headings
-           of the International Code of Diseases ICD-9
+    +-------+------------+--------------------------------------------------------+
+    | Index | Name       | Description                                            |
+    +=======+============+========================================================+
+    | 0     | age        | age in years                                           |
+    +-------+------------+--------------------------------------------------------+
+    | 1     | sex        | F=female, M=male                                       |
+    +-------+------------+--------------------------------------------------------+
+    | 2     | sample.yr  | the calendar year in which a blood sample was obtained |
+    +-------+------------+--------------------------------------------------------+
+    | 3     | kappa      | serum free light chain, kappa portion                  |
+    +-------+------------+--------------------------------------------------------+
+    | 4     | lambda     | serum free light chain, lambda portion                 |
+    +-------+------------+--------------------------------------------------------+
+    | 5     | flc.grp    | the serum free light chain group for the subject,      |
+    |       |            | as used in the original analysis                       |
+    +-------+------------+--------------------------------------------------------+
+    | 6     | creatinine | serum creatinine                                       |
+    +-------+------------+--------------------------------------------------------+
+    | 7     | mgus       | whether the subject had been diagnosed with monoclonal |
+    |       |            | gammapothy (MGUS)                                      |
+    +-------+------------+--------------------------------------------------------+
+    | 8     | chapter    | for those who died, a grouping of their primary cause  |
+    |       |            | of death by chapter headings of the                    |
+    |       |            | International Code of Diseases ICD-9                   |
+    +-------+------------+--------------------------------------------------------+
 
     The endpoint is death, which occurred for 2169 subjects (27.5%).
 
@@ -564,12 +602,18 @@ def load_flchain(*, output_type="pandas"):
 
 
 def load_bmt(*, output_type="pandas"):
-    """Load and return response to hematopoietic stem cell transplantation (HSCT) for acute leukemia patients.
+    """
+    Load and return response to hematopoietic stem cell transplantation (HSCT) for acute leukemia patients.
 
-    The dataset has 35 samples and 1 feature "dis" indicating the type of leukemia::
+    The dataset has 35 samples and 1 feature "dis" indicating the type of leukemia
 
-        0=ALL (Acute Lymphoblastic Leukemia)
-        1=AML (Acute Myeloid Leukemia)
+    +-------+------------------------------------+
+    | Value | Description                        |
+    +=======+====================================+
+    | 0     | ALL (Acute Lymphoblastic Leukemia) |
+    +-------+------------------------------------+
+    | 1     | AML (Acute Myeloid Leukemia)       |
+    +-------+------------------------------------+
 
     The endpoint (status) is defined as
 
@@ -615,8 +659,10 @@ def load_bmt(*, output_type="pandas"):
 
 
 def load_cgvhd(*, output_type="pandas"):
-    r"""Load and return data from multicentre randomized clinical trial
-    initiated for patients with a myeloid malignancy who were to
+    r"""
+    Load and return data from multicentre randomized clinical trial in bone marrow transplant.
+
+    Initiated for patients with a myeloid malignancy who were to
     undergo an allogeneic bone marrow transplant.
 
     The dataset is a 100 patient subsample of the full data set. See [2]_ for further details.
@@ -624,39 +670,39 @@ def load_cgvhd(*, output_type="pandas"):
     +-------+------------+----------------------------------------------+-------------------------------------------+
     | Index | Name       | Description                                  | Encoding                                  |
     +=======+============+==============================================+===========================================+
-    | 1     | dx         | Diagnosis                                    | | AML=acute myeloid leukaemia             |
+    | 0     | dx         | Diagnosis                                    | | AML=acute myeloid leukaemia             |
     |       |            |                                              | | CML=chronic myeloid leukaemia           |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 2     | tx         | Randomized treatment                         | | BM=cell harvested from the bone marrow  |
+    | 1     | tx         | Randomized treatment                         | | BM=cell harvested from the bone marrow  |
     |       |            |                                              | | PB=cell harvested from peripheral blood |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 3     | extent     | Extent of disease                            | L=limited, E=extensive                    |
+    | 2     | extent     | Extent of disease                            | L=limited, E=extensive                    |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 4     | agvhdgd    | Grade of acute GVHD                          |                                           |
+    | 3     | agvhdgd    | Grade of acute GVHD                          |                                           |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 5     | age        | Age                                          | Years                                     |
+    | 4     | age        | Age                                          | Years                                     |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 6     | survtime   | Time from date of transplant to death        | Years                                     |
+    | 5     | survtime   | Time from date of transplant to death        | Years                                     |
     |       |            | or last follow-up                            |                                           |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 7     | reltime    | Time from date of transplant to relapse      | Years                                     |
+    | 6     | reltime    | Time from date of transplant to relapse      | Years                                     |
     |       |            | or last follow-up                            |                                           |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 8     | agvhtime   | Time from date of transplant to acute GVHD   | Years                                     |
+    | 7     | agvhtime   | Time from date of transplant to acute GVHD   | Years                                     |
     |       |            | or last follow-up                            |                                           |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 9     | cgvhtime   | Time from date of transplant to chronic GVHD | Years                                     |
+    | 8     | cgvhtime   | Time from date of transplant to chronic GVHD | Years                                     |
     |       |            | or last follow-up                            |                                           |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 10    | stat       | Status                                       | 1=Dead, 0=Alive                           |
+    | 9     | stat       | Status                                       | 1=Dead, 0=Alive                           |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 11    | rcens      | Relapse                                      | 1=Yes, 0=No                               |
+    | 10    | rcens      | Relapse                                      | 1=Yes, 0=No                               |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 12    | agvh       | Acute GVHD                                   | 1=Yes, 0=No                               |
+    | 11    | agvh       | Acute GVHD                                   | 1=Yes, 0=No                               |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 13    | cgvh       | Chronic GVHD                                 | 1=Yes, 0=No                               |
+    | 12    | cgvh       | Chronic GVHD                                 | 1=Yes, 0=No                               |
     +-------+------------+----------------------------------------------+-------------------------------------------+
-    | 14    | stnum      | patient ID                                   |                                           |
+    | 13    | stnum      | patient ID                                   |                                           |
     +-------+------------+----------------------------------------------+-------------------------------------------+
 
     Columns 6,7 and 9 contain the time to death, relapse and CGVHD

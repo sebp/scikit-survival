@@ -29,7 +29,7 @@ class SurvivalLossFunction(BaseLoss, metaclass=ABCMeta):  # noqa: B024
 
 
 class CoxPH(SurvivalLossFunction):
-    """Cox Partial Likelihood"""
+    """Cox Partial Likelihood."""
 
     # pylint: disable=no-self-use
 
@@ -39,14 +39,20 @@ class CoxPH(SurvivalLossFunction):
         return coxph_loss(y_true["event"].astype(np.uint8), y_true["time"], raw_prediction.ravel())
 
     def gradient(self, y_true, raw_prediction, sample_weight=None, **kwargs):  # pylint: disable=unused-argument
-        """Negative gradient of partial likelihood
+        """
+        Negative gradient of partial likelihood.
 
         Parameters
-        ---------
+        ----------
         y : tuple, len = 2
             First element is boolean event indicator and second element survival/censoring time.
         y_pred : np.ndarray, shape=(n,):
             The predictions.
+
+        Returns
+        -------
+        ndarray
+            The gradient.
         """
         ret = coxph_negative_gradient(y_true["event"].astype(np.uint8), y_true["time"], raw_prediction.ravel())
         if sample_weight is not None:
@@ -56,7 +62,8 @@ class CoxPH(SurvivalLossFunction):
     def update_terminal_regions(
         self, tree, X, y, residual, raw_predictions, sample_weight, sample_mask, learning_rate=0.1, k=0
     ):
-        """Least squares does not need to update terminal regions.
+        """
+        Least squares does not need to update terminal regions.
 
         But it has to update the predictions.
         """
@@ -64,14 +71,15 @@ class CoxPH(SurvivalLossFunction):
         raw_predictions[:, k] += learning_rate * tree.predict(X).ravel()
 
     def _update_terminal_region(self, tree, terminal_regions, leaf, X, y, residual, raw_predictions, sample_weight):
-        """Least squares does not need to update terminal regions"""
+        """Least squares does not need to update terminal regions."""
 
     def _scale_raw_prediction(self, raw_predictions):
         return raw_predictions
 
 
 class CensoredSquaredLoss(SurvivalLossFunction):
-    """Censoring-aware squared loss.
+    """
+    Censoring-aware squared loss.
 
     Censoring is taken into account by only considering the residuals
     of samples that are not censored, or the predicted survival time
@@ -86,14 +94,20 @@ class CensoredSquaredLoss(SurvivalLossFunction):
         return 0.5 * squared_norm(pred_time.compress(mask, axis=0))
 
     def gradient(self, y_true, raw_prediction, **kwargs):  # pylint: disable=unused-argument
-        """Negative gradient of partial likelihood
+        """
+        Negative gradient of partial likelihood.
 
         Parameters
-        ---------
+        ----------
         y : tuple, len = 2
             First element is boolean event indicator and second element survival/censoring time.
         y_pred : np.ndarray, shape=(n,):
             The predictions.
+
+        Returns
+        -------
+        ndarray
+            The gradient.
         """
         pred_time = y_true["time"] - raw_prediction.ravel()
         mask = (pred_time > 0) | y_true["event"]
@@ -104,7 +118,8 @@ class CensoredSquaredLoss(SurvivalLossFunction):
     def update_terminal_regions(
         self, tree, X, y, residual, raw_predictions, sample_weight, sample_mask, learning_rate=0.1, k=0
     ):
-        """Least squares does not need to update terminal regions.
+        """
+        Least squares does not need to update terminal regions.
 
         But it has to update the predictions.
         """
@@ -112,7 +127,7 @@ class CensoredSquaredLoss(SurvivalLossFunction):
         raw_predictions[:, k] += learning_rate * tree.predict(X).ravel()
 
     def _update_terminal_region(self, tree, terminal_regions, leaf, X, y, residual, raw_predictions, sample_weight):
-        """Least squares does not need to update terminal regions"""
+        """Least squares does not need to update terminal regions."""
 
     def _scale_raw_prediction(self, raw_predictions):
         np.exp(raw_predictions, out=raw_predictions)
@@ -120,7 +135,7 @@ class CensoredSquaredLoss(SurvivalLossFunction):
 
 
 class IPCWLeastSquaresError(SurvivalLossFunction):
-    """Inverse probability of censoring weighted least squares error"""
+    """Inverse probability of censoring weighted least squares error."""
 
     # pylint: disable=no-self-use
 

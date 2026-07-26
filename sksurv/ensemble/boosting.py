@@ -10,6 +10,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Implementation of gradient boosting survival models.
+"""
+
 import numbers
 
 import numpy as np
@@ -35,7 +39,7 @@ from ..base import SurvivalAnalysisMixin
 from ..docstrings import append_cumulative_hazard_example, append_survival_function_example
 from ..linear_model.coxph import BreslowEstimator
 from ..util import check_array_survival
-from .survival_loss import LOSS_FUNCTIONS, CensoredSquaredLoss, CoxPH, IPCWLeastSquaresError
+from ._survival_loss import LOSS_FUNCTIONS, CensoredSquaredLoss, CoxPH, IPCWLeastSquaresError
 
 __all__ = ["ComponentwiseGradientBoostingSurvivalAnalysis", "GradientBoostingSurvivalAnalysis"]
 
@@ -70,7 +74,7 @@ class _ComponentwiseLeastSquares(BaseEstimator):
 
 
 def _fit_stage_componentwise(X, residuals, sample_weight, **fit_params):  # pylint: disable=unused-argument
-    """Fit component-wise weighted least squares model"""
+    """Fit component-wise weighted least squares model."""
     n_features = X.shape[1]
 
     base_learners = []
@@ -88,7 +92,8 @@ def _fit_stage_componentwise(X, residuals, sample_weight, **fit_params):  # pyli
 
 
 class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalysisMixin):
-    r"""Gradient boosting with component-wise least squares as base learner.
+    r"""
+    Gradient boosting with component-wise least squares as base learner.
 
     See the :ref:`User Guide </user_guide/boosting.ipynb>` and [1]_ for further description.
 
@@ -101,7 +106,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         and 'ipcwls' refers to inverse-probability of censoring weighted least squares error.
 
     learning_rate : float, optional, default: 0.1
-        learning rate shrinks the contribution of each base learner by `learning_rate`.
+        Learning rate shrinks the contribution of each base learner by `learning_rate`.
         There is a trade-off between `learning_rate` and `n_estimators`.
         Values must be in the range `[0.0, inf)`.
 
@@ -372,12 +377,13 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         return i + 1
 
     def fit(self, X, y, sample_weight=None):
-        """Fit estimator.
+        """
+        Fit estimator.
 
         Parameters
         ----------
         X : array-like, shape = (n_samples, n_features)
-            Data matrix
+            Data matrix.
 
         y : structured array, shape = (n_samples,)
             A structured array with two fields. The first field is a boolean
@@ -389,7 +395,8 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         Returns
         -------
-        self
+        object
+            Fitted estimator.
         """
         self._validate_params()
 
@@ -459,7 +466,8 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         return self._loss._scale_raw_prediction(pred)
 
     def predict(self, X):
-        """Predict risk scores.
+        """
+        Predict risk scores.
 
         If `loss='coxph'`, predictions can be interpreted as log hazard ratio
         corresponding to the linear predictor of a Cox proportional hazards
@@ -473,7 +481,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         Returns
         -------
-        risk_score : array, shape = (n_samples,)
+        ndarray, shape = (n_samples,)
             Predicted risk scores.
         """
         check_is_fitted(self, "estimators_")
@@ -490,7 +498,8 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         estimator_mod="ensemble", estimator_class="ComponentwiseGradientBoostingSurvivalAnalysis"
     )
     def predict_cumulative_hazard_function(self, X, return_array=False):
-        r"""Predict cumulative hazard function.
+        r"""
+        Predict cumulative hazard function.
 
         Only available if :meth:`fit` has been called with `loss = "coxph"`.
 
@@ -524,7 +533,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         Returns
         -------
-        cum_hazard : ndarray
+        ndarray
             If `return_array` is `False`, an array of `n_samples`
             :class:`sksurv.functions.StepFunction` instances is returned.
 
@@ -540,7 +549,8 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
         estimator_mod="ensemble", estimator_class="ComponentwiseGradientBoostingSurvivalAnalysis"
     )
     def predict_survival_function(self, X, return_array=False):
-        r"""Predict survival function.
+        r"""
+        Predict survival function.
 
         Only available if :meth:`fit` has been called with `loss = "coxph"`.
 
@@ -574,7 +584,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         Returns
         -------
-        survival : ndarray
+        ndarray
             If `return_array` is `False`, an array of `n_samples`
             :class:`sksurv.functions.StepFunction` instances is returned.
 
@@ -622,8 +632,8 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
 
 class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMixin):
-    r"""Gradient-boosted Cox proportional hazard loss with
-    regression trees as base learner.
+    r"""
+    Gradient-boosted Cox proportional hazard loss with regression trees as base learner.
 
     In each stage, a regression tree is fit on the negative gradient
     of the loss function.
@@ -646,7 +656,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         and 'ipcwls' refers to inverse-probability of censoring weighted least squares error.
 
     learning_rate : float, optional, default: 0.1
-        learning rate shrinks the contribution of each tree by `learning_rate`.
+        Learning rate shrinks the contribution of each tree by `learning_rate`.
         There is a trade-off between `learning_rate` and `n_estimators`.
         Values must be in the range `[0.0, inf)`.
 
@@ -682,7 +692,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         - If float, values must be in the range `(0.0, 1.0)` and `min_samples_leaf`
           will be `ceil(min_samples_leaf * n_samples)`.
 
-    min_weight_fraction_leaf : float, optional, default: 0.
+    min_weight_fraction_leaf : float, optional, default: 0.0
         The minimum weighted fraction of the sum total of weights (of all
         the input samples) required to be at a leaf node. Samples have
         equal weight when `sample_weight` is not provided.
@@ -697,7 +707,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         `min_samples_split` samples.
         If int, values must be in the range `[1, inf)`.
 
-    min_impurity_decrease : float, optional, default: 0.
+    min_impurity_decrease : float, optional, default: 0.0
         A node will be split if this split induces a decrease of the impurity
         greater than or equal to this value.
 
@@ -837,7 +847,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
     unique_times_ : ndarray, shape = (n_unique_times,)
         Unique time points.
 
-    See also
+    See Also
     --------
     sksurv.ensemble.ComponentwiseGradientBoostingSurvivalAnalysis
         Gradient boosting with component-wise least squares as base learner.
@@ -1045,7 +1055,8 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         begin_at_stage=0,
         monitor=None,
     ):
-        """Iteratively fits the stages.
+        """
+        Iteratively fits the stages.
 
         For each stage it computes the progress (OOB, train score)
         and delegates to ``_fit_stage``.
@@ -1173,12 +1184,13 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
             self._scale = self._scale[:n_stages]
 
     def fit(self, X, y, sample_weight=None, monitor=None):
-        """Fit the gradient boosting model.
+        """
+        Fit the gradient boosting model.
 
         Parameters
         ----------
         X : array-like, shape = (n_samples, n_features)
-            Data matrix
+            Data matrix.
 
         y : structured array, shape = (n_samples,)
             A structured array with two fields. The first field is a boolean
@@ -1199,8 +1211,8 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         Returns
         -------
-        self : object
-            Returns self.
+        object
+            Fitted estimator.
         """
         self._validate_params()
 
@@ -1393,7 +1405,8 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         return self._loss._scale_raw_prediction(score)
 
     def predict(self, X):
-        """Predict risk scores.
+        """
+        Predict risk scores.
 
         If `loss='coxph'`, predictions can be interpreted as log hazard ratio
         similar to the linear predictor of a Cox proportional hazards
@@ -1407,7 +1420,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         Returns
         -------
-        y : ndarray, shape = (n_samples,)
+        ndarray, shape = (n_samples,)
             The risk scores.
         """
         check_is_fitted(self, "estimators_")
@@ -1418,7 +1431,8 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
         return self._predict(X)
 
     def staged_predict(self, X):
-        """Predict risk scores at each stage for X.
+        """
+        Predict risk scores at each stage for X.
 
         This method allows monitoring (i.e. determine error on testing set)
         after each stage.
@@ -1435,7 +1449,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         Returns
         -------
-        y : generator of array of shape = (n_samples,)
+        generator of array of shape = (n_samples,)
             The predicted value of the input samples.
         """
         check_is_fitted(self, "estimators_")
@@ -1460,7 +1474,8 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
     @append_cumulative_hazard_example(estimator_mod="ensemble", estimator_class="GradientBoostingSurvivalAnalysis")
     def predict_cumulative_hazard_function(self, X, return_array=False):
-        r"""Predict cumulative hazard function.
+        r"""
+        Predict cumulative hazard function.
 
         Only available if :meth:`fit` has been called with `loss = "coxph"`.
 
@@ -1494,7 +1509,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         Returns
         -------
-        cum_hazard : ndarray
+        ndarray
             If `return_array` is `False`, an array of `n_samples`
             :class:`sksurv.functions.StepFunction` instances is returned.
 
@@ -1508,7 +1523,8 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
     @append_survival_function_example(estimator_mod="ensemble", estimator_class="GradientBoostingSurvivalAnalysis")
     def predict_survival_function(self, X, return_array=False):
-        r"""Predict survival function.
+        r"""
+        Predict survival function.
 
         Only available if :meth:`fit` has been called with `loss = "coxph"`.
 
@@ -1542,7 +1558,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         Returns
         -------
-        survival : ndarray
+        ndarray
             If `return_array` is `False`, an array of `n_samples`
             :class:`sksurv.functions.StepFunction` instances is returned.
 
