@@ -1,11 +1,9 @@
 from contextlib import nullcontext as does_not_raise
 
-from dataframe_test_utils import to_polars_dataframe
 import numpy as np
 from numpy.testing import assert_array_equal
 import pandas as pd
 import polars as pl
-from polars.exceptions import ColumnNotFoundError
 import pytest
 
 from sksurv.testing import FixtureParameterFactory
@@ -156,147 +154,51 @@ def test_from_arrays(args, kwargs, expected, expected_error):
 
 
 class SurvDataFrameCases(SurvCases):
-    def get_surv_data_frame(self, event_name="event", time_name="time"):
+    def get_surv_data_frame(self, backend, event_name="event", time_name="time", event_dtype=np.int64):
         event, time = self.event_and_time
-        df = pd.DataFrame({event_name: event, time_name: time})
+        data = backend.make_frame({event_name: event.astype(event_dtype), time_name: time})
 
-        expected = np.empty(dtype=[(str(event_name), bool), (str(time_name), float)], shape=100)
-        expected[str(event_name)] = event.astype(bool)
-        expected[str(time_name)] = time
+        expected = np.empty(dtype=[(event_name, bool), (time_name, float)], shape=event.shape[0])
+        expected[event_name] = event.astype(bool)
+        expected[time_name] = time
 
-        return df, expected
+        return data, expected
 
-    def data_bool(self):
-        data, expected = self.get_surv_data_frame()
-        data = data.astype({"event": bool})
+    def data_bool(self, backend):
+        data, expected = self.get_surv_data_frame(backend, event_dtype=bool)
+        return ("event", "time", data), expected, does_not_raise()
 
-        inputs = ("event", "time", data)
-        return inputs, expected, does_not_raise()
+    def data_int(self, backend):
+        data, expected = self.get_surv_data_frame(backend)
+        return ("event", "time", data), expected, does_not_raise()
 
-    def data_int(self):
-        data, expected = self.get_surv_data_frame()
-        inputs = ("event", "time", data)
-        return inputs, expected, does_not_raise()
+    def data_float(self, backend):
+        data, expected = self.get_surv_data_frame(backend, event_dtype=float)
+        return ("event", "time", data), expected, does_not_raise()
 
-    def data_float(self):
-        data, expected = self.get_surv_data_frame()
-        data = data.astype({"event": float})
-        inputs = ("event", "time", data)
-        return inputs, expected, does_not_raise()
-
-    def data_no_str_columns(self):
-        data, expected = self.get_surv_data_frame(event_name=0, time_name=1)
-        inputs = (0, 1, data)
-        return inputs, expected, does_not_raise()
-
-    def data_column_names(self):
-        data, expected = self.get_surv_data_frame(event_name="death", time_name="time_to_death")
-        inputs = ("death", "time_to_death", data)
-        return inputs, expected, does_not_raise()
-
-    def data_no_such_column_0(self):
-        data, _ = self.get_surv_data_frame()
-
-        err = pytest.raises(KeyError, match="unknown")
-        inputs = ("unknown", "time", data)
-        return inputs, None, err
-
-    def data_no_such_column_1(self):
-        data, _ = self.get_surv_data_frame()
-
-        err = pytest.raises(KeyError, match="unknown")
-        inputs = ("event", "unknown", data)
-        return inputs, None, err
-
-    def data_wrong_class_0(self):
-        data, _ = self.get_surv_data_frame()
-
-        err = pytest.raises(
-            TypeError,
-            match=r"expected pandas\.DataFrame or polars\.DataFrame, but got <class 'dict'>",
+    def data_column_names(self, backend):
+        data, expected = self.get_surv_data_frame(
+            backend, event_name="death", time_name="time_to_death", event_dtype=bool
         )
-        inputs = ("event", "time", data.to_dict())
-        return inputs, None, err
+        return ("death", "time_to_death", data), expected, does_not_raise()
 
-    def data_wrong_class_1(self):
-        data, _ = self.get_surv_data_frame()
+    def data_no_such_column_event(self, backend):
+        data, _ = self.get_surv_data_frame(backend, event_dtype=bool)
 
-        err = pytest.raises(
-            TypeError,
-            match=(r"expected pandas\.DataFrame or polars\.DataFrame, " r"but got <class 'numpy.ndarray'>"),
-        )
-        inputs = ("event", "time", data.to_numpy())
-        return inputs, None, err
+        err = pytest.raises(backend.missing_column_error, match="unknown")
+        return ("unknown", "time", data), None, err
 
+    def data_no_such_column_time(self, backend):
+        data, _ = self.get_surv_data_frame(backend, event_dtype=bool)
 
-class SurvDataFramePolarsCases(FixtureParameterFactory):
-    @property
-    def event_and_time(self):
-        rng = np.random.default_rng(0)
-        event = rng.binomial(1, 0.5, size=100)
-        time = np.exp(rng.standard_normal(100))
-        return event, time
-
-    def _expected(self, event, time, event_name="event", time_name="time"):
-        expected = np.empty(dtype=[(str(event_name), bool), (str(time_name), float)], shape=event.shape[0])
-        expected[str(event_name)] = event.astype(bool)
-        expected[str(time_name)] = time
-        return expected
-
-    def _make_eager(self, event, time, event_name="event", time_name="time", event_dtype=None):
-        data = {event_name: event, time_name: time}
-        df = to_polars_dataframe(pd.DataFrame(data))
-        if event_dtype is not None:
-            df = df.with_columns(pl.col(event_name).cast(event_dtype))
-        return df
-
-    def data_polars_eager_bool(self):
-        event, time = self.event_and_time
-        df = self._make_eager(event.astype(bool), time)
-        return ("event", "time", df), self._expected(event, time), does_not_raise()
-
-    def data_polars_eager_int(self):
-        event, time = self.event_and_time
-        df = self._make_eager(event.astype(np.int64), time)
-        return ("event", "time", df), self._expected(event, time), does_not_raise()
-
-    def data_polars_eager_float(self):
-        event, time = self.event_and_time
-        df = self._make_eager(event.astype(float), time)
-        return ("event", "time", df), self._expected(event, time), does_not_raise()
-
-    def data_polars_eager_column_names(self):
-        event, time = self.event_and_time
-        df = self._make_eager(event.astype(bool), time, event_name="death", time_name="time_to_death")
-        return (
-            ("death", "time_to_death", df),
-            self._expected(event, time, event_name="death", time_name="time_to_death"),
-            does_not_raise(),
-        )
-
-    def data_polars_eager_no_such_column_event(self):
-        event, time = self.event_and_time
-        df = self._make_eager(event.astype(bool), time)
-        err = pytest.raises(ColumnNotFoundError, match="unknown")
-        return ("unknown", "time", df), None, err
-
-    def data_polars_eager_no_such_column_time(self):
-        event, time = self.event_and_time
-        df = self._make_eager(event.astype(bool), time)
-        err = pytest.raises(ColumnNotFoundError, match="unknown")
-        return ("event", "unknown", df), None, err
-
-    def data_polars_series_input(self):
-        s = pl.Series("event", [True, False, True])
-        err = pytest.raises(TypeError)
-        return ("event", "time", s), None, err
+        err = pytest.raises(backend.missing_column_error, match="unknown")
+        return ("event", "unknown", data), None, err
 
 
-@pytest.mark.parametrize(
-    "args,expected,expected_error",
-    SurvDataFrameCases().get_cases() + SurvDataFramePolarsCases().get_cases(),
-)
-def test_from_dataframe(args, expected, expected_error):
+@pytest.mark.parametrize("case", SurvDataFrameCases().get_cases_func())
+def test_from_dataframe(case, dataframe_backend):
+    args, expected, expected_error = case(dataframe_backend)
+
     with expected_error:
         y = Surv.from_dataframe(*args)
 
@@ -304,11 +206,55 @@ def test_from_dataframe(args, expected, expected_error):
         assert_array_equal(y, expected, strict=True)
 
 
+class SurvInvalidDataFrameCases(SurvCases):
+    def data_dict(self):
+        event, time = self.event_and_time
+
+        err = pytest.raises(
+            TypeError,
+            match=r"expected pandas\.DataFrame or polars\.DataFrame, but got <class 'dict'>",
+        )
+        return ("event", "time", {"event": event, "time": time}), err
+
+    def data_numpy_array(self):
+        event, time = self.event_and_time
+
+        err = pytest.raises(
+            TypeError,
+            match=r"expected pandas\.DataFrame or polars\.DataFrame, but got <class 'numpy.ndarray'>",
+        )
+        return ("event", "time", np.column_stack((event, time))), err
+
+    def data_polars_series(self):
+        err = pytest.raises(TypeError)
+        return ("event", "time", pl.Series("event", [True, False, True])), err
+
+
+@pytest.mark.parametrize("args,expected_error", SurvInvalidDataFrameCases().get_cases())
+def test_from_dataframe_invalid_input(args, expected_error):
+    with expected_error:
+        Surv.from_dataframe(*args)
+
+
+def test_from_dataframe_integer_column_names():
+    rng = np.random.default_rng()
+    event = rng.binomial(1, 0.5, size=100)
+    time = np.exp(rng.standard_normal(100))
+    data = pd.DataFrame({0: event, 1: time})
+
+    expected = np.empty(dtype=[("0", bool), ("1", float)], shape=100)
+    expected["0"] = event.astype(bool)
+    expected["1"] = time
+
+    y = Surv.from_dataframe(0, 1, data)
+    assert_array_equal(y, expected, strict=True)
+
+
 def test_from_dataframe_polars_lazyframe_rejected():
     rng = np.random.default_rng(0)
     event = rng.binomial(1, 0.5, size=100).astype(bool)
     time = np.exp(rng.standard_normal(100))
-    lf = to_polars_dataframe(pd.DataFrame({"event": event, "time": time})).lazy()
+    lf = pl.DataFrame({"event": event, "time": time}).lazy()
     with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
         Surv.from_dataframe("event", "time", lf)
 

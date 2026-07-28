@@ -1,4 +1,5 @@
 from collections import namedtuple
+from contextlib import nullcontext
 from pathlib import Path
 import tempfile
 
@@ -11,6 +12,7 @@ from scipy.sparse import coo_array
 from sksurv.column import categorical_to_numeric, encode_categorical, standardize
 from sksurv.datasets import load_breast_cancer, load_whas500
 from sksurv.testing import get_pandas_infer_string_context
+from sksurv.testing.dataframe import PANDAS_BACKEND, POLARS_BACKEND
 from sksurv.util import Surv
 
 DataSet = namedtuple("DataSet", ["x", "y"])
@@ -25,30 +27,38 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "slow: marks test as slow (deselect with '-m \"not slow\"')")
 
 
-def _dataframe_backend_params():
+@pytest.fixture(
+    params=[
+        pytest.param(PANDAS_BACKEND, id="pandas"),
+        pytest.param(POLARS_BACKEND, id="polars"),
+    ]
+)
+def dataframe_backend(request):
+    """Dataframe library to test against."""
+    return request.param
+
+
+def _dataframe_backend_with_pandas_options_params():
     pandas_params = [
         pytest.param(
-            ("pandas", context_param.values[0]),
+            (PANDAS_BACKEND, context_param.values[0]),
             id=f"pandas-{context_param.id}" if context_param.id else "pandas",
             marks=context_param.marks,
         )
         for context_param in get_pandas_infer_string_context()
     ]
-    return [*pandas_params, pytest.param(("polars", None), id="polars")]
+    return [*pandas_params, pytest.param((POLARS_BACKEND, nullcontext()), id="polars")]
 
 
-@pytest.fixture(params=_dataframe_backend_params())
-def dataframe_backend(request):
-    """Dataframe library to test against.
+@pytest.fixture(params=_dataframe_backend_with_pandas_options_params())
+def dataframe_backend_with_pandas_options(request):
+    """Dataframe library with pandas option contexts applied.
 
     The pandas entries mirror ``get_pandas_infer_string_context()``, so pandas
     runs once per option context while polars runs once.
     """
-    backend, pandas_context = request.param
-    if backend == "pandas":
-        with pandas_context:
-            yield backend
-    else:
+    backend, options_context = request.param
+    with options_context:
         yield backend
 
 

@@ -4,7 +4,6 @@ from io import StringIO
 from pathlib import Path
 import tempfile
 
-from dataframe_test_utils import to_polars_dataframe
 import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 import pandas as pd
@@ -12,9 +11,11 @@ import pandas.testing as tm
 import polars as pl
 import pytest
 
+from sksurv._dataframe import get_dataframe_library
 import sksurv.datasets as sdata
 from sksurv.io import writearff
 from sksurv.testing import FixtureParameterFactory, get_pandas_infer_string_context
+from sksurv.testing.dataframe import COMPARISON_OUTPUT_TYPES
 
 ARFF_CATEGORICAL_INDEX_1 = """@relation arff_categorical_index
 @attribute index {SampleOne,SampleTwo,SampleThree,SampleFour}
@@ -79,53 +80,68 @@ def _make_classification_data(n_samples, n_features, n_classes, seed):
 
 
 class GetXyCases(FixtureParameterFactory):
+    n_samples = 100
+    n_features = 10
+
     @property
     def survival_data(self):
-        return _make_survival_data(100, 10, 0)
+        return _make_survival_data(self.n_samples, self.n_features, 0)
 
     @property
     def features(self):
-        return _make_features(100, 10, 0)
+        return _make_features(self.n_samples, self.n_features, 0)
 
     @property
     def attr_labels(self):
         return ["event", "time"]
 
-    def _to_data_frame(self, data_arrays, columns):
+    @property
+    def columns(self):
+        return [f"V{i}" for i in range(self.n_features)]
+
+    def _to_data_frame(self, backend, data_arrays, columns):
         if not isinstance(data_arrays, tuple | list):
             data_arrays = (data_arrays,)
 
-        df = [pd.DataFrame(data_array) for data_array in data_arrays]
+        column_values = []
+        for data_array in data_arrays:
+            if data_array.ndim == 1:
+                column_values.append(data_array)
+            else:
+                column_values.extend(data_array[:, i] for i in range(data_array.shape[1]))
 
-        data = pd.concat(df, axis=1).set_axis(columns, axis=1)
-        return data
+        return backend.make_frame(dict(zip(columns, column_values, strict=True)))
 
-    @property
-    def columns(self):
-        return [f"V{i}" for i in range(10)]
-
-    def data_survival_data(self):
+    def data_survival_data(self, backend):
         x, event, time = self.survival_data
         attr_labels = self.attr_labels
-        dataset = self._to_data_frame((x, event, time), self.columns + attr_labels)
+        dataset = self._to_data_frame(backend, (x, event, time), self.columns + attr_labels)
 
         args = (dataset, attr_labels)
         kwargs = {"pos_label": 1, "survival": True}
         return args, kwargs, x, (event, time), does_not_raise()
 
-    def data_no_label(self):
+    def data_no_label(self, backend):
         x = self.features
         attr_labels = [None, None]
-        dataset = self._to_data_frame(x, self.columns)
+        dataset = self._to_data_frame(backend, x, self.columns)
 
         args = (dataset, attr_labels)
         kwargs = {"pos_label": 1, "survival": True}
         return args, kwargs, x, None, does_not_raise()
 
-    def data_too_many_labels(self):
+    def data_competing_risks(self, backend):
+        x, event, time = _make_competing_risks_data(self.n_samples, self.n_features, 0)
+        dataset = self._to_data_frame(backend, (x, event, time), self.columns + self.attr_labels)
+
+        args = (dataset, self.attr_labels)
+        kwargs = {"competing_risks": True, "survival": True}
+        return args, kwargs, x, (event, time), does_not_raise()
+
+    def data_too_many_labels(self, backend):
         x, event, time = self.survival_data
         attr_labels = self.attr_labels + ["random"]
-        dataset = self._to_data_frame((x, event, time), self.columns + self.attr_labels)
+        dataset = self._to_data_frame(backend, (x, event, time), self.columns + self.attr_labels)
 
         args = (dataset, attr_labels)
         kwargs = {"pos_label": 1, "survival": True}
@@ -135,10 +151,10 @@ class GetXyCases(FixtureParameterFactory):
         )
         return args, kwargs, Skip(), Skip(), error
 
-    def data_too_little_labels_0(self):
+    def data_too_little_labels_0(self, backend):
         x, event, time = self.survival_data
         attr_labels = self.attr_labels[:1]
-        dataset = self._to_data_frame((x, event, time), self.columns + self.attr_labels)
+        dataset = self._to_data_frame(backend, (x, event, time), self.columns + self.attr_labels)
 
         args = (dataset, attr_labels)
         kwargs = {"pos_label": 1, "survival": True}
@@ -148,10 +164,10 @@ class GetXyCases(FixtureParameterFactory):
         )
         return args, kwargs, Skip(), Skip(), error
 
-    def data_too_little_labels_1(self):
+    def data_too_little_labels_1(self, backend):
         x, event, time = self.survival_data
         attr_labels = []
-        dataset = self._to_data_frame((x, event, time), self.columns + self.attr_labels)
+        dataset = self._to_data_frame(backend, (x, event, time), self.columns + self.attr_labels)
 
         args = (dataset, attr_labels)
         kwargs = {"pos_label": 1, "survival": True}
@@ -161,10 +177,10 @@ class GetXyCases(FixtureParameterFactory):
         )
         return args, kwargs, Skip(), Skip(), error
 
-    def data_no_pos_label(self):
+    def data_no_pos_label(self, backend):
         x, event, time = self.survival_data
         attr_labels = self.attr_labels
-        dataset = self._to_data_frame((x, event, time), self.columns + attr_labels)
+        dataset = self._to_data_frame(backend, (x, event, time), self.columns + attr_labels)
 
         args = (dataset, attr_labels)
         kwargs = {"survival": True}
@@ -174,32 +190,37 @@ class GetXyCases(FixtureParameterFactory):
         )
         return args, kwargs, Skip(), Skip(), error
 
-    def data_classification(self):
-        x, label = _make_classification_data(100, 10, 6, 0)
+    def data_classification(self, backend):
+        x, label = _make_classification_data(self.n_samples, self.n_features, 6, 0)
         attr_labels = ["class_label"]
-        dataset = self._to_data_frame((x, label), self.columns + attr_labels)
+        dataset = self._to_data_frame(backend, (x, label), self.columns + attr_labels)
 
         args = (dataset, attr_labels)
         kwargs = {"survival": False}
         return args, kwargs, x, label, does_not_raise()
 
-    def data_classification_no_label(self):
+    def data_classification_no_label(self, backend):
         x = self.features
         attr_labels = None
-        dataset = self._to_data_frame(x, self.columns)
+        dataset = self._to_data_frame(backend, x, self.columns)
 
         args = (dataset, attr_labels)
         kwargs = {"survival": False}
         return args, kwargs, x, None, does_not_raise()
 
 
-@pytest.mark.parametrize("args,kwargs,x_expected,y_expected,error_expected", GetXyCases().get_cases())
-def test_get_xy(args, kwargs, x_expected, y_expected, error_expected):
+@pytest.mark.parametrize("case", GetXyCases().get_cases_func())
+def test_get_xy(case, dataframe_backend):
+    args, kwargs, x_expected, y_expected, error_expected = case(dataframe_backend)
+
     with error_expected:
         x_test, y_test = sdata.get_x_y(*args, **kwargs)
 
     if not isinstance(x_expected, Skip):
-        assert_array_equal(x_test, x_expected, strict=True)
+        assert isinstance(
+            x_test, dataframe_backend.dataframe_type
+        ), f"expected {dataframe_backend.dataframe_type}, got {type(x_test)!r}"
+        assert_array_equal(x_test.to_numpy(), x_expected, strict=True)
 
     if not isinstance(y_expected, Skip):
         if y_expected is None:
@@ -210,8 +231,33 @@ def test_get_xy(args, kwargs, x_expected, y_expected, error_expected):
             assert_array_equal(y_test["event"], event, strict=True)
             assert_array_almost_equal(y_test["time"], time)
         else:
-            assert y_test.ndim == 2
+            assert isinstance(y_test, dataframe_backend.dataframe_type)
+            assert y_test.shape[1] == 1
             assert_array_equal(y_test.to_numpy(), y_expected, strict=True)
+
+
+class GetXyInvalidInputCases(FixtureParameterFactory):
+    def data_numpy_array(self):
+        x = _make_features(100, 10, 0)
+        error = pytest.raises(
+            TypeError,
+            match=r"expected pandas\.DataFrame or polars\.DataFrame",
+        )
+        return (x, ["event", "time"]), {"pos_label": 1, "survival": True}, error
+
+    def data_polars_series(self):
+        s = pl.Series("foo", [1, 2, 3])
+        error = pytest.raises(
+            TypeError,
+            match=r"expected pandas\.DataFrame or polars\.DataFrame",
+        )
+        return (s, ["event", "time"]), {"pos_label": 1, "survival": True}, error
+
+
+@pytest.mark.parametrize("args,kwargs,error_expected", GetXyInvalidInputCases().get_cases())
+def test_get_xy_invalid_input(args, kwargs, error_expected):
+    with error_expected:
+        sdata.get_x_y(*args, **kwargs)
 
 
 def _make_competing_risks_data(n_samples, n_features, seed):
@@ -221,117 +267,6 @@ def _make_competing_risks_data(n_samples, n_features, seed):
     event = rnd.integers(0, 3, n_samples)
     time = rnd.exponential(25, size=n_samples)
     return x, event, time
-
-
-class _Skip:
-    """Sentinel to skip the corresponding assertion in a parametrized test."""
-
-
-class GetXyPolarsCases(FixtureParameterFactory):
-    """Test cases for ``sksurv.datasets.get_x_y`` with polars eager/lazy input.
-
-    Output policy: container-preserving. For polars input, ``x_frame`` comes
-    back as ``polars.DataFrame``; ``y`` is a numpy structured array
-    (``survival=True``) or a polars container (``survival=False``).
-    """
-
-    n_samples = 100
-    n_features = 10
-
-    @property
-    def columns(self):
-        return [f"V{i}" for i in range(self.n_features)]
-
-    @property
-    def attr_labels(self):
-        return ["event", "time"]
-
-    def _make_polars_eager(self, data_arrays, columns):
-        if not isinstance(data_arrays, tuple | list):
-            data_arrays = (data_arrays,)
-
-        df = [pd.DataFrame(data_array) for data_array in data_arrays]
-
-        data = pd.concat(df, axis=1).set_axis(columns, axis=1)
-        return to_polars_dataframe(data)
-
-    def data_polars_eager_survival(self):
-        x, event, time = _make_survival_data(self.n_samples, self.n_features, 0)
-        df = self._make_polars_eager((x, event, time), self.columns + self.attr_labels)
-        args = (df, self.attr_labels)
-        kwargs = {"pos_label": 1, "survival": True}
-        return args, kwargs, x, (event, time), does_not_raise()
-
-    def data_polars_eager_no_label(self):
-        x = _make_features(self.n_samples, self.n_features, 0)
-        df = self._make_polars_eager(x, self.columns)
-        args = (df, [None, None])
-        kwargs = {"pos_label": 1, "survival": True}
-        return args, kwargs, x, None, does_not_raise()
-
-    def data_polars_eager_competing_risks(self):
-        x, event, time = _make_competing_risks_data(self.n_samples, self.n_features, 0)
-        df = self._make_polars_eager((x, event, time), self.columns + self.attr_labels)
-        args = (df, self.attr_labels)
-        kwargs = {"competing_risks": True, "survival": True}
-        return args, kwargs, x, (event, time), does_not_raise()
-
-    def data_polars_eager_classification(self):
-        x, label = _make_classification_data(self.n_samples, self.n_features, 6, 0)
-        df = self._make_polars_eager((x, label), self.columns + ["class_label"])
-        args = (df, ["class_label"])
-        kwargs = {"survival": False}
-        return args, kwargs, x, label, does_not_raise()
-
-    def data_polars_eager_classification_no_label(self):
-        x = _make_features(self.n_samples, self.n_features, 0)
-        df = self._make_polars_eager(x, self.columns)
-        args = (df, None)
-        kwargs = {"survival": False}
-        return args, kwargs, x, None, does_not_raise()
-
-    def data_polars_wrong_class(self):
-        x = _make_features(self.n_samples, self.n_features, 0)
-        args = (x, self.attr_labels)
-        kwargs = {"pos_label": 1, "survival": True}
-        err = pytest.raises(
-            TypeError,
-            match=r"expected pandas\.DataFrame or polars\.DataFrame",
-        )
-        return args, kwargs, _Skip(), _Skip(), err
-
-    def data_polars_series_wrong_class(self):
-        s = pl.Series("foo", [1, 2, 3])
-        args = (s, self.attr_labels)
-        kwargs = {"pos_label": 1, "survival": True}
-        err = pytest.raises(
-            TypeError,
-            match=r"expected pandas\.DataFrame or polars\.DataFrame",
-        )
-        return args, kwargs, _Skip(), _Skip(), err
-
-
-@pytest.mark.parametrize("args,kwargs,x_expected,y_expected,error_expected", GetXyPolarsCases().get_cases())
-def test_get_xy_polars(args, kwargs, x_expected, y_expected, error_expected):
-    with error_expected:
-        x_test, y_test = sdata.get_x_y(*args, **kwargs)
-
-    if not isinstance(x_expected, _Skip):
-        assert isinstance(x_test, pl.DataFrame), f"expected polars.DataFrame, got {type(x_test)!r}"
-        assert_array_equal(x_test.to_numpy(), x_expected, strict=True)
-
-    if not isinstance(y_expected, _Skip):
-        if y_expected is None:
-            assert y_test is None
-        elif isinstance(y_expected, tuple):
-            assert y_test.dtype.names == ("event", "time")
-            event, time = y_expected
-            assert_array_equal(y_test["event"], event, strict=True)
-            assert_array_almost_equal(y_test["time"], time)
-        else:
-            assert isinstance(y_test, pl.DataFrame), f"expected polars.DataFrame, got {type(y_test)!r}"
-            assert y_test.shape[1] == 1
-            assert_array_equal(y_test.to_numpy(), y_expected, strict=True)
 
 
 class TestGetXYLazyFrameRejected:
@@ -345,23 +280,13 @@ class TestGetXYLazyFrameRejected:
         with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported; call \.collect\(\)"):
             sdata.get_x_y(lf, None, survival=False)
 
-    @staticmethod
-    def test_get_x_y_string_label_returns_series_pandas():
-        """``get_x_y(pd.DataFrame, "label", survival=False)`` returns a
-        ``pd.Series`` (via ``dataset.loc[:, "label"]``). Preserve that contract.
-        """
-        df = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
-        _, y = sdata.get_x_y(df, "a", survival=False)
-        assert isinstance(y, pd.Series), f"expected pd.Series, got {type(y).__name__}"
 
-    @staticmethod
-    def test_get_x_y_string_label_returns_series_polars():
-        """Mirror the pandas contract on polars: string label returns
-        ``polars.Series``.
-        """
-        df = pl.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
-        _, y = sdata.get_x_y(df, "a", survival=False)
-        assert isinstance(y, pl.Series), f"expected pl.Series, got {type(y).__name__}"
+def test_get_x_y_string_label_returns_series(dataframe_backend):
+    """A string label with ``survival=False`` returns the input library's
+    Series, preserving the container."""
+    df = dataframe_backend.make_frame({"a": [1, 2, 3], "b": [4, 5, 6]})
+    _, y = sdata.get_x_y(df, "a", survival=False)
+    assert isinstance(y, dataframe_backend.series_type), f"expected a Series, got {type(y).__name__}"
 
 
 def assert_structured_array_dtype(arr, event, time, num_events):
@@ -371,75 +296,7 @@ def assert_structured_array_dtype(arr, event, time, num_events):
     assert arr[event].sum() == num_events
 
 
-class TestLoadDatasets:
-    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
-    @staticmethod
-    def test_load_whas500(infer_string_context):
-        with infer_string_context:
-            x, y = sdata.load_whas500()
-            assert x.shape == (500, 14)
-            assert y.shape == (500,)
-            assert_structured_array_dtype(y, "fstat", "lenfol", 215)
-
-    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
-    @staticmethod
-    def test_load_gbsg2(infer_string_context):
-        with infer_string_context:
-            x, y = sdata.load_gbsg2()
-            assert x.shape == (686, 8)
-            assert y.shape == (686,)
-            assert_structured_array_dtype(y, "cens", "time", 299)
-
-    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
-    @staticmethod
-    def test_load_veterans_lung_cancer(infer_string_context):
-        with infer_string_context:
-            x, y = sdata.load_veterans_lung_cancer()
-            assert x.shape == (137, 6)
-            assert y.shape == (137,)
-            assert_structured_array_dtype(y, "Status", "Survival_in_days", 128)
-
-    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
-    @staticmethod
-    def test_load_aids(infer_string_context):
-        with infer_string_context:
-            x, y = sdata.load_aids(endpoint="aids")
-            assert x.shape == (1151, 11)
-            assert y.shape == (1151,)
-            assert_structured_array_dtype(y, "censor", "time", 96)
-            assert "censor_d" not in x.columns
-            assert "time_d" not in x.columns
-
-            x, y = sdata.load_aids(endpoint="death")
-            assert x.shape == (1151, 11)
-            assert y.shape == (1151,)
-            assert_structured_array_dtype(y, "censor_d", "time_d", 26)
-            assert "censor" not in x.columns
-            assert "time" not in x.columns
-
-            with pytest.raises(ValueError, match="endpoint must be 'aids' or 'death'"):
-                sdata.load_aids(endpoint="foobar")
-
-    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
-    @staticmethod
-    def test_load_breast_cancer(infer_string_context):
-        with infer_string_context:
-            x, y = sdata.load_breast_cancer()
-            assert x.shape == (198, 80)
-            assert y.shape == (198,)
-            assert_structured_array_dtype(y, "e.tdm", "t.tdm", 51)
-
-    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
-    @staticmethod
-    def test_load_flchain(infer_string_context):
-        with infer_string_context:
-            x, y = sdata.load_flchain()
-            assert x.shape == (7874, 9)
-            assert y.shape == (7874,)
-            assert_structured_array_dtype(y, "death", "futime", 2169)
-
-
-_POLARS_LOADERS = [
+_LOADER_EXPECTATIONS = [
     ("whas500", sdata.load_whas500, {}, (500, 14), "fstat", "lenfol", 215),
     ("gbsg2", sdata.load_gbsg2, {}, (686, 8), "cens", "time", 299),
     ("veterans", sdata.load_veterans_lung_cancer, {}, (137, 6), "Status", "Survival_in_days", 128),
@@ -450,40 +307,73 @@ _POLARS_LOADERS = [
 ]
 
 
-class TestLoadDatasetsPolars:
-    """Pin output_type='polars' shape and dtype parity for every loader.
-
-    For each loader: features come back as ``polars.DataFrame`` with the same
-    shape as the pandas path, and the structured-array ``y`` is identical.
-    The polars features carry ``pl.Enum`` for ARFF nominal columns (with the
-    declared categories preserved, even ones absent from the data), while
-    pandas features carry the equivalent ``pd.Categorical``.
-    """
-
+class TestLoadDatasets:
     @staticmethod
+    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
     @pytest.mark.parametrize(
         "name,loader,kwargs,shape,event_name,time_name,n_events",
-        _POLARS_LOADERS,
-        ids=[t[0] for t in _POLARS_LOADERS],
+        _LOADER_EXPECTATIONS,
+        ids=[t[0] for t in _LOADER_EXPECTATIONS],
     )
-    def test_polars_shape_and_y(name, loader, kwargs, shape, event_name, time_name, n_events):
+    def test_shape_and_y(name, loader, kwargs, shape, event_name, time_name, n_events, infer_string_context):
+        with infer_string_context:
+            x, y = loader(**kwargs)
+            assert isinstance(x, pd.DataFrame), f"{name}: x is {type(x).__name__}"
+            assert x.shape == shape
+            assert y.shape == (shape[0],)
+            assert_structured_array_dtype(y, event_name, time_name, n_events)
 
-        x, y = loader(output_type="polars", **kwargs)
-        assert isinstance(x, pl.DataFrame), f"{name}: x is {type(x).__name__}"
+    @staticmethod
+    @pytest.mark.parametrize("output_type", COMPARISON_OUTPUT_TYPES)
+    @pytest.mark.parametrize(
+        "name,loader,kwargs,shape,event_name,time_name,n_events",
+        _LOADER_EXPECTATIONS,
+        ids=[t[0] for t in _LOADER_EXPECTATIONS],
+    )
+    def test_shape_and_y_comparison_output(name, loader, kwargs, shape, event_name, time_name, n_events, output_type):
+        x, y = loader(output_type=output_type, **kwargs)
+        assert get_dataframe_library(x).name == output_type, f"{name}: x is {type(x).__name__}"
         assert x.shape == shape
         assert y.shape == (shape[0],)
         assert_structured_array_dtype(y, event_name, time_name, n_events)
 
     @staticmethod
-    def test_polars_matches_pandas_columns():
-        """Polars and pandas paths produce identical column lists (modulo
-        dataframe-library container differences) for every loader."""
-
-        for name, loader, kwargs, _shape, *_ in _POLARS_LOADERS:
+    @pytest.mark.parametrize("output_type", COMPARISON_OUTPUT_TYPES)
+    def test_columns_match_pandas(output_type):
+        for name, loader, kwargs, *_ in _LOADER_EXPECTATIONS:
             x_pd, _ = loader(**kwargs)
-            x_pl, _ = loader(output_type="polars", **kwargs)
-            assert list(x_pl.columns) == list(x_pd.columns), f"column mismatch for {name}"
-            assert isinstance(x_pl, pl.DataFrame)
+            x_other, _ = loader(output_type=output_type, **kwargs)
+            assert list(x_other.columns) == list(x_pd.columns), f"column mismatch for {name}"
+
+    @staticmethod
+    @pytest.mark.parametrize("loader,kwargs", [(t[1], t[2]) for t in _LOADER_EXPECTATIONS])
+    def test_invalid_output_type(loader, kwargs):
+        with pytest.raises(ValueError, match="output_type must be 'pandas' or 'polars'"):
+            loader(output_type="numpy", **kwargs)
+
+    @staticmethod
+    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
+    def test_load_aids_endpoints(infer_string_context):
+        with infer_string_context:
+            x, _ = sdata.load_aids(endpoint="aids")
+            assert "censor_d" not in x.columns
+            assert "time_d" not in x.columns
+
+            x, _ = sdata.load_aids(endpoint="death")
+            assert "censor" not in x.columns
+            assert "time" not in x.columns
+
+            with pytest.raises(ValueError, match="endpoint must be 'aids' or 'death'"):
+                sdata.load_aids(endpoint="foobar")
+
+
+class TestLoadDatasetsPolars:
+    """polars-specific loader behavior.
+
+    ARFF nominal columns must surface as ``pl.Enum`` with the declared
+    category list preserved, even for categories absent from the data;
+    ``pl.Categorical`` would silently lose the declared list.
+    """
 
     @staticmethod
     def test_polars_nominal_columns_are_enum():
@@ -601,12 +491,6 @@ class TestLoadDatasetsPolars:
         assert isinstance(x_train, pl.DataFrame)
         assert isinstance(x_train.schema["grade"], pl.Enum), f"grade dtype: {x_train.schema['grade']!r}"
         assert x_train["grade"].cat.get_categories().to_list() == ["I", "II", "III", "IV"]
-
-    @staticmethod
-    @pytest.mark.parametrize("loader,kwargs", [(t[1], t[2]) for t in _POLARS_LOADERS])
-    def test_polars_invalid_output_type(loader, kwargs):
-        with pytest.raises(ValueError, match="output_type must be 'pandas' or 'polars'"):
-            loader(output_type="numpy", **kwargs)
 
 
 def _make_and_write_data(fp, n_samples, n_features, with_index, with_labels, seed, column_prefix="V"):
@@ -896,16 +780,12 @@ def test_load_from_temp_file(make_data_fn, temp_file_pair, infer_string_context)
             assert y_test is None
 
 
-@pytest.mark.parametrize("output_type", ["pandas", "polars"])
+@pytest.mark.parametrize("output_type", ["pandas", *COMPARISON_OUTPUT_TYPES])
 def test_load_arff_files_standardized_testing_without_labels_and_attr_labels_none(tmp_path, output_type):
     train_path = tmp_path / "train.arff"
     test_path = tmp_path / "test.arff"
-    train_path.write_text(
-        "@relation train\n" "@attribute x numeric\n" "@attribute group {a,b}\n" "@data\n" "1,a\n" "2,b\n"
-    )
-    test_path.write_text(
-        "@relation test\n" "@attribute x numeric\n" "@attribute group {a,b}\n" "@data\n" "3,a\n" "4,b\n"
-    )
+    train_path.write_text("@relation train\n@attribute x numeric\n@attribute group {a,b}\n@data\n1,a\n2,b\n")
+    test_path.write_text("@relation test\n@attribute x numeric\n@attribute group {a,b}\n@data\n3,a\n4,b\n")
 
     x_train, y_train, x_test, y_test = sdata.load_arff_files_standardized(
         str(train_path),

@@ -1,9 +1,5 @@
-from dataframe_test_utils import (
-    assert_backend_frame_equal,
-    expected_one_hot_data,
-    make_one_hot_categorical_data,
-    to_polars_dataframe,
-)
+from collections import OrderedDict
+
 import numpy as np
 from numpy.testing import assert_array_equal
 import pandas as pd
@@ -13,22 +9,74 @@ import pytest
 
 from sksurv.preprocessing import OneHotEncoder
 from sksurv.testing import get_pandas_infer_string_context
+from sksurv.testing.dataframe import CROSS_LIBRARY_PAIRS, PANDAS_BACKEND, POLARS_BACKEND
+
+
+def expected_one_hot_data(data):
+    expected = []
+    for nam, col in data.items():
+        if hasattr(col, "cat"):
+            for cat in col.cat.categories[1:]:
+                name = f"{nam}={cat}"
+                s = pd.Series(col == cat, dtype=np.float64)
+                expected.append((name, s))
+        else:
+            expected.append((nam, col))
+
+    return pd.DataFrame.from_dict(OrderedDict(expected))
+
+
+ONE_HOT_CATEGORIES = {
+    "binary_1": ["Yes", "No"],
+    "binary_2": ["East", "West"],
+    "trinary": ["Green", "Blue", "Red"],
+    "many": ["One", "Two", "Three", "Four", "Five", "Six"],
+}
+
+
+def make_one_hot_data(backend, n_samples=117):
+    """One-hot encoder test data built by `backend`.
+
+    Returns the input frame, whose categorical columns declare the
+    :data:`ONE_HOT_CATEGORIES` category lists, and the expected encoded frame
+    with one indicator column per category except the first.
+    """
+    rnd = np.random.default_rng(51365192)
+    numeric = rnd.random((n_samples, 5))
+    codes = {
+        "binary_1": rnd.binomial(1, 0.6, n_samples),
+        "binary_2": rnd.binomial(1, 0.376, n_samples),
+        "trinary": rnd.binomial(2, 0.76, n_samples),
+        "many": rnd.binomial(5, 0.47, n_samples),
+    }
+
+    data = {f"N{i}": numeric[:, i] for i in range(5)}
+    expected = {f"N{i}": numeric[:, i] for i in range(5)}
+    for name, declared in ONE_HOT_CATEGORIES.items():
+        values = [declared[code] for code in codes[name]]
+        data[name] = values
+        for category in declared[1:]:
+            expected[f"{name}={category}"] = np.array([value == category for value in values], dtype=float)
+
+    input_frame = backend.make_frame(data, categories=ONE_HOT_CATEGORIES)
+    expected_frame = backend.make_frame(expected)
+    return input_frame, expected_frame
 
 
 @pytest.fixture()
-def create_backend_categorical_data(dataframe_backend):
+def create_backend_categorical_data(dataframe_backend_with_pandas_options):
     def _create(n_samples=117):
-        data, expected = make_one_hot_categorical_data(n_samples)
-        if dataframe_backend == "polars":
-            return to_polars_dataframe(data), to_polars_dataframe(expected)
-        return data, expected
+        return make_one_hot_data(dataframe_backend_with_pandas_options, n_samples)
 
     return _create
 
 
 @pytest.fixture()
 def create_categorical_data():
-    return make_one_hot_categorical_data
+    def _create(n_samples=117):
+        return make_one_hot_data(PANDAS_BACKEND, n_samples)
+
+    return _create
 
 
 @pytest.fixture()
@@ -50,58 +98,53 @@ def create_string_data():
 
 
 class TestOneHotEncoder:
-    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
     @staticmethod
-    def test_fit(create_categorical_data, infer_string_context):
-        with infer_string_context:
-            data, expected_data = create_categorical_data()
+    def test_fit(create_backend_categorical_data):
+        data, expected_data = create_backend_categorical_data()
 
-            t = OneHotEncoder().fit(data)
+        t = OneHotEncoder().fit(data)
 
-            assert isinstance(t.feature_names_, pd.Index)
-            assert isinstance(t.encoded_columns_, pd.Index)
-            assert t.feature_names_.tolist() == ["binary_1", "binary_2", "trinary", "many"]
-            assert set(t.encoded_columns_) == set(expected_data.columns)
+        assert isinstance(t.feature_names_, pd.Index)
+        assert isinstance(t.encoded_columns_, pd.Index)
+        assert t.feature_names_.tolist() == list(ONE_HOT_CATEGORIES)
+        assert set(t.encoded_columns_) == set(expected_data.columns)
 
-            expected_categories = {k: data[k].cat.categories for k in ["binary_1", "binary_2", "trinary", "many"]}
-            assert set(t.categories_) == set(expected_categories)
-            for key, expected_index in expected_categories.items():
-                assert isinstance(t.categories_[key], pd.Index)
-                assert t.categories_[key].tolist() == expected_index.tolist()
+        assert set(t.categories_) == set(ONE_HOT_CATEGORIES)
+        for key, expected_categories in ONE_HOT_CATEGORIES.items():
+            assert isinstance(t.categories_[key], pd.Index)
+            assert t.categories_[key].tolist() == expected_categories
 
     @staticmethod
-    def test_fit_transform(create_backend_categorical_data, dataframe_backend):
+    def test_fit_transform(create_backend_categorical_data, dataframe_backend_with_pandas_options):
         data, expected_data = create_backend_categorical_data()
 
         actual_data = OneHotEncoder().fit_transform(data)
-        assert_backend_frame_equal(actual_data, expected_data, dataframe_backend)
+        dataframe_backend_with_pandas_options.assert_frame_equal(actual_data, expected_data)
 
-    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
     @staticmethod
-    def test_transform(create_categorical_data, infer_string_context):
-        with infer_string_context:
-            data, _ = create_categorical_data()
+    def test_transform(create_backend_categorical_data, dataframe_backend_with_pandas_options):
+        data, _ = create_backend_categorical_data()
 
-            t = OneHotEncoder().fit(data)
-            data, expected_data = create_categorical_data(165)
-            actual_data = t.transform(data)
-            tm.assert_frame_equal(actual_data, expected_data)
+        t = OneHotEncoder().fit(data)
+        data, expected_data = create_backend_categorical_data(165)
+        actual_data = t.transform(data)
+        dataframe_backend_with_pandas_options.assert_frame_equal(actual_data, expected_data)
 
-            data = pd.concat((data.iloc[:, :2], data.iloc[:, 5:], data.iloc[:, 2:5]), axis=1)
-            actual_data = t.transform(data)
-            tm.assert_frame_equal(actual_data, expected_data)
+        columns = list(data.columns)
+        reordered = data[columns[:2] + columns[5:] + columns[2:5]]
+        actual_data = t.transform(reordered)
+        dataframe_backend_with_pandas_options.assert_frame_equal(actual_data, expected_data)
 
-    @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
     @staticmethod
-    def test_get_feature_names_out(create_categorical_data, infer_string_context):
-        with infer_string_context:
-            data, expected_data = create_categorical_data()
+    def test_get_feature_names_out(create_backend_categorical_data):
+        data, expected_data = create_backend_categorical_data()
 
-            t = OneHotEncoder()
-            t.fit(data)
+        t = OneHotEncoder()
+        t.fit(data)
 
-            out_names = t.get_feature_names_out()
-            assert_array_equal(out_names, expected_data.columns.to_numpy(), strict=True)
+        out_names = t.get_feature_names_out()
+        expected_names = np.asarray(list(expected_data.columns), dtype=object)
+        assert_array_equal(out_names, expected_names, strict=True)
 
     @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
     @staticmethod
@@ -222,41 +265,16 @@ class TestOneHotEncoder:
 
 class TestOneHotEncoderAllDroppedParity:
     @staticmethod
-    @pytest.mark.parametrize("dataframe_library", ["pandas", "polars"])
-    def test_all_dropped_raises(dataframe_library):
-        df = pd.DataFrame({"cat": pd.Categorical(["x", "x"])})
-        if dataframe_library == "polars":
-            df = to_polars_dataframe(df)
+    def test_all_dropped_raises(dataframe_backend):
+        df = dataframe_backend.make_frame({"cat": ["x", "x"]}, categories={"cat": ["x"]})
         with pytest.raises(ValueError, match="No objects to concatenate"):
             OneHotEncoder().fit_transform(df)
 
 
-@pytest.fixture()
-def polars_categorical_data():
-    def _create(n_samples=117):
-        data, expected = make_one_hot_categorical_data(n_samples)
-        return to_polars_dataframe(data), to_polars_dataframe(expected)
-
-    return _create
-
-
-class TestOneHotEncoderPolars:
+class TestOneHotEncoderLazyFrame:
     @staticmethod
-    def test_fit(polars_categorical_data):
-        data, _ = polars_categorical_data()
-        t = OneHotEncoder().fit(data)
-        assert isinstance(t.feature_names_, pd.Index)
-        assert isinstance(t.encoded_columns_, pd.Index)
-        assert all(isinstance(categories, pd.Index) for categories in t.categories_.values())
-        assert t.feature_names_.tolist() == ["binary_1", "binary_2", "trinary", "many"]
-        assert t.categories_["binary_1"].tolist() == ["Yes", "No"]
-        assert t.categories_["binary_2"].tolist() == ["East", "West"]
-        assert t.categories_["trinary"].tolist() == ["Green", "Blue", "Red"]
-        assert t.categories_["many"].tolist() == ["One", "Two", "Three", "Four", "Five", "Six"]
-
-    @staticmethod
-    def test_fit_transform_lazyframe_rejected(polars_categorical_data):
-        data, _ = polars_categorical_data()
+    def test_fit_transform_lazyframe_rejected():
+        data, _ = make_one_hot_data(POLARS_BACKEND)
         with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
             OneHotEncoder().fit_transform(data.lazy())
 
@@ -272,23 +290,23 @@ class TestOneHotEncoderPolars:
         with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
             enc.transform(data.lazy())
 
-    @staticmethod
-    def test_transform(polars_categorical_data):
-        import polars.testing as pt
 
-        data, _ = polars_categorical_data()
-        t = OneHotEncoder().fit(data)
-        new_data, expected = polars_categorical_data(165)
-        actual = t.transform(new_data)
-        assert isinstance(actual, pl.DataFrame)
-        pt.assert_frame_equal(actual, expected, check_exact=False, abs_tol=1e-9)
-
+class TestOneHotEncoderDeclaredUnseenCategory:
     @staticmethod
-    def test_get_feature_names_out(polars_categorical_data):
-        data, expected = polars_categorical_data()
-        encoder = OneHotEncoder().fit(data)
-        names = encoder.get_feature_names_out()
-        assert list(names) == list(expected.columns)
+    def test_declared_unseen_category_produces_column(dataframe_backend):
+        """A category that is declared but absent from the data still yields
+        an encoded column, filled with zeros."""
+        data = {"grade": ["I", "II", "III", "I"]}
+        categories = {"grade": ["I", "II", "III", "IV"]}
+        df = dataframe_backend.make_frame(data, categories=categories)
+
+        enc = OneHotEncoder().fit(df)
+        assert enc.categories_["grade"].tolist() == ["I", "II", "III", "IV"]
+        assert "grade=IV" in list(enc.encoded_columns_)
+
+        encoded = enc.transform(df)
+        assert list(encoded.columns) == ["grade=II", "grade=III", "grade=IV"]
+        assert encoded["grade=IV"].to_numpy().tolist() == [0.0, 0.0, 0.0, 0.0]
 
 
 class TestOneHotEncoderUnseenAndCrossDataframeLibrary:
@@ -311,16 +329,13 @@ class TestOneHotEncoderUnseenAndCrossDataframeLibrary:
         assert np.isnan(out_pl[1]).all()
         np.testing.assert_array_equal(out_pd, out_pl, strict=True)
 
-    def test_fit_pandas_transform_polars_raises(self):
-        df_fit_pd, _, _, _ = self._make_fit_test_pair()
-        df_test_pl = pl.DataFrame({"color": pl.Series(["red", "blue"], dtype=pl.Categorical)})
-        enc = OneHotEncoder().fit(df_fit_pd)
-        with pytest.raises(TypeError, match="same dataframe library"):
-            enc.transform(df_test_pl)
+    @staticmethod
+    @pytest.mark.parametrize("fit_backend,transform_backend", CROSS_LIBRARY_PAIRS)
+    def test_transform_library_mismatch_raises(fit_backend, transform_backend):
+        categories = {"color": ["blue", "green", "red"]}
+        data_fit = fit_backend.make_frame({"color": ["red", "green", "blue", "red"]}, categories=categories)
+        data_transform = transform_backend.make_frame({"color": ["red", "blue"]}, categories=categories)
 
-    def test_fit_polars_transform_pandas_raises(self):
-        _, _, df_fit_pl, _ = self._make_fit_test_pair()
-        df_test_pd = pd.DataFrame({"color": pd.Categorical(["red", "blue"])})
-        enc = OneHotEncoder().fit(df_fit_pl)
+        enc = OneHotEncoder().fit(data_fit)
         with pytest.raises(TypeError, match="same dataframe library"):
-            enc.transform(df_test_pd)
+            enc.transform(data_transform)
