@@ -66,7 +66,8 @@ def unsupported_dataframe_error(obj):
 
 
 def is_non_numeric_cast_error(exc):
-    """Dispatch backend-specific predicates for "string-to-numeric cast failed".
+    """
+    Dispatch backend-specific predicates for "string-to-numeric cast failed".
 
     Used by helpers that opportunistically cast a string column to a numeric
     dtype and need to know whether the resulting exception came from the
@@ -85,7 +86,8 @@ def _reject_polars_lazyframe(obj):
 
 
 def ensure_eager_dataframe(obj):
-    """Reject a polars ``LazyFrame`` input; return any other object unchanged.
+    """
+    Reject a polars ``LazyFrame`` input; return any other object unchanged.
 
     scikit-survival does not support lazy frames. scikit-learn's input
     validation requires eager dataframes, so a ``LazyFrame`` would have to be

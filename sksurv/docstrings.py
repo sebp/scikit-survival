@@ -74,7 +74,7 @@ _PRED_CUMHAZ_FN_EXAMPLE_DOC = """
 
 
 def append_survival_function_example(*, estimator_mod, estimator_class):
-    """Append example of using predict_survival_function to API doc"""
+    """Append example of using predict_survival_function to API doc."""
 
     def func(f):
         f.__doc__ += _PRED_SURV_FN_EXAMPLE_DOC.format(
@@ -87,7 +87,7 @@ def append_survival_function_example(*, estimator_mod, estimator_class):
 
 
 def append_cumulative_hazard_example(*, estimator_mod, estimator_class):
-    """Append example of using predict_cumulative_hazard_function to API doc"""
+    """Append example of using predict_cumulative_hazard_function to API doc."""
 
     def func(f):
         f.__doc__ += _PRED_CUMHAZ_FN_EXAMPLE_DOC.format(

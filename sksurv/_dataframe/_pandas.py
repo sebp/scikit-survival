@@ -10,7 +10,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""Pandas input predicates for the dataframe boundary.
+"""
+Pandas input predicates for the dataframe boundary.
 
 This module decides whether a native object is a pandas frame or series and
 holds the pandas-specific input policies (notably which columns count as
@@ -41,8 +42,10 @@ class PandasDataFrameLibrary:
 
     @staticmethod
     def is_non_numeric_cast_error(exc):
-        """Return True iff ``exc`` was raised by pandas rejecting a
-        non-numeric string ``cast`` (e.g. casting ``"foo"`` to ``Int64``).
+        """
+        Return True if ``exc`` was raised by pandas rejecting a non-numeric string ``cast``.
+
+        For example, casting ``"foo"`` to ``Int64``.
 
         pandas raises a builtin ``ValueError`` ("invalid literal for int()")
         in that case, unlike polars' ``InvalidOperationError``. Matched by
@@ -52,7 +55,8 @@ class PandasDataFrameLibrary:
 
     @staticmethod
     def ordinal_categories(native):
-        """Ordered-categorical columns declared via pandas' ``ordered=True``.
+        """
+        Ordered-categorical columns declared via pandas' ``ordered=True``.
 
         Returns a mapping of column name to its declared category order for
         every ordered ``pandas.Categorical`` column; the clinical kernel uses

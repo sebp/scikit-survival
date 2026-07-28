@@ -27,7 +27,8 @@ __all__ = ["OneHotEncoder", "encode_categorical"]
 
 
 def check_columns_exist(actual, expected):
-    """Check if all expected columns are present in a dataframe.
+    """
+    Check if all expected columns are present in a dataframe.
 
     Parameters
     ----------
@@ -47,7 +48,8 @@ def check_columns_exist(actual, expected):
 
 
 class OneHotEncoder(BaseEstimator, TransformerMixin):
-    """Encode categorical features using a one-hot scheme.
+    """
+    Encode categorical features using a one-hot scheme.
 
     Accepts :class:`pandas.DataFrame` and :class:`polars.DataFrame` inputs.
     The following column dtypes are treated as categorical features:
@@ -98,7 +100,8 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         self.allow_drop = allow_drop
 
     def fit(self, X, y=None):  # pylint: disable=unused-argument
-        """Determine which features are categorical and should be one-hot encoded.
+        """
+        Determine which features are categorical and should be one-hot encoded.
 
         Parameters
         ----------
@@ -110,14 +113,15 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        self : object
+        object
             Returns the instance itself.
         """
         self.fit_transform(X)
         return self
 
     def fit_transform(self, X, y=None, **fit_params):  # pylint: disable=unused-argument
-        """Fit to data, then transform it.
+        """
+        Fit to data, then transform it.
 
         Fits the transformer to ``X`` by identifying categorical features and
         then returns a transformed version of ``X`` with categorical features
@@ -136,7 +140,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        Xt : pandas.DataFrame or polars.DataFrame
+        pandas.DataFrame or polars.DataFrame
             The transformed data. The output dataframe library matches the input.
         """
         X = ensure_eager_dataframe(X)
@@ -146,7 +150,8 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         return self._fit_transform_dataframe(X)
 
     def transform(self, X):
-        """Transform ``X`` by one-hot encoding categorical features.
+        """
+        Transform ``X`` by one-hot encoding categorical features.
 
         Parameters
         ----------
@@ -155,7 +160,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        Xt : pandas.DataFrame or polars.DataFrame
+        pandas.DataFrame or polars.DataFrame
             The transformed data. The output dataframe library matches the input.
         """
         check_is_fitted(self, "encoded_columns_")
@@ -213,7 +218,8 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         return nw.from_native(result).select(list(self.encoded_columns_)).to_native()
 
     def get_feature_names_out(self, input_features=None):
-        """Get output feature names for transformation.
+        """
+        Get output feature names for transformation.
 
         Parameters
         ----------
@@ -227,7 +233,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        feature_names_out : ndarray of str objects
+        ndarray of str objects
             Transformed feature names.
         """
         check_is_fitted(self, "encoded_columns_")

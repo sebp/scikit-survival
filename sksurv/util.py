@@ -24,7 +24,8 @@ __all__ = ["check_array_survival", "check_y_survival", "Surv"]
 
 
 class Surv:
-    """A helper class to create a structured array for survival analysis.
+    """
+    A helper class to create a structured array for survival analysis.
 
     This class provides helper functions to create a structured array that
     encapsulates the event indicator and the observed time. The resulting
@@ -34,7 +35,8 @@ class Surv:
 
     @staticmethod
     def from_arrays(event, time, name_event=None, name_time=None):
-        """Create structured array from event indicator and time arrays.
+        """
+        Create structured array from event indicator and time arrays.
 
         Parameters
         ----------
@@ -51,7 +53,7 @@ class Surv:
 
         Returns
         -------
-        y : numpy.ndarray
+        numpy.ndarray
             A structured array with two fields. The first field is a boolean
             where ``True`` indicates an event and ``False`` indicates right-censoring.
             The second field is a float with the time of event or time of censoring.
@@ -100,7 +102,8 @@ class Surv:
 
     @staticmethod
     def from_dataframe(event, time, data):
-        """Create structured array from columns in a DataFrame.
+        """
+        Create structured array from columns in a DataFrame.
 
         Parameters
         ----------
@@ -117,7 +120,7 @@ class Surv:
 
         Returns
         -------
-        y : numpy.ndarray
+        numpy.ndarray
             A structured array with two fields. The first field is a boolean
             where ``True`` indicates an event and ``False`` indicates right-censoring.
             The second field is a float with the time of event or time of censoring.
@@ -168,11 +171,12 @@ class Surv:
 
 
 def check_y_survival(y_or_event, *args, allow_all_censored=False, allow_time_zero=True, competing_risks=False):
-    """Check that array correctly represents an outcome for survival analysis.
+    """
+    Check that array correctly represents an outcome for survival analysis.
 
     Parameters
     ----------
-    y_or_event : structured array with two fields, or boolean array
+    y_or_event : structured array with two fields, or bool array
         If a structured array, it must contain the binary event indicator
         as first field, and time of event or time of censoring as
         second field. Otherwise, it is assumed that a boolean array
@@ -191,7 +195,7 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False, allow_time_zer
         Whether to allow event times to be zero.
 
     competing_risks : bool, optional, default: False
-        Whether there are multiple risks. (See y_or_event)
+        Whether there are multiple risks (see `y_or_event`).
 
     Returns
     -------
@@ -251,7 +255,8 @@ def check_y_survival(y_or_event, *args, allow_all_censored=False, allow_time_zer
 
 
 def check_event_dtype(event, competing_risks=False):
-    """Check that the event array has the correct dtype.
+    """
+    Check that the event array has the correct dtype.
 
     For single-event survival analysis, the event indicator must be a
     boolean array. For competing risk analysis, it must be an integer
@@ -277,7 +282,8 @@ def check_event_dtype(event, competing_risks=False):
 
 
 def check_array_survival(X, y, **kwargs):
-    """Check that all arrays have consistent first dimensions.
+    """
+    Check that all arrays have consistent first dimensions.
 
     Parameters
     ----------
@@ -306,17 +312,16 @@ def check_array_survival(X, y, **kwargs):
 
 
 class _PropertyAvailableIfDescriptor:
-    """Implements a conditional property using the descriptor protocol based on the property decorator.
+    """
+    Implements a conditional property using the descriptor protocol based on the property decorator.
 
     The corresponding class in scikit-learn (`_AvailableIfDescriptor`) only supports callables.
-    This class adopts the property decorator as described in the descriptor guide in the offical Python documentation.
+    This class adopts the property decorator as described in the descriptor guide in the offical Python documentation:
+    `Descriptor HowTo Guide <https://docs.python.org/3/howto/descriptor.html>`_.
 
-    See also
+    See Also
     --------
-    https://docs.python.org/3/howto/descriptor.html
-        Descriptor HowTo Guide
-
-    :class:`sklearn.utils.available_if._AvailableIfDescriptor`
+    sklearn.utils.available_if._AvailableIfDescriptor :
         The original class in scikit-learn.
     """
 
@@ -345,7 +350,8 @@ class _PropertyAvailableIfDescriptor:
 
 
 def property_available_if(check):
-    """A property attribute that is available only if check returns a truthy value.
+    """
+    A property attribute that is available only if check returns a truthy value.
 
     Only supports getting an attribute value, setting or deleting an attribute value are not supported.
 

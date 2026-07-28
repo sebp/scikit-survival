@@ -13,6 +13,6 @@
 
 
 class NoComparablePairException(ValueError):
-    """An error indicating that data of censored event times
-    does not contain one or more comparable pairs.
+    """
+    Error indicating that data of censored event times does not contain one or more comparable pairs.
     """

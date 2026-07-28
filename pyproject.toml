@@ -152,6 +152,8 @@ filterwarnings = [
     "ignore:For backward compatibility, 'str' dtypes are included by select_dtypes.*",
     # deprecated since polars 1.40.1
     "ignore: the default behavior of `how='horizontal'` for `concat` is deprecated and will require equal heights in the next breaking release.*:DeprecationWarning",
+    # deprecated since polars 1.43, to be removed in 2.0
+    "ignore:`cat.get_categories\\(\\)` is deprecated.*:DeprecationWarning",
 ]
 
 [tool.coverage.run]
@@ -227,10 +229,28 @@ max-complexity = 10
 force-sort-within-sections = true
 known-first-party = ["sksurv"]
 
+[tool.numpydoc_validation]
+checks = [
+    "all",   # report on all checks, except the below
+    "ES01",  # no extended summary
+    "EX01",  # no examples section
+    "SA01",  # no See Also section
+]
+exclude = [
+    # Exclude all private functions and classes (those beginning with _):
+    '\._',
+    '.+_$',
+]
+exclude_files = [
+    '(^|.*/)_[^/]*\.py$',
+    '(^|.*/)tests/.*',
+    '(^|.*/)sksurv/linear_model/src/eigen/.*',
+]
+
 [tool.setuptools_scm]
 
 [tool.tox]
-requires = ["tox>=4.22"]
+requires = ["tox>=4.40"]
 env_list = [
     "lint",
     "docs",
@@ -246,10 +266,13 @@ deps = [
 description = "Run linters"
 skip_install = true
 deps = [
-    "ruff~=0.15.5",
+    "numpydoc",
+    "sphinx-lint",
 ]
-commands = [["ruff", "check", "sksurv/", "tests/", "setup.py"]]
-pass_env = ["RUFF_*"]
+commands = [
+    ["sphinx-lint", "doc", "-i", "doc{/}api{/}generated"],
+    ["numpydoc", "lint", { replace = "glob", pattern = "sksurv/*/**.py", extend = true }],
+]
 
 [tool.tox.env.docs]
 description = "Build documentation"

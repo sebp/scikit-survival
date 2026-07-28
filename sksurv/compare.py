@@ -1,3 +1,15 @@
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from collections import OrderedDict
 
 import numpy as np
@@ -11,7 +23,8 @@ __all__ = ["compare_survival"]
 
 
 def compare_survival(y, group_indicator, return_stats=False):
-    """Compare survival functions of two or more groups using the log-rank test.
+    """
+    Compare survival functions of two or more groups using the log-rank test.
 
     The log-rank test is a non-parametric hypothesis test for comparing the
     survival functions of two or more independent groups. The null hypothesis is

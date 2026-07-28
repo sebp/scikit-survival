@@ -43,7 +43,8 @@ def standardize_column(array, with_std=True):
 
 
 def standardize(table, with_std=True):
-    """Standardize numeric features by removing the mean and scaling to unit variance.
+    """
+    Standardize numeric features by removing the mean and scaling to unit variance.
 
     This function performs Z-Normalization on each numeric column of the given
     table.
@@ -63,7 +64,7 @@ def standardize(table, with_std=True):
 
     Returns
     -------
-    normalized : pandas.DataFrame, polars.DataFrame, or numpy.ndarray
+    pandas.DataFrame, polars.DataFrame, or numpy.ndarray
         The standardized data. The output dataframe library matches the input.
     """
     table = ensure_eager_dataframe(table)
@@ -73,7 +74,8 @@ def standardize(table, with_std=True):
 
 
 def encode_categorical(table, columns=None, **kwargs):
-    """One-hot encode categorical features.
+    """
+    One-hot encode categorical features.
 
     This function creates a binary column for each category and, by default,
     drops one of the categories per feature: a column with `M` categories
@@ -95,7 +97,7 @@ def encode_categorical(table, columns=None, **kwargs):
 
     Returns
     -------
-    encoded : pandas.DataFrame, pandas.Series, polars.DataFrame, or polars.Series
+    pandas.DataFrame, pandas.Series, polars.DataFrame, or polars.Series
         The transformed data with categorical columns encoded as numeric.
         Numeric columns in the input table remain unchanged. The output
         dataframe library matches the input.
@@ -105,7 +107,8 @@ def encode_categorical(table, columns=None, **kwargs):
 
 
 def categorical_to_numeric(table):
-    """Encode categorical features as integers.
+    """
+    Encode categorical features as integers.
 
     This function converts each category to a unique integer value.
 
@@ -116,7 +119,7 @@ def categorical_to_numeric(table):
 
     Returns
     -------
-    encoded : pandas.DataFrame, pandas.Series, or polars.DataFrame / polars.Series
+    pandas.DataFrame, pandas.Series, or polars.DataFrame / polars.Series
         The transformed data with categorical columns encoded as integers.
         The output dataframe library matches the input.
     """

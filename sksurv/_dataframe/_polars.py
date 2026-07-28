@@ -10,7 +10,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"""Polars input predicates for the dataframe boundary.
+"""
+Polars input predicates for the dataframe boundary.
 
 This module only decides whether a native object is a polars frame or
 series. Dataframe-library-neutral normalization and processing belong in
@@ -40,8 +41,10 @@ class PolarsDataFrameLibrary:
 
     @staticmethod
     def is_non_numeric_cast_error(exc):
-        """Return True iff ``exc`` was raised by polars rejecting a
-        non-numeric string ``cast`` (e.g. ``"foo".cast(Int64)``).
+        """
+        Return True if ``exc`` was raised by polars rejecting a non-numeric string ``cast``.
+
+        For example, ``"foo".cast(Int64)``.
 
         Implemented as a class-name + module-name check instead of an
         ``isinstance`` so this module doesn't import ``polars`` eagerly
@@ -51,7 +54,8 @@ class PolarsDataFrameLibrary:
 
     @staticmethod
     def ordinal_categories(native):
-        """No auto-detected ordinal columns for polars.
+        """
+        No auto-detected ordinal columns for polars.
 
         polars ``Enum`` is an ordered dtype, but it is also polars' only
         dtype that can carry a declared closed category set, so nominal

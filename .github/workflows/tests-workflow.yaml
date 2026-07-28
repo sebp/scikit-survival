@@ -25,9 +25,10 @@ jobs:
     runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
           submodules: true
       - name: Set dependencies
         id: dependencies
@@ -45,7 +46,7 @@ jobs:
             ${{ runner.os }}-${{ runner.arch }}-conda-${{ matrix.config }}-
       - name: Create Conda Environment
         run: |
-          source ci/setup_conda.sh "${{ matrix.config }}" "${{ runner.os }}" "${{ runner.arch }}" "${{ env.CONDA_PKGS_DIRS }}"
+          source ci/setup_conda.sh "${{ matrix.config }}" "${{ runner.os }}" "${{ runner.arch }}" "${CONDA_PKGS_DIRS}"
       - name: Configure Xcode
         run: |
           sudo xcode-select -s "/Applications/Xcode_26.5.app"
@@ -62,8 +63,10 @@ jobs:
           ci/run_tests.sh
       - name: Check whether to create coverage report
         id: coverage
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
         run: |
-          if [ ${{ env.CI_NO_SLOW }} = 'false' ] && [ ${{ runner.os }} = 'Linux' ] && [ ${{ github.actor }} != 'dependabot[bot]' ]; then
+          if [ "${CI_NO_SLOW}" = 'false' ] && [ ${{ runner.os }} = 'Linux' ] && [ "${GITHUB_ACTOR}" != 'dependabot[bot]' ]; then
             echo "do=true" >> $GITHUB_OUTPUT
           else
             echo "do=false" >> $GITHUB_OUTPUT
@@ -100,9 +103,10 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
           submodules: true
       - name: Set dependencies
         id: dependencies
@@ -120,10 +124,10 @@ jobs:
             ${{ runner.os }}-${{ runner.arch }}-conda-${{ matrix.config }}-
       - name: Create Conda Environment
         run: |
-          ci\setup_conda.ps1 -DepsVersion "${{ matrix.config }}" -InstallationDirectory "${{ env.CONDA_INSTALL_LOCN }}" -CondaPkgsDir "${{ env.CONDA_PKGS_DIRS }}"
+          ci\setup_conda.ps1 -DepsVersion "${{ matrix.config }}" -InstallationDirectory "${env:CONDA_INSTALL_LOCN}" -CondaPkgsDir "${env:CONDA_PKGS_DIRS}"
       - name: Build package
         run: |
-          mamba run -n sksurv-test python -m build .
+          mamba run -n sksurv-test python -m build --installer=uv .
           mamba run -n sksurv-test pip install --exists-action=w --pre --no-index --find-links dist/ scikit-survival
           Remove-Item -Path dist, sksurv -Recurse -Force
       - name: Run Tests
@@ -137,9 +141,10 @@ jobs:
       DEPS_CONFIG: py313
     steps:
       - name: Checkout
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
           submodules: true
       - name: Set dependencies
         id: dependencies
@@ -153,7 +158,7 @@ jobs:
           key: ${{ runner.os }}-${{ runner.arch }}-conda-${{ env.DEPS_CONFIG }}-${{ hashFiles(steps.dependencies.outputs.requirements, 'pyproject.toml', 'ci/deps/requirements.yaml.tmpl') }}
       - name: Create Conda Environment
         run: |
-          source ci/setup_conda.sh "${{ env.DEPS_CONFIG }}" "${{ runner.os }}" "${{ runner.arch }}" "${{ env.CONDA_PKGS_DIRS }}"
+          source ci/setup_conda.sh "${DEPS_CONFIG}" "${{ runner.os }}" "${{ runner.arch }}" "${CONDA_PKGS_DIRS}"
       - name: Configure matplotlib
         run: |
           mkdir -p ${XDG_CONFIG_HOME}/matplotlib
