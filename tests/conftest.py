@@ -12,7 +12,7 @@ from scipy.sparse import coo_array
 from sksurv.column import categorical_to_numeric, encode_categorical, standardize
 from sksurv.datasets import load_breast_cancer, load_whas500
 from sksurv.testing import get_pandas_infer_string_context
-from sksurv.testing.dataframe import PANDAS_BACKEND, POLARS_BACKEND
+from sksurv.testing._dataframe import PANDAS_BACKEND, POLARS_BACKEND
 from sksurv.util import Surv
 
 DataSet = namedtuple("DataSet", ["x", "y"])

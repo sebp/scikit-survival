@@ -10,7 +10,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from sksurv.testing.common import (
+from sksurv.testing._common import (
     FixtureParameterFactory,
     all_survival_estimators,
     assert_chf_properties,

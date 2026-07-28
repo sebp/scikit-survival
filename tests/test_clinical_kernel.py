@@ -9,7 +9,7 @@ from sklearn.metrics.pairwise import pairwise_kernels
 from sksurv.kernels import ClinicalKernelTransform, clinical_kernel
 from sksurv.kernels._clinical_dataframe import _ordinal_range
 from sksurv.preprocessing import OneHotEncoder
-from sksurv.testing.dataframe import CROSS_LIBRARY_PAIRS, PANDAS_BACKEND, POLARS_BACKEND, PolarsBackend
+from sksurv.testing._dataframe import CROSS_LIBRARY_PAIRS, PANDAS_BACKEND, POLARS_BACKEND, PolarsBackend
 
 
 def make_clinical_kernel_expected(with_ordinal=True, with_nominal=True, with_continuous=True):

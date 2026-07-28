@@ -15,7 +15,7 @@ from sksurv._dataframe import get_dataframe_library
 import sksurv.datasets as sdata
 from sksurv.io import writearff
 from sksurv.testing import FixtureParameterFactory, get_pandas_infer_string_context
-from sksurv.testing.dataframe import COMPARISON_OUTPUT_TYPES
+from sksurv.testing._dataframe import COMPARISON_OUTPUT_TYPES
 
 ARFF_CATEGORICAL_INDEX_1 = """@relation arff_categorical_index
 @attribute index {SampleOne,SampleTwo,SampleThree,SampleFour}

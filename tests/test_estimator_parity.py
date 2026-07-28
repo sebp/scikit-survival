@@ -15,7 +15,7 @@ import sksurv.datasets as sdata
 from sksurv.metrics import concordance_index_censored
 from sksurv.preprocessing import OneHotEncoder
 from sksurv.testing import all_survival_estimators
-from sksurv.testing.dataframe import COMPARISON_OUTPUT_TYPES
+from sksurv.testing._dataframe import COMPARISON_OUTPUT_TYPES
 
 
 def _make_survival_estimator_constructors():

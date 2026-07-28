@@ -9,7 +9,7 @@ import pytest
 
 from sksurv.preprocessing import OneHotEncoder
 from sksurv.testing import get_pandas_infer_string_context
-from sksurv.testing.dataframe import CROSS_LIBRARY_PAIRS, PANDAS_BACKEND, POLARS_BACKEND
+from sksurv.testing._dataframe import CROSS_LIBRARY_PAIRS, PANDAS_BACKEND, POLARS_BACKEND
 
 
 def expected_one_hot_data(data):

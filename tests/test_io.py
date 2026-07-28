@@ -9,7 +9,7 @@ import pytest
 from sksurv.io import loadarff, writearff
 from sksurv.io.arffread import _to_pandas_dataframe, _to_polars_dataframe
 from sksurv.testing import FixtureParameterFactory
-from sksurv.testing.dataframe import PANDAS_BACKEND, POLARS_BACKEND
+from sksurv.testing._dataframe import PANDAS_BACKEND, POLARS_BACKEND
 
 EXPECTED_1 = [
     "@relation test_nominal\n",

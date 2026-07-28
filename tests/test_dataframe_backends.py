@@ -13,7 +13,7 @@ import pandas as pd
 import polars as pl
 import pytest
 
-from sksurv.testing.dataframe import PANDAS_BACKEND, POLARS_BACKEND
+from sksurv.testing._dataframe import PANDAS_BACKEND, POLARS_BACKEND
 
 
 class TestPandasBackend:
