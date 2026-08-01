@@ -136,9 +136,11 @@ class StandardizeFrameCases(FixtureParameterFactory):
         q_values = ["a", "b", "c", "a", "b", "c", "a", "b", "c", "a"]
         categories = {"q": ["a", "b", "c"]}
 
-        data_columns = {name: _standardize_numeric_input()[:, i] for i, name in enumerate(self.column_names)}
+        input_array = _standardize_numeric_input()
+        data_columns = {name: input_array[:, i] for i, name in enumerate(self.column_names)}
         data_columns["q"] = q_values
-        expected_columns = {name: _standardize_expected_output()[:, i] for i, name in enumerate(self.column_names)}
+        exepected_array = _standardize_expected_output()
+        expected_columns = {name: expected_array[:, i] for i, name in enumerate(self.column_names)}
         expected_columns["q"] = q_values
 
         data = backend.make_frame(data_columns, categories=categories)
