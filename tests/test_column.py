@@ -139,7 +139,7 @@ class StandardizeFrameCases(FixtureParameterFactory):
         input_array = _standardize_numeric_input()
         data_columns = {name: input_array[:, i] for i, name in enumerate(self.column_names)}
         data_columns["q"] = q_values
-        exepected_array = _standardize_expected_output()
+        expected_array = _standardize_expected_output()
         expected_columns = {name: expected_array[:, i] for i, name in enumerate(self.column_names)}
         expected_columns["q"] = q_values
 
