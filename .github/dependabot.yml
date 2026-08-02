@@ -6,6 +6,10 @@ updates:
       interval: "weekly"
     cooldown:
       default-days: 7
+    groups:
+      weekly-batch:
+        patterns:
+          - "*"
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
@@ -23,4 +27,7 @@ updates:
       - "pre-commit"
     cooldown:
       default-days: 7
-
+    groups:
+      monthly-batch:
+        patterns:
+          - "*"
