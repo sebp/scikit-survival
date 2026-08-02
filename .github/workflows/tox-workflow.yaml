@@ -30,8 +30,6 @@ jobs:
       - name: Install Tox
         run: uv tool install tox --with tox-uv
       - name: Run Tox
-        env:
-          RUFF_OUTPUT_FORMAT: github
         run: |
           eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
           tox run -e ${{ matrix.tox_env }}
