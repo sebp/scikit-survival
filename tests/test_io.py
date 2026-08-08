@@ -199,6 +199,7 @@ def test_writearff_round_trip(dataframe_backend, temp_file):
 
     with open(temp_file.name) as fp:
         contents = fp.read()
+    # Declared categories (incl. unseen "IV") must appear in the header
     assert "{I,II,III,IV}" in contents
 
     df_round = loadarff(temp_file.name, output_type=dataframe_backend.name)

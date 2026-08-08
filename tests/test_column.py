@@ -185,7 +185,7 @@ def _mixed_categorical_values():
     return a, b, c
 
 
-class CategoricalCases(FixtureParameterFactory):
+class EncodeCategoricalCases(FixtureParameterFactory):
     def _make_randn(self, shape):
         return np.random.default_rng(0).standard_normal(shape)
 
@@ -195,8 +195,6 @@ class CategoricalCases(FixtureParameterFactory):
         df = pd.DataFrame.from_dict({"a_category": a, "a_binary": b, "a_number": c.copy()})
         return df
 
-
-class EncodeCategoricalCases(CategoricalCases):
     @property
     def binary_with_missing(self):
         inputs = np.r_[
@@ -359,7 +357,7 @@ def test_encode_categorical_drops_single_category_series_preserves_index():
     assert list(actual.index) == ["r0", "r1", "r2"]
 
 
-class CategoricalToNumeric(CategoricalCases):
+class CategoricalToNumeric(FixtureParameterFactory):
     def data_categorical_series_to_numeric(self):
         input_series = pd.Series(
             ["a", "a", "b", "b", "b", "c"], name="Thr33", index=["Alpha", "Beta", "Gamma", "Delta", "Eta", "Mu"]
@@ -643,17 +641,21 @@ def test_categorical_to_numeric_polars_unsupported_column_passes_through():
     assert result.to_dict(as_series=False) == {"items": [[1], [2]]}
 
 
+def _size_answer_categorical_frame():
+    return pl.DataFrame(
+        {
+            "size": pl.Series(["medium", "small", "large", "xlarge", "small"], dtype=pl.Categorical),
+            "answer": pl.Series(["yes", "no", "yes", "yes", "no"], dtype=pl.Categorical),
+        }
+    )
+
+
 class TestPolarsCategoricalGlobalPoolBug:
     """Polars ``pl.Categorical`` categories must be column-scoped."""
 
     @staticmethod
     def test_infer_isolates_categories_per_column():
-        df = pl.DataFrame(
-            {
-                "size": pl.Series(["medium", "small", "large", "xlarge", "small"], dtype=pl.Categorical),
-                "answer": pl.Series(["yes", "no", "yes", "yes", "no"], dtype=pl.Categorical),
-            }
-        )
+        df = _size_answer_categorical_frame()
         sem_size = infer_column_semantics(df.get_column("size"))
         sem_answer = infer_column_semantics(df.get_column("answer"))
         assert set(sem_size.categories) == {
@@ -666,30 +668,13 @@ class TestPolarsCategoricalGlobalPoolBug:
 
     @staticmethod
     def test_encode_categorical_isolates_categories_per_column():
-        df = pl.DataFrame(
-            {
-                "size": pl.Series(["medium", "small", "large", "xlarge", "small"], dtype=pl.Categorical),
-                "answer": pl.Series(["yes", "no", "yes", "yes", "no"], dtype=pl.Categorical),
-            }
-        )
+        df = _size_answer_categorical_frame()
         encoded = column.encode_categorical(df)
-        size_cols = [c for c in encoded.columns if c.startswith("size=")]
-        answer_cols = [c for c in encoded.columns if c.startswith("answer=")]
-        assert len(size_cols) == 3, f"expected 3 size= columns, got {size_cols}"
-        assert len(answer_cols) == 1, f"expected 1 answer= column, got {answer_cols}"
-        for c in size_cols:
-            assert c.split("=", 1)[1] in {"medium", "small", "large", "xlarge"}
-        for c in answer_cols:
-            assert c.split("=", 1)[1] in {"yes", "no"}
+        assert encoded.columns == ["size=medium", "size=small", "size=xlarge", "answer=yes"]
 
     @staticmethod
     def test_one_hot_encoder_categories_isolated():
-        df = pl.DataFrame(
-            {
-                "size": pl.Series(["medium", "small", "large", "xlarge", "small"], dtype=pl.Categorical),
-                "answer": pl.Series(["yes", "no", "yes", "yes", "no"], dtype=pl.Categorical),
-            }
-        )
+        df = _size_answer_categorical_frame()
         enc = OneHotEncoder()
         enc.fit(df)
         assert set(enc.categories_["size"]) == {
@@ -738,18 +723,6 @@ class TestPolarsCategoryOrderPolicy:
 
 class TestCategoricalDataInferredParity:
     @staticmethod
-    def test_categorical_to_numeric_pl_categorical_matches_pandas():
-
-        from sksurv.column import categorical_to_numeric
-
-        values = ["banana", "apple", "cherry", "apple", "banana"]
-        df_pd = pd.DataFrame({"fruit": pd.Categorical(values)})
-        df_pl = pl.DataFrame({"fruit": pl.Series(values, dtype=pl.Categorical)})
-        out_pd = categorical_to_numeric(df_pd).to_numpy()
-        out_pl = categorical_to_numeric(df_pl).to_numpy()
-        np.testing.assert_array_equal(out_pd, out_pl, strict=True)
-
-    @staticmethod
     def test_categorical_to_numeric_enum_matches_pandas_explicit_order():
 
         from sksurv.column import categorical_to_numeric
@@ -762,50 +735,35 @@ class TestCategoricalDataInferredParity:
         out_pl = categorical_to_numeric(df_pl).to_numpy()
         np.testing.assert_array_equal(out_pd, out_pl, strict=True)
 
+    @pytest.mark.parametrize("func", [column.categorical_to_numeric, column.encode_categorical])
     @staticmethod
-    def test_encode_categorical_pl_categorical_matches_pandas():
-
-        from sksurv.column import encode_categorical
-
+    def test_pl_categorical_matches_pandas(func):
         values = ["banana", "apple", "cherry", "apple", "banana"]
         df_pd = pd.DataFrame({"fruit": pd.Categorical(values)})
         df_pl = pl.DataFrame({"fruit": pl.Series(values, dtype=pl.Categorical)})
-        out_pd = encode_categorical(df_pd).to_numpy()
-        out_pl = encode_categorical(df_pl).to_numpy()
+        out_pd = func(df_pd).to_numpy()
+        out_pl = func(df_pl).to_numpy()
         np.testing.assert_array_equal(out_pd, out_pl, strict=True)
 
 
 class TestLazyFramePaths:
     @staticmethod
-    def _eager_lazy_pair():
-        df = pl.DataFrame(
-            {
-                "age": [40.0, 50.0, 60.0, 70.0],
-                "grade": pl.Series(["I", "II", "III", "I"], dtype=pl.Enum(["I", "II", "III", "IV"])),
-            }
-        )
-        return df, df.lazy()
-
-    @staticmethod
-    def test_standardize_lazyframe_rejected():
+    def test_standardize_lazyframe_rejected(polars_grade_enum_frame):
         from sksurv.column import standardize
 
-        _, df_lazy = TestLazyFramePaths._eager_lazy_pair()
         with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
-            standardize(df_lazy)
+            standardize(polars_grade_enum_frame.lazy())
 
     @staticmethod
-    def test_categorical_to_numeric_lazyframe_rejected():
+    def test_categorical_to_numeric_lazyframe_rejected(polars_grade_enum_frame):
         from sksurv.column import categorical_to_numeric
 
-        _, df_lazy = TestLazyFramePaths._eager_lazy_pair()
         with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
-            categorical_to_numeric(df_lazy)
+            categorical_to_numeric(polars_grade_enum_frame.lazy())
 
     @staticmethod
-    def test_encode_categorical_lazyframe_rejected():
+    def test_encode_categorical_lazyframe_rejected(polars_grade_enum_frame):
         from sksurv.column import encode_categorical
 
-        _, df_lazy = TestLazyFramePaths._eager_lazy_pair()
         with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
-            encode_categorical(df_lazy)
+            encode_categorical(polars_grade_enum_frame.lazy())

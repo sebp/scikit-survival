@@ -6,6 +6,7 @@ import tempfile
 import numpy as np
 from packaging.version import Version
 import pandas as pd
+import polars as pl
 import pytest
 from scipy.sparse import coo_array
 
@@ -137,6 +138,17 @@ def rossi():
 def non_finite_value(request):
     """Inf/-Inf/NaN value."""
     return request.param
+
+
+@pytest.fixture()
+def polars_grade_enum_frame():
+    """age + grade (pl.Enum with declared unseen "IV") frame shared by polars-specific tests."""
+    return pl.DataFrame(
+        {
+            "age": [40.0, 50.0, 60.0, 70.0],
+            "grade": pl.Series(["I", "II", "III", "I"], dtype=pl.Enum(["I", "II", "III", "IV"])),
+        }
+    )
 
 
 @pytest.fixture()

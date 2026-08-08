@@ -458,18 +458,12 @@ class TestClinicalKernelLazyFrame:
             clinical_kernel(data.lazy(), **kwargs)
 
     @staticmethod
-    def test_transform_lazyframe_rejected():
+    def test_transform_lazyframe_rejected(polars_grade_enum_frame):
         """``ClinicalKernelTransform`` must reject a polars LazyFrame."""
-        df = pl.DataFrame(
-            {
-                "age": [40.0, 50.0, 60.0, 70.0],
-                "grade": pl.Series(["I", "II", "III", "I"], dtype=pl.Enum(["I", "II", "III", "IV"])),
-            }
-        )
         with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
-            ClinicalKernelTransform().fit(df.lazy())
+            ClinicalKernelTransform().fit(polars_grade_enum_frame.lazy())
         with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
-            ClinicalKernelTransform(fit_once=True).prepare(df.lazy())
+            ClinicalKernelTransform(fit_once=True).prepare(polars_grade_enum_frame.lazy())
 
 
 class TestClinicalKernelTransformCrossLibrary:

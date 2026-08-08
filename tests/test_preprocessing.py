@@ -279,16 +279,10 @@ class TestOneHotEncoderLazyFrame:
             OneHotEncoder().fit_transform(data.lazy())
 
     @staticmethod
-    def test_transform_lazyframe_rejected():
-        data = pl.DataFrame(
-            {
-                "age": [40.0, 50.0, 60.0, 70.0],
-                "grade": pl.Series(["I", "II", "III", "I"], dtype=pl.Enum(["I", "II", "III", "IV"])),
-            }
-        )
-        enc = OneHotEncoder().fit(data)
+    def test_transform_lazyframe_rejected(polars_grade_enum_frame):
+        enc = OneHotEncoder().fit(polars_grade_enum_frame)
         with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
-            enc.transform(data.lazy())
+            enc.transform(polars_grade_enum_frame.lazy())
 
 
 class TestOneHotEncoderDeclaredUnseenCategory:
@@ -307,6 +301,20 @@ class TestOneHotEncoderDeclaredUnseenCategory:
         encoded = enc.transform(df)
         assert list(encoded.columns) == ["grade=II", "grade=III", "grade=IV"]
         assert encoded["grade=IV"].to_numpy().tolist() == [0.0, 0.0, 0.0, 0.0]
+
+    @staticmethod
+    def test_declared_unseen_category_attrs_match_across_backends():
+        data = {"age": [45.0, 60.0, 72.0, 55.0], "grade": ["I", "II", "III", "I"]}
+        categories = {"grade": ["I", "II", "III", "IV"]}
+        df_pd = PANDAS_BACKEND.make_frame(data, categories=categories)
+        df_pl = POLARS_BACKEND.make_frame(data, categories=categories)
+
+        enc_pd = OneHotEncoder().fit(df_pd)
+        enc_pl = OneHotEncoder().fit(df_pl)
+
+        assert list(enc_pd.categories_["grade"]) == list(enc_pl.categories_["grade"])
+        assert list(enc_pd.encoded_columns_) == list(enc_pl.encoded_columns_)
+        assert "grade=IV" in list(enc_pl.encoded_columns_)
 
 
 class TestOneHotEncoderUnseenAndCrossDataframeLibrary:

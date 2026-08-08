@@ -47,7 +47,7 @@ class TestPandasBackend:
     @staticmethod
     def test_missing_column_error_matches_lookup():
         df = PANDAS_BACKEND.make_frame({"a": [1]})
-        with pytest.raises(PANDAS_BACKEND.missing_column_error):
+        with pytest.raises(PANDAS_BACKEND.missing_column_error, match="no_such_column"):
             _ = df["no_such_column"]
 
 
@@ -81,5 +81,5 @@ class TestPolarsBackend:
     @staticmethod
     def test_missing_column_error_matches_lookup():
         df = POLARS_BACKEND.make_frame({"a": [1]})
-        with pytest.raises(POLARS_BACKEND.missing_column_error):
+        with pytest.raises(POLARS_BACKEND.missing_column_error, match="no_such_column"):
             _ = df["no_such_column"]

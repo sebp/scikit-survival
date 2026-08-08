@@ -226,7 +226,10 @@ class SurvInvalidDataFrameCases(SurvCases):
         return ("event", "time", np.column_stack((event, time))), err
 
     def data_polars_series(self):
-        err = pytest.raises(TypeError)
+        err = pytest.raises(
+            TypeError,
+            match=r"expected pandas\.DataFrame or polars\.DataFrame, but got <class 'polars\.series\.series\.Series'>",
+        )
         return ("event", "time", pl.Series("event", [True, False, True])), err
 
 
@@ -237,12 +240,11 @@ def test_from_dataframe_invalid_input(args, expected_error):
 
 
 def test_from_dataframe_integer_column_names():
-    rng = np.random.default_rng()
-    event = rng.binomial(1, 0.5, size=100)
-    time = np.exp(rng.standard_normal(100))
-    data = pd.DataFrame({0: event, 1: time})
+    # polars requires string column names, so this is pandas-specific
+    event, time = SurvDataFrameCases().event_and_time
+    data = pd.DataFrame({0: event.astype(np.int64), 1: time})
 
-    expected = np.empty(dtype=[("0", bool), ("1", float)], shape=100)
+    expected = np.empty(dtype=[("0", bool), ("1", float)], shape=event.shape[0])
     expected["0"] = event.astype(bool)
     expected["1"] = time
 
