@@ -70,14 +70,14 @@ def make_clinical_kernel_expected(with_ordinal=True, with_nominal=True, with_con
 def make_clinical_kernel_data(backend, with_ordinal=True, with_nominal=True, with_continuous=True):
     """Clinical kernel test data built by `backend`.
 
-    Returns the dataframe, the expected kernel matrix, and the keyword
-    arguments that declare the ordinal columns for that backend: empty when
-    an ordered categorical dtype carries the declaration, an
-    ``ordinal_categories`` mapping otherwise.
+    Returns the dataframe, the expected kernel matrix, and the
+    ``ordinal_categories`` mapping that declares the ordinal columns for
+    polars. The mapping is ``None`` for pandas, whose ordered categorical
+    dtype carries the declaration, and when no ordinal columns are requested.
     """
     data = {}
     categories = {}
-    kwargs = {}
+    ordinal_categories = None
     if with_continuous:
         data["age"] = [20, 23, 26, 54, 100]
     if with_ordinal:
@@ -92,7 +92,7 @@ def make_clinical_kernel_data(backend, with_ordinal=True, with_nominal=True, wit
             for name, (values, declared) in ordinal.items():
                 data[name] = [str(value) for value in values]
                 categories[name] = [str(category) for category in declared]
-            kwargs["ordinal_categories"] = {name: categories[name] for name in ordinal}
+            ordinal_categories = {name: categories[name] for name in ordinal}
         else:
             # pandas: an ordered categorical dtype alone marks the column
             # as ordinal.
@@ -106,7 +106,7 @@ def make_clinical_kernel_data(backend, with_ordinal=True, with_nominal=True, wit
     expected = make_clinical_kernel_expected(
         with_ordinal=with_ordinal, with_nominal=with_nominal, with_continuous=with_continuous
     )
-    return frame, expected, kwargs
+    return frame, expected, ordinal_categories
 
 
 @pytest.fixture()
@@ -129,47 +129,47 @@ def make_backend_data(dataframe_backend):
 class TestClinicalKernel:
     @staticmethod
     def test_clinical_kernel_1(make_backend_data):
-        data, expected, kwargs = make_backend_data()
-        mat = clinical_kernel(data, **kwargs)
+        data, expected, ordinal_categories = make_backend_data()
+        mat = clinical_kernel(data, ordinal_categories=ordinal_categories)
 
         assert_array_almost_equal(expected, mat, 4)
 
     @staticmethod
     def test_clinical_kernel_no_ordinal(make_backend_data):
-        data, expected, kwargs = make_backend_data(with_ordinal=False)
-        mat = clinical_kernel(data, **kwargs)
+        data, expected, ordinal_categories = make_backend_data(with_ordinal=False)
+        mat = clinical_kernel(data, ordinal_categories=ordinal_categories)
         assert_array_almost_equal(expected, mat, 4)
 
     @staticmethod
     def test_clinical_kernel_no_nominal(make_backend_data):
-        data, expected, kwargs = make_backend_data(with_nominal=False)
-        mat = clinical_kernel(data, **kwargs)
+        data, expected, ordinal_categories = make_backend_data(with_nominal=False)
+        mat = clinical_kernel(data, ordinal_categories=ordinal_categories)
         assert_array_almost_equal(expected, mat, 4)
 
     @staticmethod
     def test_clinical_kernel_no_continuous(make_backend_data):
-        data, expected, kwargs = make_backend_data(with_continuous=False)
-        mat = clinical_kernel(data, **kwargs)
+        data, expected, ordinal_categories = make_backend_data(with_continuous=False)
+        mat = clinical_kernel(data, ordinal_categories=ordinal_categories)
         assert_array_almost_equal(expected, mat, 4)
 
     @staticmethod
     def test_clinical_kernel_only_nominal(make_backend_data):
-        data, expected, kwargs = make_backend_data(with_continuous=False, with_ordinal=False)
-        mat = clinical_kernel(data, **kwargs)
+        data, expected, ordinal_categories = make_backend_data(with_continuous=False, with_ordinal=False)
+        mat = clinical_kernel(data, ordinal_categories=ordinal_categories)
         assert_array_almost_equal(expected, mat, 4)
 
     @staticmethod
     def test_clinical_kernel_x_and_y(make_backend_data):
-        data, m, kwargs = make_backend_data()
-        mat = clinical_kernel(data[:3], data[3:], **kwargs)
+        data, m, ordinal_categories = make_backend_data()
+        mat = clinical_kernel(data[:3], data[3:], ordinal_categories=ordinal_categories)
         expected = m[:3:, 3:]
 
         assert_array_almost_equal(expected, mat, 4)
 
     @staticmethod
     def test_fit_column_classification(make_backend_data):
-        data, _, kwargs = make_backend_data()
-        t = ClinicalKernelTransform(**kwargs)
+        data, _, ordinal_categories = make_backend_data()
+        t = ClinicalKernelTransform(ordinal_categories=ordinal_categories)
         t.fit(data)
 
         assert t.X_fit_.shape == data.shape
@@ -349,8 +349,8 @@ Feature names unseen at fit time:
 
     @staticmethod
     def test_fit_once_fit_dataframe_raises(make_backend_data):
-        data, _, kwargs = make_backend_data()
-        t = ClinicalKernelTransform(fit_once=True, **kwargs)
+        data, _, ordinal_categories = make_backend_data()
+        t = ClinicalKernelTransform(fit_once=True, ordinal_categories=ordinal_categories)
         t.prepare(data)
 
         with pytest.raises(TypeError, match="fit_once=True expects a numeric array in fit"):
@@ -358,7 +358,7 @@ Feature names unseen at fit time:
 
     @staticmethod
     def test_prepare_error_fit_once(make_data):
-        data = make_data()
+        data, _ = make_data()
         t = ClinicalKernelTransform(fit_once=False)
 
         with pytest.raises(ValueError, match="prepare can only be used if fit_once parameter is set to True"):
@@ -453,17 +453,24 @@ class TestClinicalKernelLazyFrame:
 
     @staticmethod
     def test_clinical_kernel_lazyframe_rejected():
-        data, _, kwargs = make_clinical_kernel_data(POLARS_BACKEND)
+        data, _, ordinal_categories = make_clinical_kernel_data(POLARS_BACKEND)
         with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
-            clinical_kernel(data.lazy(), **kwargs)
+            clinical_kernel(data.lazy(), ordinal_categories=ordinal_categories)
 
     @staticmethod
-    def test_transform_lazyframe_rejected(polars_grade_enum_frame):
-        """``ClinicalKernelTransform`` must reject a polars LazyFrame."""
+    def test_fit_and_prepare_lazyframe_rejected(polars_grade_enum_frame):
+        """``ClinicalKernelTransform`` fit and prepare must reject a polars LazyFrame."""
         with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
             ClinicalKernelTransform().fit(polars_grade_enum_frame.lazy())
         with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
             ClinicalKernelTransform(fit_once=True).prepare(polars_grade_enum_frame.lazy())
+
+    @staticmethod
+    def test_transform_lazyframe_rejected(polars_grade_enum_frame):
+        """``ClinicalKernelTransform`` transform must reject a polars LazyFrame."""
+        t = ClinicalKernelTransform().fit(polars_grade_enum_frame)
+        with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
+            t.transform(polars_grade_enum_frame.lazy())
 
 
 class TestClinicalKernelTransformCrossLibrary:
@@ -519,9 +526,24 @@ class TestOrdinalColumnsOptIn:
     def test_default_is_nominal(self):
         df_pl = self._make_pl_df()
         df_pd_ordered = self._make_pd_ordered()
-        K_pl = clinical_kernel(df_pl)
-        K_pd_ord = clinical_kernel(df_pd_ordered)
-        assert not np.allclose(K_pl, K_pd_ord)
+
+        K_age_pl = clinical_kernel(df_pl.select("age"))
+        K_age_pd = clinical_kernel(df_pd_ordered[["age"]])
+        np.testing.assert_allclose(K_age_pl, K_age_pd, strict=True)
+
+        K_stage_pl = clinical_kernel(df_pl.select("stage"))
+        K_stage_pd = clinical_kernel(df_pd_ordered[["stage"]])
+
+        # the nominal kernel for a single column reduces to an equality matrix
+        stage_values = ["T1", "T2", "T3", "T1", "T2"]
+        equality = np.array([[1.0 if a == b else 0.0 for b in stage_values] for a in stage_values])
+        np.testing.assert_allclose(K_stage_pl, equality, atol=1e-12, strict=True)
+
+        # pandas ordered categorical: codes [0, 1, 2, 0, 1] with range 2 give
+        # the ordinal kernel (2 - |c_i - c_j|) / 2
+        codes = np.array([0.0, 1.0, 2.0, 0.0, 1.0])
+        ordinal = (2.0 - np.abs(codes[:, None] - codes[None, :])) / 2.0
+        np.testing.assert_allclose(K_stage_pd, ordinal, atol=1e-12, strict=True)
 
     def test_opt_in_matches_pandas_ordered(self):
         df_pl = self._make_pl_df()
@@ -549,16 +571,13 @@ class TestOrdinalColumnsOptIn:
         # Under the explicit ``ordinal_categories`` API the user supplies the
         # order, so an unordered polars Categorical column can be declared
         # ordinal and is then treated differently from the nominal default.
-        df_pl = pl.DataFrame(
-            {
-                "age": pl.Series("age", [40.0, 50.0, 60.0], dtype=pl.Float64),
-                "label": pl.Series("label", ["x", "y", "z"], dtype=pl.Categorical),
-            }
-        )
-        K_default = clinical_kernel(df_pl)
-        K_ordinal = clinical_kernel(df_pl, ordinal_categories={"label": ["x", "y", "z"]})
-        assert K_ordinal.shape == (3, 3)
-        assert not np.allclose(K_default, K_ordinal)
+        df_pl = pl.DataFrame({"label": pl.Series("label", ["x", "y", "z"], dtype=pl.Categorical)})
+        K_label_default = clinical_kernel(df_pl)
+        K_label_ordinal = clinical_kernel(df_pl, ordinal_categories={"label": ["x", "y", "z"]})
+        np.testing.assert_allclose(K_label_default, np.eye(3), atol=1e-12, strict=True)
+        # codes [0, 1, 2] with range 2 give the ordinal kernel (2 - |c_i - c_j|) / 2
+        expected_ordinal = np.array([[1.0, 0.5, 0.0], [0.5, 1.0, 0.5], [0.0, 0.5, 1.0]])
+        np.testing.assert_allclose(K_label_ordinal, expected_ordinal, atol=1e-12, strict=True)
 
     def test_non_mapping_raises(self):
         df_pl = self._make_pl_df()
@@ -603,7 +622,10 @@ class TestNominalNullParity:
         K_pd = clinical_kernel(df_pd)
         K_pl = clinical_kernel(df_pl)
         np.testing.assert_allclose(K_pd, K_pl, atol=1e-12, strict=True)
-        assert K_pl[1, 1] < 1.0
+        # the non-null diagonal is exactly 1; at the null diagonal the age
+        # kernel 1 and the null grade kernel 0 average to 0.5
+        np.testing.assert_allclose(K_pd[0, 0], 1.0, atol=1e-12, strict=True)
+        np.testing.assert_allclose(K_pd[1, 1], 0.5, atol=1e-12, strict=True)
 
     @staticmethod
     def test_clinical_kernel_transform_null_parity():
@@ -627,7 +649,10 @@ class TestNominalNullParity:
         K_pd = clinical_kernel(df_pd)
         K_pl = clinical_kernel(df_pl)
         np.testing.assert_allclose(K_pd, K_pl, atol=1e-12)
-        assert K_pd[1, 1] < 1.0
+        # the non-null diagonal is exactly 1; at the null diagonal the age
+        # kernel 1 and the null grade kernel 0 average to 0.5
+        np.testing.assert_allclose(K_pd[0, 0], 1.0, atol=1e-12, strict=True)
+        np.testing.assert_allclose(K_pd[1, 1], 0.5, atol=1e-12, strict=True)
 
 
 class TestClinicalKernelTransformReplay:
@@ -635,9 +660,9 @@ class TestClinicalKernelTransformReplay:
 
     @staticmethod
     def test_transform_matches_clinical_kernel(dataframe_backend):
-        data, _, kwargs = make_clinical_kernel_data(dataframe_backend)
-        K_transform = ClinicalKernelTransform(**kwargs).fit(data).transform(data)
-        K_direct = clinical_kernel(data, data, **kwargs)
+        data, _, ordinal_categories = make_clinical_kernel_data(dataframe_backend)
+        K_transform = ClinicalKernelTransform(ordinal_categories=ordinal_categories).fit(data).transform(data)
+        K_direct = clinical_kernel(data, data, ordinal_categories=ordinal_categories)
         np.testing.assert_allclose(K_transform, K_direct, atol=1e-12)
 
     @staticmethod
