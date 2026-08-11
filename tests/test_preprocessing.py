@@ -143,7 +143,7 @@ class TestOneHotEncoder:
         t.fit(data)
 
         out_names = t.get_feature_names_out()
-        expected_names = np.asarray(list(expected_data.columns), dtype=object)
+        expected_names = np.asarray(expected_data.columns, dtype=object)
         assert_array_equal(out_names, expected_names, strict=True)
 
     @pytest.mark.parametrize("infer_string_context", get_pandas_infer_string_context())
@@ -314,7 +314,7 @@ class TestOneHotEncoderDeclaredUnseenCategory:
 
         assert list(enc_pd.categories_["grade"]) == list(enc_pl.categories_["grade"])
         assert list(enc_pd.encoded_columns_) == list(enc_pl.encoded_columns_)
-        assert "grade=IV" in list(enc_pl.encoded_columns_)
+        assert "grade=IV" in enc_pl.encoded_columns_
 
 
 class TestOneHotEncoderUnseenAndCrossDataframeLibrary:
