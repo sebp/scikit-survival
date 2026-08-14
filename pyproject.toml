@@ -43,6 +43,7 @@ classifiers = [
     "Topic :: Scientific/Engineering"
 ]
 dependencies = [
+    "clarabel",
     "ecos",
     "joblib",
     "narwhals >=2.0.1",

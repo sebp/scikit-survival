@@ -33,6 +33,7 @@ Requirements
 ============
 
 - Python 3.11 or later
+- clarabel
 - ecos
 - joblib
 - numexpr

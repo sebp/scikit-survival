@@ -133,6 +133,54 @@ class _OsqpSolver(_QPSolver):
         return solver_opts
 
 
+class _ClarabelSolver(_QPSolver):
+    def __init__(self, max_iter, verbose):
+        super().__init__(
+            max_iter=max_iter,
+            verbose=verbose,
+        )
+
+    def solve(self, P, q, G, h):
+        import clarabel
+
+        P = sparse.csc_array(P)
+
+        settings = clarabel.DefaultSettings()
+        for k, v in self._get_options().items():
+            setattr(settings, k, v)
+
+        cones = [clarabel.NonnegativeConeT(G.shape[0])]
+        solver = clarabel.DefaultSolver(P, q, A=G, b=h, cones=cones, settings=settings)
+
+        results = solver.solve()
+
+        solved_codes = (
+            clarabel.SolverStatus.AlmostSolved,
+            clarabel.SolverStatus.Solved,
+        )
+
+        if results.status == clarabel.SolverStatus.MaxIterations:  # max iter reached
+            warnings.warn(
+                "clarabel solver did not converge: maximum iterations reached",
+                category=ConvergenceWarning,
+                stacklevel=2,
+            )
+        elif results.status not in solved_codes:  # pragma: no cover
+            raise RuntimeError(f"clarabel solver failed: {results.status}")
+
+        n_iter = results.iterations
+        x = np.asarray(results.x)
+        return x[np.newaxis], n_iter
+
+    def _get_options(self):
+        """Return a dictionary of clarabel solver options."""
+        solver_opts = {
+            "max_iter": self.max_iter or 200,
+            "verbose": self.verbose,
+        }
+        return solver_opts
+
+
 class _EcosSolver(_QPSolver):
     r"""
     Solves QP by expressing it as second-order cone program.
@@ -306,7 +354,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         Weight of penalizing the hinge loss in the objective function.
         Must be greater than 0.
 
-    solver : {'ecos', 'osqp'}, optional, default: 'ecos'
+    solver : {'ecos', 'clarabel', 'osqp'}, optional, default: 'ecos'
         Which quadratic program solver to use.
 
     kernel : str or callable, optional, default: 'linear'
@@ -389,7 +437,7 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     """
 
     _parameter_constraints = {
-        "solver": [StrOptions({"ecos", "osqp"})],
+        "solver": [StrOptions({"ecos", "clarabel", "osqp"})],
         "alpha": [Interval(numbers.Real, 0, None, closed="neither")],
         "kernel": [
             StrOptions(set(PAIRWISE_KERNEL_FUNCTIONS.keys()) | {"precomputed"}),
@@ -473,7 +521,15 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
         max_iter = self.max_iter
         if self.solver == "ecos":
+            warnings.warn(
+                "The 'ecos' solver will be removed in a future release. The new default solver will be 'clarabel'.",
+                FutureWarning,
+                stacklevel=2,
+            )
+
             solver = _EcosSolver(max_iter=max_iter, verbose=self.verbose)
+        elif self.solver == "clarabel":
+            solver = _ClarabelSolver(max_iter=max_iter, verbose=self.verbose)
         elif self.solver == "osqp":
             solver = _OsqpSolver(max_iter=max_iter, verbose=self.verbose)
 
