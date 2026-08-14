@@ -73,7 +73,7 @@ def _make_survival_estimator_constructors():
                 case "FastSurvivalSVM" | "FastKernelSurvivalSVM":
                     estimator.set_params(max_iter=100, tol=1e-6)
                 case "MinlipSurvivalAnalysis" | "HingeLossSurvivalSVM":
-                    estimator.set_params(solver="ecos")
+                    estimator.set_params(solver="clarabel")
 
             return estimator
 

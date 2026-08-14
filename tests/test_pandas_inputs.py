@@ -6,6 +6,7 @@ from sksurv.datasets import load_whas500
 from sksurv.testing import all_survival_estimators
 
 
+@pytest.mark.filterwarnings("ignore:The 'ecos' solver will be removed in a future release.:FutureWarning")
 @pytest.mark.parametrize("estimator_cls", all_survival_estimators())
 def test_pandas_inputs(estimator_cls):
     X, y = load_whas500()
