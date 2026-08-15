@@ -152,6 +152,24 @@ def polars_grade_enum_frame():
 
 
 @pytest.fixture()
+def null_grade_frames():
+    """pandas and polars frames with a null grade (pd.Categorical vs pl.Enum), shared by the null-parity tests."""
+    df_pd = pd.DataFrame(
+        {
+            "age": [40.0, 50.0, 60.0],
+            "grade": pd.Categorical(["I", None, "II"], categories=["I", "II", "III"]),
+        }
+    )
+    df_pl = pl.DataFrame(
+        {
+            "age": [40.0, 50.0, 60.0],
+            "grade": pl.Series(["I", None, "II"], dtype=pl.Enum(["I", "II", "III"])),
+        }
+    )
+    return df_pd, df_pl
+
+
+@pytest.fixture()
 def temp_file():
     f = tempfile.NamedTemporaryFile(mode="w", delete=False)
     fp = Path(f.name)

@@ -285,6 +285,15 @@ class TestOneHotEncoderLazyFrame:
             enc.transform(polars_grade_enum_frame.lazy())
 
 
+class TestOneHotEncoderNullParity:
+    @staticmethod
+    def test_one_hot_encoder_null_parity(null_grade_frames):
+        df_pd, df_pl = null_grade_frames
+        out_pd = OneHotEncoder().fit_transform(df_pd).to_numpy()
+        out_pl = OneHotEncoder().fit_transform(df_pl).to_numpy()
+        np.testing.assert_array_equal(out_pd, out_pl, strict=True)
+
+
 class TestOneHotEncoderDeclaredUnseenCategory:
     @staticmethod
     def test_declared_unseen_category_produces_column(dataframe_backend):

@@ -8,7 +8,6 @@ from sklearn.metrics.pairwise import pairwise_kernels
 
 from sksurv.kernels import ClinicalKernelTransform, clinical_kernel
 from sksurv.kernels._clinical_dataframe import _ordinal_range
-from sksurv.preprocessing import OneHotEncoder
 from sksurv.testing._dataframe import CROSS_LIBRARY_PAIRS, PANDAS_BACKEND, POLARS_BACKEND, PolarsBackend
 
 
@@ -594,49 +593,25 @@ class TestNominalNullParity:
     """Missing nominal values must not match themselves."""
 
     @staticmethod
-    def _frames_with_null():
-        df_pd = pd.DataFrame(
-            {
-                "age": [40.0, 50.0, 60.0],
-                "grade": pd.Categorical(["I", None, "II"], categories=["I", "II", "III"]),
-            }
-        )
-        df_pl = pl.DataFrame(
-            {
-                "age": [40.0, 50.0, 60.0],
-                "grade": pl.Series(["I", None, "II"], dtype=pl.Enum(["I", "II", "III"])),
-            }
-        )
-        return df_pd, df_pl
-
-    @staticmethod
-    def test_one_hot_encoder_null_parity():
-        df_pd, df_pl = TestNominalNullParity._frames_with_null()
-        out_pd = OneHotEncoder().fit_transform(df_pd).to_numpy()
-        out_pl = OneHotEncoder().fit_transform(df_pl).to_numpy()
-        np.testing.assert_array_equal(out_pd, out_pl, strict=True)
-
-    @staticmethod
-    def test_clinical_kernel_null_parity():
-        df_pd, df_pl = TestNominalNullParity._frames_with_null()
+    def test_clinical_kernel_null_parity(null_grade_frames):
+        df_pd, df_pl = null_grade_frames
         K_pd = clinical_kernel(df_pd)
         K_pl = clinical_kernel(df_pl)
         np.testing.assert_allclose(K_pd, K_pl, atol=1e-12, strict=True)
-        # the non-null diagonal is exactly 1; at the null diagonal the age
-        # kernel 1 and the null grade kernel 0 average to 0.5
-        np.testing.assert_allclose(K_pd[0, 0], 1.0, atol=1e-12, strict=True)
-        np.testing.assert_allclose(K_pd[1, 1], 0.5, atol=1e-12, strict=True)
+        # the diagonal is 1 except at the null grade, where the age kernel (1)
+        # and the null grade kernel (0) average to 0.5
+        np.testing.assert_allclose(np.diag(K_pd), np.array([1.0, 0.5, 1.0]), atol=1e-12, strict=True)
 
     @staticmethod
-    def test_clinical_kernel_transform_null_parity():
-        df_pd, df_pl = TestNominalNullParity._frames_with_null()
+    def test_clinical_kernel_transform_null_parity(null_grade_frames):
+        df_pd, df_pl = null_grade_frames
         K_pd = ClinicalKernelTransform().fit(df_pd)(df_pd, df_pd)
         K_pl = ClinicalKernelTransform().fit(df_pl)(df_pl, df_pl)
         np.testing.assert_allclose(K_pd, K_pl, atol=1e-12, strict=True)
 
     @staticmethod
-    def test_pairwise_kernel_null_parity():
-        df_pd, df_pl = TestNominalNullParity._frames_with_null()
+    def test_pairwise_kernel_null_parity(null_grade_frames):
+        df_pd, df_pl = null_grade_frames
         t_pd = ClinicalKernelTransform().fit(df_pd)
         t_pl = ClinicalKernelTransform().fit(df_pl)
         np.testing.assert_array_equal(np.isnan(t_pd.X_fit_), np.isnan(t_pl.X_fit_))
@@ -649,10 +624,9 @@ class TestNominalNullParity:
         K_pd = clinical_kernel(df_pd)
         K_pl = clinical_kernel(df_pl)
         np.testing.assert_allclose(K_pd, K_pl, atol=1e-12)
-        # the non-null diagonal is exactly 1; at the null diagonal the age
-        # kernel 1 and the null grade kernel 0 average to 0.5
-        np.testing.assert_allclose(K_pd[0, 0], 1.0, atol=1e-12, strict=True)
-        np.testing.assert_allclose(K_pd[1, 1], 0.5, atol=1e-12, strict=True)
+        # the diagonal is 1 except at the null grade, where the age kernel (1)
+        # and the null grade kernel (0) average to 0.5
+        np.testing.assert_allclose(np.diag(K_pd), np.array([1.0, 0.5, 1.0]), atol=1e-12, strict=True)
 
 
 class TestClinicalKernelTransformReplay:
