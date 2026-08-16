@@ -44,7 +44,7 @@ jobs:
           fi
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@4726cd35bb13f7bde50cf2761f2499ac7b3aa32c  # v4.1.1
+        uses: pypa/cibuildwheel@1828c10ab37f080699c7b81cea34097c684a7074  # v4.2.0
         with:
           extras: uv
         env:
@@ -115,7 +115,7 @@ jobs:
         run: ls dist
 
       - name: Generate artifact attestation for sdist and wheel
-        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373  # v4.1.1
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6  # v4.2.2
         with:
           subject-path: dist/scikit_survival-*
 
@@ -154,7 +154,7 @@ jobs:
         run: ls dist
 
       - name: Generate artifact attestation for sdist and wheel
-        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373  # v4.1.1
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6  # v4.2.2
         with:
           subject-path: dist/scikit_survival-*
 
