@@ -14,6 +14,7 @@ def whas500_numeric_columns():
     return data, y[:50]
 
 
+@pytest.mark.filterwarnings("ignore:The 'ecos' solver will be removed in a future release.:FutureWarning")
 @pytest.mark.parametrize("estimator_cls", all_survival_estimators())
 def test_frame_inputs(estimator_cls, dataframe_backend, whas500_numeric_columns):
     data, y = whas500_numeric_columns
