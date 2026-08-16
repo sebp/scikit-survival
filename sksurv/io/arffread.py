@@ -39,9 +39,12 @@ def _to_pandas_dataframe(data, meta):
             data_dict[name] = pd.Categorical(raw, categories=attr_format, ordered=False)
         else:
             arr = data[name]
-            dtype = "str" if is_string_dtype(arr.dtype) else arr.dtype
-            p = pd.Series(arr, dtype=dtype)
-            data_dict[name] = p
+            if is_string_dtype(arr.dtype):
+                # string-attribute values arrive as numpy byte strings; decode
+                # and map the "?" missing-value token, like the nominal branch.
+                data_dict[name] = pd.Series([np.nan if b == b"?" else b.decode() for b in arr])
+            else:
+                data_dict[name] = pd.Series(arr, dtype=arr.dtype)
 
     # This step converts any pandas.Categorical columns back to pandas.Series.
     return pd.DataFrame.from_dict(data_dict)

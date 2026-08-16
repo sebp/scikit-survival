@@ -2,35 +2,46 @@ import numpy as np
 from numpy.testing import assert_array_equal
 import pandas as pd
 import pandas.testing as tm
+import polars as pl
 import pytest
 
 from sksurv import column
+from sksurv._dataframe import infer_column_semantics
+from sksurv.preprocessing import OneHotEncoder
 from sksurv.testing import FixtureParameterFactory, get_pandas_infer_string_context
 
 
+def _standardize_numeric_input():
+    return np.arange(50, dtype=float).reshape(10, 5)
+
+
+def _standardize_expected_output():
+    return np.array(
+        [
+            [-1.486301, -1.486301, -1.486301, -1.486301, -1.486301],
+            [-1.156012, -1.156012, -1.156012, -1.156012, -1.156012],
+            [-0.825723, -0.825723, -0.825723, -0.825723, -0.825723],
+            [-0.495434, -0.495434, -0.495434, -0.495434, -0.495434],
+            [-0.165145, -0.165145, -0.165145, -0.165145, -0.165145],
+            [0.165145, 0.165145, 0.165145, 0.165145, 0.165145],
+            [0.495434, 0.495434, 0.495434, 0.495434, 0.495434],
+            [0.825723, 0.825723, 0.825723, 0.825723, 0.825723],
+            [1.156012, 1.156012, 1.156012, 1.156012, 1.156012],
+            [1.486301, 1.486301, 1.486301, 1.486301, 1.486301],
+        ]
+    )
+
+
 class StandardizeCase(FixtureParameterFactory):
+    """Inputs that only exist for pandas or numpy."""
+
     @property
     def numeric_data(self):
-        return pd.DataFrame(np.arange(50, dtype=float).reshape(10, 5))
+        return pd.DataFrame(_standardize_numeric_input())
 
     @property
     def expected(self):
-        return pd.DataFrame(
-            np.array(
-                [
-                    [-1.486301, -1.486301, -1.486301, -1.486301, -1.486301],
-                    [-1.156012, -1.156012, -1.156012, -1.156012, -1.156012],
-                    [-0.825723, -0.825723, -0.825723, -0.825723, -0.825723],
-                    [-0.495434, -0.495434, -0.495434, -0.495434, -0.495434],
-                    [-0.165145, -0.165145, -0.165145, -0.165145, -0.165145],
-                    [0.165145, 0.165145, 0.165145, 0.165145, 0.165145],
-                    [0.495434, 0.495434, 0.495434, 0.495434, 0.495434],
-                    [0.825723, 0.825723, 0.825723, 0.825723, 0.825723],
-                    [1.156012, 1.156012, 1.156012, 1.156012, 1.156012],
-                    [1.486301, 1.486301, 1.486301, 1.486301, 1.486301],
-                ]
-            )
-        )
+        return pd.DataFrame(_standardize_expected_output())
 
     @property
     def non_numeric_data(self):
@@ -45,28 +56,19 @@ class StandardizeCase(FixtureParameterFactory):
         data = data.astype({"q3": "category"})
         return data
 
-    @property
-    def numeric_data_with_missing(self):
-        return pd.DataFrame(
+    def data_numeric_with_missing_keeps_index(self):
+        data = pd.DataFrame(
             {"a": [1.0, 2.0, np.nan, 4.0], "b": [1.0, 2.0, 3.0, 4.0]},
             index=[10, 20, 30, 40],
         )
-
-    @property
-    def expected_with_missing(self):
-        return pd.DataFrame(
+        expected = pd.DataFrame(
             {
                 "a": [-0.872872, -0.218218, np.nan, 1.091089],
                 "b": [-1.161895, -0.387298, 0.387298, 1.161895],
             },
             index=[10, 20, 30, 40],
         )
-
-    def data_numeric(self):
-        return self.numeric_data, self.expected
-
-    def data_numeric_with_missing(self):
-        return self.numeric_data_with_missing, self.expected_with_missing
+        return data, expected
 
     def data_float_numpy_array(self):
         return self.numeric_data.to_numpy(), self.expected
@@ -110,6 +112,54 @@ def test_standardize(in_data, expected):
     tm.assert_frame_equal(result, expected)
 
 
+class StandardizeFrameCases(FixtureParameterFactory):
+    @property
+    def column_names(self):
+        return [f"V{i}" for i in range(5)]
+
+    def _make_numeric(self, backend, values):
+        return backend.make_frame({name: values[:, i] for i, name in enumerate(self.column_names)})
+
+    def data_numeric(self, backend):
+        data = self._make_numeric(backend, _standardize_numeric_input())
+        expected = self._make_numeric(backend, _standardize_expected_output())
+        return data, expected
+
+    def data_numeric_with_missing(self, backend):
+        data = backend.make_frame({"a": [1.0, 2.0, None, 4.0], "b": [1.0, 2.0, 3.0, 4.0]})
+        expected = backend.make_frame(
+            {"a": [-0.872872, -0.218218, None, 1.091089], "b": [-1.161895, -0.387298, 0.387298, 1.161895]}
+        )
+        return data, expected
+
+    def data_mixed(self, backend):
+        q_values = ["a", "b", "c", "a", "b", "c", "a", "b", "c", "a"]
+        categories = {"q": ["a", "b", "c"]}
+
+        input_array = _standardize_numeric_input()
+        data_columns = {name: input_array[:, i] for i, name in enumerate(self.column_names)}
+        data_columns["q"] = q_values
+        expected_array = _standardize_expected_output()
+        expected_columns = {name: expected_array[:, i] for i, name in enumerate(self.column_names)}
+        expected_columns["q"] = q_values
+
+        data = backend.make_frame(data_columns, categories=categories)
+        expected = backend.make_frame(expected_columns, categories=categories)
+        return data, expected
+
+
+@pytest.mark.parametrize("case", StandardizeFrameCases().get_cases_func())
+def test_standardize_frame(case, dataframe_backend):
+    in_data, expected = case(dataframe_backend)
+    before = dataframe_backend.copy_frame(in_data)
+
+    result = column.standardize(in_data)
+
+    # the input frame must not be modified in place
+    dataframe_backend.assert_frame_equal(in_data, before)
+    dataframe_backend.assert_frame_equal(result, expected, abs_tol=1e-6)
+
+
 def test_standardize_with_missing_no_std():
     data = pd.DataFrame({"a": [1.0, 2.0, np.nan, 4.0]})
 
@@ -128,22 +178,23 @@ def test_standardize_numpy_without_std():
     np.testing.assert_allclose(result, expected)
 
 
-class CategoricalCases(FixtureParameterFactory):
+def _mixed_categorical_values():
+    a = np.r_[np.repeat(["large"], 10), np.repeat(["small"], 5), np.repeat(["tiny"], 13), np.repeat(["medium"], 3)]
+    b = np.r_[np.repeat(["yes"], 8), np.repeat(["no"], 23)]
+    c = np.random.default_rng(0).standard_normal(len(a))
+    return a, b, c
+
+
+class EncodeCategoricalCases(FixtureParameterFactory):
     def _make_randn(self, shape):
         return np.random.default_rng(0).standard_normal(shape)
 
     @property
     def mixed_data_frame(self):
-        a = np.r_[np.repeat(["large"], 10), np.repeat(["small"], 5), np.repeat(["tiny"], 13), np.repeat(["medium"], 3)]
-        b = np.r_[np.repeat(["yes"], 8), np.repeat(["no"], 23)]
-
-        c = self._make_randn(len(a))
-
+        a, b, c = _mixed_categorical_values()
         df = pd.DataFrame.from_dict({"a_category": a, "a_binary": b, "a_number": c.copy()})
         return df
 
-
-class EncodeCategoricalCases(CategoricalCases):
     @property
     def binary_with_missing(self):
         inputs = np.r_[
@@ -157,49 +208,6 @@ class EncodeCategoricalCases(CategoricalCases):
             np.repeat([0.0], 16),
         ]
         return inputs, expected
-
-    def data_series_categorical(self):
-        input_series = pd.Series(
-            pd.Categorical.from_codes(
-                [1, 1, 0, 2, 0, 1, 2, 1, 2, 0, 0, 1, 2, 2], ["small", "medium", "large"], ordered=False
-            ),
-            name="a_series",
-        )
-
-        expected_df = pd.DataFrame.from_dict(
-            {
-                "a_series=medium": np.array([1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0], dtype=float),
-                "a_series=large": np.array([0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1], dtype=float),
-            }
-        )
-
-        return input_series, {}, expected_df
-
-    def data_case_1(self):
-        input_df = self.mixed_data_frame
-
-        eb = np.r_[np.repeat([1.0], 8), np.repeat([0.0], 23)]
-
-        a_tiny = np.zeros(31, dtype=float)
-        a_tiny[15:28] = 1
-
-        a_small = np.zeros(31, dtype=float)
-        a_small[10:15] = 1
-
-        a_medium = np.zeros(31, dtype=float)
-        a_medium[-3:] = 1
-
-        expected_df = pd.DataFrame.from_dict(
-            {
-                "a_category=medium": a_medium,
-                "a_category=small": a_small,
-                "a_category=tiny": a_tiny,
-                "a_binary=yes": eb,
-                "a_number": input_df.loc[:, "a_number"].to_numpy(copy=True),
-            }
-        )
-
-        return input_df, {}, expected_df
 
     def data_duplicate_index(self):
         input_df = self.mixed_data_frame.drop("a_binary", axis=1)
@@ -295,6 +303,41 @@ def test_encode_categorical(make_data_fn, infer_string_context):
         tm.assert_frame_equal(actual_df, expected_df, check_exact=True)
 
 
+class EncodeCategoricalFrameCases(FixtureParameterFactory):
+    def data_mixed(self, backend):
+        a, b, c = _mixed_categorical_values()
+        data = backend.make_frame({"a_category": a, "a_binary": b, "a_number": c})
+
+        eb = np.r_[np.repeat([1.0], 8), np.repeat([0.0], 23)]
+        a_tiny = np.zeros(31, dtype=float)
+        a_tiny[15:28] = 1
+        a_small = np.zeros(31, dtype=float)
+        a_small[10:15] = 1
+        a_medium = np.zeros(31, dtype=float)
+        a_medium[-3:] = 1
+
+        expected = backend.make_frame(
+            {
+                "a_category=medium": a_medium,
+                "a_category=small": a_small,
+                "a_category=tiny": a_tiny,
+                "a_binary=yes": eb,
+                "a_number": c,
+            }
+        )
+        return data, {}, expected
+
+
+@pytest.mark.parametrize("case", EncodeCategoricalFrameCases().get_cases_func())
+def test_encode_categorical_frame(case, dataframe_backend_with_pandas_options):
+    backend = dataframe_backend_with_pandas_options
+    data, kwargs, expected = case(backend)
+
+    actual = column.encode_categorical(data, **kwargs)
+
+    backend.assert_frame_equal(actual, expected)
+
+
 def test_encode_categorical_series_preserves_index():
     input_series = pd.Series(["a", "b", "a"], name="letter", index=["r0", "r0", "r2"])
     expected = pd.DataFrame({"letter=b": [0.0, 1.0, 0.0]}, index=input_series.index)
@@ -314,14 +357,7 @@ def test_encode_categorical_drops_single_category_series_preserves_index():
     assert list(actual.index) == ["r0", "r1", "r2"]
 
 
-def test_series_numeric():
-    input_series = pd.Series([0.5, 0.1, 10, 25, 3.8, 11, 2256, -1, -0.2, 3.14], name="a_series")
-
-    with pytest.raises(TypeError, match="series must be of categorical dtype"):
-        column.encode_categorical(input_series)
-
-
-class CategoricalToNumeric(CategoricalCases):
+class CategoricalToNumeric(FixtureParameterFactory):
     def data_categorical_series_to_numeric(self):
         input_series = pd.Series(
             ["a", "a", "b", "b", "b", "c"], name="Thr33", index=["Alpha", "Beta", "Gamma", "Delta", "Eta", "Mu"]
@@ -350,17 +386,6 @@ class CategoricalToNumeric(CategoricalCases):
         expected = pd.Series([1, 2, 1], name="x", dtype=np.int64)
         return input_series, expected
 
-    def data_frame_to_numeric(self):
-        input_df = self.mixed_data_frame
-
-        a_num = np.r_[np.repeat([0], 10), np.repeat([2], 5), np.repeat([3], 13), np.repeat([1], 3)].astype(np.int64)
-        b_num = np.r_[np.repeat([1], 8), np.repeat([0], 23)].astype(np.int64)
-
-        expected = pd.DataFrame.from_dict({"a_category": a_num, "a_binary": b_num})
-        expected.loc[:, "a_number"] = input_df.loc[:, "a_number"].to_numpy(copy=True)
-
-        return input_df, expected
-
     def data_object_numeric_frame_to_numeric(self):
         input_df = pd.DataFrame({"x": pd.Series([1, 2, 1], dtype=object)})
         expected = pd.DataFrame({"x": pd.Series([1, 2, 1], dtype=np.int64)})
@@ -378,3 +403,367 @@ def test_categorical_to_numeric(make_data_fn, infer_string_context):
             tm.assert_series_equal(actual, expected, check_exact=True)
         else:
             tm.assert_frame_equal(actual, expected, check_exact=True)
+
+
+class CategoricalToNumericFrameCases(FixtureParameterFactory):
+    def data_mixed(self, backend):
+        a, b, c = _mixed_categorical_values()
+        flags = np.r_[np.repeat([True], 6), np.repeat([False], 25)]
+        data = backend.make_frame({"a_category": a, "a_binary": b, "a_flag": flags, "a_number": c})
+
+        a_num = np.r_[np.repeat([0], 10), np.repeat([2], 5), np.repeat([3], 13), np.repeat([1], 3)].astype(np.int64)
+        b_num = np.r_[np.repeat([1], 8), np.repeat([0], 23)].astype(np.int64)
+        expected = backend.make_frame(
+            {
+                "a_category": a_num,
+                "a_binary": b_num,
+                "a_flag": flags.astype(np.int64),
+                "a_number": c,
+            }
+        )
+        return data, expected
+
+
+@pytest.mark.parametrize("case", CategoricalToNumericFrameCases().get_cases_func())
+def test_categorical_to_numeric_frame(case, dataframe_backend_with_pandas_options):
+    backend = dataframe_backend_with_pandas_options
+    data, expected = case(backend)
+
+    actual = column.categorical_to_numeric(data)
+
+    backend.assert_frame_equal(actual, expected)
+
+
+def test_standardize_empty_frame_returns_empty(dataframe_backend):
+    out = column.standardize(dataframe_backend.make_frame({}))
+    assert out.shape == (0, 0)
+
+
+def test_categorical_to_numeric_empty_frame_returns_empty(dataframe_backend):
+    out = column.categorical_to_numeric(dataframe_backend.make_frame({}))
+    assert out.shape == (0, 0)
+
+
+def test_standardize_without_std_keeps_categorical(dataframe_backend):
+    df = dataframe_backend.make_frame(
+        {"x": [1.0, 2.0, 3.0], "label": ["A", "B", "A"]}, categories={"label": ["A", "B"]}
+    )
+
+    out = column.standardize(df, with_std=False)
+
+    np.testing.assert_allclose(out["x"].to_numpy(), np.array([-1.0, 0.0, 1.0]), strict=True)
+    assert list(out["label"]) == ["A", "B", "A"]
+
+
+class TestCategoricalToNumericPandasParity:
+    @staticmethod
+    def test_string_numeric_dataframe_parses_ints():
+
+        from sksurv.column import categorical_to_numeric
+
+        values = ["1", "2", "10"]
+        pd_out = categorical_to_numeric(pd.DataFrame({"x": values}))["x"].tolist()
+        pl_out = categorical_to_numeric(pl.DataFrame({"x": values}))["x"].to_list()
+        assert pd_out == pl_out == [1, 2, 10]
+
+    @staticmethod
+    def test_string_non_numeric_falls_back_to_codes():
+
+        from sksurv.column import categorical_to_numeric
+
+        values = ["a", "b", "a"]
+        pd_out = categorical_to_numeric(pd.DataFrame({"x": values}))["x"].tolist()
+        pl_out = categorical_to_numeric(pl.DataFrame({"x": values}))["x"].to_list()
+        assert pd_out == pl_out
+
+    @staticmethod
+    def test_string_non_numeric_null_maps_to_nan():
+
+        from sksurv.column import categorical_to_numeric
+
+        values = ["b", None, "a"]
+        pd_out = categorical_to_numeric(pd.DataFrame({"x": values}))["x"].to_numpy()
+        pl_out = categorical_to_numeric(pl.DataFrame({"x": values}))["x"].to_numpy()
+        np.testing.assert_allclose(pd_out, pl_out, equal_nan=True, strict=True)
+
+
+class TestEncodeCategoricalExplicitColumnsParity:
+    @staticmethod
+    def test_explicit_numeric_column_polars_matches_pandas():
+
+        from sksurv.column import encode_categorical
+
+        data = {"x": [1, 2, 1], "z": [10, 20, 30]}
+        pd_out = encode_categorical(pd.DataFrame(data), columns=["x"])
+        pl_out = encode_categorical(pl.DataFrame(data), columns=["x"])
+        assert list(pd_out.columns) == list(pl_out.columns)
+        np.testing.assert_array_equal(pd_out.to_numpy(), pl_out.to_numpy(), strict=True)
+
+    @staticmethod
+    def test_explicit_boolean_column_polars_matches_pandas():
+
+        from sksurv.column import encode_categorical
+
+        data = {"b": [True, False, True, False, True]}
+        pd_out = encode_categorical(pd.DataFrame(data), columns=["b"])
+        pl_out = encode_categorical(pl.DataFrame(data), columns=["b"])
+        assert list(pd_out.columns) == list(pl_out.columns) == ["b=True"]
+        np.testing.assert_array_equal(pd_out.to_numpy(), pl_out.to_numpy(), strict=True)
+
+    @staticmethod
+    def test_explicit_numeric_column_preserves_value_ordering():
+
+        from sksurv.column import encode_categorical
+
+        data = {"x": [1, 2, 10, 1]}
+        pd_out = encode_categorical(pd.DataFrame(data), columns=["x"])
+        pl_out = encode_categorical(pl.DataFrame(data), columns=["x"])
+        assert list(pd_out.columns) == list(pl_out.columns) == ["x=2", "x=10"]
+        np.testing.assert_array_equal(pd_out.to_numpy(), pl_out.to_numpy(), strict=True)
+
+
+def test_standardize_polars_nan_skipped_like_null():
+    import polars.testing as pt
+
+    # Float NaN must be skipped by the statistics (it would otherwise poison
+    # the whole column) and stays NaN in the output, unlike null which stays null.
+    data = pl.DataFrame({"a": [1.0, 2.0, float("nan"), 4.0], "b": [1.0, 2.0, 3.0, 4.0]})
+
+    result = column.standardize(data)
+
+    expected = pl.DataFrame(
+        {"a": [-0.872872, -0.218218, float("nan"), 1.091089], "b": [-1.161895, -0.387298, 0.387298, 1.161895]}
+    )
+    pt.assert_frame_equal(result, expected, check_exact=False, abs_tol=1e-6)
+
+
+@pytest.mark.parametrize(
+    "polars_missing",
+    [
+        pl.Series([None] * 3, dtype=pl.Float64),
+        [float("nan")] * 3,
+    ],
+    ids=["null", "nan"],
+)
+def test_standardize_all_missing_column_matches_pandas_via_numpy(polars_missing):
+
+    pd_out = column.standardize(pd.DataFrame({"a": [np.nan] * 3, "b": [1.0, 2.0, 3.0]}))
+    # The all-missing column must be a float dtype, not Null, or standardize
+    # would skip it as non-numeric.
+    pl_out = column.standardize(pl.DataFrame({"a": polars_missing, "b": [1.0, 2.0, 3.0]}))
+
+    # The dataframe-level representation differs (pandas NaN vs polars null) but
+    # both normalize to NaN at the numpy boundary that feeds the estimators.
+    np.testing.assert_allclose(pd_out.to_numpy(), pl_out.to_numpy(), equal_nan=True, strict=True)
+
+
+def test_standardize_all_missing_polars_column_stays_null():
+    # Pin the polars dataframe-level behavior so a future change to NaN is noticed.
+    out = column.standardize(pl.DataFrame({"a": pl.Series([None] * 3, dtype=pl.Float64), "b": [1.0, 2.0, 3.0]}))
+    assert out["a"].dtype == pl.Float64
+    assert out["a"].null_count() == 3
+
+
+def test_encode_categorical_series_numeric_rejected(dataframe_backend):
+    s = dataframe_backend.make_series("a_series", [0.5, 0.1, 10.0, 25.0, 3.8, 11.0])
+    with pytest.raises(TypeError, match="series must be of categorical dtype"):
+        column.encode_categorical(s)
+
+
+def test_encode_categorical_series(dataframe_backend):
+    values = ["medium", "medium", "small", "large", "small", "medium", "large", "medium", "large", "small"]
+    s = dataframe_backend.make_series("a_series", values, categories=["small", "medium", "large"])
+
+    actual = column.encode_categorical(s)
+
+    expected = dataframe_backend.make_frame(
+        {
+            "a_series=medium": [1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0],
+            "a_series=large": [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0],
+        }
+    )
+    dataframe_backend.assert_frame_equal(actual, expected)
+
+
+def test_encode_categorical_series_declared_unseen(dataframe_backend):
+    s = dataframe_backend.make_series("grade", ["I", "II", "III", "I"], categories=["I", "II", "III", "IV"])
+
+    actual = column.encode_categorical(s)
+
+    assert list(actual.columns) == ["grade=II", "grade=III", "grade=IV"]
+    assert actual["grade=IV"].to_numpy().tolist() == [0.0, 0.0, 0.0, 0.0]
+
+
+def test_encode_categorical_single_category_series_drop_policy(dataframe_backend):
+    s = dataframe_backend.make_series("c", ["only", "only"], categories=["only"])
+
+    dropped = column.encode_categorical(s)
+    assert dropped.shape[1] == 0
+
+    preserved = column.encode_categorical(s, allow_drop=False)
+    assert list(preserved) == ["only", "only"]
+
+
+def test_categorical_to_numeric_bool_series(dataframe_backend):
+    s = dataframe_backend.make_series("flag", [True, False, True])
+
+    result = column.categorical_to_numeric(s)
+
+    np.testing.assert_array_equal(result.to_numpy(), np.array([1, 0, 1]), strict=True)
+
+
+def test_categorical_to_numeric_numeric_string_series(dataframe_backend):
+    s = dataframe_backend.make_series("digits", ["1", "2", "10"])
+
+    result = column.categorical_to_numeric(s)
+
+    np.testing.assert_array_equal(result.to_numpy(), np.array([1, 2, 10]), strict=True)
+
+
+def test_categorical_to_numeric_float_series_passes_through(dataframe_backend):
+    s = dataframe_backend.make_series("x", [1.2, 2.8])
+
+    result = column.categorical_to_numeric(s)
+
+    np.testing.assert_array_equal(result.to_numpy(), np.array([1.2, 2.8]), strict=True)
+
+
+def test_encode_categorical_polars_dataframe_drop_emits_warning(caplog):
+    df = pl.DataFrame({"single": pl.Series(["only", "only"], dtype=pl.Enum(["only"]))})
+    result = column.encode_categorical(df)
+    assert result.shape == (0, 0)
+    assert "dropped categorical variable 'single'" in caplog.text
+
+
+def test_categorical_to_numeric_polars_unsupported_column_passes_through():
+    df = pl.DataFrame({"items": [[1], [2]]})
+    result = column.categorical_to_numeric(df)
+    assert result.to_dict(as_series=False) == {"items": [[1], [2]]}
+
+
+def _size_answer_categorical_frame():
+    return pl.DataFrame(
+        {
+            "size": pl.Series(["medium", "small", "large", "xlarge", "small"], dtype=pl.Categorical),
+            "answer": pl.Series(["yes", "no", "yes", "yes", "no"], dtype=pl.Categorical),
+        }
+    )
+
+
+class TestPolarsCategoricalGlobalPoolBug:
+    """Polars ``pl.Categorical`` categories must be column-scoped."""
+
+    @staticmethod
+    def test_infer_isolates_categories_per_column():
+        df = _size_answer_categorical_frame()
+        sem_size = infer_column_semantics(df.get_column("size"))
+        sem_answer = infer_column_semantics(df.get_column("answer"))
+        assert set(sem_size.categories) == {
+            "medium",
+            "small",
+            "large",
+            "xlarge",
+        }, f"polars Categorical leak: {sem_size.categories}"
+        assert set(sem_answer.categories) == {"yes", "no"}, f"polars Categorical leak: {sem_answer.categories}"
+
+    @staticmethod
+    def test_encode_categorical_isolates_categories_per_column():
+        df = _size_answer_categorical_frame()
+        encoded = column.encode_categorical(df)
+        assert encoded.columns == ["size=medium", "size=small", "size=xlarge", "answer=yes"]
+
+    @staticmethod
+    def test_one_hot_encoder_categories_isolated():
+        df = _size_answer_categorical_frame()
+        enc = OneHotEncoder()
+        enc.fit(df)
+        assert set(enc.categories_["size"]) == {
+            "medium",
+            "small",
+            "large",
+            "xlarge",
+        }, f"size leak: {enc.categories_['size'].tolist()}"
+        assert set(enc.categories_["answer"]) == {"yes", "no"}, f"answer leak: {enc.categories_['answer'].tolist()}"
+
+    @staticmethod
+    def test_pl_enum_categories_still_dtype_based():
+        s = pl.Series("x", ["mid", "low", "high"], dtype=pl.Enum(["low", "mid", "high"]))
+        sem = infer_column_semantics(s)
+        assert sem.kind == "nominal"
+        assert sem.categories == ("low", "mid", "high")
+        assert sem.ordered is False
+
+
+class TestPolarsCategoryOrderPolicy:
+    @staticmethod
+    def test_enum_preserves_declared_order():
+        s = pl.Series("grade", ["mid", "low", "high"], dtype=pl.Enum(["low", "mid", "high"]))
+        sem = infer_column_semantics(s)
+        assert sem.categories == ("low", "mid", "high")
+
+    @staticmethod
+    def test_categorical_uses_sorted_observed_values():
+        s = pl.Series("grade", ["mid", "low", "high", "low"], dtype=pl.Categorical)
+        sem = infer_column_semantics(s)
+        assert sem.categories == ("high", "low", "mid")
+
+    @staticmethod
+    def test_string_uses_sorted_observed_values():
+        s = pl.Series("grade", ["mid", "low", "high", None])
+        sem = infer_column_semantics(s)
+        assert sem.categories == ("high", "low", "mid")
+
+    @staticmethod
+    def test_one_hot_encoder_follows_category_order_policy():
+        df = pl.DataFrame({"grade": pl.Series(["mid", "low", "high"], dtype=pl.Categorical)})
+        enc = OneHotEncoder().fit(df)
+        assert enc.categories_["grade"].tolist() == ["high", "low", "mid"]
+        assert enc.get_feature_names_out().tolist() == ["grade=low", "grade=mid"]
+
+
+class TestCategoricalDataInferredParity:
+    @staticmethod
+    def test_categorical_to_numeric_enum_matches_pandas_explicit_order():
+
+        from sksurv.column import categorical_to_numeric
+
+        values = ["c", "a", "b", "c"]
+        categories = ["c", "a", "b"]
+        df_pd = pd.DataFrame({"x": pd.Categorical(values, categories=categories)})
+        df_pl = pl.DataFrame({"x": pl.Series("x", values, dtype=pl.Enum(categories))})
+        out_pd = categorical_to_numeric(df_pd).to_numpy()
+        out_pl = categorical_to_numeric(df_pl).to_numpy()
+        np.testing.assert_array_equal(out_pd, out_pl, strict=True)
+
+    @pytest.mark.parametrize("func", [column.categorical_to_numeric, column.encode_categorical])
+    @staticmethod
+    def test_pl_categorical_matches_pandas(func):
+        values = ["banana", "apple", "cherry", "apple", "banana"]
+        df_pd = pd.DataFrame({"fruit": pd.Categorical(values)})
+        df_pl = pl.DataFrame({"fruit": pl.Series(values, dtype=pl.Categorical)})
+        out_pd = func(df_pd).to_numpy()
+        out_pl = func(df_pl).to_numpy()
+        np.testing.assert_array_equal(out_pd, out_pl, strict=True)
+
+
+class TestLazyFramePaths:
+    @staticmethod
+    def test_standardize_lazyframe_rejected(polars_grade_enum_frame):
+        from sksurv.column import standardize
+
+        with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
+            standardize(polars_grade_enum_frame.lazy())
+
+    @staticmethod
+    def test_categorical_to_numeric_lazyframe_rejected(polars_grade_enum_frame):
+        from sksurv.column import categorical_to_numeric
+
+        with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
+            categorical_to_numeric(polars_grade_enum_frame.lazy())
+
+    @staticmethod
+    def test_encode_categorical_lazyframe_rejected(polars_grade_enum_frame):
+        from sksurv.column import encode_categorical
+
+        with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
+            encode_categorical(polars_grade_enum_frame.lazy())

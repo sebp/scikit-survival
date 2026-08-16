@@ -1,15 +1,19 @@
 from collections import namedtuple
+from contextlib import nullcontext
 from pathlib import Path
 import tempfile
 
 import numpy as np
 from packaging.version import Version
 import pandas as pd
+import polars as pl
 import pytest
 from scipy.sparse import coo_array
 
 from sksurv.column import categorical_to_numeric, encode_categorical, standardize
 from sksurv.datasets import load_breast_cancer, load_whas500
+from sksurv.testing import get_pandas_infer_string_context
+from sksurv.testing._dataframe import PANDAS_BACKEND, POLARS_BACKEND
 from sksurv.util import Surv
 
 DataSet = namedtuple("DataSet", ["x", "y"])
@@ -22,6 +26,41 @@ if Version("2.3.0") <= Version(pd.__version__) < Version("3.0.0"):
 
 def pytest_configure(config):
     config.addinivalue_line("markers", "slow: marks test as slow (deselect with '-m \"not slow\"')")
+
+
+@pytest.fixture(
+    params=[
+        pytest.param(PANDAS_BACKEND, id="pandas"),
+        pytest.param(POLARS_BACKEND, id="polars"),
+    ]
+)
+def dataframe_backend(request):
+    """Dataframe library to test against."""
+    return request.param
+
+
+def _dataframe_backend_with_pandas_options_params():
+    pandas_params = [
+        pytest.param(
+            (PANDAS_BACKEND, context_param.values[0]),
+            id=f"pandas-{context_param.id}" if context_param.id else "pandas",
+            marks=context_param.marks,
+        )
+        for context_param in get_pandas_infer_string_context()
+    ]
+    return [*pandas_params, pytest.param((POLARS_BACKEND, nullcontext()), id="polars")]
+
+
+@pytest.fixture(params=_dataframe_backend_with_pandas_options_params())
+def dataframe_backend_with_pandas_options(request):
+    """Dataframe library with pandas option contexts applied.
+
+    The pandas entries mirror ``get_pandas_infer_string_context()``, so pandas
+    runs once per option context while polars runs once.
+    """
+    backend, options_context = request.param
+    with options_context:
+        yield backend
 
 
 @pytest.fixture()
@@ -99,6 +138,35 @@ def rossi():
 def non_finite_value(request):
     """Inf/-Inf/NaN value."""
     return request.param
+
+
+@pytest.fixture()
+def polars_grade_enum_frame():
+    """age + grade (pl.Enum with declared unseen "IV") frame shared by polars-specific tests."""
+    return pl.DataFrame(
+        {
+            "age": [40.0, 50.0, 60.0, 70.0],
+            "grade": pl.Series(["I", "II", "III", "I"], dtype=pl.Enum(["I", "II", "III", "IV"])),
+        }
+    )
+
+
+@pytest.fixture()
+def null_grade_frames():
+    """pandas and polars frames with a null grade (pd.Categorical vs pl.Enum), shared by the null-parity tests."""
+    df_pd = pd.DataFrame(
+        {
+            "age": [40.0, 50.0, 60.0],
+            "grade": pd.Categorical(["I", None, "II"], categories=["I", "II", "III"]),
+        }
+    )
+    df_pl = pl.DataFrame(
+        {
+            "age": [40.0, 50.0, 60.0],
+            "grade": pl.Series(["I", None, "II"], dtype=pl.Enum(["I", "II", "III"])),
+        }
+    )
+    return df_pd, df_pl
 
 
 @pytest.fixture()
