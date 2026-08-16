@@ -387,7 +387,6 @@ class TestLoadDatasetsPolars:
 
     @staticmethod
     def test_load_bmt_polars():
-
         x, _ = sdata.load_bmt(output_type="polars")
         assert isinstance(x, pl.DataFrame)
         assert x.shape == (35, 1)
@@ -395,7 +394,6 @@ class TestLoadDatasetsPolars:
 
     @staticmethod
     def test_load_cgvhd_polars():
-
         x, _ = sdata.load_cgvhd(output_type="polars")
         assert isinstance(x, pl.DataFrame)
         assert x.shape == (100, 4)

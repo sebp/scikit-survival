@@ -451,7 +451,7 @@ def test_standardize_without_std_keeps_categorical(dataframe_backend):
 
     out = column.standardize(df, with_std=False)
 
-    np.testing.assert_allclose(out["x"].to_numpy(), np.array([-1.0, 0.0, 1.0]))
+    np.testing.assert_allclose(out["x"].to_numpy(), np.array([-1.0, 0.0, 1.0]), strict=True)
     assert list(out["label"]) == ["A", "B", "A"]
 
 
@@ -484,7 +484,7 @@ class TestCategoricalToNumericPandasParity:
         values = ["b", None, "a"]
         pd_out = categorical_to_numeric(pd.DataFrame({"x": values}))["x"].to_numpy()
         pl_out = categorical_to_numeric(pl.DataFrame({"x": values}))["x"].to_numpy()
-        np.testing.assert_allclose(pd_out, pl_out, equal_nan=True)
+        np.testing.assert_allclose(pd_out, pl_out, equal_nan=True, strict=True)
 
 
 class TestEncodeCategoricalExplicitColumnsParity:
@@ -554,7 +554,7 @@ def test_standardize_all_missing_column_matches_pandas_via_numpy(polars_missing)
 
     # The dataframe-level representation differs (pandas NaN vs polars null) but
     # both normalize to NaN at the numpy boundary that feeds the estimators.
-    np.testing.assert_allclose(pd_out.to_numpy(), pl_out.to_numpy(), equal_nan=True)
+    np.testing.assert_allclose(pd_out.to_numpy(), pl_out.to_numpy(), equal_nan=True, strict=True)
 
 
 def test_standardize_all_missing_polars_column_stays_null():

@@ -107,9 +107,9 @@ class TestOneHotEncoder:
         assert isinstance(t.feature_names_, pd.Index)
         assert isinstance(t.encoded_columns_, pd.Index)
         assert t.feature_names_.tolist() == list(ONE_HOT_CATEGORIES)
-        assert set(t.encoded_columns_) == set(expected_data.columns)
+        assert t.encoded_columns_.tolist() == list(expected_data.columns)
 
-        assert set(t.categories_) == set(ONE_HOT_CATEGORIES)
+        assert list(t.categories_) == list(ONE_HOT_CATEGORIES)
         for key, expected_categories in ONE_HOT_CATEGORIES.items():
             assert isinstance(t.categories_[key], pd.Index)
             assert t.categories_[key].tolist() == expected_categories
@@ -305,7 +305,7 @@ class TestOneHotEncoderDeclaredUnseenCategory:
 
         enc = OneHotEncoder().fit(df)
         assert enc.categories_["grade"].tolist() == ["I", "II", "III", "IV"]
-        assert "grade=IV" in list(enc.encoded_columns_)
+        assert "grade=IV" in enc.encoded_columns_
 
         encoded = enc.transform(df)
         assert list(encoded.columns) == ["grade=II", "grade=III", "grade=IV"]

@@ -198,9 +198,9 @@ def test_writearff_round_trip(dataframe_backend, temp_file):
     temp_file.close()
 
     with open(temp_file.name) as fp:
-        contents = fp.read()
+        read_data = fp.readlines()
     # Declared categories (incl. unseen "IV") must appear in the header
-    assert "{I,II,III,IV}" in contents
+    assert "@attribute grade\t{I,II,III,IV}\n" in read_data
 
     df_round = loadarff(temp_file.name, output_type=dataframe_backend.name)
     dataframe_backend.assert_frame_equal(df_round, df)
@@ -276,8 +276,8 @@ def test_writearff_polars_categorical_dtype(temp_file):
     temp_file.close()
 
     with open(temp_file.name) as fp:
-        contents = fp.read()
-    assert "{x,y}" in contents
+        read_data = fp.readlines()
+    assert "@attribute a\t{x,y}\n" in read_data
 
     df_round = loadarff(temp_file.name, output_type="polars")
     assert df_round["a"].to_list() == ["y", "x", "y"]

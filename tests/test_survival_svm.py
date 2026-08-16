@@ -9,6 +9,7 @@ from sklearn.decomposition import KernelPCA
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import MinMaxScaler, normalize
+from sklearn.utils import check_random_state
 
 from sksurv.bintrees import AVLTree, RBTree
 from sksurv.column import encode_categorical
@@ -922,8 +923,6 @@ class TestNaiveSurvivalSVM:
 
     @staticmethod
     def test_dataframe_container_preserved(dataframe_backend):
-        from sklearn.utils import check_random_state
-
         rng = np.random.default_rng(0)
         n_samples = 30
         data = {f"f{i}": rng.standard_normal(n_samples) for i in range(5)}

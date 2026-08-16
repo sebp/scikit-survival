@@ -253,9 +253,8 @@ def test_from_dataframe_integer_column_names():
 
 
 def test_from_dataframe_polars_lazyframe_rejected():
-    rng = np.random.default_rng(0)
-    event = rng.binomial(1, 0.5, size=100).astype(bool)
-    time = np.exp(rng.standard_normal(100))
+    event, time = SurvDataFrameCases().event_and_time
+    event = event.astype(bool)
     lf = pl.DataFrame({"event": event, "time": time}).lazy()
     with pytest.raises(TypeError, match=r"polars\.LazyFrame is not supported"):
         Surv.from_dataframe("event", "time", lf)

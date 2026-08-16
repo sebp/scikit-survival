@@ -549,9 +549,9 @@ class TestOrdinalColumnsOptIn:
         df_pd_ordered = self._make_pd_ordered()
         K_pl = clinical_kernel(df_pl, ordinal_categories={"stage": ["T1", "T2", "T3", "T4"]})
         K_pd_ord = clinical_kernel(df_pd_ordered)
-        np.testing.assert_allclose(K_pl, K_pd_ord, atol=1e-12)
+        np.testing.assert_allclose(K_pl, K_pd_ord, atol=1e-12, strict=True)
 
-    def test_opt_in_transform(self):
+    def test_opt_in_changes_fit_column_classification(self):
         df_pl = self._make_pl_df()
         t_default = ClinicalKernelTransform()
         t_opt_in = ClinicalKernelTransform(ordinal_categories={"stage": ["T1", "T2", "T3", "T4"]})
@@ -614,7 +614,7 @@ class TestNominalNullParity:
         df_pd, df_pl = null_grade_frames
         t_pd = ClinicalKernelTransform().fit(df_pd)
         t_pl = ClinicalKernelTransform().fit(df_pl)
-        np.testing.assert_array_equal(np.isnan(t_pd.X_fit_), np.isnan(t_pl.X_fit_))
+        np.testing.assert_array_equal(np.isnan(t_pd.X_fit_), np.isnan(t_pl.X_fit_), strict=True)
         assert np.isnan(t_pl.X_fit_[1, 1])
 
     @staticmethod
@@ -623,7 +623,7 @@ class TestNominalNullParity:
         df_pl = pl.DataFrame({"age": [40.0, 50.0, 60.0], "grade": ["I", None, "II"]})
         K_pd = clinical_kernel(df_pd)
         K_pl = clinical_kernel(df_pl)
-        np.testing.assert_allclose(K_pd, K_pl, atol=1e-12)
+        np.testing.assert_allclose(K_pd, K_pl, atol=1e-12, strict=True)
         # the diagonal is 1 except at the null grade, where the age kernel (1)
         # and the null grade kernel (0) average to 0.5
         np.testing.assert_allclose(np.diag(K_pd), np.array([1.0, 0.5, 1.0]), atol=1e-12, strict=True)
@@ -637,7 +637,7 @@ class TestClinicalKernelTransformReplay:
         data, _, ordinal_categories = make_clinical_kernel_data(dataframe_backend)
         K_transform = ClinicalKernelTransform(ordinal_categories=ordinal_categories).fit(data).transform(data)
         K_direct = clinical_kernel(data, data, ordinal_categories=ordinal_categories)
-        np.testing.assert_allclose(K_transform, K_direct, atol=1e-12)
+        np.testing.assert_allclose(K_transform, K_direct, atol=1e-12, strict=True)
 
     @staticmethod
     def test_ordinal_missing_and_unknown_transform_matches_clinical_kernel():
@@ -715,7 +715,7 @@ class TestClinicalKernelEdgeCases:
                 [0.5, 0.0, 1.0],
             ]
         )
-        np.testing.assert_allclose(mat, expected)
+        np.testing.assert_allclose(mat, expected, strict=True)
 
     @staticmethod
     def test_empty_polars_frame_fit_matches_pandas():
