@@ -15,6 +15,7 @@ Naive implementations of the survival SVM.
 """
 
 import itertools
+from warnings import warn
 
 import narwhals.stable.v2 as nw
 import numpy as np
@@ -32,6 +33,9 @@ from ..util import check_array_survival
 class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
     r"""
     Naive implementation of linear Survival Support Vector Machine.
+
+    .. deprecated:: 0.29.0
+        Use :class:`sksurv.svm.FastSurvivalSVM` instead.
 
     This class uses a regular linear support vector classifier (liblinear)
     to implement a survival SVM. It constructs a new dataset by computing
@@ -144,6 +148,12 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
             fit_intercept=False,
         )
         self.alpha = alpha
+
+        warn(
+            "NaiveSurvivalSVM is deprecated and will be removed in a future version, use FastSurvivalSVM instead.",
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
 
     def _get_survival_pairs(self, X, y, random_state):  # pylint: disable=no-self-use
         """

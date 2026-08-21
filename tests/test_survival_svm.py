@@ -867,13 +867,14 @@ class TestNaiveSurvivalSVM:
     def test_survival_squared_hinge_loss(whas500_without_ties):
         x, y = whas500_without_ties
 
-        nrsvm = NaiveSurvivalSVM(
-            loss="squared_hinge",
-            dual=False,
-            tol=8e-7,
-            max_iter=1000,
-            random_state=0,
-        )
+        with pytest.warns(DeprecationWarning, match="NaiveSurvivalSVM is deprecated"):
+            nrsvm = NaiveSurvivalSVM(
+                loss="squared_hinge",
+                dual=False,
+                tol=8e-7,
+                max_iter=1000,
+                random_state=0,
+            )
         nrsvm.fit(x, y)
 
         assert nrsvm.n_iter_ > 10
@@ -895,13 +896,14 @@ class TestNaiveSurvivalSVM:
     def test_fit_with_ties(whas500_with_ties):
         x, y = whas500_with_ties
 
-        nrsvm = NaiveSurvivalSVM(
-            loss="squared_hinge",
-            dual=False,
-            tol=1e-8,
-            max_iter=1000,
-            random_state=0,
-        )
+        with pytest.warns(DeprecationWarning, match="NaiveSurvivalSVM is deprecated"):
+            nrsvm = NaiveSurvivalSVM(
+                loss="squared_hinge",
+                dual=False,
+                tol=1e-8,
+                max_iter=1000,
+                random_state=0,
+            )
         nrsvm.fit(x, y)
 
         assert nrsvm.coef_.shape == (1, 14)
@@ -911,13 +913,14 @@ class TestNaiveSurvivalSVM:
 
     @staticmethod
     def test_fit_uncomparable(whas500_uncomparable):
-        ssvm = NaiveSurvivalSVM(
-            loss="squared_hinge",
-            dual=False,
-            tol=1e-8,
-            max_iter=1000,
-            random_state=0,
-        )
+        with pytest.warns(DeprecationWarning, match="NaiveSurvivalSVM is deprecated"):
+            ssvm = NaiveSurvivalSVM(
+                loss="squared_hinge",
+                dual=False,
+                tol=1e-8,
+                max_iter=1000,
+                random_state=0,
+            )
         with pytest.raises(NoComparablePairException):
             ssvm.fit(whas500_uncomparable.x, whas500_uncomparable.y)
 
@@ -929,7 +932,8 @@ class TestNaiveSurvivalSVM:
         y = Surv.from_arrays(rng.binomial(1, 0.5, n_samples).astype(bool), rng.exponential(10, n_samples))
         x = dataframe_backend.make_frame(data)
 
-        est = NaiveSurvivalSVM(random_state=0)
+        with pytest.warns(DeprecationWarning, match="NaiveSurvivalSVM is deprecated"):
+            est = NaiveSurvivalSVM(random_state=0)
         rs = check_random_state(0)
         x_pairs, _ = est._get_survival_pairs(x, y, rs)
 

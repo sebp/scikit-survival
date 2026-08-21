@@ -81,6 +81,7 @@ class TestSurvivalEstimatorParity:
     ESTIMATORS = _make_survival_estimator_constructors()
 
     @staticmethod
+    @pytest.mark.filterwarnings("ignore:NaiveSurvivalSVM is deprecated.*:DeprecationWarning")
     @pytest.mark.parametrize("name,ctor", ESTIMATORS, ids=[t[0] for t in ESTIMATORS])
     def test_estimator_matches_pandas(name, ctor, whas500_encoded_small):
         X_pd, X_other, y = whas500_encoded_small
@@ -231,6 +232,7 @@ class TestSurvivalEstimatorLazyFrame:
     ESTIMATORS = TestSurvivalEstimatorParity.ESTIMATORS
 
     @staticmethod
+    @pytest.mark.filterwarnings("ignore:NaiveSurvivalSVM is deprecated.*:DeprecationWarning")
     @pytest.mark.parametrize("name,ctor", ESTIMATORS, ids=[t[0] for t in ESTIMATORS])
     def test_estimator_lazyframe_rejected(name, ctor, whas500_polars_encoded_small):
         X_pl, y = whas500_polars_encoded_small
