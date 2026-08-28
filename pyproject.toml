@@ -257,12 +257,6 @@ env_list = [
     "docs",
 ]
 
-[tool.tox.env_run_base]
-deps = [
-    "cython",
-    "numpy",
-]
-
 [tool.tox.env.lint]
 description = "Run linters"
 skip_install = true
