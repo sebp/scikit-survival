@@ -2,7 +2,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # v6.0.0
     hooks:
     -   id: trailing-whitespace
         exclude: '^\.gitignore$'
@@ -19,30 +19,30 @@ repos:
     -   id: name-tests-test
         args: ["--pytest-test-first"]
 -   repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.10.0
+    rev: 3a6eb0fadf60b3cccfd80bad9dbb6fae7e47b316  # v1.10.0
     hooks:
     -   id: python-check-blanket-noqa
     -   id: python-no-eval
     -   id: rst-directive-colons
     -   id: rst-inline-touching-normal
 -   repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.37.4
+    rev: 12e63946db2c5cfcc9030fac21c3883ba88c6ed8  # 0.37.4
     hooks:
     -   id: check-dependabot
     -   id: check-github-workflows
     -   id: check-readthedocs
 -   repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.5.6
+    rev: ad1b27d73581aa16cca06fc4a0761fc563ffe8e8  # v1.5.6
     hooks:
     -   id: forbid-crlf
         exclude: '^\.gitignore$'
     -   id: forbid-tabs
         types: [python]
 -   repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 26.5.1
+    rev: 4160603246a6b365d4a2af661c6d71b0a0f50478  # 26.5.1
     hooks:
     -   id: black-jupyter
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.0
+    rev: aab412d509121cb5f7533134b7e67f9fab59c682  # v0.16.4
     hooks:
     -   id: ruff-check
