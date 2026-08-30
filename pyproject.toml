@@ -266,7 +266,7 @@ deps = [
 ]
 commands = [
     ["sphinx-lint", "doc", "-i", "doc{/}api{/}generated"],
-    ["numpydoc", "lint", { replace = "glob", pattern = "sksurv/*/**.py", extend = true }],
+    ["numpydoc", "lint", { replace = "glob", pattern = "sksurv/**/*.py", extend = true }],
 ]
 
 [tool.tox.env.docs]
