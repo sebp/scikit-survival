@@ -76,7 +76,7 @@ def standardize(table, with_std=True):
     return np.apply_along_axis(_standardize_column, 0, table, with_std=with_std)
 
 
-def encode_categorical(table, columns=None, **kwargs):
+def encode_categorical(table, columns=None, *, allow_drop=True):
     """
     One-hot encode categorical features.
 
@@ -106,7 +106,7 @@ def encode_categorical(table, columns=None, **kwargs):
         dataframe library matches the input.
     """
     table = ensure_eager_dataframe(table)
-    return encode_categorical_narwhals(table, columns=columns, **kwargs)
+    return encode_categorical_narwhals(table, columns=columns, allow_drop=allow_drop)
 
 
 def categorical_to_numeric(table):
