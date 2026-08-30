@@ -29,7 +29,7 @@ from ._dataframe._column_impl import (
 __all__ = ["categorical_to_numeric", "encode_categorical", "standardize"]
 
 
-def standardize_column(array, with_std=True):
+def _standardize_column(array, with_std=True):
     d = array.dtype
     if issubclass(d.type, np.number):
         output = array.astype(float)
@@ -73,7 +73,7 @@ def standardize(table, with_std=True):
     table = ensure_eager_dataframe(table)
     if is_supported_dataframe(table):
         return standardize_narwhals_dataframe(table, with_std=with_std)
-    return np.apply_along_axis(standardize_column, 0, table, with_std=with_std)
+    return np.apply_along_axis(_standardize_column, 0, table, with_std=with_std)
 
 
 def encode_categorical(table, columns=None, **kwargs):
