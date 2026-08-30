@@ -138,7 +138,7 @@ class OneHotEncoder(BaseEstimator, TransformerMixin):
         y : None, optional
             Ignored. This parameter exists only for compatibility with
             :class:`sklearn.pipeline.Pipeline`.
-        fit_params : dict, optional
+        **fit_params : dict, optional
             Ignored. This parameter exists only for compatibility with
             :class:`sklearn.pipeline.Pipeline`.
 

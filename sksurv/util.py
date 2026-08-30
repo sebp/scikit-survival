@@ -299,7 +299,7 @@ def check_array_survival(X, y, **kwargs):
         as first field, and time of event or time of censoring as
         second field.
 
-    kwargs : dict
+    **kwargs : dict
         Additional arguments passed to :func:`check_y_survival`.
 
     Returns
