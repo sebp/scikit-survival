@@ -35,8 +35,8 @@ from sklearn.utils.validation import (
 )
 
 from .._dataframe import ensure_eager_dataframe
+from .._docstrings import append_cumulative_hazard_example, append_survival_function_example
 from ..base import SurvivalAnalysisMixin
-from ..docstrings import append_cumulative_hazard_example, append_survival_function_example
 from ..functions import StepFunction
 from ..util import check_array_survival
 from ._criterion import LogrankCriterion, get_unique_times

@@ -33,8 +33,8 @@ from sklearn.utils._tags import get_tags
 from sklearn.utils.validation import _check_sample_weight, check_is_fitted, check_random_state, validate_data
 
 from .._dataframe import ensure_eager_dataframe
+from .._docstrings import append_cumulative_hazard_example, append_survival_function_example
 from ..base import SurvivalAnalysisMixin
-from ..docstrings import append_cumulative_hazard_example, append_survival_function_example
 from ..metrics import concordance_index_censored
 from ..tree import ExtraSurvivalTree, SurvivalTree
 from ..tree._criterion import get_unique_times

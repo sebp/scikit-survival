@@ -25,8 +25,8 @@ from sklearn.utils._param_validation import Interval, StrOptions
 from sklearn.utils.validation import check_array, check_is_fitted, validate_data
 
 from .._dataframe import ensure_eager_dataframe
+from .._docstrings import append_cumulative_hazard_example, append_survival_function_example
 from ..base import SurvivalAnalysisMixin
-from ..docstrings import append_cumulative_hazard_example, append_survival_function_example
 from ..functions import StepFunction
 from ..nonparametric import _compute_counts
 from ..util import check_array_survival
