@@ -10,6 +10,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Step function class.
+"""
 
 import numpy as np
 from sklearn.utils.validation import check_consistent_length

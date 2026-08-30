@@ -10,6 +10,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Metrics to evaluate survival models.
+"""
+
 import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.utils.metaestimators import available_if

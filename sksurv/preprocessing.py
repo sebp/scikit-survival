@@ -10,6 +10,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+Data pre-processing.
+"""
+
 import narwhals.stable.v2 as nw
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
