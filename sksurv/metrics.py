@@ -694,10 +694,9 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
 
     .. math::
 
-        \mathrm{IBS} = \int_{t_1}^{t_\text{max}} \mathrm{BS}^c(t) d w(t)
+        \mathrm{IBS} = \frac{1}{t_\text{max} - t_1} \int_{t_1}^{t_\text{max}} \mathrm{BS}^c(t) \, d t
 
-    where the weighting function is :math:`w(t) = t / t_\text{max}`.
-    The integral is estimated via the trapezoidal rule.
+    where the integral is estimated via the trapezoidal rule.
 
     See the :ref:`User Guide </user_guide/evaluating-survival-models.ipynb#Time-dependent-Brier-Score>`
     and [1]_ for further details.
