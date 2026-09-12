@@ -2,9 +2,9 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.12
+  - python=3.13
   - pip
   - scikit-survival
-  - matplotlib~=3.10.5
+  - matplotlib~=3.11.0
   - numpy
   - seaborn==0.13.2
