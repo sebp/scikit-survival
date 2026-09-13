@@ -11,7 +11,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-Nonparametric estimators of survival and censoring distribution.
+Nonparametric estimators of survival and censoring distributions.
 """
 
 import numbers
@@ -705,7 +705,7 @@ def cumulative_incidence_competing_risks(
     var_type="Aalen",
 ):
     """
-    Non-parametric estimator of Cumulative Incidence function in the case of competing risks.
+    Non-parametric estimator of cumulative incidence function in the case of competing risks.
 
     See the :ref:`User Guide </user_guide/competing-risks.ipynb>` and [1]_ for further details.
 

@@ -1,5 +1,5 @@
-Pre-Processing
-==============
+Preprocessing
+=============
 .. currentmodule:: sksurv.preprocessing
 
 .. autosummary::

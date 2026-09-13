@@ -122,7 +122,7 @@ def categorical_to_numeric(table):
 
     Returns
     -------
-    pandas.DataFrame, pandas.Series, or polars.DataFrame / polars.Series
+    pandas.DataFrame, pandas.Series, polars.DataFrame, or polars.Series
         The transformed data with categorical columns encoded as integers.
         The output dataframe library matches the input.
     """

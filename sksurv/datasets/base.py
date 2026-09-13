@@ -114,7 +114,7 @@ def get_x_y(data_frame, attr_labels, pos_label=None, survival=True, competing_ri
         Whether to return `y` that can be used for survival analysis.
 
     competing_risks : bool, optional, default: False
-        Whether `y` refers to competing risks situation. Only used if `survival` is `True`.
+        Whether `y` refers to a competing risks situation. Only used if `survival` is `True`.
 
     Returns
     -------
@@ -461,7 +461,7 @@ def load_aids(endpoint="aids", *, output_type="pandas"):
         *censor*: boolean indicating whether the endpoint has been reached
         or the event time is right-censored.
 
-        *time*: total length of follow-up
+        *time*: total length of follow-up.
 
         If ``endpoint`` is death, the fields are named *censor_d* and *time_d*.
 
@@ -495,7 +495,7 @@ def load_breast_cancer(*, output_type="pandas"):
     Load and return the breast cancer dataset.
 
     The dataset has 198 samples and 80 features.
-    The endpoint is the presence of distance metastases, which occurred for 51 patients (25.8%).
+    The endpoint is the presence of distant metastases, which occurred for 51 patients (25.8%).
 
     See [1]_, [2]_ for further description.
 
@@ -557,7 +557,7 @@ def load_flchain(*, output_type="pandas"):
     | 6     | creatinine | serum creatinine                                       |
     +-------+------------+--------------------------------------------------------+
     | 7     | mgus       | whether the subject had been diagnosed with monoclonal |
-    |       |            | gammapothy (MGUS)                                      |
+    |       |            | gammopathy (MGUS)                                      |
     +-------+------------+--------------------------------------------------------+
     | 8     | chapter    | for those who died, a grouping of their primary cause  |
     |       |            | of death by chapter headings of the                    |
@@ -660,7 +660,7 @@ def load_bmt(*, output_type="pandas"):
 
 def load_cgvhd(*, output_type="pandas"):
     r"""
-    Load and return data from multicentre randomized clinical trial in bone marrow transplant.
+    Load and return data from multicenter randomized clinical trial in bone marrow transplant.
 
     Initiated for patients with a myeloid malignancy who were to
     undergo an allogeneic bone marrow transplant.
@@ -670,8 +670,8 @@ def load_cgvhd(*, output_type="pandas"):
     +-------+------------+----------------------------------------------+-------------------------------------------+
     | Index | Name       | Description                                  | Encoding                                  |
     +=======+============+==============================================+===========================================+
-    | 0     | dx         | Diagnosis                                    | | AML=acute myeloid leukaemia             |
-    |       |            |                                              | | CML=chronic myeloid leukaemia           |
+    | 0     | dx         | Diagnosis                                    | | AML=acute myeloid leukemia              |
+    |       |            |                                              | | CML=chronic myeloid leukemia            |
     +-------+------------+----------------------------------------------+-------------------------------------------+
     | 1     | tx         | Randomized treatment                         | | BM=cell harvested from the bone marrow  |
     |       |            |                                              | | PB=cell harvested from peripheral blood |

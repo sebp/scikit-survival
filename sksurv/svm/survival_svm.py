@@ -1119,7 +1119,7 @@ class FastKernelSurvivalSVM(_BaseSurvivalSVM, SurvivalAnalysisMixin):
         See :func:`scipy.optimize.minimize`.
 
     optimizer : {'avltree', 'rbtree'}, optional, default: 'rbtree'
-        Specifies which optimizer to use..
+        Specifies which optimizer to use.
 
     random_state : int, :class:`numpy.random.RandomState` instance, or None, optional, default: None
         Used to resolve ties in survival times. Pass an int for reproducible output across

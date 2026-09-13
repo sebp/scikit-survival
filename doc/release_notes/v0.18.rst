@@ -9,7 +9,7 @@ scikit-survival 0.18.0 (2022-08-15)
 This release adds support for scikit-learn 1.1, which
 includes more informative error messages.
 Support for Python 3.7 has been dropped, and
-the minimum supported versions of dependencies are updated to
+the minimum supported versions of dependencies are updated to:
 
    +--------------+-----------------+
    | Package      | Minimum Version |

@@ -10,7 +10,7 @@ This release fixes several issues with packaging scikit-survival.
 
 Bug fixes
 ^^^^^^^^^
-- Added backward support for gcc-c++ (:issue:`255`).
+- Add backward support for gcc-c++ (:issue:`255`).
 - Do not install C/C++ and Cython source files.
 - Add ``packaging`` to build requirements in ``pyproject.toml``.
 - Exclude generated API docs from source distribution.
@@ -58,7 +58,7 @@ Backwards incompatible changes
 - Drop ``min_impurity_split`` parameter from
   :class:`sksurv.ensemble.GradientBoostingSurvivalAnalysis`.
 - ``base_estimators`` and ``meta_estimator`` attributes of
-  :class:`sksurv.meta.Stacking` do not contain fitted models anymore,
+  :class:`sksurv.meta.Stacking` do not contain fitted models anymore;
   use ``estimators_`` and ``final_estimator_``, respectively.
 
 Deprecations

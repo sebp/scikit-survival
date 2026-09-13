@@ -61,17 +61,17 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
 
     Parameters
     ----------
-    penalty : {'l1', 'l2'}, optional,default: 'l2'
+    penalty : {'l1', 'l2'}, optional, default: 'l2'
         Specifies the norm used in the penalization. The 'l2'
         penalty is the standard used in SVC. The 'l1' leads to `coef_`
         vectors that are sparse.
 
-    loss : {'hinge', 'squared_hinge'}, optional,default: 'squared_hinge'
+    loss : {'hinge', 'squared_hinge'}, optional, default: 'squared_hinge'
         Specifies the loss function. 'hinge' is the standard SVM loss
         (used e.g. by the SVC class) while 'squared_hinge' is the
         square of the hinge loss.
 
-    dual : bool, optional,default: True
+    dual : bool, optional, default: True
         Select the algorithm to either solve the dual or primal
         optimization problem. Prefer dual=False when n_samples > n_features.
 
@@ -263,7 +263,7 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
 
         Parameters
         ----------
-        X : array-like, shape = (n_samples, n_features,)
+        X : array-like, shape = (n_samples, n_features)
             The input samples.
 
         Returns

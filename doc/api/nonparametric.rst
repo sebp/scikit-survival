@@ -1,5 +1,5 @@
-Non-parametric Estimators
-=========================
+Nonparametric Estimators
+========================
 .. currentmodule:: sksurv.nonparametric
 
 .. autosummary::

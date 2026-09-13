@@ -11,7 +11,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-Utitlity functions.
+Utility functions.
 """
 
 import narwhals.stable.v2 as nw
@@ -320,7 +320,7 @@ class _PropertyAvailableIfDescriptor:
     Implements a conditional property using the descriptor protocol based on the property decorator.
 
     The corresponding class in scikit-learn (`_AvailableIfDescriptor`) only supports callables.
-    This class adopts the property decorator as described in the descriptor guide in the offical Python documentation:
+    This class adopts the property decorator as described in the descriptor guide in the official Python documentation:
     `Descriptor HowTo Guide <https://docs.python.org/3/howto/descriptor.html>`_.
 
     See Also
@@ -357,7 +357,7 @@ def property_available_if(check):
     """
     A property attribute that is available only if check returns a truthy value.
 
-    Only supports getting an attribute value, setting or deleting an attribute value are not supported.
+    Only supports getting an attribute value, setting or deleting an attribute value is not supported.
 
     Parameters
     ----------

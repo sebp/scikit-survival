@@ -8,7 +8,7 @@ scikit-survival 0.11 (2019-12-21)
 
 This release adds :class:`sksurv.tree.SurvivalTree` and :class:`sksurv.ensemble.RandomSurvivalForest`,
 which are based on the log-rank split criterion.
-It also adds the OSQP solver as option to :class:`sksurv.svm.MinlipSurvivalAnalysis`
+It also adds the OSQP solver as an option to :class:`sksurv.svm.MinlipSurvivalAnalysis`
 and :class:`sksurv.svm.HingeLossSurvivalSVM`, which will replace the now deprecated
 `cvxpy` and `cvxopt` options in a future release.
 

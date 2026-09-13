@@ -31,7 +31,7 @@ Bug fixes
   which returned wrong values if features of training data were not already centered.
   This adds an ``offset_`` attribute that accounts for non-centered data and is added to the
   predicted risk score. Therefore, the outputs of ``predict``, ``predict_survival_function``,
-  and ``predict_cumulative_hazard_function`` will be different to previous versions for
+  and ``predict_cumulative_hazard_function`` will be different from previous versions for
   non-centered data (#139).
 - Rescale coefficients of :class:`sksurv.linear_model.CoxnetSurvivalAnalysis` if
   `normalize=True`.
@@ -43,7 +43,7 @@ Enhancements
 ^^^^^^^^^^^^
 
 - Add :func:`sksurv.show_versions` that prints the version of all dependencies.
-- Add support for pandas 1.1
+- Add support for pandas 1.1.
 - Include interactive notebooks in documentation on readthedocs.
 - Add user guide on :ref:`penalized Cox models </user_guide/coxnet.ipynb>`.
 - Add user guide on :ref:`gradient boosted models </user_guide/boosting.ipynb>`.

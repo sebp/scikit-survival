@@ -15,13 +15,13 @@ scikit-survival 0.24.0 (2025-02-24)
 This release adds support for scikit-learn 1.6, which includes missing-values support
 for :class:`sksurv.ensemble.ExtraSurvivalTrees`.
 Moreover, the release features :func:`sksurv.nonparametric.cumulative_incidence_competing_risks`
-which implements a non-parameteric estimator of the cumulative incidence function
+which implements a non-parametric estimator of the cumulative incidence function
 for competing risks.
 See the :ref:`user guide on the analysis of competing risks </user_guide/competing-risks.ipynb>`.
 
 Bug fixes
 ^^^^^^^^^
-- In the C++ code of :class:`sksurv.linear_model.CoxnetSurvivalAnalysis`, set type of ``n_alphas``
+- In the C++ code of :class:`sksurv.linear_model.CoxnetSurvivalAnalysis`, set the type of ``n_alphas``
   to ``VectorType::Index`` instead of ``ìnt``, because on Windows,
   int and Eigen's Index differ in size.
 - Fix printing of Python version in :func:`sksurv.show_versions`.

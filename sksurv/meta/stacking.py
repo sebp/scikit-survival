@@ -120,10 +120,7 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
         ----------
         **params : keyword arguments
             Specific parameters using e.g.
-            `set_params(parameter_name=new_value)`. In addition, to setting the
-            parameters of the estimator, the individual estimator of the
-            estimators can also be set, or can be removed by setting them to
-            'drop'.
+            `set_params(parameter_name=new_value)`.
 
         Returns
         -------
@@ -277,7 +274,7 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
         ndarray, shape = (n_samples, n_dim)
             Prediction of meta estimator that combines
             predictions of base estimators. `n_dim` depends
-            on the return value of meta estimator's `predict`
+            on the return value of meta estimator's ``predict_proba``
             method.
         """
         Xt = self._predict_estimators(X)
@@ -300,7 +297,7 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
         ndarray, shape = (n_samples, n_dim)
             Prediction of meta estimator that combines
             predictions of base estimators. `n_dim` depends
-            on the return value of meta estimator's `predict`
+            on the return value of meta estimator's ``predict_log_proba``
             method.
         """
         Xt = self._predict_estimators(X)

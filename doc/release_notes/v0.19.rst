@@ -10,13 +10,13 @@ This release adds :meth:`sksurv.tree.SurvivalTree.apply` and
 :meth:`sksurv.tree.SurvivalTree.decision_path`, and support
 for sparse matrices to :class:`sksurv.tree.SurvivalTree`.
 Moreover, it fixes build issues with scikit-learn 1.1.2
-and on macOS with ARM64 CPU.
+and on macOS with an ARM64 CPU.
 
 Bug fixes
 ^^^^^^^^^
 - Fix build issue with scikit-learn 1.1.2, which is binary-incompatible with
   previous releases from the 1.1 series.
-- Fix build from source on macOS with ARM64 by specifying numpy 1.21.0 as install
+- Fix build from source on macOS with ARM64 by specifying numpy 1.21.0 as an install
   requirement for that platform (:issue:`313`).
 
 Enhancements

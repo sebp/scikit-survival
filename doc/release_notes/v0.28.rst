@@ -7,7 +7,7 @@ scikit-survival 0.28.0 (2026-07-05)
 -----------------------------------
 
 This release adds support for polars DataFrames and scikit-learn 1.9.
-The updated minimum supported version of dependencies are:
+The updated minimum supported versions of dependencies are:
 
    +--------------+-----------------+
    | Package      | Minimum Version |

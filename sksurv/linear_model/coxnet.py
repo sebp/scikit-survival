@@ -41,7 +41,7 @@ __all__ = ["CoxnetSurvivalAnalysis"]
 
 class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
     r"""
-    Cox's proportional hazard's model with elastic net penalty.
+    Cox's proportional hazards model with elastic net penalty.
 
     See the :ref:`User Guide </user_guide/coxnet.ipynb>` and [1]_ for further description.
 
@@ -117,7 +117,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
         and baseline cumulative hazard function for each alpha.
         If enabled, :meth:`predict_cumulative_hazard_function` and
         :meth:`predict_survival_function` can be used to obtain
-        predicted  cumulative hazard function and survival function.
+        predicted cumulative hazard function and survival function.
 
     Attributes
     ----------
@@ -487,7 +487,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
             ...     l1_ratio=0.99, fit_baseline_model=True
             ... ).fit(X, y)
 
-            Estimate the cumulative hazard function for one sample and the five highest alpha.
+            Estimate the cumulative hazard function for one sample and the five highest alphas.
 
             >>> chf_funcs = {}
             >>> for alpha in estimator.alphas_[:5]:
@@ -576,7 +576,7 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
             ...     l1_ratio=0.99, fit_baseline_model=True
             ... ).fit(X, y)
 
-            Estimate the survival function for one sample and the five highest alpha.
+            Estimate the survival function for one sample and the five highest alphas.
 
             >>> surv_funcs = {}
             >>> for alpha in estimator.alphas_[:5]:

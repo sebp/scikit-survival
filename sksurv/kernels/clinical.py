@@ -57,7 +57,7 @@ def clinical_kernel(x, y=None, *, ordinal_categories=None):
     """
     Compute clinical kernel.
 
-    The clinical kernel distinguishes between continuous
+    The clinical kernel distinguishes between continuous,
     ordinal, and nominal variables.
     Kernel values are normalized to lie within [0, 1].
 
@@ -134,7 +134,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):  # numpydoc igno
     """
     Transform data using a clinical Kernel.
 
-    The clinical kernel distinguishes between continuous
+    The clinical kernel distinguishes between continuous,
     ordinal, and nominal variables.
 
     See [1]_ for further description.
@@ -146,7 +146,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):  # numpydoc igno
     Parameters
     ----------
     fit_once : bool, optional
-        If set to ``True``, fit() does only transform the training data, but not update
+        If set to ``True``, fit() only transforms the training data, but does not update
         its internal state. You should call prepare() once before calling transform().
         In this mode, fit() expects the prepared numeric array and rejects a
         pandas or polars DataFrame with a :class:`TypeError`; call prepare(X)
@@ -380,7 +380,7 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):  # numpydoc igno
             Training data.
 
         Y : pandas.DataFrame or polars.DataFrame, shape = (n_samples_y, n_features)
-            Testing data. Must use the same dataframe library as ``x``.
+            Testing data. Must use the same dataframe library as ``X``.
 
         Returns
         -------

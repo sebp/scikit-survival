@@ -491,7 +491,7 @@ class RandomSurvivalForest(SurvivalAnalysisMixin, _BaseSurvivalForest):
 
     Compared to scikit-learn's random forest models, :class:`RandomSurvivalForest`
     currently does not support controlling the depth of a tree based on the log-rank
-    test statistics or it's associated p-value, i.e., the parameters
+    test statistics or its associated p-value, i.e., the parameters
     `min_impurity_decrease` or `min_impurity_split` are absent.
     In addition, the `feature_importances_` attribute is not available.
     It is recommended to estimate feature importances via

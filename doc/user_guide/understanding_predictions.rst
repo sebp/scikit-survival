@@ -31,7 +31,7 @@ Formally, each patient record consists of a set of covariates :math:`x \in \math
 :math:`t>0` when an event
 occurred or the time :math:`c>0` of censoring. Since censoring and experiencing an event are mutually exclusive,
 it is common to define an event indicator :math:`\delta \in \{0;1\}` and the observable survival time :math:`y>0`.
-The observable time :math:`y` of a right censored sample is defined as
+The observable time :math:`y` of a right-censored sample is defined as
 
 .. math::
 
@@ -41,7 +41,7 @@ The observable time :math:`y` of a right censored sample is defined as
     c & \text{if } \delta = 0 .
     \end{cases}
 
-Consequently, survival analysis demands for models that take this unique characteristic of such a dataset into account.
+Consequently, survival analysis demands models that take this unique characteristic of such a dataset into account.
 
 
 Basic Quantities
@@ -93,7 +93,7 @@ using :meth:`sksurv.linear_model.CoxPHSurvivalAnalysis.predict_survival_function
 .. important::
 
     For other survival models that do not rely on the proportional hazards assumption,
-    it is often impossible to estimate survival or cumulative hazard function.
+    it is often impossible to estimate the survival or cumulative hazard function.
     Their predictions are risk scores of arbitrary scale. If samples are ordered according to
     their predicted risk score (in ascending order), one obtains the sequence of events,
     as predicted by the model.
