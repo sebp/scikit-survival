@@ -372,13 +372,13 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
     ties : {'breslow', 'efron'}, optional, default: 'breslow'
         The method to handle tied event times. If there are
-        no tied event times all the methods are equivalent.
+        no tied event times, all the methods are equivalent.
 
     n_iter : int, optional, default: 100
         The maximum number of iterations taken for the solver to converge.
 
     tol : float, optional, default: 1e-9
-        Convergence criteria based on the negative log-likelihood::
+        Convergence criterion based on the negative log-likelihood::
 
             |1 - (new neg. log-likelihood / old neg. log-likelihood)| < tol
 

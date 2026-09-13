@@ -80,7 +80,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         - If int, then consider `min_samples_split` as the minimum number.
         - If float, then `min_samples_split` is a fraction and
-          `ceil(min_samples_split * n_samples)` are the minimum
+          `ceil(min_samples_split * n_samples)` is the minimum
           number of samples for each split.
 
     min_samples_leaf : int, float, optional, default: 3
@@ -92,7 +92,7 @@ class SurvivalTree(BaseEstimator, SurvivalAnalysisMixin):
 
         - If int, then consider `min_samples_leaf` as the minimum number.
         - If float, then `min_samples_leaf` is a fraction and
-          `ceil(min_samples_leaf * n_samples)` are the minimum
+          `ceil(min_samples_leaf * n_samples)` is the minimum
           number of samples for each node.
 
     min_weight_fraction_leaf : float, optional, default: 0.0
@@ -715,7 +715,7 @@ class ExtraSurvivalTree(SurvivalTree):
 
         - If int, then consider `min_samples_split` as the minimum number.
         - If float, then `min_samples_split` is a fraction and
-          `ceil(min_samples_split * n_samples)` are the minimum
+          `ceil(min_samples_split * n_samples)` is the minimum
           number of samples for each split.
 
     min_samples_leaf : int, float, optional, default: 3
@@ -727,7 +727,7 @@ class ExtraSurvivalTree(SurvivalTree):
 
         - If int, then consider `min_samples_leaf` as the minimum number.
         - If float, then `min_samples_leaf` is a fraction and
-          `ceil(min_samples_leaf * n_samples)` are the minimum
+          `ceil(min_samples_leaf * n_samples)` is the minimum
           number of samples for each node.
 
     min_weight_fraction_leaf : float, optional, default: 0.0

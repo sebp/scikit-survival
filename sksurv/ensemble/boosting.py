@@ -100,7 +100,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
     Parameters
     ----------
     loss : {'coxph', 'squared', 'ipcwls'}, optional, default: 'coxph'
-        loss function to be optimized. 'coxph' refers to partial likelihood loss
+        Loss function to be optimized. 'coxph' refers to partial likelihood loss
         of Cox's proportional hazards model. The loss 'squared' minimizes a
         squared regression loss that ignores predictions beyond the time of censoring,
         and 'ipcwls' refers to inverse-probability of censoring weighted least squares error.
@@ -559,7 +559,7 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
         .. math::
 
-            S(t \mid x) = S_0(t)^{\exp(f(x)} ,
+            S(t \mid x) = S_0(t)^{\exp(f(x))} ,
 
         where :math:`f(\cdot)` is the additive ensemble of base learners,
         and :math:`S_0(t)` is the baseline survival function,
@@ -650,7 +650,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
     Parameters
     ----------
     loss : {'coxph', 'squared', 'ipcwls'}, optional, default: 'coxph'
-        loss function to be optimized. 'coxph' refers to partial likelihood loss
+        Loss function to be optimized. 'coxph' refers to partial likelihood loss
         of Cox's proportional hazards model. The loss 'squared' minimizes a
         squared regression loss that ignores predictions beyond the time of censoring,
         and 'ipcwls' refers to inverse-probability of censoring weighted least squares error.
@@ -1207,7 +1207,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
             locals())``. If the callable returns ``True`` the fitting procedure
             is stopped. The monitor can be used for various things such as
             computing held-out estimates, early stopping, model introspect, and
-            snapshoting.
+            snapshotting.
 
         Returns
         -------
@@ -1533,7 +1533,7 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
         .. math::
 
-            S(t \mid x) = S_0(t)^{\exp(f(x)} ,
+            S(t \mid x) = S_0(t)^{\exp(f(x))} ,
 
         where :math:`f(\cdot)` is the additive ensemble of base learners,
         and :math:`S_0(t)` is the baseline survival function,

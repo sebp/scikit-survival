@@ -67,7 +67,7 @@ class StepFunction:
         Returns
         -------
         lower_limit : float
-            Lower limit of the omain.
+            Lower limit of the domain.
 
         upper_limit : float
             Upper limit of the domain.

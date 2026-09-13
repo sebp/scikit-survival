@@ -421,7 +421,7 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
         where ``True`` indicates an event and ``False`` indicates right-censoring.
         The second field is a float with the time of event or time of censoring.
     estimate : array-like, shape = (n_samples,) or (n_samples, n_times)
-        Predicted risk scores for the test data (e.g., from ``estimator.predict(X)``.
+        Predicted risk scores for the test data (e.g., from ``estimator.predict(X)``).
         A higher value indicates a higher risk of experiencing an event.
         If a 1D array is provided, the same risk score is used for all time points.
         If a 2D array is provided, ``estimate[:, j]`` is used for the :math:`j`-th
@@ -569,7 +569,7 @@ def brier_score(survival_train, survival_test, estimate, times):
 
     where :math:`\hat{\pi}(t | \mathbf{x})` is the predicted survival probability
     up to the time point :math:`t` for a feature vector :math:`\mathbf{x}`,
-    and :math:`1/\hat{G}(t)` is a inverse probability of censoring weight.
+    and :math:`1/\hat{G}(t)` is an inverse probability of censoring weight.
 
     See the :ref:`User Guide </user_guide/evaluating-survival-models.ipynb#Time-dependent-Brier-Score>`
     and [1]_ for details.

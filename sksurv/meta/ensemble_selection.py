@@ -313,7 +313,7 @@ class _BaseEnsembleSelection(Stacking):
         Returns
         -------
         base_estimators : list
-            Same as `self.base_estimators`, expect that estimators with custom kernel function
+            Same as `self.base_estimators`, except that estimators with custom kernel function
             use ``kernel='precomputed'``.
 
         kernel_cache : dict
@@ -461,7 +461,7 @@ class EnsembleSelection(_BaseEnsembleSelection):
         *Larger* values of the score are assumed to be better.
 
     n_estimators : float or int, optional, default: 0.2
-        If a float, the percentage of estimators in the ensemble to retain, if an int the
+        If a float, the percentage of estimators in the ensemble to retain, if an int, the
         absolute number of estimators to retain.
 
     min_score : float, optional, default: 0.2
@@ -598,7 +598,7 @@ class EnsembleSelectionRegressor(_BaseEnsembleSelection):
     Ensemble selection for regression that accounts for the accuracy and correlation of errors.
 
     The ensemble is pruned during training according to estimators' accuracy and the correlation
-    between prediction errors per sample. The accuracy of the *i*-th estimator defined as
+    between prediction errors per sample. The accuracy of the *i*-th estimator is defined as
     :math:`\frac{ \min_{i=1,\ldots, n}(error_i) }{ error_i }`.
     In addition to the accuracy, models are selected based on the correlation between residuals
     of different models (diversity). The diversity of the *i*-th estimator is defined as
@@ -621,7 +621,7 @@ class EnsembleSelectionRegressor(_BaseEnsembleSelection):
         *Smaller* values of the score are assumed to be better.
 
     n_estimators : float or int, optional, default: 0.2
-        If a float, the percentage of estimators in the ensemble to retain, if an int the
+        If a float, the percentage of estimators in the ensemble to retain, if an int, the
         absolute number of estimators to retain.
 
     min_score : float, optional, default: 0.66
