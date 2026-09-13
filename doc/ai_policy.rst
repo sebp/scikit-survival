@@ -12,7 +12,7 @@ contributions reflect real understanding and that AI use is transparent.
 
 Each contribution to scikit-survival is required to undergo code review, which
 requires a significant time commitment by the reviewer.
-It is important that AI tools are used in a way that add value to the project
+It is important that AI tools are used in a way that adds value to the project
 and respects the time of other contributors and maintainers.
 
 You can use AI extensively and produce excellent contributions. You can also
@@ -103,8 +103,8 @@ Examples include:
 * Submitting an AI-generated implementation of an algorithm you don't understand
 * Having AI interact with other contributors on your behalf (e.g., in discussions, comments)
 
-These are uses where outputs from AI tools are the sole basis for a contribution,
-no human judgment was involved.
+These are uses where outputs from AI tools are the sole basis for a contribution
+and no human judgment was involved.
 
 See also
 --------

@@ -54,7 +54,7 @@ Enhancements
 - The default value of `alpha_min_ratio` of
   :class:`sksurv.linear_model.CoxnetSurvivalAnalysis` will now depend
   on the `n_samples/n_features` ratio.
-  If ``n_samples > n_features``, the default value is 0.0001
+  If ``n_samples > n_features``, the default value is 0.0001.
   If ``n_samples <= n_features``, the default value is 0.01.
 - Add support for scikit-learn 0.23 (#119).
 

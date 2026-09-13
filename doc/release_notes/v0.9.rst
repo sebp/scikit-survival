@@ -15,7 +15,7 @@ Enhancements
 - Use scipy.special.comb instead of deprecated scipy.misc.comb.
 - Add support for pandas 0.24 and drop support for 0.20.
 - Add support for scikit-learn 0.21 and drop support for 0.20 (#71).
-- Explain use of intercept in ComponentwiseGradientBoostingSurvivalAnalysis (#68)
+- Explain use of intercept in ComponentwiseGradientBoostingSurvivalAnalysis (#68).
 - Bump Eigen to 3.3.7.
 
 Bug fixes

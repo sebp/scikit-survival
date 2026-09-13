@@ -12,7 +12,7 @@ The minimum required version for pandas has been bumped to pandas 1.4.0.
 Bug fixes
 ^^^^^^^^^
 - Add `SurvivalAnalysisMixin` base class to :class:`sksurv.ensemble.ExtraSurvivalTrees`
-  to enable the :meth:`sksurv.ensemble.ExtraSurvivalTrees.score` method that has been
+  to enable the :meth:`sksurv.ensemble.ExtraSurvivalTrees.score` method that was
   unintentionally removed in 0.23.0 (:issue:`488`).
 
 Enhancements
@@ -40,7 +40,7 @@ trees in the ensemble.
 
 This release fixes a bug in :class:`sksurv.ensemble.ComponentwiseGradientBoostingSurvivalAnalysis`
 and :class:`sksurv.ensemble.GradientBoostingSurvivalAnalysis` when dropout is used.
-Previously, dropout was only applied starting with the third iteration, now dropout is applied
+Previously, dropout was only applied starting with the third iteration; now, dropout is applied
 in the second iteration too.
 
 Finally, this release adds compatibility with numpy 2.0 and drops support for Python 3.8.

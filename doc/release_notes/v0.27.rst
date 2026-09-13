@@ -7,7 +7,7 @@ scikit-survival 0.27.0 (2026-02-02)
 -----------------------------------
 
 This release adds support for scikit-learn 1.8 and pandas 3.0.
-The updated minimum supported version of dependencies are:
+The updated minimum supported versions of dependencies are:
 
    +--------------+-----------------+
    | Package      | Minimum Version |

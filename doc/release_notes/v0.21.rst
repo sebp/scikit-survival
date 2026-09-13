@@ -14,7 +14,7 @@ This is a major release bringing new features and performance improvements.
   early-stopping via the `monitor` parameter of
   :meth:`sksurv.ensemble.GradientBoostingSurvivalAnalysis.fit`.
 - :func:`sksurv.metrics.concordance_index_censored` has a significantly
-  reduced memory footprint. Memory usage now scales linear, instead of quadratic,
+  reduced memory footprint. Memory usage now scales linearly, instead of quadratically,
   in the number of samples.
 - Fitting of :class:`sksurv.tree.SurvivalTree`,
   :class:`sksurv.ensemble.RandomSurvivalForest`, or :class:`sksurv.ensemble.ExtraSurvivalTrees`
@@ -63,7 +63,7 @@ Documentation
 Backwards incompatible changes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 - The attribute ``event_times_`` of estimators has been replaced by ``unique_times_``
-  to clarify that these are all the unique times points, not just the once where
+  to clarify that these are all the unique time points, not just the ones where
   an event occurred (:issue:`371`).
 - Functions returned by `predict_cumulative_hazard_function` and `predict_survival_function`
   of :class:`sksurv.tree.SurvivalTree`, :class:`sksurv.ensemble.RandomSurvivalForest`,

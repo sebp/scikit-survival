@@ -5,7 +5,7 @@ scikit-survival
 
 scikit-survival is a Python module for `survival analysis <https://en.wikipedia.org/wiki/Survival_analysis>`_
 built on top of `scikit-learn <https://scikit-learn.org/>`_. It allows doing survival analysis
-while utilizing the power of scikit-learn, e.g., for pre-processing or doing cross-validation.
+while utilizing the power of scikit-learn, e.g., for preprocessing or doing cross-validation.
 
 The objective in survival analysis (also referred to as time-to-event or reliability analysis)
 is to establish a connection between covariates and the time of an event.
@@ -15,10 +15,10 @@ parts of the training data can only be partially observed – they are *censored
 For instance, in a clinical study, patients are often monitored for a particular time period,
 and events occurring in this particular period are recorded.
 If a patient experiences an event, the exact time of the event can
-be recorded – the patient’s record is uncensored. In contrast, right censored records
+be recorded – the patient’s record is uncensored. In contrast, right-censored records
 refer to patients that remained event-free during the study period and
 it is unknown whether an event has or has not occurred after the study ended.
-Consequently, survival analysis demands for models that take
+Consequently, survival analysis demands models that take
 this unique characteristic of such a dataset into account.
 
 
