@@ -120,10 +120,7 @@ class Stacking(MetaEstimatorMixin, SurvivalAnalysisMixin, _BaseComposition):
         ----------
         **params : keyword arguments
             Specific parameters using e.g.
-            `set_params(parameter_name=new_value)`. In addition to setting the
-            parameters of the estimator, the individual estimator of the
-            estimators can also be set, or can be removed by setting it to
-            'drop'.
+            `set_params(parameter_name=new_value)`.
 
         Returns
         -------
