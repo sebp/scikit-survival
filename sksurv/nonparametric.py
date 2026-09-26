@@ -839,7 +839,10 @@ def cumulative_incidence_competing_risks(
 
     _x, _y, conf_int_km = kaplan_meier_estimator(event > 0, time_exit, conf_type="log-log")
     ci = np.empty(shape=(n_risks + 1, 2, n_t), dtype=conf_int_km.dtype)
-    ci[0, :, :] = 1 - conf_int_km
+    # conf_int_km holds (lower, upper) bounds of the survival curve. Subtracting each
+    # from 1 turns the survival lower bound into the risk upper bound and vice versa,
+    # so the two rows must also be swapped to keep (lower, upper) ordering for the risk.
+    ci[0, :, :] = 1 - conf_int_km[::-1]
     ci[1:, :, :] = _cum_inc_cr_ci_estimator(cum_inc[1:], var, conf_level, conf_type)
 
     return uniq_times, cum_inc, ci
