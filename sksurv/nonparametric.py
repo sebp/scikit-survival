@@ -491,7 +491,13 @@ def ipc_weights(event, time):
     idx = np.searchsorted(unique_time, time[event])
     Ghat = p[idx]
 
-    assert (Ghat > 0).all()
+    if (Ghat == 0.0).any():
+        raise ValueError(
+            "censoring survival function is zero at one or more event times. "
+            "This can occur when event and censoring times are tied at the largest observed time. "
+            "Check whether the tied times are caused by rounding; otherwise, inverse probability of censoring "
+            "weights cannot be computed for this data."
+        )
 
     weights = np.zeros(time.shape[0])
     weights[event] = 1.0 / Ghat
