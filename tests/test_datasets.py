@@ -488,7 +488,7 @@ class TestLoadDatasetsPolars:
         )
         assert isinstance(x_train, pl.DataFrame)
         assert isinstance(x_train.schema["grade"], pl.Enum), f"grade dtype: {x_train.schema['grade']!r}"
-        assert x_train["grade"].cat.get_categories().to_list() == ["I", "II", "III", "IV"]
+        assert list(x_train["grade"].dtype.categories) == ["I", "II", "III", "IV"]
 
 
 def _make_and_write_data(fp, n_samples, n_features, with_index, with_labels, seed, column_prefix="V"):

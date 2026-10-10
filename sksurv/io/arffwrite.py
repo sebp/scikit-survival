@@ -40,7 +40,7 @@ def _prepare_polars_for_arff_write(data):
         col = nw_df.get_column(col_name)
         dtype = col.dtype
         if isinstance(dtype, nw.Enum):
-            categories = col.cat.get_categories().to_list()
+            categories = col.dtype.categories
             columns[col_name] = pd.Categorical(col.to_list(), categories=categories)
         elif isinstance(dtype, nw.Categorical):
             categories = sorted(col.drop_nulls().unique())
