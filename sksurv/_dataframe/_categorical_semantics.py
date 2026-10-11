@@ -51,7 +51,7 @@ def get_semantic_categories(series):
     s = nw.from_native(series, series_only=True)
     dt = s.dtype
     if isinstance(dt, nw.Enum):
-        return tuple(s.cat.get_categories())
+        return tuple(s.dtype.categories)
     if isinstance(dt, nw.Categorical) and s.implementation.is_pandas_like():
         return tuple(s.cat.get_categories())
     if is_categorical_or_string_dtype(dt):
