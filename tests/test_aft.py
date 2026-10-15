@@ -11,6 +11,19 @@ from sksurv.testing import assert_cindex_almost_equal
 
 class TestIPCRidge:
     @staticmethod
+    def test_fit_zero_censoring_survival():
+        x = np.arange(11, dtype=float).reshape(-1, 1)
+        event = np.array([True, True, True, False, False, False, True, True, False, False, True])
+        time = np.array([1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4], dtype=float)
+        y = np.empty(11, dtype=[("event", bool), ("time", float)])
+        y["event"] = event
+        y["time"] = time
+
+        match = "event and censoring times are tied at the largest observed time"
+        with pytest.raises(ValueError, match=match):
+            IPCRidge().fit(x, y)
+
+    @staticmethod
     def test_fit(make_whas500):
         whas500 = make_whas500()
         model = IPCRidge()
