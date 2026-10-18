@@ -44,7 +44,7 @@ jobs:
           fi
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@e090b81e30c4d855ea63bf4b6e59204c09a101ae  # v4.2.1
+        uses: pypa/cibuildwheel@b3395e271a35f73dad77f21802abe9b986dfe299  # v4.3.1
         with:
           extras: uv
         env:
@@ -58,7 +58,7 @@ jobs:
           CIBW_TEST_COMMAND_WINDOWS: pytest --strict-markers -m "not slow" -k "not test_fit_and_predict_linear_regression" {project}\\tests
           # Skip trying to test arm64 builds on Intel Macs, and vice versa
           CIBW_TEST_SKIP: "*-macosx_${{ runner.arch == 'ARM64' && 'x86_64' || 'arm64' }} *-macosx_universal2"
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
@@ -80,7 +80,7 @@ jobs:
       - name: Check README rendering for PyPI
         run: pipx run twine check dist/*
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: cibw-sdist
           path: dist/*.tar.gz
@@ -105,7 +105,7 @@ jobs:
 
     steps:
       - name: Download packages
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
         with:
           pattern: cibw-*
           path: dist
@@ -144,7 +144,7 @@ jobs:
 
     steps:
       - name: Download packages
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
         with:
           pattern: cibw-*
           path: dist
