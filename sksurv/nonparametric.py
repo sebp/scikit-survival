@@ -839,7 +839,7 @@ def cumulative_incidence_competing_risks(
 
     _x, _y, conf_int_km = kaplan_meier_estimator(event > 0, time_exit, conf_type="log-log")
     ci = np.empty(shape=(n_risks + 1, 2, n_t), dtype=conf_int_km.dtype)
-    ci[0, :, :] = 1 - conf_int_km
+    ci[0, :, :] = 1 - conf_int_km[::-1]  # one minus reversed KM CI yields CI for cumulative incidence
     ci[1:, :, :] = _cum_inc_cr_ci_estimator(cum_inc[1:], var, conf_level, conf_type)
 
     return uniq_times, cum_inc, ci
