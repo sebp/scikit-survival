@@ -6540,7 +6540,7 @@ class CGVHD_DataSets(FixtureParameterFactory):
             _, km_y, km_ci = kaplan_meier_estimator(event > 0, ftime, conf_type="log-log")
 
             true_y = [1.0 - km_y]
-            true_ci = [1.0 - km_ci]
+            true_ci = [1.0 - km_ci[::-1]]
             for _, subet in data.groupby("Failcode"):
                 true_y.append(subet["CIF"].to_numpy())
                 true_ci.append(np.stack((subet["CIF_LCL"].to_numpy(), subet["CIF_UCL"].to_numpy())))
@@ -6614,6 +6614,9 @@ class TestCumIncCompetingRisks:
         assert_array_equal(x, true_x)
         assert_array_almost_equal(y, true_y)
         assert_array_almost_equal(y[0], y[1:].sum(axis=0))
+
+        assert np.all(ci[0, 0, :] <= ci[0, 1, :]), "CI lower bound must be smaller upper bound"
+        assert np.all(ci[1:, 0, :] <= ci[1:, 1, :]), "CI lower bound must be smaller upper bound"
 
         nan_mask = np.isnan(true_ci)
         assert_allclose(np.ma.masked_array(ci, nan_mask), np.ma.masked_array(true_ci, nan_mask), rtol=5.0e-4)
