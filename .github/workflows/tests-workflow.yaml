@@ -15,10 +15,10 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - py311
           - py312
           - py313
           - py314
+          - py315
         runner:
           - ubuntu-latest
           - macos-26
@@ -94,10 +94,10 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - py311
           - py312
           - py313
           - py314
+          - py315
     env:
       CONDA_INSTALL_LOCN: ${{ github.workspace }}\Miniforge3
       PYTHONWARNINGS: default

@@ -1,0 +1,4 @@
+﻿$env:CI_PYTHON_VERSION="3.15.*"
+$env:CI_PANDAS_VERSION="3.0.*"
+$env:CI_NUMPY_VERSION="2.5.*"
+$env:CI_SKLEARN_VERSION="1.9.*"
