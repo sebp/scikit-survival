@@ -6604,6 +6604,36 @@ class TestCumIncCompetingRisks:
         assert_array_almost_equal(y[0], y[1:].sum(axis=0))
 
     @staticmethod
+    @pytest.mark.parametrize("event, time, true_x, true_y", SimpleDataBMTCases().get_cases())
+    def test_truncated_after_start(event, time, true_x, true_y):
+        time_min = np.median(time)
+        x, y = cumulative_incidence_competing_risks(event, time, time_min=time_min)
+
+        assert_array_equal(x, np.unique(time[time >= time_min]))
+        _x_km, true_km = kaplan_meier_estimator(event > 0, time, time_min=time_min)
+        assert_array_almost_equal(y[0], 1.0 - true_km)
+        assert_array_almost_equal(y[0], y[1:].sum(axis=0))
+
+    @staticmethod
+    @pytest.mark.parametrize("var_type", ["Aalen", "Dinse_Approx", "Dinse"])
+    def test_truncated_confidence_interval(var_type):
+        _, bmt = load_bmt()
+        event = bmt["status"]
+        time = bmt["ftime"]
+        time_min = np.median(time)
+
+        x, y, ci = cumulative_incidence_competing_risks(
+            event, time, time_min=time_min, conf_type="log-log", var_type=var_type
+        )
+
+        n_risks = event.max()
+        assert y.shape == (n_risks + 1, x.shape[0])
+        assert ci.shape == (n_risks + 1, 2, x.shape[0])
+        assert np.isfinite(ci).all()
+        assert np.all(ci[:, 0] <= y)
+        assert np.all(y <= ci[:, 1])
+
+    @staticmethod
     @pytest.mark.parametrize("var_type", ["Aalen", "Dinse_Approx", "Dinse"])
     @pytest.mark.parametrize("get_expected_fn", CGVHD_DataSets().get_cases())
     def test_ci(get_expected_fn, var_type):
