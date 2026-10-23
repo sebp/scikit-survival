@@ -19,7 +19,7 @@ class TestIPCRidge:
         y["event"] = event
         y["time"] = time
 
-        match = "event and censoring times are tied at the largest observed time"
+        match = r"^censoring survival function is zero at 1 event times with values \[5\]"
         with pytest.raises(ValueError, match=match):
             IPCRidge().fit(x, y)
 
