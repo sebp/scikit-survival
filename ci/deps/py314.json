@@ -1,0 +1,7 @@
+{
+    "CI_PYTHON_VERSION": "3.14.*",
+    "CI_PANDAS_VERSION": "3.0.*",
+    "CI_NUMPY_VERSION": "2.4.*",
+    "CI_SKLEARN_VERSION": "1.9.*",
+    "CI_NO_SLOW": false
+}
