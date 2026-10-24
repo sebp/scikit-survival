@@ -32,6 +32,7 @@ def show_versions():
         "pandas",
         "numexpr",
         "ecos",
+        "clarabel",
         "osqp",
         "joblib",
         "matplotlib",
