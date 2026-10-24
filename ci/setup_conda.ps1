@@ -82,15 +82,11 @@ Test-ExitCode
 Write-Output "::endgroup::"
 
 Write-Output "::group::✨ Create conda environment..."
-$envScript=".\ci\deps\windows\$DepsVersion.ps1"
-& $envScript
-python "ci\render-requirements.py" "ci\deps\requirements.yaml.tmpl" > environment.yaml
+pipx run "ci\render-requirements.py" -m "yaml" "$DepsVersion" > environment.yaml
 
 mamba env create -n sksurv-test --file environment.yaml
 
-Add-Content -Path "$InstallationDirectory/envs/sksurv-test/conda-meta/pinned" -Value "numpy $env:CI_NUMPY_VERSION"
-Add-Content -Path "$InstallationDirectory/envs/sksurv-test/conda-meta/pinned" -Value "pandas $env:CI_PANDAS_VERSION"
-Add-Content -Path "$InstallationDirectory/envs/sksurv-test/conda-meta/pinned" -Value "scikit-learn $env:CI_SKLEARN_VERSION"
+pipx run "ci\render-requirements.py" -m "pinned" "$DepsVersion" > "$InstallationDirectory/envs/sksurv-test/conda-meta/pinned"
 
 mamba list -n sksurv-test
 Write-Output "::endgroup::"

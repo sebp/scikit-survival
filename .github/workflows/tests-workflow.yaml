@@ -15,10 +15,10 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - py311
-          - py312
-          - py313
-          - py314
+          - "311"
+          - "312"
+          - "313"
+          - "314"
         runner:
           - ubuntu-latest
           - macos-26
@@ -34,8 +34,8 @@ jobs:
         id: dependencies
         run: |
           echo "CONDA_PKGS_DIRS=${{ runner.temp }}/conda_pkgs_dir" >> $GITHUB_ENV
-          echo "requirements=ci/deps/${{ matrix.config }}.sh" >> $GITHUB_OUTPUT
-          source ci/deps/${{ matrix.config }}.sh
+          echo "requirements=ci/deps/py${{ matrix.config }}.json" >> $GITHUB_OUTPUT
+          CI_NO_SLOW=$(jq '.CI_NO_SLOW' "ci/deps/py${{ matrix.config }}.json")
           echo "CI_NO_SLOW=${CI_NO_SLOW}" >> $GITHUB_ENV
       - name: Cache downloaded packages
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
@@ -94,10 +94,10 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - py311
-          - py312
-          - py313
-          - py314
+          - "311"
+          - "312"
+          - "313"
+          - "314"
     env:
       CONDA_INSTALL_LOCN: ${{ github.workspace }}\Miniforge3
       PYTHONWARNINGS: default
@@ -114,7 +114,7 @@ jobs:
         # CONDA_PKGS_DIRS defines the directory in which packages are located.
         # https://docs.conda.io/projects/conda/en/latest/user-guide/configuration/settings.html#pkgs-dirs-specify-package-directories
         run: |
-          Add-Content -Path $env:GITHUB_OUTPUT -Value "requirements=.\ci\deps\windows\${{ matrix.config }}.ps1"
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "requirements=.\ci\deps\py${{ matrix.config }}.json"
           Add-Content -Path $env:GITHUB_ENV -Value "CONDA_PKGS_DIRS=${{ runner.temp }}\conda_pkgs_dir"
       - name: Cache downloaded packages
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
@@ -139,7 +139,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and check notebooks
     env:
-      DEPS_CONFIG: py313
+      DEPS_CONFIG: "313"
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -151,7 +151,7 @@ jobs:
         id: dependencies
         run: |
           echo "CONDA_PKGS_DIRS=${{ runner.temp }}/conda_pkgs_dir" >> $GITHUB_ENV
-          echo "requirements=ci/deps/${DEPS_CONFIG}.sh" >> $GITHUB_OUTPUT
+          echo "requirements=ci/deps/py${DEPS_CONFIG}.json" >> $GITHUB_OUTPUT
       - name: Cache downloaded packages
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
