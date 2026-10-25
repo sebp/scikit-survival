@@ -825,6 +825,9 @@ def cumulative_incidence_competing_risks(
         mask = uniq_times >= time_min
         uniq_times = np.compress(mask, uniq_times)
         ratio = np.compress(mask, ratio, axis=0)
+        n_events_cr = np.compress(mask, n_events_cr, axis=0)
+        n_at_risk = np.compress(mask, n_at_risk)
+        n_t = uniq_times.shape[0]
 
     kpe = np.cumprod(1.0 - ratio[:, 0])
     kpe_prime = np.r_[1.0, kpe[:-1]]
@@ -844,7 +847,7 @@ def cumulative_incidence_competing_risks(
     else:
         raise ValueError(f"{var_type=} must be one of 'Aalen', 'Dinse', or 'Dinse_Approx'.")
 
-    _x, _y, conf_int_km = kaplan_meier_estimator(event > 0, time_exit, conf_type="log-log")
+    _x, _y, conf_int_km = kaplan_meier_estimator(event > 0, time_exit, time_min=time_min, conf_type="log-log")
     ci = np.empty(shape=(n_risks + 1, 2, n_t), dtype=conf_int_km.dtype)
     ci[0, :, :] = 1 - conf_int_km[::-1]  # one minus reversed KM CI yields CI for cumulative incidence
     ci[1:, :, :] = _cum_inc_cr_ci_estimator(cum_inc[1:], var, conf_level, conf_type)
