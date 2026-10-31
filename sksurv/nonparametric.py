@@ -764,13 +764,14 @@ def cumulative_incidence_competing_risks(
 
     References
     ----------
-    .. [1] Kalbfleisch, J.D. and Prentice, R.L. (2002)
-           The Statistical Analysis of Failure Time Data. 2nd Edition, John Wiley and Sons, New York.
-    .. [2] Aalen, O. (1978a). Annals of Statistics, 6, 534–545.
-           We implement the formula in M. Pintilie: "Competing Risks: A Practical Perspective".
-           John Wiley & Sons, 2006, Eq. 4.5
-    .. [3] Dinse and Larson, Biometrika (1986), 379. Sect. 4, Eqs. 4 and 5.
-    .. [4] Dinse and Larson, Biometrika (1986), 379. Sect. 4, Eq. 6.
+    .. [1] Kalbfleisch, J.D. and Prentice, R.L.,
+           "The Statistical Analysis of Failure Time Data", 2nd Edition, John Wiley & Sons, New York, 2002.
+    .. [2] Aalen, O., "Nonparametric Estimation of Partial Transition Probabilities in Multiple Decrement Models",
+           Annals of Statistics, 6(3), 534–545, 1978.
+    .. [3] Pintilie, M., "Competing Risks: A Practical Perspective", John Wiley & Sons, 2006. Eq. 4.5.
+    .. [4] Dinse, G.E. and Larson, M.G.,
+           "A note on semi-Markov models for partially censored data", Biometrika, 73(2), 379–386, 1986.
+           Sect. 4, Eqs. 4, 5 and 6.
 
     Examples
     --------
