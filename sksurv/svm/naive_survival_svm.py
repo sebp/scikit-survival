@@ -105,13 +105,12 @@ class NaiveSurvivalSVM(SurvivalAnalysisMixin, LinearSVC):
 
     References
     ----------
-    .. [1] Van Belle, V., Pelckmans, K., Suykens, J. A., & Van Huffel, S.
-           Support Vector Machines for Survival Analysis. In Proc. of the 3rd Int. Conf.
-           on Computational Intelligence in Medicine and Healthcare (CIMED). 1-8. 2007
+    .. [1] Van Belle, V., Pelckmans, K., Suykens, J. A., & Van Huffel, S. (2007).
+           "Support Vector Machines for Survival Analysis".
+           In: Proc. of the 3rd Int. Conf. on Computational Intelligence in Medicine and Healthcare (CIMED), 1–8.
 
-    .. [2] Evers, L., Messow, C.M.,
-           "Sparse kernel methods for high-dimensional survival data",
-           Bioinformatics 24(14), 1632-8, 2008.
+    .. [2] Evers, L., & Messow, C. M. (2008). "Sparse kernel methods for high-dimensional survival data".
+           Bioinformatics, 24(14), 1632–8.
     """
 
     _parameter_constraints = {

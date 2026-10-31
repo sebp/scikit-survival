@@ -349,9 +349,8 @@ def load_whas500(*, output_type="pandas"):
     ----------
     .. [1] https://web.archive.org/web/20170114043458/http://www.umass.edu/statdata/statdata/data/
 
-    .. [2] Hosmer, D., Lemeshow, S., May, S.:
-        "Applied Survival Analysis: Regression Modeling of Time to Event Data."
-        John Wiley & Sons, Inc. (2008)
+    .. [2] Hosmer, D., Lemeshow, S., & May, S. (2008).
+           "Applied Survival Analysis: Regression Modeling of Time to Event Data". John Wiley & Sons, Inc.
     """
     fn = _get_data_path("whas500.arff")
     return get_x_y(loadarff(fn, output_type=output_type), attr_labels=["fstat", "lenfol"], pos_label="1")
@@ -386,10 +385,10 @@ def load_gbsg2(*, output_type="pandas"):
     ----------
     .. [1] http://ascopubs.org/doi/abs/10.1200/jco.1994.12.10.2086
 
-    .. [2] Schumacher, M., Basert, G., Bojar, H., et al.
-        "Randomized 2 × 2 trial evaluating hormonal treatment and the duration of chemotherapy
-        in node-positive breast cancer patients."
-        Journal of Clinical Oncology 12, 2086–2093. (1994)
+    .. [2] Schumacher, M., Bastert, G., Bojar, H., et al. (1994).
+           "Randomized 2 × 2 trial evaluating hormonal treatment and the duration of chemotherapy in node-positive
+           breast cancer patients".
+           Journal of Clinical Oncology, 12, 2086–2093.
     """
     fn = _get_data_path("GBSG2.arff")
     return get_x_y(loadarff(fn, output_type=output_type), attr_labels=["cens", "time"], pos_label="1")
@@ -422,8 +421,8 @@ def load_veterans_lung_cancer(*, output_type="pandas"):
 
     References
     ----------
-    .. [1] Kalbfleisch, J.D., Prentice, R.L.:
-        "The Statistical Analysis of Failure Time Data." John Wiley & Sons, Inc. (2002)
+    .. [1] Kalbfleisch, J. D., & Prentice, R. L. (2002). "The Statistical Analysis of Failure Time Data".
+           John Wiley & Sons, Inc.
     """
     fn = _get_data_path("veteran.arff")
     return get_x_y(
@@ -469,9 +468,8 @@ def load_aids(endpoint="aids", *, output_type="pandas"):
     ----------
     .. [1] https://web.archive.org/web/20170114043458/http://www.umass.edu/statdata/statdata/data/
 
-    .. [2] Hosmer, D., Lemeshow, S., May, S.:
-        "Applied Survival Analysis: Regression Modeling of Time to Event Data."
-        John Wiley & Sons, Inc. (2008)
+    .. [2] Hosmer, D., Lemeshow, S., & May, S. (2008).
+           "Applied Survival Analysis: Regression Modeling of Time to Event Data". John Wiley & Sons, Inc.
     """
     labels_aids = ["censor", "time"]
     labels_death = ["censor_d", "time_d"]
@@ -519,10 +517,10 @@ def load_breast_cancer(*, output_type="pandas"):
     ----------
     .. [1] https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE7390
 
-    .. [2] Desmedt, C., Piette, F., Loi et al.:
-        "Strong Time Dependence of the 76-Gene Prognostic Signature for Node-Negative Breast Cancer
-        Patients in the TRANSBIG Multicenter Independent Validation Series."
-        Clin. Cancer Res. 13(11), 3207–14 (2007)
+    .. [2] Desmedt, C., Piette, F., Loi, S., et al. (2007).
+           "Strong Time Dependence of the 76-Gene Prognostic Signature for Node-Negative Breast Cancer Patients in the
+           TRANSBIG Multicenter Independent Validation Series".
+           Clin. Cancer Res., 13(11), 3207–14.
     """
     fn = _get_data_path("breast_cancer_GSE7390-metastasis.arff")
     return get_x_y(
@@ -588,10 +586,10 @@ def load_flchain(*, output_type="pandas"):
     ----------
     .. [1] https://doi.org/10.1016/j.mayocp.2012.03.009
 
-    .. [2] Dispenzieri, A., Katzmann, J., Kyle, R., Larson, D., Therneau, T., Colby, C., Clark, R.,
-           Mead, G., Kumar, S., Melton III, LJ. and Rajkumar, SV.
-           Use of nonclonal serum immunoglobulin free light chains to predict overall survival in
-           the general population, Mayo Clinic Proceedings 87:512-523. (2012)
+    .. [2] Dispenzieri, A., Katzmann, J., Kyle, R., Larson, D., Therneau, T., Colby, C., Clark, R., Mead, G., Kumar, S.,
+           Melton III, L. J., & Rajkumar, S. V. (2012).
+           "Use of nonclonal serum immunoglobulin free light chains to predict overall survival in the general
+           population". Mayo Clinic Proceedings, 87, 512–523.
     """
     fn = _get_data_path("flchain.arff")
     return get_x_y(
@@ -646,9 +644,9 @@ def load_bmt(*, output_type="pandas"):
 
     References
     ----------
-    .. [1] https://doi.org/10.1038/sj.bmt.1705727
-           Scrucca, L., Santucci, A. & Aversa, F.:
-           "Competing risk analysis using R: an easy guide for clinicians. Bone Marrow Transplant 40, 381–387 (2007)"
+    .. [1] Scrucca, L., Santucci, A., & Aversa, F. (2007).
+           "Competing risk analysis using R: an easy guide for clinicians". Bone Marrow Transplant, 40, 381–387.
+           https://doi.org/10.1038/sj.bmt.1705727
 
     .. [2] https://luca-scr.github.io/R/bmt.csv
     """
@@ -752,7 +750,7 @@ def load_cgvhd(*, output_type="pandas"):
     ----------
     .. [1] https://sites.google.com/view/melaniapintiliemscstatistics/home/statistics
 
-    .. [2] Melania Pintilie: "Competing Risks: A Practical Perspective". John Wiley & Sons, 2006
+    .. [2] Pintilie, M. (2006). "Competing Risks: A Practical Perspective". John Wiley & Sons.
     """
     full_path = _get_data_path("cgvhd.arff")
     data = loadarff(full_path, output_type=output_type)

@@ -1005,11 +1005,10 @@ class FastSurvivalSVM(_BaseSurvivalSVM, SurvivalAnalysisMixin):
 
     References
     ----------
-    .. [1] Pölsterl, S., Navab, N., and Katouzian, A.,
-           "Fast Training of Support Vector Machines for Survival Analysis",
-           Machine Learning and Knowledge Discovery in Databases: European Conference,
-           ECML PKDD 2015, Porto, Portugal,
-           Lecture Notes in Computer Science, vol. 9285, pp. 243-259 (2015)
+    .. [1] Pölsterl, S., Navab, N., & Katouzian, A. (2015).
+           "Fast Training of Support Vector Machines for Survival Analysis".
+           Machine Learning and Knowledge Discovery in Databases: European Conference, ECML PKDD 2015, Porto, Portugal,
+           Lecture Notes in Computer Science, 9285, 243–259.
     """
 
     _parameter_constraints = {
@@ -1159,10 +1158,9 @@ class FastKernelSurvivalSVM(_BaseSurvivalSVM, SurvivalAnalysisMixin):
 
     References
     ----------
-    .. [1] Pölsterl, S., Navab, N., and Katouzian, A.,
-           *An Efficient Training Algorithm for Kernel Survival Support Vector Machines*
-           4th Workshop on Machine Learning in Life Sciences,
-           23 September 2016, Riva del Garda, Italy. arXiv:1611.07054
+    .. [1] Pölsterl, S., Navab, N., & Katouzian, A. (2016).
+           "An Efficient Training Algorithm for Kernel Survival Support Vector Machines".
+           4th Workshop on Machine Learning in Life Sciences, 23 September 2016, Riva del Garda, Italy. arXiv:1611.07054
     """
 
     _parameter_constraints = {

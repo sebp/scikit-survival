@@ -68,9 +68,9 @@ def compare_survival(y, group_indicator, return_stats=False):
 
     References
     ----------
-    .. [1] Fleming, T. R. and Harrington, D. P.
-           A Class of Hypothesis Tests for One and Two Samples of Censored Survival Data.
-           Communications In Statistics 10 (1981): 763-794.
+    .. [1] Fleming, T. R., & Harrington, D. P. (1981).
+           "A Class of Hypothesis Tests for One and Two Samples of Censored Survival Data".
+           Communications In Statistics, 10, 763–794.
     """
 
     event, time = check_array_survival(group_indicator, y)

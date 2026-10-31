@@ -84,9 +84,8 @@ def clinical_kernel(x, y=None, *, ordinal_categories=None):
 
     References
     ----------
-    .. [1] Daemen, A., De Moor, B.,
-           "Development of a kernel function for clinical data".
-           Annual International Conference of the IEEE Engineering in Medicine and Biology Society, 5913-7, 2009
+    .. [1] Daemen, A., & De Moor, B. (2009). "Development of a kernel function for clinical data".
+           Annual International Conference of the IEEE Engineering in Medicine and Biology Society, 5913–7.
 
     Examples
     --------
@@ -170,9 +169,8 @@ class ClinicalKernelTransform(BaseEstimator, TransformerMixin):  # numpydoc igno
 
     References
     ----------
-    .. [1] Daemen, A., De Moor, B.,
-           "Development of a kernel function for clinical data".
-           Annual International Conference of the IEEE Engineering in Medicine and Biology Society, 5913-7, 2009
+    .. [1] Daemen, A., & De Moor, B. (2009). "Development of a kernel function for clinical data".
+           Annual International Conference of the IEEE Engineering in Medicine and Biology Society, 5913–7.
     """
 
     def __init__(

@@ -434,9 +434,9 @@ class MinlipSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
     References
     ----------
-    .. [1] Van Belle, V., Pelckmans, K., Suykens, J. A. K., and Van Huffel, S.
-           Learning transformation models for ranking and survival analysis.
-           The Journal of Machine Learning Research, 12, 819-862. 2011
+    .. [1] Van Belle, V., Pelckmans, K., Suykens, J. A. K., & Van Huffel, S. (2011).
+           "Learning transformation models for ranking and survival analysis".
+           The Journal of Machine Learning Research, 12, 819–862.
     """
 
     _parameter_constraints = {
@@ -721,18 +721,16 @@ class HingeLossSurvivalSVM(MinlipSurvivalAnalysis):
 
     References
     ----------
-    .. [1] Van Belle, V., Pelckmans, K., Suykens, J. A., & Van Huffel, S.
-           Support Vector Machines for Survival Analysis. In Proc. of the 3rd Int. Conf.
-           on Computational Intelligence in Medicine and Healthcare (CIMED). 1-8. 2007
+    .. [1] Van Belle, V., Pelckmans, K., Suykens, J. A., & Van Huffel, S. (2007).
+           "Support Vector Machines for Survival Analysis".
+           In: Proc. of the 3rd Int. Conf. on Computational Intelligence in Medicine and Healthcare (CIMED), 1–8.
 
-    .. [2] Evers, L., Messow, C.M.,
-           "Sparse kernel methods for high-dimensional survival data",
-           Bioinformatics 24(14), 1632-8, 2008.
+    .. [2] Evers, L., & Messow, C. M. (2008). "Sparse kernel methods for high-dimensional survival data".
+           Bioinformatics, 24(14), 1632–8.
 
-    .. [3] Van Belle, V., Pelckmans, K., Suykens, J.A., Van Huffel, S.,
-           "Survival SVM: a practical scalable algorithm",
-           In: Proc. of 16th European Symposium on Artificial Neural Networks,
-           89-94, 2008.
+    .. [3] Van Belle, V., Pelckmans, K., Suykens, J. A., & Van Huffel, S. (2008).
+           "Survival SVM: a practical scalable algorithm".
+           In: Proc. of 16th European Symposium on Artificial Neural Networks, 89–94.
     """
 
     _parameter_constraints = MinlipSurvivalAnalysis._parameter_constraints
