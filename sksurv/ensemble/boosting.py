@@ -22,6 +22,7 @@ from sklearn.base import BaseEstimator
 from sklearn.ensemble._base import BaseEnsemble
 from sklearn.ensemble._gb import BaseGradientBoosting, VerboseReporter
 from sklearn.ensemble._gradient_boosting import _random_sample_mask
+from sklearn.ensemble._hist_gradient_boosting.gradient_boosting import BaseHistGradientBoosting
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.utils._param_validation import Interval, StrOptions
@@ -39,9 +40,20 @@ from .._docstrings import append_cumulative_hazard_example, append_survival_func
 from ..base import SurvivalAnalysisMixin
 from ..linear_model.coxph import BreslowEstimator
 from ..util import check_array_survival
-from ._survival_loss import LOSS_FUNCTIONS, CensoredSquaredLoss, CoxPH, IPCWLeastSquaresError
+from ._survival_loss import (
+    LOSS_FUNCTIONS,
+    CensoredSquaredLoss,
+    CoxPH,
+    HistCoxPH,
+    IPCWLeastSquaresError,
+    encode_survival_target,
+)
 
-__all__ = ["ComponentwiseGradientBoostingSurvivalAnalysis", "GradientBoostingSurvivalAnalysis"]
+__all__ = [
+    "ComponentwiseGradientBoostingSurvivalAnalysis",
+    "GradientBoostingSurvivalAnalysis",
+    "HistGradientBoostingSurvivalAnalysis",
+]
 
 
 def _sample_binomial_plus_one(p, size, random_state):
@@ -1573,3 +1585,463 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
     @property
     def unique_times_(self):
         return self._get_baseline_model().unique_times_
+
+
+class HistGradientBoostingSurvivalAnalysis(BaseHistGradientBoosting, SurvivalAnalysisMixin):
+    r"""
+    Histogram-based gradient-boosted Cox proportional hazards model.
+
+    This estimator is much faster than :class:`GradientBoostingSurvivalAnalysis`
+    for big datasets (n_samples >= 10 000). Input features are binned into
+    integer-valued bins, which considerably reduces the number of splitting
+    points to consider. Trees are grown with second-order gradient boosting
+    as in scikit-learn's :class:`sklearn.ensemble.HistGradientBoostingRegressor`,
+    which is extended here to the partial likelihood of the proportional hazards
+    model [1]_ with Breslow's method for ties.
+
+    The Hessian of the partial likelihood is not diagonal, because each sample
+    belongs to the risk set of all events that occur at or before its own time.
+    As in XGBoost's ``survival:cox`` objective [2]_, only the diagonal of the Hessian
+    is used to fit the trees.
+
+    This estimator has native support for missing values (NaNs). During training,
+    the tree grower learns at each split point whether samples with missing values
+    should go to the left or right child, based on the potential gain. When predicting,
+    samples with missing values are assigned to the left or right child consequently.
+    If no missing values were encountered for a given feature during training, then
+    samples with missing values are mapped to whichever child has the most samples.
+
+    Parameters
+    ----------
+    loss : {'coxph'}, optional, default: 'coxph'
+        Loss function to be optimized. 'coxph' refers to partial likelihood loss
+        of Cox's proportional hazards model.
+
+    learning_rate : float, optional, default: 0.1
+        The learning rate, also known as *shrinkage*. This is used as a
+        multiplicative factor for the leaves values. Use ``1`` for no
+        shrinkage.
+
+    max_iter : int, optional, default: 100
+        The maximum number of iterations of the boosting process, i.e. the
+        maximum number of trees.
+
+    max_leaf_nodes : int or None, optional, default: 31
+        The maximum number of leaves for each tree. Must be strictly greater
+        than 1. If None, there is no maximum limit.
+
+    max_depth : int or None, optional, default: None
+        The maximum depth of each tree. The depth of a tree is the number of
+        edges to go from the root to the deepest leaf.
+        Depth isn't constrained by default.
+
+    min_samples_leaf : int, optional, default: 20
+        The minimum number of samples per leaf. For small datasets with less
+        than a few hundred samples, it is recommended to lower this value
+        since only very shallow trees would be built.
+
+    l2_regularization : float, optional, default: 0
+        The L2 regularization parameter penalizing leaves with small hessians.
+        Use ``0`` for no regularization (default).
+
+    max_features : float, optional, default: 1.0
+        Proportion of randomly chosen features in each and every node split.
+        This is a form of regularization, smaller values make the trees weaker
+        learners and might prevent overfitting.
+        If interaction constraints from `interaction_cst` are present, only allowed
+        features are taken into account for the subsampling.
+
+    max_bins : int, optional, default: 255
+        The maximum number of bins to use for non-missing values. Before
+        training, each feature of the input array `X` is binned into
+        integer-valued bins, which allows for a much faster training stage.
+        Features with a small number of unique values may use less than
+        ``max_bins`` bins. In addition to the ``max_bins`` bins, one more bin
+        is always reserved for missing values. Must be no larger than 255.
+
+    categorical_features : array-like of {bool, int, str} or 'from_dtype' or None, optional, default: 'from_dtype'
+        Indicates the categorical features.
+
+        - None : no feature will be considered categorical.
+        - boolean array-like : boolean mask indicating categorical features.
+        - integer array-like : integer indices indicating categorical features.
+        - str array-like: names of categorical features (assuming the training
+          data has feature names).
+        - `'from_dtype'`: dataframe columns with dtype "Categorical" and "Enum" are
+          considered to be categorical features.
+
+        For each categorical feature, there must be at most `max_bins` unique
+        categories. See :class:`sklearn.ensemble.HistGradientBoostingRegressor`
+        for details.
+
+    monotonic_cst : array-like of int of shape (n_features) or dict, optional, default: None
+        Monotonic constraint to enforce on each feature are specified using the
+        following integer values:
+
+        - 1: monotonic increase of the predicted risk score
+        - 0: no constraint
+        - -1: monotonic decrease of the predicted risk score
+
+        If a dict with str keys, map feature to monotonic constraints by name.
+        If an array, the features are mapped to constraints by position.
+
+    interaction_cst : {'pairwise', 'no_interactions'} or sequence of lists/tuples/sets of int, optional, default: None
+        Specify interaction constraints, the sets of features which can
+        interact with each other in child node splits.
+        Each item specifies the set of feature indices that are allowed
+        to interact with each other. If there are more features than
+        specified in these constraints, they are treated as if they were
+        specified as an additional set.
+        The strings 'pairwise' and 'no_interactions' are shorthands for
+        allowing only pairwise or no interactions, respectively.
+
+    warm_start : bool, optional, default: False
+        When set to ``True``, reuse the solution of the previous call to fit
+        and add more estimators to the ensemble. For results to be valid, the
+        estimator should be re-trained on the same data only.
+
+    early_stopping : 'auto' or bool, optional, default: 'auto'
+        If 'auto', early stopping is enabled if the sample size is larger than
+        10000. If True, early stopping is enabled, otherwise early stopping is disabled.
+
+    scoring : {'loss'}, optional, default: 'loss'
+        Scoring method to use for early stopping. Only used if `early_stopping`
+        is enabled. Early stopping is checked with respect to the log partial likelihood
+        of the training or validation data, divided by the sum of sample weights.
+        Other scorers are not supported.
+
+    validation_fraction : int or float or None, optional, default: 0.1
+        Proportion (or absolute size) of training data to set aside as
+        validation data for early stopping. If None, early stopping is done on
+        the training data.
+        The value is ignored if either early stopping is not performed, e.g.
+        `early_stopping=False`, or if `X_val` and `y_val` are passed to fit.
+
+    n_iter_no_change : int, optional, default: 10
+        Used to determine when to "early stop". The fitting process is
+        stopped when none of the last ``n_iter_no_change`` scores are better
+        than the ``n_iter_no_change - 1`` -th-to-last one, up to some
+        tolerance. Only used if early stopping is performed.
+
+    tol : float, optional, default: 1e-7
+        The absolute tolerance to use when comparing scores during early
+        stopping. The higher the tolerance, the more likely we are to early
+        stop: higher tolerance means that it will be harder for subsequent
+        iterations to be considered an improvement upon the reference score.
+
+    verbose : int, optional, default: 0
+        The verbosity level. If not zero, print some information about the
+        fitting process. ``1`` prints only summary info, ``2`` prints info per
+        iteration.
+
+    random_state : int, RandomState instance or None, optional, default: None
+        Pseudo-random number generator to control the subsampling in the
+        binning process, and the train/validation data split if early stopping
+        is enabled.
+        Pass an int for reproducible output across multiple function calls.
+
+    Attributes
+    ----------
+    do_early_stopping_ : bool
+        Indicates whether early stopping is used during training.
+
+    n_iter_ : int
+        The number of iterations as selected by early stopping, depending on
+        the `early_stopping` parameter. Otherwise it corresponds to max_iter.
+
+    n_trees_per_iteration_ : int
+        The number of trees that are built at each iteration. This is always 1.
+
+    train_score_ : ndarray, shape = (n_iter_+1,)
+        The scores at each iteration on the training data. The first entry
+        is the score of the ensemble before the first iteration.
+        Empty if no early stopping.
+
+    validation_score_ : ndarray, shape = (n_iter_+1,)
+        The scores at each iteration on the held-out validation data. The
+        first entry is the score of the ensemble before the first iteration.
+        Empty if no early stopping or if ``validation_fraction`` is None.
+
+    is_categorical_ : ndarray, shape = (n_features, ) or None
+        Boolean mask for the categorical features. ``None`` if there are no
+        categorical features.
+
+    n_features_in_ : int
+        Number of features seen during ``fit``.
+
+    feature_names_in_ : ndarray, shape = (`n_features_in_`,)
+        Names of features seen during ``fit``. Defined only when `X`
+        has feature names that are all strings.
+
+    unique_times_ : ndarray, shape = (n_unique_times,)
+        Unique time points.
+
+    See Also
+    --------
+    sksurv.ensemble.GradientBoostingSurvivalAnalysis
+        Gradient boosting with regression trees as base learner.
+
+    References
+    ----------
+    .. [1] G. Ridgeway, "The state of boosting,"
+           Computing Science and Statistics, 172–181, 1999.
+    .. [2] T. Chen and C. Guestrin, "XGBoost: A scalable tree boosting system,"
+           in 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining,
+           2016, 785–794.
+    """
+
+    _parameter_constraints = {
+        **BaseHistGradientBoosting._parameter_constraints,
+        "loss": [StrOptions({"coxph"})],
+        "scoring": [StrOptions({"loss"})],
+    }
+
+    def __init__(
+        self,
+        loss="coxph",
+        *,
+        learning_rate=0.1,
+        max_iter=100,
+        max_leaf_nodes=31,
+        max_depth=None,
+        min_samples_leaf=20,
+        l2_regularization=0.0,
+        max_features=1.0,
+        max_bins=255,
+        categorical_features="from_dtype",
+        monotonic_cst=None,
+        interaction_cst=None,
+        warm_start=False,
+        early_stopping="auto",
+        scoring="loss",
+        validation_fraction=0.1,
+        n_iter_no_change=10,
+        tol=1e-7,
+        verbose=0,
+        random_state=None,
+    ):
+        super().__init__(
+            loss=loss,
+            learning_rate=learning_rate,
+            max_iter=max_iter,
+            max_leaf_nodes=max_leaf_nodes,
+            max_depth=max_depth,
+            min_samples_leaf=min_samples_leaf,
+            l2_regularization=l2_regularization,
+            max_features=max_features,
+            max_bins=max_bins,
+            monotonic_cst=monotonic_cst,
+            interaction_cst=interaction_cst,
+            categorical_features=categorical_features,
+            early_stopping=early_stopping,
+            warm_start=warm_start,
+            scoring=scoring,
+            validation_fraction=validation_fraction,
+            n_iter_no_change=n_iter_no_change,
+            tol=tol,
+            verbose=verbose,
+            random_state=random_state,
+        )
+
+    def fit(self, X, y, sample_weight=None, *, X_val=None, y_val=None, sample_weight_val=None):
+        """
+        Fit the gradient boosting model.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            Data matrix.
+
+        y : structured array, shape = (n_samples,)
+            A structured array with two fields. The first field is a boolean
+            where ``True`` indicates an event and ``False`` indicates right-censoring.
+            The second field is a float with the time of event or time of censoring.
+
+        sample_weight : array-like, shape = (n_samples,), optional
+            Non-negative weights for each training data.
+
+        X_val : array-like, shape = (n_val, n_features), optional
+            Additional sample of features for validation used in early stopping.
+
+        y_val : structured array, shape = (n_val,), optional
+            Additional sample of survival outcomes for validation used in early stopping,
+            with the same fields as `y`.
+
+        sample_weight_val : array-like, shape = (n_val,), optional
+            Additional non-negative weights for validation used in early stopping.
+
+        Returns
+        -------
+        object
+            Fitted estimator.
+        """
+        X = ensure_eager_dataframe(X)
+        event, time = check_array_survival(X, y)
+        if sample_weight is not None:
+            sample_weight = _check_sample_weight(sample_weight, X, ensure_non_negative=True)
+        if y_val is not None:
+            X_val = ensure_eager_dataframe(X_val)
+            y_val = encode_survival_target(*check_array_survival(X_val, y_val))
+            if sample_weight_val is not None:
+                sample_weight_val = _check_sample_weight(sample_weight_val, X_val, ensure_non_negative=True)
+
+        super().fit(
+            X,
+            encode_survival_target(event, time),
+            sample_weight=sample_weight,
+            X_val=X_val,
+            y_val=y_val,
+            sample_weight_val=sample_weight_val,
+        )
+
+        self._baseline_model = BreslowEstimator().fit(self.predict(X), event, time)
+        return self
+
+    def _encode_y(self, y):
+        self.n_trees_per_iteration_ = 1
+        return y.astype(np.float64, copy=False)
+
+    def _encode_y_val(self, y=None):
+        return self._encode_y(y)
+
+    def _get_loss(self, sample_weight):
+        return HistCoxPH()
+
+    def predict(self, X):
+        """
+        Predict risk scores.
+
+        The predictions can be interpreted as log hazard ratio
+        similar to the linear predictor of a Cox proportional hazards model.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            The input samples.
+
+        Returns
+        -------
+        ndarray, shape = (n_samples,)
+            The risk scores.
+        """
+        check_is_fitted(self)
+        return self._raw_predict(ensure_eager_dataframe(X)).ravel()
+
+    def staged_predict(self, X):
+        """
+        Predict risk scores at each iteration.
+
+        This method allows monitoring (i.e. determine error on testing set)
+        after each stage.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            The input samples.
+
+        Returns
+        -------
+        generator of array of shape = (n_samples,)
+            The predicted risk scores of the input samples, for each iteration.
+        """
+        for raw_predictions in self._staged_raw_predict(ensure_eager_dataframe(X)):
+            yield raw_predictions.ravel()
+
+    @append_cumulative_hazard_example(estimator_mod="ensemble", estimator_class="HistGradientBoostingSurvivalAnalysis")
+    def predict_cumulative_hazard_function(self, X, return_array=False):
+        r"""
+        Predict cumulative hazard function.
+
+        The cumulative hazard function for an individual
+        with feature vector :math:`x` is defined as
+
+        .. math::
+
+            H(t \mid x) = \exp(f(x)) H_0(t) ,
+
+        where :math:`f(\cdot)` is the additive ensemble of base learners,
+        and :math:`H_0(t)` is the baseline hazard function,
+        estimated by Breslow's estimator.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            Data matrix.
+
+        return_array : bool, default: False
+            Whether to return a single array of cumulative hazard values
+            or a list of step functions.
+
+            If `False`, a list of :class:`sksurv.functions.StepFunction`
+            objects is returned.
+
+            If `True`, a 2d-array of shape `(n_samples, n_unique_times)` is
+            returned, where `n_unique_times` is the number of unique
+            event times in the training data. Each row represents the cumulative
+            hazard function of an individual evaluated at `unique_times_`.
+
+        Returns
+        -------
+        ndarray
+            If `return_array` is `False`, an array of `n_samples`
+            :class:`sksurv.functions.StepFunction` instances is returned.
+
+            If `return_array` is `True`, a numeric array of shape
+            `(n_samples, n_unique_times_)` is returned.
+
+        Examples
+        --------
+        """
+        return self._predict_cumulative_hazard_function(self._baseline_model, self.predict(X), return_array)
+
+    @append_survival_function_example(estimator_mod="ensemble", estimator_class="HistGradientBoostingSurvivalAnalysis")
+    def predict_survival_function(self, X, return_array=False):
+        r"""
+        Predict survival function.
+
+        The survival function for an individual
+        with feature vector :math:`x` is defined as
+
+        .. math::
+
+            S(t \mid x) = S_0(t)^{\exp(f(x))} ,
+
+        where :math:`f(\cdot)` is the additive ensemble of base learners,
+        and :math:`S_0(t)` is the baseline survival function,
+        estimated by Breslow's estimator.
+
+        Parameters
+        ----------
+        X : array-like, shape = (n_samples, n_features)
+            Data matrix.
+
+        return_array : bool, default: False
+            Whether to return a single array of survival probabilities
+            or a list of step functions.
+
+            If `False`, a list of :class:`sksurv.functions.StepFunction`
+            objects is returned.
+
+            If `True`, a 2d-array of shape `(n_samples, n_unique_times)` is
+            returned, where `n_unique_times` is the number of unique
+            event times in the training data. Each row represents the survival
+            function of an individual evaluated at `unique_times_`.
+
+        Returns
+        -------
+        ndarray
+            If `return_array` is `False`, an array of `n_samples`
+            :class:`sksurv.functions.StepFunction` instances is returned.
+
+            If `return_array` is `True`, a numeric array of shape
+            `(n_samples, n_unique_times_)` is returned.
+
+        Examples
+        --------
+        """
+        return self._predict_survival_function(self._baseline_model, self.predict(X), return_array)
+
+    @property
+    def unique_times_(self):
+        check_is_fitted(self)
+        return self._baseline_model.unique_times_
