@@ -39,10 +39,10 @@ repos:
     -   id: forbid-tabs
         types: [python]
 -   repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 4160603246a6b365d4a2af661c6d71b0a0f50478  # 26.5.1
+    rev: a5439e9af2ff9371297bb1a76a01b8ad17989b88  # 26.10.1
     hooks:
     -   id: black-jupyter
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 2eeb5678de71a00c0902cbda7105d328432f72cb  # v0.16.8
+    rev: f368fb366ff7f2f808dd324b83a6d32267799e19  # v0.17.2
     hooks:
     -   id: ruff-check
