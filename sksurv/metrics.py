@@ -666,6 +666,8 @@ def brier_score(survival_train, survival_test, estimate, times):
     estimate, times = _check_estimate_2d(estimate, test_time, times, estimator="brier_score")
     if estimate.ndim == 1 and times.shape[0] == 1:
         estimate = estimate.reshape(-1, 1)
+    if times.shape[0] > 1 and estimate.ndim != 2:
+        raise ValueError(f"expected estimate to be a 2D array, but has shape {estimate.shape}")
 
     # fit IPCW estimator
     cens = CensoringDistributionEstimator().fit(survival_train)

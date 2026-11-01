@@ -1053,6 +1053,9 @@ def test_brier_times_too_large(nottingham_prognostic_index):
 def test_brier_wrong_estimate_shape(nottingham_prognostic_index):
     pred, y = nottingham_prognostic_index([720, 1825])
 
+    with pytest.raises(ValueError, match=r"expected estimate to be a 2D array, but has shape \(686,\)"):
+        brier_score(y, y, pred[:, 0], times=[720, 1825])
+
     with pytest.raises(ValueError, match="expected estimate with 2 columns, but got 1"):
         brier_score(y, y, pred[:, :1], times=[720, 1825])
 
