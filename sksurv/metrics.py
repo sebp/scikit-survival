@@ -65,29 +65,32 @@ def _check_inputs(event_indicator, event_time, estimate):
 
 def _check_times(test_time, times):
     times = check_array(np.atleast_1d(times), ensure_2d=False, input_name="times")
-    times, unique_indices = np.unique(times, return_index=True)
+    unique_times, unique_indices = np.unique(times, return_index=True)
 
-    if times.max() >= test_time.max() or times.min() < test_time.min():
+    if unique_times.shape[0] != times.shape[0]:
+        raise ValueError("times contains one or more duplicates")
+
+    if unique_times.max() >= test_time.max() or unique_times.min() < test_time.min():
         raise ValueError(
             f"all times must be within follow-up time of test data: [{test_time.min()}; {test_time.max()}["
         )
 
-    return times, unique_indices
+    return times, unique_times, unique_indices
 
 
 def _check_estimate_2d(estimate, test_time, time_points, estimator):
     estimate = check_array(estimate, ensure_2d=False, allow_nd=False, input_name="estimate", estimator=estimator)
-    time_points, unique_indices = _check_times(test_time, time_points)
+    time_points, unique_times, unique_indices = _check_times(test_time, time_points)
     check_consistent_length(test_time, estimate)
 
     if estimate.ndim == 2:
         if estimate.shape[1] != time_points.shape[0]:
             raise ValueError(f"expected estimate with {time_points.shape[0]} columns, but got {estimate.shape[1]}")
 
-        # re-store correspondence to sorted time_points
-        estimate = np.take(estimate, unique_indices, axis=1)
+        # Restore the correspondence between columns of estimate and sorted unique time points
+        estimate = estimate[:, unique_indices]
 
-    return estimate, time_points
+    return estimate, unique_times
 
 
 def _iter_comparable(event_indicator, event_time, order):
@@ -432,6 +435,7 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
     times : array-like, shape = (n_times,)
         The time points at which to compute the AUC. Values must be within the
         range of follow-up times in ``survival_test``.
+        Duplicate values are not permitted.
     tied_tol : float, optional, default: 1e-8
         The tolerance value for considering ties in risk scores. If the
         absolute difference between two risk scores is smaller than or equal to
@@ -601,12 +605,13 @@ def brier_score(survival_train, survival_test, estimate, times):
     times : array-like, shape = (n_times,)
         The time points at which to compute the Brier score. Values must be
         within the range of follow-up times in ``survival_test``.
+        ``estimate`` must have one column per time point in ``times``.
+        Duplicate values are not permitted.
 
     Returns
     -------
     times : ndarray, shape = (n_times,)
-        The unique time points at which the Brier score was estimated,
-        in ascending order.
+        The unique time points at which the Brier score was estimated, in ascending order.
     brier_scores : ndarray, shape = (n_times,)
         The Brier score at each time point in ``times``.
 
@@ -729,6 +734,8 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
     times : array-like, shape = (n_times,)
         The time points at which to compute the Brier score. Values must be
         within the range of follow-up times in ``survival_test``.
+        ``estimate`` must have one column per time point in ``times``.
+        Duplicate values are not permitted.
 
     Returns
     -------
@@ -922,6 +929,13 @@ class _ScoreOverrideMixin:
         return self.estimator_.predict_survival_function(X)
 
 
+def _check_is_unique(array, *, input_name):
+    array = check_array(np.atleast_1d(array), ensure_2d=False, input_name=input_name)
+    if array.shape[0] != np.unique(array).shape[0]:
+        raise ValueError(f"{input_name} contains one or more duplicates")
+    return array
+
+
 class as_cumulative_dynamic_auc_scorer(_ScoreOverrideMixin, BaseEstimator):
     """
     Wrap an estimator to use :func:`cumulative_dynamic_auc` as ``score`` function.
@@ -936,6 +950,7 @@ class as_cumulative_dynamic_auc_scorer(_ScoreOverrideMixin, BaseEstimator):
     times : array-like, shape = (n_times,)
         The time points at which to compute the AUC. Values must be within the
         range of follow-up times of the test data.
+        Duplicate values are not permitted.
     tied_tol : float, optional, default: 1e-8
         The tolerance value for considering ties in risk scores. If the
         absolute difference between two risk scores is smaller than or equal to
@@ -960,7 +975,7 @@ class as_cumulative_dynamic_auc_scorer(_ScoreOverrideMixin, BaseEstimator):
             score_index=1,
             greater_is_better=True,
         )
-        self.times = times
+        self.times = _check_is_unique(times, input_name="times")
         self.tied_tol = tied_tol
 
 
@@ -1026,6 +1041,7 @@ class as_integrated_brier_score_scorer(_ScoreOverrideMixin, BaseEstimator):
     times : array-like, shape = (n_times,)
         The time points at which to compute the Brier score. Values must be
         within the range of follow-up times of the test data.
+        Duplicate values are not permitted.
 
     Attributes
     ----------
@@ -1046,7 +1062,7 @@ class as_integrated_brier_score_scorer(_ScoreOverrideMixin, BaseEstimator):
             score_index=None,
             greater_is_better=False,
         )
-        self.times = times
+        self.times = _check_is_unique(times, input_name="times")
 
     def _do_predict(self, X):
         predict_func = getattr(self.estimator_, self._predict_func)

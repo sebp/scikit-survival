@@ -756,16 +756,16 @@ class UnoCAucCases(BaseUnoCAucCases):
         y_train = Surv.from_arrays(event=event[:300], time=time[:300])
         y_test = Surv.from_arrays(event=event[300:], time=time[300:])
         estimate = estimate[300:]
-        times = (200, 400, 600, 800, 1000, 1200, 1400)
+        times = np.array([200, 400, 600, 800, 1000, 1200, 1400])
 
         iauc = 0.8045058
         expected = np.array([0.7720669, 0.7765915, 0.7962623, 0.8759295, 0.8759295, 0.8759513, 0.9147647])
         return y_train, y_test, estimate, times, expected, iauc
 
     def data_whas500_unordered_time(self):
-        y_train, y_test, estimate, _, expected, iauc = self.data_whas500()
-        times = (1000, 600, 1400, 200, 400, 1200, 800, 1000, 200)
-        return y_train, y_test, estimate, times, expected, iauc
+        y_train, y_test, estimate, times, expected, iauc = self.data_whas500()
+        times_order = [4, 2, 6, 0, 1, 5, 3]
+        return y_train, y_test, estimate, times[times_order], expected, iauc
 
 
 @pytest.mark.parametrize("y_train,y_test,estimate,times,expect_auc,expect_iauc", UnoCAucCases().get_cases())
@@ -1186,6 +1186,10 @@ def test_scorers(scorers_data_with_times):
     expected = sign * score_func(y_train, y_test, pred, **score_args)
 
     est_wrap = wrapper_cls(CoxPHSurvivalAnalysis(), **score_args)
+
+    if "times" in score_args and score_args["times"].ndim > 0:
+        assert_array_equal(est_wrap.times, np.asarray(score_args["times"]))
+
     est_wrap.fit(X_train, y_train)
     actual = est_wrap.score(X_test, y_test)
 
@@ -1314,13 +1318,52 @@ def test_brier_score_single_time_point_2d_estimate(synthetic_survival_no_censori
     assert score[0] == pytest.approx(0.4)
 
 
-def test_brier_score_duplicate_times_are_deduplicated(synthetic_survival_no_censoring):
-    y = synthetic_survival_no_censoring
-    estimate = np.tile([0.4, 0.8], (y.shape[0], 1))
+class DuplicateTimesCases(FixtureParameterFactory):
 
-    times, score = brier_score(y, y, estimate, times=[3, 1, 3])
-    times_unique, score_unique = brier_score(y, y, estimate, times=[3, 1])
+    @property
+    def _y(self):
+        return Surv.from_arrays(
+            event=np.ones(5, dtype=bool),
+            time=np.arange(1, 6, dtype=float),
+        )
 
-    assert_array_equal(times, [1.0, 3.0])
-    assert_array_equal(times, times_unique)
-    assert_array_almost_equal(score, score_unique)
+    def data_times_with_one_duplicate(self):
+        estimate = np.tile([0.4, 0.8, 0.4], (5, 1))
+        times = [3, 1, 3]
+        return self._y, estimate, times
+
+    def data_times_with_multiple_duplicates(self):
+        estimate = np.tile([0.9, 0.7, 0.8, 0.95, 0.5, 0.99, 0.81], (5, 1))
+        times = [1, 3, 2, 1, 4, 1, 2]
+        return self._y, estimate, times
+
+    def data_times_with_duplicates_and_shape_mismatch(self):
+        estimate = np.tile([0.5, 0.8], (5, 1))
+        times = [2, 2, 1]
+        return self._y, estimate, times
+
+
+@pytest.mark.parametrize("y,estimate,times", DuplicateTimesCases().get_cases())
+def test_brier_score_raises_on_duplicate_times(y, estimate, times):
+    with pytest.raises(ValueError, match="times contains one or more duplicates"):
+        brier_score(y, y, estimate, times=times)
+
+
+@pytest.mark.parametrize("y,estimate,times", DuplicateTimesCases().get_cases())
+def test_cumulative_dynamic_auc_raises_on_duplicate_times(y, estimate, times):
+    with pytest.raises(ValueError, match="times contains one or more duplicates"):
+        cumulative_dynamic_auc(y, y, estimate, times=times)
+
+
+@pytest.mark.parametrize("y,estimate,times", DuplicateTimesCases().get_cases())
+def test_as_integrated_brier_score_scorer_raises_on_duplicate_times(y, estimate, times):
+    estimator = CoxPHSurvivalAnalysis()
+    with pytest.raises(ValueError, match="times contains one or more duplicates"):
+        as_integrated_brier_score_scorer(estimator, times)
+
+
+@pytest.mark.parametrize("y,estimate,times", DuplicateTimesCases().get_cases())
+def test_as_cumulative_dynamic_auc_scorer_raises_on_duplicate_times(y, estimate, times):
+    estimator = CoxPHSurvivalAnalysis()
+    with pytest.raises(ValueError, match="times contains one or more duplicates"):
+        as_cumulative_dynamic_auc_scorer(estimator, times)
