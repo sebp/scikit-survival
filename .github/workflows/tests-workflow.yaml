@@ -19,6 +19,7 @@ jobs:
           - "312"
           - "313"
           - "314"
+          - "315"
         runner:
           - ubuntu-latest
           - macos-26
@@ -98,6 +99,7 @@ jobs:
           - "312"
           - "313"
           - "314"
+          - "315"
     env:
       CONDA_INSTALL_LOCN: ${{ github.workspace }}\Miniforge3
       PYTHONWARNINGS: default
