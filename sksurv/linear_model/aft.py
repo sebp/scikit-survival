@@ -137,9 +137,8 @@ class IPCRidge(Ridge, SurvivalAnalysisMixin):
 
     References
     ----------
-    .. [1] W. Stute, "Consistent estimation under random censorship when covariables are
-           present", Journal of Multivariate Analysis, vol. 45, no. 1, pp. 89-103, 1993.
-           doi:10.1006/jmva.1993.1028.
+    .. [1] Stute, W. (1993). "Consistent estimation under random censorship when covariables are present".
+           Journal of Multivariate Analysis, 45(1), 89–103. doi:10.1006/jmva.1993.1028.
     """
 
     _parameter_constraints = {**Ridge._parameter_constraints}

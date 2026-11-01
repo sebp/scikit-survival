@@ -213,10 +213,9 @@ def concordance_index_censored(event_indicator, event_time, estimate, tied_tol=1
 
     References
     ----------
-    .. [1] Harrell, F.E., Califf, R.M., Pryor, D.B., Lee, K.L., Rosati, R.A,
-           "Multivariable prognostic models: issues in developing models,
-           evaluating assumptions and adequacy, and measuring and reducing errors",
-           Statistics in Medicine, 15(4), 361-87, 1996.
+    .. [1] Harrell, F. E., Califf, R. M., Pryor, D. B., Lee, K. L., & Rosati, R. A. (1996).
+           "Multivariable prognostic models: issues in developing models, evaluating assumptions and adequacy, and
+           measuring and reducing errors". Statistics in Medicine, 15(4), 361–87.
     """
     event_indicator, event_time, estimate = _check_inputs(event_indicator, event_time, estimate)
 
@@ -311,8 +310,8 @@ def concordance_index_ipcw(survival_train, survival_test, estimate, tau=None, ti
     References
     ----------
     .. [1] Uno, H., Cai, T., Pencina, M. J., D’Agostino, R. B., & Wei, L. J. (2011).
-           "On the C-statistics for evaluating overall adequacy of risk prediction
-           procedures with censored survival data".
+           "On the C-statistics for evaluating overall adequacy of risk prediction procedures with censored survival
+           data".
            Statistics in Medicine, 30(10), 1105–1117.
     """
     test_event, test_time = check_y_survival(survival_test)
@@ -456,15 +455,16 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
 
     References
     ----------
-    .. [1] H. Uno, T. Cai, L. Tian, and L. J. Wei,
-           "Evaluating prediction rules for t-year survivors with censored regression models,"
-           Journal of the American Statistical Association, vol. 102, pp. 527–537, 2007.
-    .. [2] H. Hung and C. T. Chiang,
-           "Estimation methods for time-dependent AUC models with survival data,"
-           Canadian Journal of Statistics, vol. 38, no. 1, pp. 8–26, 2010.
-    .. [3] J. Lambert and S. Chevret,
-           "Summary measure of discrimination in survival models based on cumulative/dynamic time-dependent ROC curves,"
-           Statistical Methods in Medical Research, 2014.
+    .. [1] Uno, H., Cai, T., Tian, L., & Wei, L. J. (2007).
+           "Evaluating prediction rules for t-year survivors with censored regression models".
+           Journal of the American Statistical Association, 102, 527–537.
+
+    .. [2] Hung, H., & Chiang, C. T. (2010). "Estimation methods for time-dependent AUC models with survival data".
+           Canadian Journal of Statistics, 38(1), 8–26.
+
+    .. [3] Lambert, J., & Chevret, S. (2014).
+           "Summary measure of discrimination in survival models based on cumulative/dynamic time-dependent ROC curves".
+           Statistical Methods in Medical Research, 25(5), 2088–2102.
     """
     test_event, test_time = check_y_survival(survival_test)
     estimate, times = _check_estimate_2d(estimate, test_time, times, estimator="cumulative_dynamic_auc")
@@ -617,9 +617,9 @@ def brier_score(survival_train, survival_test, estimate, times):
 
     References
     ----------
-    .. [1] E. Graf, C. Schmoor, W. Sauerbrei, and M. Schumacher,
-           "Assessment and comparison of prognostic classification schemes for survival data,"
-           Statistics in Medicine, vol. 18, no. 17-18, pp. 2529–2545, 1999.
+    .. [1] Graf, E., Schmoor, C., Sauerbrei, W., & Schumacher, M. (1999).
+           "Assessment and comparison of prognostic classification schemes for survival data".
+           Statistics in Medicine, 18(17–18), 2529–2545.
     Examples
     --------
     >>> from sksurv.datasets import load_gbsg2
@@ -747,9 +747,9 @@ def integrated_brier_score(survival_train, survival_test, estimate, times):
 
     References
     ----------
-    .. [1] E. Graf, C. Schmoor, W. Sauerbrei, and M. Schumacher,
-           "Assessment and comparison of prognostic classification schemes for survival data,"
-           Statistics in Medicine, vol. 18, no. 17-18, pp. 2529–2545, 1999.
+    .. [1] Graf, E., Schmoor, C., Sauerbrei, W., & Schumacher, M. (1999).
+           "Assessment and comparison of prognostic classification schemes for survival data".
+           Statistics in Medicine, 18(17–18), 2529–2545.
 
     Examples
     --------

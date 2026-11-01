@@ -157,9 +157,9 @@ class CoxnetSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
     References
     ----------
-    .. [1] Simon N, Friedman J, Hastie T, Tibshirani R.
-           Regularization paths for Cox’s proportional hazards model via coordinate descent.
-           Journal of statistical software. 2011 Mar;39(5):1.
+    .. [1] Simon, N., Friedman, J., Hastie, T., & Tibshirani, R. (2011).
+           "Regularization paths for Cox’s proportional hazards model via coordinate descent".
+           Journal of statistical software, 39(5), 1–13.
     """
 
     _parameter_constraints: dict = {

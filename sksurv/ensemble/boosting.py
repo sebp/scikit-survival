@@ -188,8 +188,8 @@ class ComponentwiseGradientBoostingSurvivalAnalysis(BaseEnsemble, SurvivalAnalys
 
     References
     ----------
-    .. [1] Hothorn, T., Bühlmann, P., Dudoit, S., Molinaro, A., van der Laan, M. J.,
-           "Survival ensembles", Biostatistics, 7(3), 355-73, 2006
+    .. [1] Hothorn, T., Bühlmann, P., Dudoit, S., Molinaro, A., & van der Laan, M. J. (2006).
+           "Survival ensembles". Biostatistics, 7(3), 355–73.
     """
 
     _parameter_constraints = {
@@ -854,18 +854,15 @@ class GradientBoostingSurvivalAnalysis(BaseGradientBoosting, SurvivalAnalysisMix
 
     References
     ----------
-    .. [1] J. H. Friedman, "Greedy function approximation: A gradient boosting machine,"
-           The Annals of Statistics, 29(5), 1189–1232, 2001.
-    .. [2] J. H. Friedman, "Stochastic gradient boosting,"
-           Computational Statistics & Data Analysis, 38(4), 367–378, 2002.
-    .. [3] G. Ridgeway, "The state of boosting,"
-           Computing Science and Statistics, 172–181, 1999.
-    .. [4] Hothorn, T., Bühlmann, P., Dudoit, S., Molinaro, A., van der Laan, M. J.,
-           "Survival ensembles", Biostatistics, 7(3), 355-73, 2006.
-    .. [5] K. V. Rashmi and R. Gilad-Bachrach,
-           "DART: Dropouts meet multiple additive regression trees,"
-           in 18th International Conference on Artificial Intelligence and Statistics,
-           2015, 489–497.
+    .. [1] Friedman, J. H. (2001). "Greedy function approximation: A gradient boosting machine".
+           The Annals of Statistics, 29(5), 1189–1232.
+    .. [2] Friedman, J. H. (2002). "Stochastic gradient boosting". Computational Statistics & Data Analysis, 38(4),
+           367–378.
+    .. [3] Ridgeway, G. (1999). "The state of boosting". Computing Science and Statistics, 172–181.
+    .. [4] Hothorn, T., Bühlmann, P., Dudoit, S., Molinaro, A., & van der Laan, M. J. (2006).
+           "Survival ensembles". Biostatistics, 7(3), 355–73.
+    .. [5] Rashmi, K. V., & Gilad-Bachrach, R. (2015). "DART: Dropouts meet multiple additive regression trees".
+           In 18th International Conference on Artificial Intelligence and Statistics, 489–497.
     """
 
     _parameter_constraints = {

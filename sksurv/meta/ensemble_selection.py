@@ -507,16 +507,15 @@ class EnsembleSelection(_BaseEnsembleSelection):
     References
     ----------
 
-    .. [1] Pölsterl, S., Gupta, P., Wang, L., Conjeti, S., Katouzian, A., and Navab, N.,
-         "Heterogeneous ensembles for predicting survival of metastatic, castrate-resistant prostate cancer patients".
-         F1000Research, vol. 5, no. 2676, 2016
+    .. [1] Pölsterl, S., Gupta, P., Wang, L., Conjeti, S., Katouzian, A., & Navab, N. (2016).
+           "Heterogeneous ensembles for predicting survival of metastatic, castrate-resistant prostate cancer patients".
+           F1000Research, 5(2676).
 
-    .. [2] Caruana, R., Munson, A., Niculescu-Mizil, A.
-        "Getting the most out of ensemble selection". 6th IEEE International Conference on Data Mining, 828-833, 2006
+    .. [2] Caruana, R., Munson, A., & Niculescu-Mizil, A. (2006). "Getting the most out of ensemble selection".
+           6th IEEE International Conference on Data Mining, 828–833.
 
-    .. [3] Rooney, N., Patterson, D., Anand, S., Tsymbal, A.
-        "Dynamic integration of regression models. International Workshop on Multiple Classifier Systems".
-        Lecture Notes in Computer Science, vol. 3181, 164-173, 2004
+    .. [3] Rooney, N., Patterson, D., Anand, S., & Tsymbal, A. (2004). "Dynamic integration of regression models".
+           International Workshop on Multiple Classifier Systems, Lecture Notes in Computer Science, 3181, 164–173.
     """
 
     _parameter_constraints = {
@@ -667,16 +666,15 @@ class EnsembleSelectionRegressor(_BaseEnsembleSelection):
     References
     ----------
 
-    .. [1] Pölsterl, S., Gupta, P., Wang, L., Conjeti, S., Katouzian, A., and Navab, N.,
-         "Heterogeneous ensembles for predicting survival of metastatic, castrate-resistant prostate cancer patients".
-         F1000Research, vol. 5, no. 2676, 2016
+    .. [1] Pölsterl, S., Gupta, P., Wang, L., Conjeti, S., Katouzian, A., & Navab, N. (2016).
+           "Heterogeneous ensembles for predicting survival of metastatic, castrate-resistant prostate cancer patients".
+           F1000Research, 5(2676).
 
-    .. [2] Caruana, R., Munson, A., Niculescu-Mizil, A.
-        "Getting the most out of ensemble selection". 6th IEEE International Conference on Data Mining, 828-833, 2006
+    .. [2] Caruana, R., Munson, A., & Niculescu-Mizil, A. (2006). "Getting the most out of ensemble selection".
+           6th IEEE International Conference on Data Mining, 828–833.
 
-    .. [3] Rooney, N., Patterson, D., Anand, S., Tsymbal, A.
-        "Dynamic integration of regression models. International Workshop on Multiple Classifier Systems".
-        Lecture Notes in Computer Science, vol. 3181, 164-173, 2004
+    .. [3] Rooney, N., Patterson, D., Anand, S., & Tsymbal, A. (2004). "Dynamic integration of regression models".
+           International Workshop on Multiple Classifier Systems, Lecture Notes in Computer Science, 3181, 164–173.
     """
 
     _parameter_constraints = {

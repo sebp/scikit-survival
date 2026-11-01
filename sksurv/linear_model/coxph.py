@@ -417,12 +417,11 @@ class CoxPHSurvivalAnalysis(BaseEstimator, SurvivalAnalysisMixin):
 
     References
     ----------
-    .. [1] Cox, D. R. Regression models and life tables (with discussion).
-           Journal of the Royal Statistical Society. Series B, 34, 187-220, 1972.
-    .. [2] Breslow, N. E. Covariance Analysis of Censored Survival Data.
-           Biometrics 30 (1974): 89–99.
-    .. [3] Efron, B. The Efficiency of Cox’s Likelihood Function for Censored Data.
-           Journal of the American Statistical Association 72 (1977): 557–565.
+    .. [1] Cox, D. R. (1972). "Regression models and life tables (with discussion)".
+           Journal of the Royal Statistical Society. Series B, 34, 187–220.
+    .. [2] Breslow, N. E. (1974). "Covariance Analysis of Censored Survival Data". Biometrics, 30, 89–99.
+    .. [3] Efron, B. (1977). "The Efficiency of Cox’s Likelihood Function for Censored Data".
+           Journal of the American Statistical Association, 72, 557–565.
     """
 
     _parameter_constraints: dict = {
