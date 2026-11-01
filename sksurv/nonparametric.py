@@ -706,7 +706,6 @@ def _cum_inc_cr_ci_estimator(cum_inc, var, conf_level, conf_type):
 def cumulative_incidence_competing_risks(
     event,
     time_exit,
-    time_min=None,
     conf_level=0.95,
     conf_type=None,
     var_type="Aalen",
@@ -726,10 +725,6 @@ def cumulative_incidence_competing_risks(
 
     time_exit : array-like, shape = (n_samples,)
         Contains event or censoring times.
-
-    time_min : float, optional, default: None
-        Compute estimator conditional on survival at least up to
-        the specified time.
 
     conf_level : float, optional, default: 0.95
         The level for a two-sided confidence interval on the cumulative incidence curves.
@@ -820,11 +815,6 @@ def cumulative_incidence_competing_risks(
         out=np.zeros((n_t, n_risks + 1), dtype=float),
         where=n_events_cr != 0,
     )
-
-    if time_min is not None:
-        mask = uniq_times >= time_min
-        uniq_times = np.compress(mask, uniq_times)
-        ratio = np.compress(mask, ratio, axis=0)
 
     kpe = np.cumprod(1.0 - ratio[:, 0])
     kpe_prime = np.r_[1.0, kpe[:-1]]
