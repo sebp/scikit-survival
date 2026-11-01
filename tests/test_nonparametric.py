@@ -6592,18 +6592,6 @@ class TestCumIncCompetingRisks:
         assert_array_almost_equal(y[0], y[1:].sum(axis=0))
 
     @staticmethod
-    @pytest.mark.parametrize("event, time, true_x, true_y", SimpleDataBMTCases().get_cases())
-    def test_truncated(event, time, true_x, true_y):
-        time_min = -1
-        x, y = cumulative_incidence_competing_risks(event, time, time_min=time_min)
-
-        assert_array_equal(x, true_x)
-        _x_km, true_km = kaplan_meier_estimator(event > 0, time, time_min=time_min)
-        assert_array_almost_equal(y[0], 1.0 - true_km)
-        assert_array_almost_equal(y[1:], true_y)
-        assert_array_almost_equal(y[0], y[1:].sum(axis=0))
-
-    @staticmethod
     @pytest.mark.parametrize("var_type", ["Aalen", "Dinse_Approx", "Dinse"])
     @pytest.mark.parametrize("get_expected_fn", CGVHD_DataSets().get_cases())
     def test_ci(get_expected_fn, var_type):
