@@ -65,23 +65,27 @@ def _check_inputs(event_indicator, event_time, estimate):
 
 def _check_times(test_time, times):
     times = check_array(np.atleast_1d(times), ensure_2d=False, input_name="times")
-    times = np.unique(times)
+    times, unique_indices = np.unique(times, return_index=True)
 
     if times.max() >= test_time.max() or times.min() < test_time.min():
         raise ValueError(
             f"all times must be within follow-up time of test data: [{test_time.min()}; {test_time.max()}["
         )
 
-    return times
+    return times, unique_indices
 
 
 def _check_estimate_2d(estimate, test_time, time_points, estimator):
     estimate = check_array(estimate, ensure_2d=False, allow_nd=False, input_name="estimate", estimator=estimator)
-    time_points = _check_times(test_time, time_points)
+    time_points, unique_indices = _check_times(test_time, time_points)
     check_consistent_length(test_time, estimate)
 
-    if estimate.ndim == 2 and estimate.shape[1] != time_points.shape[0]:
-        raise ValueError(f"expected estimate with {time_points.shape[0]} columns, but got {estimate.shape[1]}")
+    if estimate.ndim == 2:
+        if estimate.shape[1] != time_points.shape[0]:
+            raise ValueError(f"expected estimate with {time_points.shape[0]} columns, but got {estimate.shape[1]}")
+
+        # re-store correspondence to sorted time_points
+        estimate = np.take(estimate, unique_indices, axis=1)
 
     return estimate, time_points
 
@@ -423,8 +427,8 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
         Predicted risk scores for the test data (e.g., from ``estimator.predict(X)``).
         A higher value indicates a higher risk of experiencing an event.
         If a 1D array is provided, the same risk score is used for all time points.
-        If a 2D array is provided, ``estimate[:, j]`` is used for the :math:`j`-th
-        time point.
+        If a 2D array is provided, the value of ``estimate[:, j]`` must correspond
+        to the risk score at the time point ``times[j]``.
     times : array-like, shape = (n_times,)
         The time points at which to compute the AUC. Values must be within the
         range of follow-up times in ``survival_test``.
@@ -436,9 +440,10 @@ def cumulative_dynamic_auc(survival_train, survival_test, estimate, times, tied_
     Returns
     -------
     auc : ndarray, shape = (n_times,)
-        The cumulative/dynamic AUC estimates at each time point in ``times``.
+        The cumulative/dynamic AUC estimates at each unique time point in ``times``,
+        in ascending order of time points.
     mean_auc : float
-        The mean cumulative/dynamic AUC over the specified time range ``(times[0], times[-1])``.
+        The mean cumulative/dynamic AUC over the time range ``(min(times), max(times))``.
 
     See Also
     --------
@@ -600,7 +605,8 @@ def brier_score(survival_train, survival_test, estimate, times):
     Returns
     -------
     times : ndarray, shape = (n_times,)
-        The unique time points at which the Brier score was estimated.
+        The unique time points at which the Brier score was estimated,
+        in ascending order.
     brier_scores : ndarray, shape = (n_times,)
         The Brier score at each time point in ``times``.
 

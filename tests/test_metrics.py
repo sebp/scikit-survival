@@ -1038,7 +1038,7 @@ def test_brier_nottingham_many(nottingham_prognostic_index):
     t1, score = brier_score(y, y, pred.squeeze(), times=times)
     assert_array_almost_equal(score, expected_score)
 
-    t2, score = brier_score(y, y, pred.squeeze(), times=times[::-1])
+    t2, score = brier_score(y, y, pred[:, ::-1], times=times[::-1])
     assert_array_almost_equal(score, expected_score)
     assert_array_equal(t1, t2)
 
@@ -1127,42 +1127,51 @@ def test_ibs_single_time_point(nottingham_prognostic_index):
         integrated_brier_score(y, y, pred, times=1825)
 
 
-@pytest.fixture(params=["cindex", "auc", "brier"])
-def scorers_data(request, make_whas500):
-    t = request.param
-
+@pytest.fixture(
+    params=[("cindex", None), ("auc", 1), ("auc", 2), ("brier", 2)],
+    ids=["cindex", "auc_times_1d", "auc_times_2d", "brier_times_2d"],
+)
+def scorers_data_with_times(request, make_whas500):
     whas500_data = make_whas500(to_numeric=True)
     data = train_test_split(whas500_data.x, whas500_data.y, random_state=0, stratify=whas500_data.y["fstat"])
-    times = np.percentile(whas500_data.y["lenfol"], np.linspace(5, 81, 15))
 
-    if t == "cindex":
+    metric, ndim = request.param
+    if ndim == 1:
+        times_test = np.median(whas500_data.y["lenfol"])
+    elif ndim == 2:
+        times_test = np.percentile(whas500_data.y["lenfol"], np.linspace(5, 81, 15))
 
-        def func(*args, **kwargs):
-            ret = concordance_index_ipcw(*args, **kwargs)
-            return ret[0]
+    match metric:
+        case "cindex":
 
-        wrapper_cls = as_concordance_index_ipcw_scorer
-        args = {}
-    elif t == "auc":
+            def cindex_func(*args, **kwargs):
+                ret = concordance_index_ipcw(*args, **kwargs)
+                return ret[0]
 
-        def func(*args, **kwargs):
-            ret = cumulative_dynamic_auc(*args, **kwargs)
-            return ret[1]
+            func = cindex_func
+            wrapper_cls = as_concordance_index_ipcw_scorer
+            args = {}
+        case "auc":
 
-        wrapper_cls = as_cumulative_dynamic_auc_scorer
-        args = {"times": times}
-    elif t == "brier":
-        func = integrated_brier_score
-        wrapper_cls = as_integrated_brier_score_scorer
-        args = {"times": times}
-    else:
-        raise AssertionError()
+            def auc_func(*args, **kwargs):
+                ret = cumulative_dynamic_auc(*args, **kwargs)
+                return ret[1]
+
+            func = auc_func
+            wrapper_cls = as_cumulative_dynamic_auc_scorer
+            args = {"times": times_test}
+        case "brier":
+            func = integrated_brier_score
+            wrapper_cls = as_integrated_brier_score_scorer
+            args = {"times": times_test}
+        case _:
+            raise AssertionError()
 
     return func, wrapper_cls, args, data
 
 
-def test_scorers(scorers_data):
-    score_func, wrapper_cls, score_args, data = scorers_data
+def test_scorers(scorers_data_with_times):
+    score_func, wrapper_cls, score_args, data = scorers_data_with_times
     X_train, X_test, y_train, y_test = data
 
     est_std = CoxPHSurvivalAnalysis().fit(X_train, y_train)
@@ -1210,3 +1219,108 @@ def test_scorer_no_predict_function(make_whas500, pred_func):
 
     with pytest.raises(AttributeError, match=f"This 'as_concordance_index_ipcw_scorer' has no attribute {pred_func!r}"):
         getattr(scorer, pred_func)
+
+
+@pytest.fixture()
+def synthetic_survival_no_censoring():
+    """Events at 1..5 with no censoring, so every IPCW weight is 1."""
+    return Surv.from_arrays(
+        event=np.ones(5, dtype=bool),
+        time=np.arange(1, 6, dtype=float),
+    )
+
+
+def test_brier_score_unsorted_times_aligns_columns(synthetic_survival_no_censoring):
+    y = synthetic_survival_no_censoring
+    # columns correspond to times [3, 1]: S(3) = 0.4 and S(1) = 0.8
+    estimate = np.tile([0.4, 0.8], (y.shape[0], 1))
+
+    times, score = brier_score(y, y, estimate, times=[3, 1])
+
+    assert_array_equal(times, [1.0, 3.0])
+    assert_array_almost_equal(score, [0.16, 0.24])
+
+
+def test_brier_score_permuted_times_matches_sorted_order(synthetic_survival_no_censoring):
+    y = synthetic_survival_no_censoring
+    rng = np.random.default_rng(0)
+    estimate = rng.uniform(0.1, 0.9, size=(y.shape[0], 3))
+    times = np.array([4.0, 1.0, 3.0])
+    order = np.argsort(times)
+
+    times_perm, score_perm = brier_score(y, y, estimate, times=times)
+    times_sorted, score_sorted = brier_score(y, y, estimate[:, order], times=times[order])
+
+    assert_array_equal(times_perm, times_sorted)
+    assert_array_almost_equal(score_perm, score_sorted)
+
+
+def test_integrated_brier_score_unsorted_times_aligns_columns(synthetic_survival_no_censoring):
+    y = synthetic_survival_no_censoring
+    # columns correspond to times [4, 1, 3]: S(4) = 0.2, S(1) = 0.9, S(3) = 0.5
+    estimate = np.tile([0.2, 0.9, 0.5], (y.shape[0], 1))
+
+    score = integrated_brier_score(y, y, estimate, times=[4, 1, 3])
+
+    assert score == pytest.approx(0.2083333333333333)
+
+
+def test_cumulative_dynamic_auc_unsorted_times_aligns_columns(synthetic_survival_no_censoring):
+    y = synthetic_survival_no_censoring
+    time = y["time"]
+    # the columns for t=4 and t=3 rank cases above controls; the column for t=1 inverts that order
+    estimate = np.column_stack([-time, time, -time])
+
+    scores, mean_auc = cumulative_dynamic_auc(y, y, estimate, times=[4, 1, 3])
+
+    assert_array_almost_equal(scores, [0.0, 1.0, 1.0])
+    assert mean_auc == pytest.approx(0.75)
+
+
+def test_integrated_brier_score_scorer_permuted_times(make_whas500):
+    data = make_whas500(to_numeric=True)
+    X_train, X_test, y_train, y_test = train_test_split(data.x, data.y, random_state=0, stratify=data.y["fstat"])
+    times = np.percentile(data.y["lenfol"], [20, 50, 80])
+    perm = np.array([2, 0, 1])
+
+    est = CoxPHSurvivalAnalysis().fit(X_train, y_train)
+    estimate = np.vstack([fn(times) for fn in est.predict_survival_function(X_test)])
+
+    expected = integrated_brier_score(y_train, y_test, estimate, times=times)
+    actual = integrated_brier_score(y_train, y_test, estimate[:, perm], times=times[perm])
+    assert actual == pytest.approx(expected)
+
+    scorer = as_integrated_brier_score_scorer(CoxPHSurvivalAnalysis(), times=times[perm])
+    scorer.fit(X_train, y_train)
+    assert scorer.score(X_test, y_test) == pytest.approx(-expected)
+
+
+def test_brier_score_single_time_point_1d_estimate(synthetic_survival_no_censoring):
+    y = synthetic_survival_no_censoring
+
+    times, score = brier_score(y, y, np.full(y.shape[0], 0.8), times=[3])
+
+    assert_array_equal(times, [3.0])
+    assert score[0] == pytest.approx(0.4)
+
+
+def test_brier_score_single_time_point_2d_estimate(synthetic_survival_no_censoring):
+    y = synthetic_survival_no_censoring
+    estimate = np.full((y.shape[0], 1), 0.8)
+
+    times, score = brier_score(y, y, estimate, times=3)
+
+    assert_array_equal(times, [3.0])
+    assert score[0] == pytest.approx(0.4)
+
+
+def test_brier_score_duplicate_times_are_deduplicated(synthetic_survival_no_censoring):
+    y = synthetic_survival_no_censoring
+    estimate = np.tile([0.4, 0.8], (y.shape[0], 1))
+
+    times, score = brier_score(y, y, estimate, times=[3, 1, 3])
+    times_unique, score_unique = brier_score(y, y, estimate, times=[3, 1])
+
+    assert_array_equal(times, [1.0, 3.0])
+    assert_array_equal(times, times_unique)
+    assert_array_almost_equal(score, score_unique)
