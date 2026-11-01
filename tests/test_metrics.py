@@ -1056,6 +1056,9 @@ def test_brier_wrong_estimate_shape(nottingham_prognostic_index):
     with pytest.raises(ValueError, match="expected estimate with 2 columns, but got 1"):
         brier_score(y, y, pred[:, :1], times=[720, 1825])
 
+    with pytest.raises(ValueError, match="expected estimate with 1 columns, but got 2"):
+        brier_score(y, y, pred, times=720)
+
     with pytest.raises(ValueError, match="expected estimate with 3 columns, but got 2"):
         brier_score(y, y, pred, times=[720, 960, 1825])
 
