@@ -8,6 +8,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}${{ github.ref == 'refs/heads/main' && format('-{0}', github.run_id) || '' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   pytest:
     name: Build and check (Linux, macOS)
@@ -19,6 +23,7 @@ jobs:
           - "312"
           - "313"
           - "314"
+          - "315"
         runner:
           - ubuntu-latest
           - macos-26
@@ -98,6 +103,7 @@ jobs:
           - "312"
           - "313"
           - "314"
+          - "315"
     env:
       CONDA_INSTALL_LOCN: ${{ github.workspace }}\Miniforge3
       PYTHONWARNINGS: default
