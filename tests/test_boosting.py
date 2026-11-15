@@ -7,11 +7,18 @@ import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 import pandas as pd
 import pytest
+from scipy.optimize import check_grad
 from sklearn.metrics import mean_squared_error
 
 from sksurv.column import categorical_to_numeric, standardize
 from sksurv.datasets import load_whas500
-from sksurv.ensemble import ComponentwiseGradientBoostingSurvivalAnalysis, GradientBoostingSurvivalAnalysis
+from sksurv.ensemble import (
+    ComponentwiseGradientBoostingSurvivalAnalysis,
+    GradientBoostingSurvivalAnalysis,
+    HistGradientBoostingSurvivalAnalysis,
+)
+from sksurv.ensemble._coxph_loss import coxph_loss
+from sksurv.ensemble._survival_loss import HistCoxPH, decode_survival_target, encode_survival_target
 from sksurv.testing import FixtureParameterFactory, assert_cindex_almost_equal
 from sksurv.util import Surv
 
@@ -676,6 +683,120 @@ class TestComponentwiseGradientBoosting:
 
         with pytest.raises(ValueError, match="`fit` must be called with the loss option set to 'coxph'"):
             model.predict_cumulative_hazard_function(whas500_data.x)
+
+
+class TestHistGradientBoosting:
+    @staticmethod
+    def test_fit(make_whas500):
+        whas500_data = make_whas500(with_std=False, to_numeric=True)
+
+        model = HistGradientBoostingSurvivalAnalysis(max_iter=100, max_depth=3, early_stopping=False, random_state=0)
+        model.fit(whas500_data.x, whas500_data.y)
+
+        p = model.predict(whas500_data.x)
+        assert_cindex_almost_equal(
+            whas500_data.y["fstat"], whas500_data.y["lenfol"], p, (0.8817016859838455, 66259, 8890, 0, 14)
+        )
+
+    @staticmethod
+    @pytest.mark.parametrize("weighted", [False, True])
+    def test_loss(weighted):
+        rng = np.random.default_rng(0)
+        time = rng.choice([1.0, 2.0, 2.0, 3.0, 5.0, 5.0, 5.0, 8.0], size=15)
+        event = rng.random(15) < 0.6
+        raw_prediction = rng.standard_normal(15)
+        repeats = np.ones(15, dtype=int)
+        sample_weight = None
+        if weighted:
+            repeats = rng.integers(1, 4, size=15)
+            repeats[time == time.max()] = 0
+            event[np.argmax(time)] = True
+            sample_weight = repeats.astype(float)
+        y = encode_survival_target(event, time)
+        loss = HistCoxPH()
+
+        # integer weights are equivalent to repeated samples
+        expected = coxph_loss(
+            np.repeat(event, repeats).astype(np.uint8), np.repeat(time, repeats), np.repeat(raw_prediction, repeats)
+        )
+        assert loss(y, raw_prediction, sample_weight) == pytest.approx(expected / repeats.sum())
+
+        gradient, hessian = loss.gradient_hessian(y, raw_prediction, sample_weight)
+        assert np.isfinite(gradient).all()
+        assert np.isfinite(hessian).all()
+
+        # the gradient is that of the loss multiplied by the sum of weights
+        err = check_grad(
+            lambda f: loss(y, f, sample_weight) * repeats.sum(),
+            lambda f: loss.gradient_hessian(y, f, sample_weight)[0],
+            raw_prediction,
+        )
+        assert err == pytest.approx(0.0, abs=1e-4)
+
+        eps = 1e-6
+        num_hessian = [
+            (
+                loss.gradient_hessian(y, raw_prediction + d, sample_weight)[0][i]
+                - loss.gradient_hessian(y, raw_prediction - d, sample_weight)[0][i]
+            )
+            / (2 * eps)
+            for i, d in enumerate(eps * np.eye(15))
+        ]
+        assert_array_almost_equal(hessian, num_hessian, 6)
+
+    @staticmethod
+    def test_loss_separated_predictions():
+        y = encode_survival_target(np.ones(4, dtype=bool), np.array([1.0, 2.0, 3.0, 4.0]))
+        gradient, hessian = HistCoxPH().gradient_hessian(y, np.array([400.0, 0.0, -350.0, -400.0]))
+        assert_array_almost_equal(gradient, np.zeros(4))
+        assert_array_almost_equal(hessian, np.zeros(4))
+
+    @staticmethod
+    @pytest.mark.parametrize("dtype", [np.float64, np.int64, np.uint32])
+    def test_encode_survival_target(dtype):
+        event = np.array([False, True, False, True])
+        time = np.array([0, 0, 3, 3], dtype=dtype)
+
+        decoded_event, decoded_time = decode_survival_target(encode_survival_target(event, time))
+        assert_array_equal(decoded_event, event)
+        assert_array_equal(decoded_time, time)
+
+    @staticmethod
+    def test_fit_missing_values(make_whas500):
+        whas500_data = make_whas500(with_std=False, to_numeric=True)
+        x = whas500_data.x.copy()
+        x[np.random.default_rng(0).random(x.shape) < 0.2] = np.nan
+
+        model = HistGradientBoostingSurvivalAnalysis(max_iter=100, max_depth=3, early_stopping=False, random_state=0)
+        model.fit(x, whas500_data.y)
+
+        p = model.predict(x)
+        assert_cindex_almost_equal(
+            whas500_data.y["fstat"], whas500_data.y["lenfol"], p, (0.8830456825772798, 66360, 8789, 0, 14)
+        )
+
+    @staticmethod
+    def test_negative_sample_weight(make_whas500):
+        whas500_data = make_whas500(with_std=False, to_numeric=True)
+        sample_weight = np.ones(whas500_data.x.shape[0])
+        sample_weight[0] = -1.0
+
+        model = HistGradientBoostingSurvivalAnalysis(max_iter=5)
+        with pytest.raises(ValueError, match="Negative values"):
+            model.fit(whas500_data.x, whas500_data.y, sample_weight=sample_weight)
+
+    @staticmethod
+    def test_fit_validation_data(make_whas500):
+        whas500_data = make_whas500(with_std=False, to_numeric=True)
+
+        model = HistGradientBoostingSurvivalAnalysis(
+            max_iter=500, max_depth=3, early_stopping=True, n_iter_no_change=5, random_state=0
+        )
+        model.fit(whas500_data.x[:400], whas500_data.y[:400], X_val=whas500_data.x[400:], y_val=whas500_data.y[400:])
+
+        assert model.do_early_stopping_
+        assert model.n_iter_ == 21
+        assert model.validation_score_.shape == (model.n_iter_ + 1,)
 
 
 @pytest.mark.parametrize(
