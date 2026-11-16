@@ -612,11 +612,11 @@ class SurvivalFunctionEstimator(BaseEstimator):
         Shat[extends] = 0.0
 
         valid = ~extends
-        time = time[valid]
-        idx = np.searchsorted(self.unique_time_, time)
+        time_valid = time[valid]
+        idx = np.searchsorted(self.unique_time_, time_valid)
         # for non-exact matches, we need to shift the index to left
         eps = np.finfo(self.unique_time_.dtype).eps
-        exact = np.absolute(self.unique_time_[idx] - time) < eps
+        exact = np.absolute(self.unique_time_[idx] - time_valid) < eps
         idx[~exact] -= 1
         Shat[valid] = self.prob_[idx]
 

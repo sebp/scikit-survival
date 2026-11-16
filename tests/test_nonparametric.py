@@ -5804,6 +5804,26 @@ class TestKaplanMeier:
         assert_array_almost_equal(expected, probs)
 
     @staticmethod
+    def test_predict_proba_conf_int_past_last_time():
+        """A query past the last observed time must not crash when return_conf_int=True.
+
+        Regression test for gh-653: the confidence-interval array was allocated with
+        the length of the in-range query only, but indexed with the mask over the
+        original, full-length query.
+        """
+        y = Surv.from_arrays(
+            event=[True, False, True, True],
+            time=[1, 2, 3, 4],
+        )
+
+        estimator = SurvivalFunctionEstimator(conf_type="log-log").fit(y)
+        prob, ci = estimator.predict_proba([2.5, 10.0], return_conf_int=True)
+
+        assert_array_almost_equal(prob, [0.75, 0.0])
+        assert_array_almost_equal(ci[:, 0], [0.12794692, 0.96054864])
+        assert np.isnan(ci[:, 1]).all()
+
+    @staticmethod
     def test_reverse_conf_int(random_survival_data):
         msg = "Confidence intervals of the censoring distribution is not implemented"
         with pytest.raises(NotImplementedError, match=msg):
