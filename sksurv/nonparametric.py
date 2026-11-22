@@ -574,6 +574,10 @@ class SurvivalFunctionEstimator(BaseEstimator):
 
         :math:`\hat{S}(t) = P(T > t)`
 
+        If the estimated survival function reaches zero at the largest observed time
+        (``self.unique_time_[-1]``), all subsequent time points will have survival
+        probability zero, and both bounds of the confidence interval are ``NaN``.
+
         Parameters
         ----------
         time : array-like, shape = (n_samples,)
@@ -593,6 +597,12 @@ class SurvivalFunctionEstimator(BaseEstimator):
         conf_int : ndarray, shape = (2, n_samples)
             Pointwise confidence interval at the passed time points.
             Only provided if `return_conf_int` is True.
+
+        Raises
+        ------
+        ValueError
+            If ``time`` contains values beyond the largest observed time and
+            the estimated survival function is non-zero at the largest observed time.
         """
         check_is_fitted(self, "unique_time_")
         if return_conf_int and not hasattr(self, "conf_int_"):
