@@ -2822,6 +2822,11 @@ def whas500_true_x():
     )
 
 
+def _fit_km_reaches_zero():
+    y = Surv.from_arrays(event=[True, False, True, True], time=[1, 2, 3, 4])
+    return SurvivalFunctionEstimator(conf_type="log-log").fit(y)
+
+
 class TestKaplanMeier:
     @staticmethod
     @pytest.mark.parametrize("time,event,true_x,true_y,km_ci", SimpleDataKMCases().get_cases())
@@ -2844,6 +2849,119 @@ class TestKaplanMeier:
         prob, ci = est.predict_proba(true_x, return_conf_int=True)
         assert_array_almost_equal(prob, true_y)
         assert_array_almost_equal(ci, km_ci)
+
+    @staticmethod
+    def test_predict_proba_conf_int_beyond_last_time():
+        est = _fit_km_reaches_zero()
+
+        prob, ci = est.predict_proba([2.5, 10.0], return_conf_int=True)
+
+        assert_allclose(prob, [0.75, 0.0])
+        assert ci.shape == (2, 2)
+        assert_allclose(ci[:, 0], [0.12794692, 0.96054864])
+        assert np.isnan(ci[:, 1]).all()
+
+    @staticmethod
+    def test_predict_proba_conf_int_only_beyond_last_time():
+        est = _fit_km_reaches_zero()
+
+        prob, ci = est.predict_proba([10.0, 11.0], return_conf_int=True)
+
+        assert_allclose(prob, [0.0, 0.0])
+        assert ci.shape == (2, 2)
+        assert np.isnan(ci).all()
+
+    @staticmethod
+    def test_predict_proba_conf_int_beyond_not_contiguous():
+        est = _fit_km_reaches_zero()
+
+        prob, ci = est.predict_proba([10.0, 2.5, 11.0], return_conf_int=True)
+
+        assert_allclose(prob, [0.0, 0.75, 0.0])
+        assert ci.shape == (2, 3)
+        assert np.isnan(ci[:, [0, 2]]).all()
+        assert_allclose(ci[:, 1], [0.12794692, 0.96054864])
+
+    @staticmethod
+    def test_predict_proba_conf_int_at_and_beyond_last_time():
+        est = _fit_km_reaches_zero()
+
+        prob, ci = est.predict_proba([4.0, 10.0], return_conf_int=True)
+
+        assert_allclose(prob, [0.0, 0.0])
+        assert_allclose(ci[:, 0], [0.0, 0.0])
+        assert np.isnan(ci[:, 1]).all()
+
+    @staticmethod
+    def test_predict_proba_conf_int_before_first_time():
+        est = _fit_km_reaches_zero()
+
+        prob, ci = est.predict_proba([0.5], return_conf_int=True)
+
+        assert_allclose(prob, [1.0])
+        assert_allclose(ci, [[1.0], [1.0]])
+
+    @staticmethod
+    def test_predict_proba_conf_int_just_past_last_time():
+        est = _fit_km_reaches_zero()
+        t = np.nextafter(4.0, np.inf)
+
+        prob, ci = est.predict_proba([t], return_conf_int=True)
+
+        assert_allclose(prob, [0.0])
+        assert np.isnan(ci).all()
+
+    @staticmethod
+    def test_predict_proba_conf_int_just_before_last_time():
+        est = _fit_km_reaches_zero()
+        t = np.nextafter(4.0, -np.inf)
+
+        prob, ci = est.predict_proba([t], return_conf_int=True)
+
+        assert_allclose(prob, [0.375])
+        assert_allclose(ci[:, 0], [0.010971121574844568, 0.8080010724813436])
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        "query",
+        [
+            [10.0],
+            [10.0, 11.0],
+            [2.5],
+            [2.5, 10.0],
+            [10.0, 2.5],
+            [1.0, 2.0, 3.0, 4.0],
+            [10.0, 20.0, 30.0],
+        ],
+    )
+    def test_predict_proba_conf_int_output_shape(query):
+        est = _fit_km_reaches_zero()
+
+        prob, ci = est.predict_proba(query, return_conf_int=True)
+
+        assert prob.shape == (len(query),)
+        assert ci.shape == (2, len(query))
+
+    @staticmethod
+    @pytest.mark.parametrize("return_conf_int", [False, True])
+    @pytest.mark.parametrize("query", [[10.0], [2.5, 10.0]])
+    def test_predict_proba_beyond_last_time_nonzero_tail_raises(query, return_conf_int):
+        y = Surv.from_arrays(event=[True, False], time=[1, 2])
+        est = SurvivalFunctionEstimator(conf_type="log-log").fit(y)
+
+        with pytest.raises(ValueError, match="time must be smaller than largest observed time point"):
+            est.predict_proba(query, return_conf_int=return_conf_int)
+
+    @staticmethod
+    def test_predict_proba_conf_int_matches_point_estimate():
+        est = _fit_km_reaches_zero()
+        query = [2.5, 10.0]
+
+        point_only = est.predict_proba(query)
+        prob, _ = est.predict_proba(query, return_conf_int=True)
+
+        assert_allclose(point_only, [0.75, 0.0])
+        assert_allclose(prob, point_only)
 
     @staticmethod
     @pytest.mark.parametrize("time,event,true_x,true_y,km_var", SimpleDataKMCases().get_cases())
