@@ -7,5 +7,6 @@ Ensemble Models
 
     ComponentwiseGradientBoostingSurvivalAnalysis
     GradientBoostingSurvivalAnalysis
+    HistGradientBoostingSurvivalAnalysis
     RandomSurvivalForest
     ExtraSurvivalTrees
