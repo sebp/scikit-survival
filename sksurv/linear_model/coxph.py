@@ -168,9 +168,9 @@ class _CoxPHOptimizer:
 
     def __init__(self, X, event, time, alpha, ties):
         # sort descending
-        o = np.argsort(-time, kind="mergesort")
+        o = np.argsort(time, kind="mergesort")[::-1]
         self.x = X[o, :]
-        self.event = event[o]
+        self.event = event[o].astype(bool)
         self.time = time[o]
         self.alpha = alpha
         self.no_alpha = np.all(self.alpha < np.finfo(self.alpha.dtype).eps)
@@ -191,9 +191,40 @@ class _CoxPHOptimizer:
             Average negative partial log-likelihood.
         """
         time = self.time
+        event = self.event
         n_samples = self.x.shape[0]
-        breslow = self._is_breslow
         xw = np.dot(self.x, w)
+
+        if self._is_breslow:
+            loss = self._nll_breslow(time, event, xw)
+        else:
+            loss = self._nll_efron(time, event, xw)
+
+        # add regularization term to log-likelihood
+        return loss + np.sum(self.alpha * np.square(w)) / (2.0 * n_samples)
+
+    def _nll_breslow(self, time, event, xw):
+        n_samples = time.shape[0]
+
+        is_change = np.empty(n_samples, dtype=bool)
+        is_change[0] = True
+        is_change[1:] = time[1:] != time[:-1]
+        starts_idx = np.flatnonzero(is_change)
+        sizes = np.diff(np.r_[starts_idx, n_samples])
+        last_idx = starts_idx + sizes - 1  # defines risk set at each unique time
+
+        n_events = np.add.reduceat(event.astype(np.float64), starts_idx)
+
+        risk_set = np.cumsum(np.exp(xw))[last_idx]
+
+        event_groups = n_events > 0
+        loss = np.sum(n_events[event_groups] * np.log(risk_set[event_groups])) / n_samples
+        loss -= np.sum(xw[event]) / n_samples
+
+        return loss
+
+    def _nll_efron(self, time, event, xw):
+        n_samples = time.shape[0]
 
         loss = 0
         risk_set = 0
@@ -204,7 +235,7 @@ class _CoxPHOptimizer:
             n_events = 0
             risk_set2 = 0
             while k < n_samples and ti == time[k]:
-                if self.event[k]:
+                if event[k]:
                     numerator += xw[k]
                     risk_set2 += np.exp(xw[k])
                     n_events += 1
@@ -213,33 +244,80 @@ class _CoxPHOptimizer:
                 k += 1
 
             if n_events > 0:
-                if breslow:
-                    risk_set += risk_set2
-                    loss -= (numerator - n_events * np.log(risk_set)) / n_samples
-                else:
-                    numerator /= n_events
-                    for _ in range(n_events):
-                        risk_set += risk_set2 / n_events
-                        loss -= (numerator - np.log(risk_set)) / n_samples
-
-        # add regularization term to log-likelihood
-        return loss + np.sum(self.alpha * np.square(w)) / (2.0 * n_samples)
+                numerator /= n_events
+                for _ in range(n_events):
+                    risk_set += risk_set2 / n_events
+                    loss -= (numerator - np.log(risk_set)) / n_samples
+        return loss
 
     def update(self, w, offset=0):
         """Compute gradient and Hessian matrix with respect to `w`."""
+
+        # inputs are sorted by time in descending order
         time = self.time
+        event = self.event
         x = self.x
-        breslow = self._is_breslow
         exp_xw = np.exp(offset + np.dot(x, w))
+
+        if self._is_breslow:
+            gradient, hessian = self._update_breslow(x, time, event, exp_xw)
+        else:
+            gradient, hessian = self._update_efron(x, time, event, exp_xw)
+
+        if not self.no_alpha:
+            inv_n_samples = 1.0 / x.shape[0]
+            gradient += self.alpha * inv_n_samples * w
+            hessian[np.diag_indices_from(hessian)] += self.alpha * inv_n_samples
+
+        self.gradient = gradient
+        self.hessian = hessian
+
+    def _update_breslow(self, x, time, event, exp_xw):
+        n_samples = x.shape[0]
+        inv_n_samples = 1.0 / n_samples
+
+        is_change = np.empty(n_samples, dtype=bool)
+        is_change[0] = True
+        is_change[1:] = time[1:] != time[:-1]
+        starts_idx = np.flatnonzero(is_change)
+        sizes = np.diff(np.r_[starts_idx, n_samples])
+        last_idx = starts_idx + sizes - 1  # defines risk set at each unique time
+
+        n_events = np.add.reduceat(event.astype(np.float64), starts_idx)
+
+        risk_set = np.cumsum(exp_xw)[last_idx]
+        risk_set_x = np.cumsum(exp_xw[:, np.newaxis] * x, axis=0)[last_idx]
+
+        # swap order of sums such that each subject j collects a weight
+        # c_j = Σ_{i : t_i ≤ t_j} n_events_i / [Σ_{k : t_k ≥ t_i} exp(x_k * w)]
+        event_groups = n_events > 0
+        q = np.zeros_like(risk_set)
+        q[event_groups] = n_events[event_groups] / risk_set[event_groups]
+        c_group = np.cumsum(q[::-1])[::-1]  # cumulative sum ordered by ascending time
+        c = np.repeat(c_group, sizes)  # expand to match number of samples
+        # rows with c == 0 enter no event's risk set; exp(x * w) may be inf there - multiply only where c != 0
+        wgt = np.zeros_like(c)
+        wgt = np.multiply(exp_xw, c, out=wgt, where=c != 0.0)
+
+        gradient = (x.T @ wgt - x[event].sum(axis=0)) * inv_n_samples
+
+        hessian = (x * wgt[:, np.newaxis]).T @ x
+        z = risk_set_x[event_groups] / risk_set[event_groups, np.newaxis]
+        z *= np.sqrt(n_events[event_groups])[:, np.newaxis]
+        hessian = (hessian - z.T @ z) * inv_n_samples
+
+        return gradient, hessian
+
+    def _update_efron(self, x, time, event, exp_xw):
         n_samples, n_features = x.shape
 
-        gradient = np.zeros((1, n_features), dtype=w.dtype)
-        hessian = np.zeros((n_features, n_features), dtype=w.dtype)
+        gradient = np.zeros((1, n_features), dtype=exp_xw.dtype)
+        hessian = np.zeros((n_features, n_features), dtype=exp_xw.dtype)
 
         inv_n_samples = 1.0 / n_samples
         risk_set = 0
-        risk_set_x = np.zeros((1, n_features), dtype=w.dtype)
-        risk_set_xx = np.zeros((n_features, n_features), dtype=w.dtype)
+        risk_set_x = np.zeros((1, n_features), dtype=exp_xw.dtype)
+        risk_set_xx = np.zeros((n_features, n_features), dtype=exp_xw.dtype)
         k = 0
         # iterate time in descending order
         while k < n_samples:
@@ -256,7 +334,7 @@ class _CoxPHOptimizer:
                 # outer product
                 xx = np.dot(xk.T, xk)
 
-                if self.event[k]:
+                if event[k]:
                     numerator += xk
                     risk_set2 += exp_xw[k]
                     risk_set_x2 += exp_xw[k] * xk
@@ -269,43 +347,21 @@ class _CoxPHOptimizer:
                 k += 1
 
             if n_events > 0:
-                if breslow:
-                    risk_set += risk_set2
-                    risk_set_x += risk_set_x2
-                    risk_set_xx += risk_set_xx2
+                numerator /= n_events
+                for _ in range(n_events):
+                    risk_set += risk_set2 / n_events
+                    risk_set_x += risk_set_x2 / n_events
+                    risk_set_xx += risk_set_xx2 / n_events
 
                     z = risk_set_x / risk_set
-                    gradient -= (numerator - n_events * z) * inv_n_samples
+                    gradient -= (numerator - z) * inv_n_samples
 
                     a = risk_set_xx / risk_set
                     # outer product
                     b = np.dot(z.T, z)
+                    hessian += (a - b) * inv_n_samples
 
-                    hessian += n_events * (a - b) * inv_n_samples
-                else:
-                    numerator /= n_events
-                    for _ in range(n_events):
-                        risk_set += risk_set2 / n_events
-                        risk_set_x += risk_set_x2 / n_events
-                        risk_set_xx += risk_set_xx2 / n_events
-
-                        z = risk_set_x / risk_set
-                        gradient -= (numerator - z) * inv_n_samples
-
-                        a = risk_set_xx / risk_set
-                        # outer product
-                        b = np.dot(z.T, z)
-
-                        hessian += (a - b) * inv_n_samples
-
-        if not self.no_alpha:
-            gradient += self.alpha * inv_n_samples * w
-
-            diag_idx = np.diag_indices(n_features)
-            hessian[diag_idx] += self.alpha * inv_n_samples
-
-        self.gradient = gradient.ravel()
-        self.hessian = hessian
+        return gradient.ravel(), hessian
 
 
 class _VerboseReporter:

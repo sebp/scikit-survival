@@ -691,16 +691,107 @@ class TestCoxPH:
         assert pytest.approx(658.7477, 1e-4) == rossi.x.shape[0] * actual_loss
 
     @staticmethod
-    def test_gradient_efron(rossi):
+    @pytest.mark.parametrize("ties", ["breslow", "efron"])
+    def test_gradient(rossi, ties):
         cph = _CoxPHOptimizer(
             rossi.x.to_numpy(dtype=float),
             rossi.y["arrest"],
             rossi.y["week"],
             alpha=np.zeros(rossi.x.shape[1]),
-            ties="efron",
+            ties=ties,
         )
 
         assert_gradient_correctness(cph)
+
+    @staticmethod
+    @pytest.mark.parametrize("ties", ["breslow", "efron"])
+    def test_hessian(rossi, ties):
+        from scipy.linalg import eigvalsh, issymmetric
+
+        cph = _CoxPHOptimizer(
+            rossi.x.to_numpy(dtype=float),
+            rossi.y["arrest"],
+            rossi.y["week"],
+            alpha=np.zeros(rossi.x.shape[1]),
+            ties=ties,
+        )
+
+        coef = np.random.default_rng(9).standard_normal(rossi.x.shape[1])
+        cph.update(coef)
+
+        assert issymmetric(cph.hessian, atol=1e-8, rtol=1e-6)
+
+        # check hessian is positive semidefinite
+        w = eigvalsh(cph.hessian)
+        assert np.all(w >= np.finfo(w.dtype).eps)
+
+    @staticmethod
+    @pytest.mark.parametrize("ties,alpha", [("breslow", 0.0), ("efron", 0.0), ("breslow", 0.123), ("efron", 0.333)])
+    def test_gradient_hessian_exact_without_ties(ties, alpha):
+        time = np.array([5, 8, 7, 12, 13], dtype=float)
+        event = np.array([True, False, True, True, False], dtype=bool)
+        x = np.array([[1.0, -1], [0.5, 1], [-1.0, 1], [0.5, 0.5], [1.5, -2]], dtype=float)
+        w = np.array([-1 / 2, 3 / 4], dtype=float)
+        n_samples = 5
+        w_sq_norm = 13 / 16
+
+        # indices for risk sets for times with event
+        r_idx = ([0, 2, 1, 3, 4], [2, 1, 3, 4], [3, 4])
+
+        xw = np.array([-5 / 4, 1 / 2, 5 / 4, 1 / 8, -9 / 4])
+        riskset = np.array(
+            [
+                np.exp(xw[r_idx[0]]).sum(),
+                1.0,
+                np.exp(xw[r_idx[1]]).sum(),
+                np.exp(xw[r_idx[2]]).sum(),
+                1.0,
+            ]
+        )
+        riskset_x = np.vstack(
+            [
+                (np.exp(xw[r_idx[0]])[np.newaxis, :] @ x[r_idx[0], :]),
+                [[0.0, 0.0]],
+                (np.exp(xw[r_idx[1]])[np.newaxis, :] @ x[r_idx[1], :]),
+                (np.exp(xw[r_idx[2]])[np.newaxis, :] @ x[r_idx[2], :]),
+                [[0.0, 0.0]],
+            ]
+        )
+        x_sq = np.square(x)
+
+        expected_nll = ((np.log(riskset).sum() - xw[event].sum()) + 0.5 * alpha * w_sq_norm) / n_samples
+        expected_grad = np.array(
+            [
+                ((riskset_x[:, 0] / riskset).sum() - x[event, 0].sum()),
+                ((riskset_x[:, 1] / riskset).sum() - x[event, 1].sum()),
+            ]
+        )
+        expected_grad += alpha * w
+        expected_grad /= n_samples
+
+        expected_hess = np.zeros((2, 2), dtype=float)
+        for i, idx in zip([0, 2, 3], r_idx, strict=True):
+            expected_hess[0, 0] += ((np.exp(xw[idx]) * x_sq[idx, 0]).sum() / riskset[i]).sum()
+            expected_hess[0, 0] -= np.square(riskset_x[i, 0] / riskset[i])
+
+            expected_hess[1, 1] += ((np.exp(xw[idx]) * x_sq[idx, 1]).sum() / riskset[i]).sum()
+            expected_hess[1, 1] -= np.square(riskset_x[i, 1] / riskset[i])
+
+            expected_hess[0, 1] += ((np.exp(xw[idx]) * x[idx, 0] * x[idx, 1]).sum() / riskset[i]).sum()
+            expected_hess[0, 1] -= riskset_x[i, 0] * riskset_x[i, 1] / np.square(riskset[i])
+
+        expected_hess[1, 0] = expected_hess[0, 1]
+        expected_hess[np.diag_indices_from(expected_hess)] += alpha
+        expected_hess /= n_samples
+
+        cph = _CoxPHOptimizer(x, event, time, alpha=np.array(alpha), ties=ties)
+
+        nll = cph.nlog_likelihood(w)
+        cph.update(w)
+
+        assert nll == pytest.approx(expected_nll)
+        assert_array_almost_equal(cph.gradient, expected_grad)
+        assert_array_almost_equal(cph.hessian, expected_hess)
 
     @staticmethod
     def test_fit_efron(rossi, coef_rossi_coxph_efron):
